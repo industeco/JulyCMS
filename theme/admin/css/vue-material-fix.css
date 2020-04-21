@@ -1,0 +1,125 @@
+
+/* Vue Material 样式修正 */
+
+a.md-button {
+  display: inline-flex;
+}
+
+.md-button:hover {
+  text-decoration: none;
+}
+
+.md-button-content {
+  padding: 0 15px;
+}
+
+.md-button.md-theme-default[disabled] {
+  box-shadow: none;
+}
+
+.md-fab {
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+
+.md-fab.md-dense, .md-fab.md-mini {
+  width: 28px;
+  height: 28px;
+}
+
+.md-fab .md-icon {
+  font-size: 18px!important;
+}
+
+.md-button.md-theme-default.md-fab:not([disabled]).md-primary {
+  color: #fff;
+  color: var(--md-theme-default-text-primary-on-primary, #fff);
+}
+
+.md-button.md-theme-default.md-fab:not([disabled]),
+.md-button.md-theme-default.md-fab:not([disabled]).md-plain {
+  background-color: #ffffff;
+}
+
+.md-button.md-theme-default.md-fab:not([disabled]) .md-icon-font,
+.md-button.md-theme-default.md-fab:not([disabled]).md-plain .md-icon-font {
+  color: rgba(0,0,0,0.54);
+  color: var(--md-theme-default-icon-on-background, rgba(0,0,0,0.54));
+}
+
+.md-button.md-theme-default.md-fab:not([disabled]).md-accent {
+  background-color: #ff5252;
+  background-color: var(--md-theme-default-accent, #ff5252);
+}
+
+.md-button.md-theme-default.md-fab:not([disabled]).md-accent .md-icon-font {
+  color: #fff;
+  color: var(--md-theme-default-text-primary-on-accent, #fff);
+}
+
+.md-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 1px;
+}
+
+.md-required > label:after {
+  color: #ff5252;
+}
+
+.md-field {
+  display: block;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.md-field::before, .md-field::after {
+  display: none;
+}
+
+.md-field.md-theme-default label,
+.md-field.md-theme-default.md-focused label,
+.md-field.md-has-textarea:not(.md-autogrow) label {
+  display: inline-block;
+  position: relative;
+  top: 0;
+  left: 0;
+  margin-bottom: 3px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.md-field.md-has-textarea:not(.md-autogrow).md-focused label,
+.md-field.md-has-textarea:not(.md-autogrow).md-has-value label {
+  top: 0;
+}
+
+.md-field .md-input, .md-field .md-textarea {
+  width: 100%;
+  border: 1px solid #b8b8b8;
+  border-radius: 1px;
+  background: #ffffff;
+}
+
+.md-field .md-input {
+  padding: 3px .5em;
+}
+
+.md-field.md-has-textarea:not(.md-autogrow) .md-textarea,
+.md-field.md-has-textarea:not(.md-autogrow).md-focused .md-textarea,
+.md-field.md-has-textarea:not(.md-autogrow).md-has-value .md-textarea {
+  padding: 10px 10px 20px;
+}
+
+.md-field+.md-has-textarea:not(.md-autogrow) {
+  margin-top: 0;
+}
+
+.md-field .md-error, .md-field .md-helper-text {
+  position: static;
+}
+
+.md-field .md-error + .md-count,
+.md-field .md-helper-text + .md-count {
+  bottom: 0;
+}

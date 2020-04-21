@@ -1,0 +1,65 @@
+<IfModule mod_rewrite.c>
+
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    ##
+    ## You may need to uncomment the following line for some hosting environments,
+    ## if you have installed to a subdirectory, enter the name here also.
+    ##
+    # RewriteBase /
+
+    ##
+    ## 强制 HTTPS
+    ##
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{SERVER_NAME}/$1 [R,L]
+
+    ##
+    ## 强制 www
+    ##
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !^$
+    RewriteCond %{HTTP_HOST} !^www\. [NC]
+    RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    ##
+    ## 禁止访问 system 目录
+    ##
+    # RewriteRule ^system/.* - [L,NC,F]
+
+    ##
+    ## Black listed folders
+    ##
+    RewriteRule ^system/.* index.php [L,NC]
+    RewriteRule ^theme/.*/template/.* index.php [L,NC]
+    RewriteRule ^pages/.* index.php [L,NC]
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+
+</IfModule>
+
+<FilesMatch "\.(ttf|otf|eot|woff|woff2|svg|jpe?g|webp|png|gif|js|css)$">
+  <IfModule mod_headers.c>
+    # Always set these headers.
+    Header always set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>

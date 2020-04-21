@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>安装 July CMS</title>
+  <link rel="stylesheet" href="/install/css/element-ui/theme-chalk/index.css" />
+  <link rel="stylesheet" href="/install/css/style.css">
+</head>
+<body>
+  <div class="layout-container">
+    <h1>安装 July CMS</h1>
+    <div id="cms_install" class="install-panel">
+      <el-form ref="form" :model="settings" :rules="rules" label-position="left" label-suffix=":" label-width="100px">
+        <div class="form-section">
+          <h3 class="caption">数据库设置</h3>
+          <el-form-item label="数据文件" prop="db_file" class="field_db_file">
+            <el-input
+              size="medium"
+              v-model="settings.db_file"
+              placeholder="数据文件名">
+              <el-button
+                slot="append"
+                icon="el-icon-refresh"
+                title="随机生成"
+                @click="randomFilename"></el-button>
+            </el-input>
+          </el-form-item>
+        </div>
+        <div class="form-section">
+          <h3 class="caption">登录设置</h3>
+          <el-form-item label="管理员" prop="admin_name" class="field_admin">
+            <el-input
+              size="medium"
+              v-model="settings.admin_name"
+              placeholder="管理员名称"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="admin_password" class="field_admin_password">
+            <el-input
+                size="medium"
+                v-model="settings.admin_password"
+                placeholder="管理员密码">
+              <el-button
+                slot="append"
+                title="随机生成"
+                icon="el-icon-refresh"
+                @click="randomPassword"></el-button>
+            </el-input>
+          </el-form-item>
+        </div>
+        <div class="form-section">
+          <h3 class="caption">网站信息</h3>
+          <el-form-item label="所属企业" prop="owner" class="field_owner">
+            <el-input
+                    size="medium"
+                    v-model="settings.owner"
+                    placeholder="输入企业名">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="域名" prop="domain" class="field_home">
+            <el-input
+                    size="medium"
+                    v-model="settings.domain"
+                    placeholder="www.example.com">
+              <el-select
+                      v-model="settings.scheme"
+                      size="medium"
+                      slot="prepend"
+                      class="scheme-select">
+                <el-option label="https://" value="https://"></el-option>
+                <el-option label="http://" value="http://"></el-option>
+              </el-select>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email" class="field_email">
+            <el-input
+                    size="medium"
+                    v-model="settings.email"
+                    placeholder="网站邮箱">
+            </el-input>
+          </el-form-item>
+        </div>
+        <el-form-item class="align-center">
+          <el-button type="primary" size="medium" @click="submit">安装</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+  <script src="/install/js/axios.min.js"></script>
+  <script src="/install/js/vue.min.js"></script>
+  <script src="/install/js/element-ui.js"></script>
+  <script>
+    Vue.prototype.msg = Vue.prototype.$message;
+
+    function post() {
+      var data = new FormData();
+      data.append('manage_mode', 1);
+      data.append('action', action);
+
+      var args = [].slice.call(arguments);
+      var index = 0;
+      while(args[index]) {
+        data.append(args[index], args[index+1]);
+        index += 2;
+      }
+
+      return axios({
+        method: 'POST',
+        data: data,
+        timeout: 0,
+        url: '/manage.php',
+        headers: {'Content-Type': 'multipart/form-data'},
+      });
+    }
+
+    var inst = new Vue({
+      el: '#cms_install',
+      data: function () {
+        let checkDomain = (rule, value, callback) => {
+          if (! value.trim().length) {
+            callback();
+          } else {
+            if (!/^www\./i.test(value)) {
+              callback(new Error('格式错误, 必须以 www. 开头'));
+            } else if (value.indexOf('/') >= 0) {
+              callback(new Error('格式错误, 不能含有 /'));
+            } else {
+              callback();
+            }
+          }
+        };
+        let checkPassword = (rule, value, callback) => {
+          if (value.length < 8) {
+            callback(new Error('密码不能少于 8 位'));
+          } else {
+            callback();
+          }
+        };
+        let checkDBFile = (rule, value, callback) => {
+          if (!(/^[a-z0-9_]+\.db3$/.test(value))) {
+            callback(new Error('数据库文件名格式错误'));
+          }  else {
+            callback();
+          }
+        };
+        return {
+          settings: {
+            db_file: '',
+            admin_name: 'admin',
+            admin_password: 'admin666',
+            scheme: 'https://',
+            domain: 'www.example.com',
+            email: 'someone@example.com',
+            owner: 'Someone',
+          },
+          rules: {
+            db_file: [
+              { required: true, message: '数据库文件名不能为空', trigger: 'blur' },
+              { validator: checkDBFile, trigger: 'blur' },
+            ],
+            admin_name: [
+              { required: true, message: '管理员名不能为空', trigger: 'blur' },
+            ],
+            admin_password: [
+              { required: true, message: '管理员密码不能为空', trigger: 'blur' },
+              { validator: checkPassword, trigger: 'blur' },
+            ],
+            domain: [
+              { required: true, message: '域名不能为空', trigger: 'blur' },
+              { validator: checkDomain, trigger: 'blur' },
+            ],
+            email: [
+              { required: true, message: '邮箱不能为空', trigger: 'blur' },
+              { type: 'email', message: '邮箱格式错误', trigger: ['blur', 'change'] },
+            ],
+            owner: [
+              { required: true, message: '企业名不能为空', trigger: 'blur' },
+            ],
+          },
+        };
+      },
+
+      computed: {
+      },
+
+      methods: {
+        randomFilename() {
+          let chars = 'abcdefghijklmnopqrstuvwxyz_0123456789';
+          let maxPos = chars.length;
+          let db_file = '';
+          for (let i=0; i<12; i++) {
+            db_file += chars.charAt(Math.floor(Math.random() * maxPos));
+          }
+          this.settings.db_file = db_file + '.db3';
+        },
+        randomPassword() {
+          let chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678~!#$%^&*_-+=?;,.';
+          let maxPos = chars.length;
+          let admin_password = '';
+          for (let i=0; i<10; i++) {
+            admin_password += chars.charAt(Math.floor(Math.random() * maxPos));
+          }
+          this.settings.admin_password = admin_password;
+        },
+        submit() {
+          let settings = this.settings;
+          this.$refs.form.validate((valid) => {
+            if (!valid) {
+              inst.$msgbox({
+                title: '提交失败',
+                message: '部分字段验证未通过',
+                type: 'error',
+              });
+              return false;
+            }
+
+            let postData= new FormData();
+
+            postData.append('db_file', settings.db_file);
+            postData.append('admin_name', settings.admin_name);
+            postData.append('admin_password', settings.admin_password);
+            postData.append('app_url', settings.scheme + settings.domain);
+            postData.append('email', settings.email);
+            postData.append('owner', settings.owner);
+
+            let loading = inst.$loading({
+              lock: true,
+              text: '正在安装 July CMS ...',
+              background: 'rgba(0, 0, 0, 0.7)'
+            });
+
+            axios({
+              method: 'POST',
+              data: postData,
+              timeout: 0,
+              url: '/install/install.php',
+              headers: {'Content-Type': 'multipart/form-data'},
+            }).then(function (res) {
+              console.log(res);
+              loading.close();
+
+              let response = res.data;
+              if (!response.success) {
+                inst.$alert('安装失败 \n' + response.msg, '失败', {
+                  type: 'error',
+                  closeOnPressEscape: true,
+                  closeOnClickModal: false,
+                });
+                return false;
+              }
+
+              inst.$alert('安装成功', '成功', {
+                type: 'success',
+                confirmButtonText: '转到登录',
+                closeOnPressEscape: false,
+                closeOnClickModal: false,
+                callback: function() {
+                  window.location.replace('/admin');
+                  // window.location.replace('/');
+                },
+              });
+            }).catch(function (res) {
+              console.log(res);
+              loading.close();
+            });
+          });
+        },
+      },
+
+      mounted: function() {
+        this.randomFilename();
+      },
+    });
+  </script>
+</body>
+</html>
