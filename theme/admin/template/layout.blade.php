@@ -37,7 +37,7 @@
           <a href="/admin/node_types" class="md-list-item-link md-list-item-container md-button-clean">
             <div class="md-list-item-content">
               <i class="md-icon md-icon-font md-theme-default">category</i>
-              <span class="md-list-item-text">内容类型</span>
+              <span class="md-list-item-text">类型</span>
             </div>
           </a>
         </li>
@@ -68,7 +68,7 @@
           <a href="/admin/media" class="md-list-item-link md-list-item-container md-button-clean">
             <div class="md-list-item-content">
               <i class="md-icon md-icon-font md-theme-default">folder</i>
-              <span class="md-list-item-text">资源</span>
+              <span class="md-list-item-text">文件</span>
             </div>
           </a>
         </li>

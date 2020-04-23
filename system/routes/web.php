@@ -4,7 +4,6 @@ use App\Models\NodeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\July;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,24 +16,24 @@ use App\July;
 |
 */
 
-Route::get('/', 'HomePage');
+// Route::get('/', 'HomePage');
 
 Route::group([
     'prefix' => 'admin',
     'middleware' => ['web', 'admin'],
-], July::AdminRoutes());
+], function() {
+    \App\July::AdminRoutes();
+});
 
 // Route::group([
-//     'prefix' => 'zh/admin',
-//     'middleware' => ['web', 'admin'],
-// ], July::AdminRoutes('zh'));
+//     'prefix' => 'admin',
+//     'middleware' => ['web', 'admin']
+// ], function () {
+//     \UniSharp\LaravelFilemanager\Lfm::routes();
+// });
 
-// Route::group([
-//     'prefix' => 'en/admin',
-//     'middleware' => ['web', 'admin'],
-// ], July::AdminRoutes('en'));
 
-Route::fallback('NotFound');
+// Route::fallback('NotFound');
 
 // Route::get('{any}', function($any) {
 

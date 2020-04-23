@@ -383,16 +383,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 40px 40px 30px;
+  padding: 32px 40px 28px;
   background-color: #edede8;
 }
 
 #main_header > h1 {
-  height: 30px;
-  line-height: 30px;
+  line-height: 1.1;
   margin: 0;
   padding: 0;
   color: #0074bd;
+  font-size: 24px;
 }
 
 #content_locale {
@@ -449,6 +449,10 @@ body {
   padding: 15px 20px;
   border-bottom: 1px solid #bfbfbf;
   background-color: #fcfcfa;
+}
+
+h2.jc-form-info-item {
+  font-size: 18px;
 }
 
 .jc-form-info-item:last-child {
@@ -831,11 +835,6 @@ body {
   padding: 20px;
 }
 
-.el-tab-pane > .el-form {
-  /* padding: 0 10px; */
-}
-
-
 #field_selector .el-dialog__header {
   display: none;
 }
@@ -858,4 +857,107 @@ body {
   padding-left: 3px;
   position: relative;
   top: -2px;
+}
+
+
+
+/* #media_manager */
+
+#medias_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 20px;
+}
+
+#media_manager .el-breadcrumb__inner a,
+#media_manager .el-breadcrumb__inner.is-link {
+  font-weight: normal;
+}
+
+#media_manager .el-breadcrumb__item:first-child {
+  text-transform: uppercase;
+}
+
+/* #medias .el-breadcrumb{
+  margin: 10px 0 20px;
+} */
+
+/* #folders_list {
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  background-color: rgba(0,0,0,.05);
+  overflow-x: auto;
+}
+
+#folders_list > .md-button {
+  margin: 0;
+  text-transform: none;
+}
+
+#folders_list > .md-button + .md-button {
+  margin-left: 20px;
+} */
+
+#files_list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+}
+
+#files_list > .jc-media-item {
+  width: 100%;
+  max-width: calc(16.666667% - 16.67px);
+  margin: 0 20px 20px 0;
+  padding: 5px;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#files_list > .jc-media-item:nth-child(6n) {
+  margin-right: 0;
+}
+
+.jc-media__thumb {
+  width: 100%;
+  padding: 75% 0 0;
+  position: relative;
+  background-color: #868e96;
+  background-color: rgba(134,142,150,.5);
+  background-color: #edede8;
+}
+
+.jc-media__thumb > img {
+  max-width: 100%;
+  max-height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.jc-media__info {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 5px 1px;
+}
+
+.jc-media__name {
+  color: #333333;
+  margin-bottom: 10px;
+}
+
+.jc-media__size,
+.jc-media__time {
+  margin-bottom: 5px;
+  color: rgba(0,0,0,.62);
 }

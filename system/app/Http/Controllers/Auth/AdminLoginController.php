@@ -10,16 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class AdminLoginController extends Controller
 {
-    //
-
-    /**
-     * 后端首页
-     */
-    public function home()
-    {
-        return view('admin::home');
-    }
-
     /**
      * Show the login page.
      *

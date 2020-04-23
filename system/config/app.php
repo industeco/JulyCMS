@@ -165,6 +165,7 @@ return [
         /*
          * Package Service Providers...
          */
+        // UniSharp\LaravelFilemanager\LaravelFilemanagerServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -283,7 +284,8 @@ return [
                 // [ 'name' => 'about', 'groups' => [ 'about' ] ],
             ],
 	        'removeButtons' => 'Underline,Styles,Strike,Italic,Indent,Outdent,Blockquote,About,SpecialChar,HorizontalRule,Scayt,Cut,Copy,Paste,PasteText,PasteFromWord',
-            'filebrowserImageUploadUrl' => '/admin/upload',
+            'filebrowserImageBrowseUrl' => '/admin/filemanager?type=Images',
+            'filebrowserImageUploadUrl' => '/admin/filemanager/upload?type=Images&_token=',
             'image_previewText' => ' ',
         ],
     ],

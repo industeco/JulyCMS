@@ -10,9 +10,9 @@ window.Sortable = require('sortablejs');
 window.Vue = require('vue');
 
 // import ElementUI from 'element-ui';
-import draggable from 'vuedraggable';
-
 // Vue.use(ElementUI);
+
+import draggable from 'vuedraggable';
 Vue.component('draggable', draggable);
 
 // import * as moment from 'moment';

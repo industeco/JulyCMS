@@ -1,9 +1,26 @@
 <?php
 
 use App\Models\Config;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\View;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+
+if (! function_exists('auth')) {
+    /**
+     * Get the available auth instance.
+     *
+     * @param  string|null  $guard
+     * @return \Illuminate\Contracts\Auth\Factory|\Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard
+     */
+    function auth($guard = null)
+    {
+        if (is_null($guard)) {
+            $guard = 'admin';
+        }
+
+        return app(AuthFactory::class)->guard($guard);
+    }
+}
 
 // if (! function_exists('config')) {
 //     /**
@@ -45,6 +62,45 @@ if (! function_exists('theme_path')) {
     function theme_path($path = '')
     {
         return public_path('theme/'.ltrim($path, '\\/'));
+    }
+}
+
+if (! function_exists('admin_path')) {
+    /**
+     * Get the path to the theme folder.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function admin_path($path = '')
+    {
+        return public_path('theme/admin/'.ltrim($path, '\\/'));
+    }
+}
+
+if (! function_exists('view_path')) {
+    /**
+     * Get the path to the theme folder.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function view_path($path = '')
+    {
+        return public_path('theme/admin/template/'.ltrim($path, '\\/'));
+    }
+}
+
+if (! function_exists('twig_path')) {
+    /**
+     * Get the path to the theme folder.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function twig_path($path = '')
+    {
+        return public_path('theme/default/template/'.ltrim($path, '\\/'));
     }
 }
 
@@ -275,9 +331,9 @@ if (! function_exists('short_url')) {
      * @param  mixed  $parameters
      * @return string
      */
-    function short_url($name, $parameters = [])
+    function short_url($path)
     {
-        return route($name, $parameters, false);
+        return '/'.ltrim($path, '/');
     }
 }
 
@@ -313,7 +369,7 @@ if (! function_exists('view_with_lang')) {
 if (! function_exists('twig')) {
     function twig($debug = false)
     {
-        $loader = new \Twig\Loader\FilesystemLoader('default/template', theme_path());
+        $loader = new \Twig\Loader\FilesystemLoader('', twig_path());
         if ($debug) {
             $twig = new \Twig\Environment($loader, ['debug' => true]);
             $twig->addExtension(new \Twig\Extension\DebugExtension());

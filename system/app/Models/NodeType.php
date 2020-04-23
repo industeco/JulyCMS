@@ -104,7 +104,7 @@ class NodeType extends JulyModel implements GetNodes
     {
         $langcode = $langcode ?? langcode('admin_page');
 
-        $lastModified = last_modified(theme_path('admin/template/components'));
+        $lastModified = last_modified(view_path('components/'));
 
         $cacheid = $this->truename.'/fieldJigsaws';
         if ($jigsaws = $this->cacheGet($cacheid, $langcode)) {

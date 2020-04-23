@@ -219,7 +219,7 @@ class Node extends JulyModel
     public function template()
     {
         foreach ($this->suggestedTemplates() as $tpl) {
-            if (is_file(theme_path('default/template/'.$tpl))) {
+            if (is_file(twig_path($tpl))) {
                 return $tpl;
             }
         }

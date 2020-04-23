@@ -4,13 +4,13 @@
   {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($content_value_lang) }} ]</span>
 @endsection
 
-@if ($mode === 'edit')
+{{-- @if ($mode === 'edit')
   @section('translate_btn')
     <a href="/admin/nodes/{{ $id }}/translate/zh" class="md-button md-dense md-raised md-primary md-theme-default">
       <div class="md-ripple"><div class="md-button-content">翻译</div></div>
     </a>
   @endsection
-@endif
+@endif --}}
 
 @section('main_content')
   <el-form id="main_form" ref="main_form"
