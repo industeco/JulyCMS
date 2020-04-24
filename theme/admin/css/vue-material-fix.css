@@ -23,9 +23,18 @@ a.md-button {
   box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
 }
 
-.md-fab.md-dense, .md-fab.md-mini {
+.md-fab.md-dense {
   width: 28px;
   height: 28px;
+}
+
+.md-fab.md-mini {
+  width: 24px;
+  height: 24px;
+}
+
+.md-list-item-content .md-button {
+  margin: 0 0 0 5px;
 }
 
 .md-fab .md-icon {

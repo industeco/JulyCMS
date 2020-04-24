@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Media
 {
@@ -36,18 +37,25 @@ class Media
     {
         return [
             'name' => basename($dir),
-            'mimeType' => 'folder',
         ];
     }
 
     public function fileInfo($file)
     {
-        return [
+        $info = [
             'name'         => basename($file),
             'mimeType'     => $this->disk->mimeType($file),
             'size'         => $this->disk->size($file),
             'modified'     => $this->disk->lastModified($file),
             'thumb'     => $this->disk->exists(dirname($file).'/.thumbs/'.basename($file)),
         ];
+
+        if (Str::startsWith($info['mimeType'], 'image')) {
+            $dimenssion = getimagesize($this->disk->path($file));
+            $info['width'] = $dimenssion[0];
+            $info['height'] = $dimenssion[1];
+        }
+
+        return $info;
     }
 }
