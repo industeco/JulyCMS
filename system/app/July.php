@@ -53,8 +53,10 @@ class July
             'nodes' => 'node',
         ])->names($lang.'nodes');
 
-        Route::get('/media', ['uses'=>'MediaController@index', 'as'=>$lang.'media.index']);
-        Route::post('/media/under', ['uses'=>'MediaController@under', 'as'=>$lang.'media.under']);
+        // 文件管理
+        Route::get('/medias', ['uses'=>'MediaController@index', 'as'=>$lang.'media.index']);
+        Route::post('/medias/under', ['uses'=>'MediaController@under', 'as'=>$lang.'media.under']);
+        Route::post('/medias/upload', ['uses'=>'MediaController@upload', 'as'=>$lang.'media.upload']);
 
         // 其它
         Route::get('checkunique/node_fields/{truename}', 'NodeFieldController@unique');

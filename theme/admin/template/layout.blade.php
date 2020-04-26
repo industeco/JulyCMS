@@ -64,8 +64,8 @@
             </div>
           </div>
         </li>
-        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/media')?' is-active':'' }}">
-          <a href="/admin/media" class="md-list-item-link md-list-item-container md-button-clean">
+        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/medias')?' is-active':'' }}">
+          <a href="/admin/medias" class="md-list-item-link md-list-item-container md-button-clean">
             <div class="md-list-item-content">
               <i class="md-icon md-icon-font md-theme-default">folder</i>
               <span class="md-list-item-text">文件</span>

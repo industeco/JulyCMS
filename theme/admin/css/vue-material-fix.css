@@ -37,6 +37,12 @@ a.md-button {
   margin: 0 0 0 5px;
 }
 
+.md-icon-button.md-mini {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+}
+
 .md-fab .md-icon {
   font-size: 18px!important;
 }

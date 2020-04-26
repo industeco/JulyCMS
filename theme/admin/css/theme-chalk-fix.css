@@ -52,11 +52,13 @@
 }
 
 .el-input__inner {
-  /* height: 32px; */
-  /* line-height: 32px; */
   padding: 0 12px;
   max-width: 100%;
-  /* box-shadow: inset 0 1px 2px rgba(0,0,0,0.125); */
+}
+
+.el-input--small .el-input__inner {
+  height: 30px;
+  line-height: 30px;
 }
 
 .el-textarea__inner {
@@ -87,7 +89,7 @@
   opacity: 0;
 }
 
-.el-select {
+.el-form .el-select {
   min-width: 200px;
 }
 
@@ -197,4 +199,23 @@
 .el-tabs__item.is-active,
 .el-tabs__active-bar {
   color: #448aff;
+}
+
+.el-upload:focus .el-upload-dragger,
+.el-upload-dragger:hover {
+  border-color: #448aff;
+}
+
+.el-upload-dragger .el-upload__text em {
+  color: #448aff;
+  font-style: normal;
+}
+
+.el-upload--picture-card:hover {
+  border-color: #448aff;
+  color: #448aff;
+}
+
+.el-upload:focus {
+  border-color: transparent;
 }
