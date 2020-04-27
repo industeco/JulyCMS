@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 
 class Media
@@ -54,7 +55,7 @@ class Media
             'mimeType'  => $this->disk->mimeType($file),
             'size'      => $this->disk->size($file),
             'modified'  => $this->disk->lastModified($file),
-            'thumb'     => $this->disk->exists(dirname($file).'/.thumbs/'.basename($file)),
+            'thumb'     => $this->disk->exists($this->thumb($file)),
         ];
 
         if (Str::startsWith($info['mimeType'], 'image')) {
@@ -98,13 +99,72 @@ class Media
 
         // 生成缩略图
         if (Str::startsWith($file->getMimeType(), 'image')) {
-            $thumbPath = $path.'/.thumbs/';
-            if (! $this->disk->exists($thumbPath)) {
-                $this->disk->makeDirectory($thumbPath);
-            }
-            Image::make($file)->widen(200)->save($this->path($thumbPath.$name));
+            $thumb = $path.'/.thumbs/'.$name;
+            $this->mkdir(dirname($thumb));
+            Image::make($file)->widen(200)->save($this->path($thumb));
         }
 
         return [$name => true];
+    }
+
+    public function mkdir($path)
+    {
+        if (! $this->disk->exists($path)) {
+            $this->disk->makeDirectory($path);
+        }
+        return [$path => true];
+    }
+
+    protected function thumb($file)
+    {
+        return dirname($file).'/.thumbs/'.basename($file);
+    }
+
+    public function rename($old, $new)
+    {
+        $this->disk->move($old, $new);
+
+        $thumb = $this->thumb($old);
+        if ($this->disk->exists($thumb)) {
+            $newThumb = $this->thumb($new);
+            $this->mkdir(dirname($newThumb));
+            $this->disk->move($thumb, $newThumb);
+        }
+
+        return [$new => true];
+    }
+
+    public function delete($path, $files)
+    {
+        $path = rtrim($path, '\\/').'/';
+
+        if (is_string($files)) {
+            $files = [$files];
+        }
+
+        $errors = [];
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                $errors = array_merge($errors, $this->deleteFile($path.$file));
+            }
+        }
+
+        return $errors;
+    }
+
+    public function deleteFile($file)
+    {
+        if ($file == 'images/' || $file == 'files/') {
+            return [$file => false];
+        }
+
+        $this->disk->delete($file);
+
+        $thumb = $this->thumb($file);
+        if ($this->disk->exists($thumb)) {
+            $this->disk->delete($thumb);
+        }
+
+        return [$file => true];
     }
 }

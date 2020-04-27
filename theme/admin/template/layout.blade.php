@@ -171,6 +171,7 @@
   <!-- <script src="https://unpkg.com/vue-ckeditor2"></script> -->
 
   <script src="/theme/admin/js/init.js"></script>
+  <script src="/theme/admin/js/utils.js"></script>
 
   @yield('script')
 

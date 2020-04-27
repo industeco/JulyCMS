@@ -138,3 +138,8 @@ a.md-button {
 .md-field .md-helper-text + .md-count {
   bottom: 0;
 }
+
+.md-button.md-small {
+  height: 30px;
+  min-width: 72px;
+}

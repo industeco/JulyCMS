@@ -57,6 +57,9 @@ class July
         Route::get('/medias', ['uses'=>'MediaController@index', 'as'=>$lang.'media.index']);
         Route::post('/medias/under', ['uses'=>'MediaController@under', 'as'=>$lang.'media.under']);
         Route::post('/medias/upload', ['uses'=>'MediaController@upload', 'as'=>$lang.'media.upload']);
+        Route::post('/medias/folder/create', ['uses'=>'MediaController@createFolder', 'as'=>$lang.'media.create_folder']);
+        Route::post('/medias/file/rename', ['uses'=>'MediaController@renameFile', 'as'=>$lang.'media.rename_file']);
+        Route::post('/medias/file/delete', ['uses'=>'MediaController@deleteFile', 'as'=>$lang.'media.delete_file']);
 
         // 其它
         Route::get('checkunique/node_fields/{truename}', 'NodeFieldController@unique');

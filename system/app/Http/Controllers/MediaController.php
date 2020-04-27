@@ -21,6 +21,11 @@ class MediaController extends Controller
         return view('admin::media.index');
     }
 
+    public function select()
+    {
+        return view('admin::media.select');
+    }
+
     public function under(Request $request)
     {
         $path = $request->input('path');
@@ -29,11 +34,39 @@ class MediaController extends Controller
 
     public function upload(Request $request)
     {
-        $files = $request->file('files');
         $path = $request->input('path');
+        $files = $request->file('files');
         // $file->getClientMimeType();
 
         $errors = $this->media->save($path, $files);
+        return Response::make($errors);
+    }
+
+    public function createFolder(Request $request)
+    {
+        $path = $request->input('path');
+        $folder = $request->input('folder');
+
+        $errors = $this->media->mkdir($path.'/'.$folder);
+        return Response::make($errors);
+    }
+
+    public function renameFile(Request $request)
+    {
+        $path = $request->input('path').'/';
+        $old_name = $path.$request->input('old_name');
+        $new_name = $path.$request->input('new_name');
+
+        $errors = $this->media->rename($old_name, $new_name);
+        return Response::make($errors);
+    }
+
+    public function deleteFile(Request $request)
+    {
+        $path = $request->input('path');
+        $file = $request->input('file');
+
+        $errors = $this->media->delete($path, $file);
         return Response::make($errors);
     }
 }
