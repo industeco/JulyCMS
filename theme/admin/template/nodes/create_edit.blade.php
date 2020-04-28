@@ -113,7 +113,35 @@
 @endsection
 
 @section('script')
+<script src="/theme/admin/js/recieveMedia.js"></script>
 <script>
+  window.showMediasWindow = function() {
+    let mediaWindow = null;
+
+    return function showMediasWindow() {
+      const screenWidth = window.screen.availWidth;
+      const screenHeight = window.screen.availHeight;
+
+      const width = screenWidth*.8;
+      const height = screenHeight*.8 - 60;
+      const left = screenWidth*.1;
+      const top = screenHeight*.15;
+
+      if (!mediaWindow || mediaWindow.closed) {
+        mediaWindow = window.open(
+          '/admin/medias/select',
+          'chooseMedia',
+          `resizable,scrollbars,status,top=${top},left=${left},width=${width},height=${height}`
+        );
+      } else {
+        mediaWindow.focus()
+      }
+    }
+  }();
+
+  function recieveMediaUrl(url) {
+    app.recieveMediaUrl(url)
+  }
 
   let initial_positions = {!! $positions ? json_encode($positions, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) : '{}' !!};
 
@@ -354,6 +382,17 @@
           }
         }
         return changed
+      },
+
+      showMedias(field) {
+        this.recieveMediaUrlFor = field;
+        showMediasWindow();
+      },
+
+      recieveMediaUrl(url) {
+        if (this.recieveMediaUrlFor) {
+          this.node[this.recieveMediaUrlFor] = url;
+        }
       },
 
       submitMainForm() {

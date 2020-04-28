@@ -1,5 +1,6 @@
 @import './vue-material-fix.css';
 @import './theme-chalk-fix.css';
+@import './ckeditor-fix.css';
 
 
 /* July CMS 样式 */
@@ -1115,8 +1116,8 @@ h2.jc-form-info-item {
   top: 6px;
   left: 6px;
   margin: 0;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 2px;
   background-color: #ffffff;
   color: #bfbfbf;
@@ -1267,7 +1268,7 @@ h2.jc-form-info-item {
 }
 
 #media-manager__upload-dialog .el-dialog__body {
-  padding: 20px 20px 10px;
+  padding: 10px 20px;
 }
 
 #media-manager__upload {
@@ -1277,7 +1278,7 @@ h2.jc-form-info-item {
 
 #media-manager__upload .el-upload-list--picture {
   width: 100%;
-  padding: 10px 0 125px;
+  padding: 0 0 150px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -1337,7 +1338,7 @@ h2.jc-form-info-item {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 120px;
+  height: 150px;
 }
 
 #media-manager__upload .el-upload-dragger {
@@ -1348,6 +1349,10 @@ h2.jc-form-info-item {
 
 #media-manager__upload .el-upload-dragger .el-icon-upload {
   font-size: 48px;
-  margin: 22px 0 16px;
+  margin: 40px 0 16px;
   line-height: 36px;
+}
+
+.el-form-item__content .md-button {
+  margin: 0 0 0 8px;
 }

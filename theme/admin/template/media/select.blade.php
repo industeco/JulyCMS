@@ -11,9 +11,7 @@
   <link rel="stylesheet" href="/theme/admin/vendor/element-ui/theme-chalk/index.css">
   <link rel="stylesheet" href="/theme/admin/css/july.css">
   <style>
-    #main {
-      padding: 20px;
-    }
+    #main {padding: 20px;}
   </style>
 </head>
 <body>
@@ -57,7 +55,7 @@
               size="small"
               native-size="24"
               placeholder="输入文件名"
-              @input="filterByName"
+              @input="filterFiles"
               :disabled="!currentPath"></el-input>
             <el-autocomplete
               v-if="filterBy=='ratio'"
@@ -66,8 +64,8 @@
               native-size="24"
               :fetch-suggestions="getDefaultRatios"
               placeholder="仅对图片有效"
-              @input="handleRatioInput"
-              @select="handleRatioSelect"
+              @input="filterFiles"
+              @select="filterFiles"
               :disabled="!currentPath">
               <template slot-scope="{ item }">
                 <span>@{{ item.label }} (@{{ item.value }})</span>
@@ -200,6 +198,46 @@
   <script src="/theme/admin/js/utils.js"></script>
 
   <script>
+    function getUrlParam(paramName) {
+      var reParam = new RegExp('(?:[\?&]|&)' + paramName + '=([^&]+)', 'i');
+      var match = window.location.search.match(reParam);
+      return ( match && match.length > 1 ) ? match[1] : null;
+    }
+
+    function chooseMedia(url) {
+
+      // CKEditor
+      if (getUrlParam('CKEditor') || getUrlParam('CKEditorCleanUpFuncNum')) {
+        if (window.opener) {
+          // Popup
+          window.opener.CKEDITOR.tools.callFunction(getUrlParam('CKEditorFuncNum'), url);
+        } else {
+          // Modal (in iframe)
+          parent.CKEDITOR.tools.callFunction(getUrlParam('CKEditorFuncNum'), url);
+          parent.CKEDITOR.tools.callFunction(getUrlParam('CKEditorCleanUpFuncNum'));
+        }
+      }
+
+      // TinyMCE
+      else if (getUrlParam('editor')) {
+        parent.postMessage({
+          mceAction: 'insert',
+          content: url
+        });
+
+        parent.postMessage({ mceAction: 'close' });
+      }
+
+      // 按钮
+      else if (window.opener) {
+        window.opener.recieveMediaUrl(url);
+      }
+
+      if (window.opener) {
+        window.close();
+      }
+    }
+
     let app = new Vue({
       el: '#media-manager',
       data() {
@@ -248,49 +286,49 @@
       computed: {
         mimeTypes() {
           if (! this.currentPath) {
-            return ''
+            return '';
           }
 
           const category = this.category();
           if (category === 'files') {
-            return '{{ implode(config("media.categories.files.valid_mime"), ",") }}'
+            return '{{ implode(config("media.categories.files.valid_mime"), ",") }}';
           }
 
           if (category === 'images') {
-            return '{{ implode(config("media.categories.images.valid_mime"), ",") }}'
+            return '{{ implode(config("media.categories.images.valid_mime"), ",") }}';
           }
         },
       },
 
       methods: {
         category(path) {
-          path = path || this.currentPath
+          path = path || this.currentPath;
           const pos = path.indexOf('/');
-          return pos < 0 ? path : path.substr(0, pos)
+          return pos < 0 ? path : path.substr(0, pos);
         },
 
         getNodeClass(node) {
-          const path = node.data.path
+          const path = node.data.path;
           if (this.files[path] == null) {
-            return 'is-fresh'
+            return 'is-fresh';
           }
-          return ''
+          return '';
         },
 
         changeCurrentPath(data, node, treeNode) {
           const path = node.data.path;
           if (path == this.currentPath) {
-            return
+            return;
           }
 
-          this.resetFilters()
-          this.clearCurrentFiles()
+          this.resetFilters();
+          this.clearCurrentFiles();
           this.currentPath = path;
 
           if (this.files[path] == null) {
-            this.load(path)
+            this.load(path);
           } else {
-            this.setCurrentFiles()
+            this.setCurrentFiles();
           }
         },
 
@@ -298,32 +336,32 @@
           if (! this.currentPath) {
             return null;
           }
-          return this.$refs.folders.getNode(this.currentPath).treeNode
+          return this.$refs.folders.getNode(this.currentPath).treeNode;
         },
 
         load(path) {
           path = path || this.currentPath;
           if (! path) {
-            return
+            return;
           }
 
           const node = this.$refs.folders.getNode(path);
           if (!node) {
-            return
+            return;
           }
 
           const data = node.data;
 
           // 添加加载图标
           const $loading = $('<span class="el-tree-node__loading-icon el-icon-loading"></span>');
-          $loading.insertBefore($(node.treeNode.$el).find('>.el-tree-node__content>.el-tree-node__label'))
+          $loading.insertBefore($(node.treeNode.$el).find('>.el-tree-node__content>.el-tree-node__label'));
 
           // 设置加载状态
-          this.loading = true
+          this.loading = true;
 
           // 清空当前项
           if (path === this.currentPath) {
-            this.clearCurrentFiles()
+            this.clearCurrentFiles();
           }
 
           // 后台获取目录内容
@@ -335,40 +373,40 @@
             for (let i = 0; i < folders.length; i++) {
               subfolders.push({
                 name: folders[i].name,
-                path: path+'/'+folders[i].name
+                path: path+'/'+folders[i].name,
               })
             }
-            app.$set(data, 'subfolders', subfolders)
+            app.$set(data, 'subfolders', subfolders);
 
             // 文件
             app.files[path] = response.data.files;
             if (app.currentPath === path) {
-              app.setCurrentFiles()
+              app.setCurrentFiles();
             }
 
             // 移除加载状态
-            app.loading = false
-            $loading.remove()
+            app.loading = false;
+            $loading.remove();
           }).catch()
         },
 
         clearCurrentFiles() {
-          this.selected = {}
-          this.$set(this.$data, 'currentFiles', [])
+          this.selected = {};
+          this.$set(this.$data, 'currentFiles', []);
         },
 
         setCurrentFiles(data) {
           if (data) {
-            this.filtered = true
+            this.filtered = true;
           } else {
-            data = this.files[this.currentPath]
-            this.filtered = false
+            data = this.files[this.currentPath];
+            this.filtered = false;
           }
-          this.$set(this.$data, 'currentFiles', clone(data))
+          this.$set(this.$data, 'currentFiles', clone(data));
         },
 
         reloadCurrentPath() {
-          this.load()
+          this.load();
         },
 
         resetFilters() {
@@ -390,101 +428,102 @@
             this.filterValues.width_ge = null;
             this.filterValues.width_le = 1920;
 
-            this.setCurrentFiles()
+            this.setCurrentFiles();
+          }
+        },
+
+        filterFiles(value) {
+          this.selected = {};
+          switch (this.filterBy) {
+            case 'name':
+              this.filterByName(value);
+              break;
+            case 'ratio':
+              this.filterByRatio(value);
+              break;
+
+            default:
+              break;
           }
         },
 
         filterByName(value) {
           if (!this.currentPath) {
-            return
+            return;
           }
           if (! value) {
             this.setCurrentFiles()
-            return
+            return;
           }
           const allFiles = this.files[this.currentPath];
           if (allFiles.length) {
-            value = value.toLowerCase()
+            value = value.toLowerCase();
             const files = allFiles.filter(file => {
-              return file.name.toLowerCase().indexOf(value) >= 0
+              return file.name.toLowerCase().indexOf(value) >= 0;
             })
-            this.setCurrentFiles(files)
+            this.setCurrentFiles(files);
           }
-        },
-
-        getDefaultRatios(queryString, cb) {
-          cb([
-            {label: '4:3', value: '1.3333'},
-            {label: '5:4', value: '1.25'},
-            {label: '16:9', value: '1.7778'},
-          ])
-        },
-
-        handleRatioInput(value) {
-          value *= 1;
-          if (! value) {
-            this.setCurrentFiles()
-          } else {
-            this.filterByRatio(value)
-          }
-        },
-
-        handleRatioSelect(item) {
-          value = item.value*1
-          this.filterByRatio(value)
         },
 
         filterByRatio(value) {
+          if (typeof value === 'object' && value.value != null) {
+            value = value.value;
+          }
+          value *= 1;
+          if (! value) {
+            this.setCurrentFiles();
+          }
+
           const allFiles = this.files[this.currentPath];
           if (allFiles.length) {
             const files = allFiles.filter(file => {
               if (file.width && file.height) {
-                return Math.abs(file.width/file.height - value) <= 0.0001
+                return Math.abs(file.width/file.height - value) <= 0.0001;
               }
-              return false
+              return false;
             })
-            this.setCurrentFiles(files)
+            this.setCurrentFiles(files);
           }
         },
 
         sortFiles(value) {
           if (!this.currentFiles.length) {
-            return
+            return;
           }
           const files = clone(this.currentFiles);
           switch (value) {
             case 'name.asc':
               files.sort(function(a, b) {
-                return a.name < b.name ? -1 : (a.name > b.name)
+                return a.name < b.name ? -1 : (a.name > b.name);
               })
               break;
             case 'name.desc':
               files.sort(function(a, b) {
-                return a.name > b.name ? -1 : (a.name < b.name)
+                return a.name > b.name ? -1 : (a.name < b.name);
               })
               break;
             case 'size.asc':
               files.sort(function(a, b) {
-                return a.size < b.size ? -1 : (a.size > b.size)
+                return a.size < b.size ? -1 : (a.size > b.size);
               })
               break;
             case 'size.desc':
               files.sort(function(a, b) {
-                return a.size > b.size ? -1 : (a.size < b.size)
+                return a.size > b.size ? -1 : (a.size < b.size);
               })
               break;
             case 'modified.asc':
               files.sort(function(a, b) {
-                return a.modified < b.modified ? -1 : (a.modified > b.modified)
+                return a.modified < b.modified ? -1 : (a.modified > b.modified);
               })
               break;
             case 'modified.desc':
               files.sort(function(a, b) {
-                return a.modified > b.modified ? -1 : (a.modified < b.modified)
+                return a.modified > b.modified ? -1 : (a.modified < b.modified);
               })
               break;
           }
-          this.setCurrentFiles(files)
+          this.setCurrentFiles(files);
         },
 
         getBasename(path) {
@@ -495,23 +534,18 @@
           if (file.mimeType && file.mimeType.substr(0, 5) == 'image') {
             const path = '/media/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
             let thumb = `<img src="${path}"/>`;
-
-            // const size = file.width + ' x ' + file.height;
-            // thumb += `<div class="jc-media__image-size">${size}</div>`
-
-            return thumb
+            return thumb;
           }
 
-          // return '<i class="md-icon md-icon-font md-theme-default">picture_as_pdf</i>'
-          return '<span>txt</span>'
+          return '<span>txt</span>';
         },
 
         getPath(file) {
-          return '/media/'+this.currentPath+'/'+file.name
+          return '/media/'+this.currentPath+'/'+file.name;
         },
 
         getAspect(file) {
-          return file.width + ' x ' + file.height
+          return file.width + ' x ' + file.height;
         },
 
         getFileSize(file) {
@@ -529,16 +563,17 @@
             }
           }
 
-          return size.toFixed(2)+unit
+          return size.toFixed(2)+unit;
         },
 
         getLastModified(file) {
-          return moment(file.modified*1000).fromNow()
+          return moment(file.modified*1000).fromNow();
         },
 
         selectExit(file) {
           const url = '/media/'+this.currentPath+'/'+file.name;
-          alert(url)
+          chooseMedia(url);
+          // alert(url);
         },
 
         openUpload() {
@@ -552,57 +587,56 @@
         },
 
         handleFileListChange(file, fileList) {
-          this.uploadList = fileList.slice()
+          this.uploadList = fileList.slice();
         },
 
         checkUpload(file) {
           // 检查文件大小
           if (file.size/1024/1024 > 2) {
-            return false
+            return false;
           }
 
           // 检查文件是否已存在
           for (let i = 0; i < this.currentFiles.length; i++) {
-            if (this.currentFiles[i].name == file.name) return false
+            if (this.currentFiles[i].name == file.name) return false;
           }
 
-          return true
+          return true;
         },
 
         availableUploads() {
           let available = 0;
           const files = this.currentFiles.map(function(file) {
-            return file.name
+            return file.name;
           })
           for (let i = 0; i < this.uploadList.length; i++) {
             if (files.indexOf(this.uploadList[i].name) < 0) {
-              available++
+              available++;
             }
           }
           return available;
         },
 
         handleSubmitUpload() {
-          this.filesUploading = this.availableUploads();
-          if (this.filesUploading) {
-            this.uploadData.path = this.currentPath
+          this.uploadsRemain = this.availableUploads();
+          if (this.uploadsRemain) {
+            this.uploadData.cwd = this.currentPath;
             this.$refs.image_upload.submit();
           } else {
-            this.closeUpload()
+            this.closeUpload();
           }
         },
 
         handleUploadSuccess(response) {
-          this.filesUploading--;
-          if (this.filesUploading <= 0) {
-            this.closeUpload()
-            this.resetFilters()
-            this.load()
+          this.uploadsRemain--;
+          if (this.uploadsRemain <= 0) {
+            this.closeUpload();
+            this.resetFilters();
+            this.load();
           }
         },
       },
-    })
+    });
   </script>
-
 </body>
 </html>

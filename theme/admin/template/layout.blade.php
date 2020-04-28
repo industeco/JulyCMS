@@ -170,7 +170,7 @@
   <!-- <script src="https://cdn.ckeditor.com/4.10.0/standard/ckeditor.js"></script> -->
   <!-- <script src="https://unpkg.com/vue-ckeditor2"></script> -->
 
-  <script src="/theme/admin/js/init.js"></script>
+  <script src="/theme/admin/js/menu.js"></script>
   <script src="/theme/admin/js/utils.js"></script>
 
   @yield('script')

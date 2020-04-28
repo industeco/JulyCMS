@@ -8,18 +8,68 @@ use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
+use Illuminate\Http\Request;
 
 class Media
 {
     protected $disk;
+    protected $code = 200;
+    protected $category = 'images';
+    protected $cwd = 'images/';
 
     public function __construct()
     {
         $this->disk = Storage::disk('media');
     }
 
+    public function getCode()
+    {
+        return $this->code;
+    }
+
+    /**
+     * @param string $cwd
+     * @return \App\Models\Media
+     */
+    public function prepare($cwd)
+    {
+        $this->code = 200;
+        $this->cwd = str_replace('\\', '/', trim($cwd, '\\/').'/');
+
+        $this->category = null;
+        if (preg_match('/^[^\/]+/', $this->cwd, $matches)) {
+            $this->category = $matches[0];
+        }
+
+        return $this;
+    }
+
+    public function diskPath($file = null)
+    {
+        if (! $file) {
+            return $this->cwd;
+        }
+
+        if (strpos($file, $this->cwd) !== 0) {
+            return $this->cwd.ltrim($file, '\\/');
+        }
+        return $file;
+    }
+
+    public function path($file)
+    {
+        return $this->disk->path($this->diskPath($file));
+    }
+
+    protected function thumb($file)
+    {
+        return $this->diskPath('.thumbs/'.basename($file));
+    }
+
     public function under($path)
     {
+        $path = $this->diskPath($path);
+
         $folders = [];
         foreach ($this->disk->directories($path) as $dir) {
             $info = $this->dirInfo($dir);
@@ -43,11 +93,6 @@ class Media
         ];
     }
 
-    public function path($path)
-    {
-        return $this->disk->path($path);
-    }
-
     public function fileInfo($file)
     {
         $info = [
@@ -67,23 +112,23 @@ class Media
         return $info;
     }
 
-    public function save($path, $files)
+    public function save($files)
     {
         if ($files instanceof UploadedFile) {
-            return $this->saveUploadedFile($path, $files);
+            return $this->saveUploadedFile($files);
         }
 
-        $errors = [];
+        $message = [];
         if (is_array($files)) {
             foreach ($files as $file) {
-                $errors = array_merge($errors, $this->saveUploadedFile($path, $file));
+                $message = array_merge($message, $this->saveUploadedFile($file));
             }
         }
 
-        return $errors;
+        return $message;
     }
 
-    protected function saveUploadedFile($path, UploadedFile $file)
+    protected function saveUploadedFile(UploadedFile $file)
     {
         if (! $file->isValid()) {
             return [];
@@ -91,72 +136,86 @@ class Media
 
         // 文件名
         $name = $file->getClientOriginalName();
+        $legalName = $this->formatName($name);
+        if ($this->disk->exists($this->diskPath($legalName))) {
+            return [$name => false];
+        }
 
         // 保存文件
-        $file->storePubliclyAs($path, $name, [
+        $file->storePubliclyAs($this->cwd, $legalName, [
             'disk' => 'media',
         ]);
 
         // 生成缩略图
         if (Str::startsWith($file->getMimeType(), 'image')) {
-            $thumb = $path.'/.thumbs/'.$name;
-            $this->mkdir(dirname($thumb));
-            Image::make($file)->widen(200)->save($this->path($thumb));
+            $thumb = $this->path($this->thumb($legalName));
+            $this->mkdir('.thumbs/');
+            Image::make($file)->widen(200)->save($thumb);
         }
 
-        return [$name => true];
+        return [$name => $legalName];
     }
 
-    public function mkdir($path)
+    protected function formatName($name)
     {
+        $name = strtolower($name);
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+        $filename = pathinfo($name, PATHINFO_FILENAME);
+        $filename = preg_replace('/[^a-z0-9\-_]/', '_', $filename);
+        return $filename.'.'.$ext;
+    }
+
+    public function mkdir($dir)
+    {
+        $path = $this->diskPath($dir);
         if (! $this->disk->exists($path)) {
             $this->disk->makeDirectory($path);
         }
         return [$path => true];
     }
 
-    protected function thumb($file)
-    {
-        return dirname($file).'/.thumbs/'.basename($file);
-    }
-
     public function rename($old, $new)
     {
+        $old = $this->diskPath($old);
+        $new = $this->diskPath($new);
+
+        if ($this->disk->exists($new)) {
+            $this->code = 202;
+            return '文件已存在';
+        }
+
         $this->disk->move($old, $new);
 
         $thumb = $this->thumb($old);
         if ($this->disk->exists($thumb)) {
-            $newThumb = $this->thumb($new);
-            $this->mkdir(dirname($newThumb));
-            $this->disk->move($thumb, $newThumb);
+            $this->disk->move($thumb, $this->thumb($new));
         }
 
-        return [$new => true];
+        return '';
     }
 
-    public function delete($path, $files)
+    public function delete($files)
     {
-        $path = rtrim($path, '\\/').'/';
-
         if (is_string($files)) {
             $files = [$files];
         }
 
-        $errors = [];
+        $message = [];
         if (is_array($files)) {
             foreach ($files as $file) {
-                $errors = array_merge($errors, $this->deleteFile($path.$file));
+                $message = array_merge($message, $this->deleteFile($file));
             }
         }
 
-        return $errors;
+        return $message;
     }
 
-    public function deleteFile($file)
+    protected function deleteFile($file)
     {
-        if ($file == 'images/' || $file == 'files/') {
-            return [$file => false];
+        if (!$file) {
+            return [];
         }
+        $file = $this->diskPath($file);
 
         $this->disk->delete($file);
 

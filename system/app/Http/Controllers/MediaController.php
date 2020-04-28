@@ -28,45 +28,69 @@ class MediaController extends Controller
 
     public function under(Request $request)
     {
-        $path = $request->input('path');
-        return Response::make($this->media->under($path));
+        $cwd = $request->input('cwd');
+        $path = $request->file('path');
+
+        $entries = $this->media->prepare($cwd)->under($path);
+        return Response::make($entries, $this->media->getCode());
     }
 
     public function upload(Request $request)
     {
-        $path = $request->input('path');
+        $cwd = $request->input('cwd');
         $files = $request->file('files');
-        // $file->getClientMimeType();
 
-        $errors = $this->media->save($path, $files);
-        return Response::make($errors);
+        $message = $this->media->prepare($cwd)->save($files);
+
+        return Response::make($message, $this->media->getCode());
     }
 
-    public function createFolder(Request $request)
+    public function create(Request $request, $type = 'folders')
     {
-        $path = $request->input('path');
-        $folder = $request->input('folder');
+        $cwd = $request->input('cwd');
+        $name = $request->input('name');
 
-        $errors = $this->media->mkdir($path.'/'.$folder);
-        return Response::make($errors);
+        if ($type === 'folders') {
+            $message = $this->media->prepare($cwd)->mkdir($name);
+            $code = $this->media->getCode();
+        } else {
+            $message = '暂无法创建文件';
+            $code = 405;
+        }
+
+        return Response::make($message, $code);
     }
 
-    public function renameFile(Request $request)
+    public function rename(Request $request, $type = 'files')
     {
-        $path = $request->input('path').'/';
-        $old_name = $path.$request->input('old_name');
-        $new_name = $path.$request->input('new_name');
+        $cwd = $request->input('cwd');
+        $old = $request->input('old_name');
+        $new = $request->input('new_name');
 
-        $errors = $this->media->rename($old_name, $new_name);
-        return Response::make($errors);
+        if ($type === 'files' || $type === 'images') {
+            $message = $this->media->prepare($cwd)->rename($old, $new);
+            $code = $this->media->getCode();
+        } else {
+            $message = '暂无法重命名文件夹';
+            $code = 405;
+        }
+
+        return response($message, $code);
     }
 
-    public function deleteFile(Request $request)
+    public function delete(Request $request, $type = 'files')
     {
-        $path = $request->input('path');
-        $file = $request->input('file');
+        $cwd = $request->input('cwd');
+        $files = $request->input('name');
 
-        $errors = $this->media->delete($path, $file);
-        return Response::make($errors);
+        if ($type === 'files' || $type === 'images') {
+            $message = $this->media->prepare($cwd)->delete($files);
+            $code = $this->media->getCode();
+        } else {
+            $message = '暂无法删除文件夹';
+            $code = 405;
+        }
+
+        return Response::make($message, $code);
     }
 }

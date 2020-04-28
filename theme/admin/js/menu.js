@@ -1,12 +1,11 @@
 /* 初始化界面框架 */
 (function() {
-
-  let $sidebar = $('#sidebar_wrapper');
+  const $sidebar = $('#sidebar_wrapper');
   $('#nav_toggle').click(function() {
     $sidebar.toggleClass('is-collapsed')
   })
 
-  let $adminMenu = $('#nav_admin_menu');
+  const $adminMenu = $('#nav_admin_menu');
   let isAdminMenuOnShow = false;
   $('#nav_admin_btn').click(function(e) {
     e.stopPropagation()
@@ -23,9 +22,9 @@
   })
 
   $('#sidebar .md-list-item-expand').each(function() {
-    let $item = $(this);
-    let $btn = $item.children('.md-list-item-content');
-    let $menuWrapper = $item.children('.md-list-expand');
+    const $item = $(this);
+    const $btn = $item.children('.md-list-item-content');
+    const $menuWrapper = $item.children('.md-list-expand');
     let isExpanded = false;
     if ($menuWrapper.find('>.md-list>.md-list-item.is-active').length) {
       isExpanded = true
@@ -44,20 +43,4 @@
       }
     })
   })
-
-  // 测试
-  // let activeItem = null;
-  // $('#sidebar .md-list-item-link').click(function(e) {
-  //   e.preventDefault()
-  //   if (activeItem) {
-  //     activeItem.parentNode.classList.remove('is-active')
-  //   }
-  //   if (activeItem === this) {
-  //     activeItem = null
-  //   } else {
-  //     activeItem = this
-  //     this.parentNode.classList.add('is-active')
-  //   }
-  // })
-
 })();

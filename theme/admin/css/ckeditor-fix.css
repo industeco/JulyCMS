@@ -1,0 +1,8 @@
+.cke_dialog .ImagePreviewBox {
+  overflow: hidden!important;
+}
+
+.cke_dialog .ImagePreviewBox img {
+  width: 100%!important;
+  height: auto!important;
+}

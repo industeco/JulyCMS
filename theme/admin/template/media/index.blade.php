@@ -39,7 +39,7 @@
             size="small"
             native-size="24"
             placeholder="输入文件名"
-            @input="filterByName"
+            @input="filterFiles"
             :disabled="!currentPath"></el-input>
           <el-autocomplete
             v-if="filterBy=='ratio'"
@@ -48,8 +48,8 @@
             native-size="24"
             :fetch-suggestions="getDefaultRatios"
             placeholder="仅对图片有效"
-            @input="handleRatioInput"
-            @select="handleRatioSelect"
+            @input="filterFiles"
+            @select="filterFiles"
             :disabled="!currentPath">
             <template slot-scope="{ item }">
               <span>@{{ item.label }} (@{{ item.value }})</span>
@@ -178,8 +178,7 @@
           <ul id="media-manager__files-card">
             <li v-for="file in currentFiles" :key="file.name"
               :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
-              @click="toggleSelect(file, ...arguments)"
-              @dblclick="selectExit(file, ...arguments)">
+              @click="toggleSelect(file, ...arguments)">
               <div class="jc-media-item-checkbox md-elevation-2">
                 <i class="md-icon md-icon-font md-theme-default">check</i>
               </div>
@@ -191,19 +190,19 @@
                 <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
                 <div class="jc-operators">
                   <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
-                    @click="renameFile(file, ...arguments)">
+                    @click.stop="renameFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
                     </div>
                   </button>
                   <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
-                    @click="downloadFile(file, ...arguments)">
+                    @click.stop="downloadFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
                     </div>
                   </a>
                   <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
-                    @click="deleteFile(file, ...arguments)">
+                    @click.stop="deleteFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
                     </div>
@@ -218,8 +217,7 @@
           <ul id="media-manager__files-grid">
             <li v-for="file in currentFiles" :key="file.name"
               :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
-              @click="toggleSelect(file, ...arguments)"
-              @dblclick="selectExit(file)">
+              @click="toggleSelect(file, ...arguments)">
               <div class="jc-media-item-checkbox md-elevation-2">
                 <i class="md-icon md-icon-font md-theme-default">check</i>
               </div>
@@ -230,19 +228,19 @@
                 <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
                 <div class="jc-operators">
                   <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
-                    @click="renameFile(file, ...arguments)">
+                    @click.stop="renameFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
                     </div>
                   </button>
                   <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
-                    @click="downloadFile(file, ...arguments)">
+                    @click.stop="downloadFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
                     </div>
                   </a>
                   <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
-                    @click="deleteFile(file, ...arguments)">
+                    @click.stop="deleteFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
                     </div>
@@ -268,7 +266,7 @@
             </div>
           </button>
           <button :disabled="!this.currentPath" type="button" title="新建文件夹" class="md-button md-icon-button md-raised md-primary md-theme-default"
-            @click="createFolter">
+            @click="createFolder">
             <div class="md-ripple">
               <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">create_new_folder</i></div>
             </div>
@@ -437,23 +435,19 @@
 
       load(path) {
         path = path || this.currentPath;
-        if (! path) {
-          return
-        }
+        if (! path) return;
 
         const node = this.$refs.folders.getNode(path);
-        if (!node) {
-          return
-        }
+        if (!node) return;
 
         const data = node.data;
 
         // 添加加载图标
         const $loading = $('<span class="el-tree-node__loading-icon el-icon-loading"></span>');
-        $loading.insertBefore($(node.treeNode.$el).find('>.el-tree-node__content>.el-tree-node__label'))
+        $loading.insertBefore($(node.treeNode.$el).find('>.el-tree-node__content>.el-tree-node__label'));
 
         // 设置加载状态
-        this.loading = true
+        this.loading = true;
 
         // 清空当前项
         if (path === this.currentPath) {
@@ -461,8 +455,10 @@
         }
 
         // 后台获取目录内容
-        axios.post('/admin/medias/under', {path: path}).then(function(response) {
-
+        axios.post('/admin/medias/under', {
+          cwd: this.currentPath,
+          path: path,
+        }).then(function(response) {
           // 重设子文件夹
           const subfolders = [];
           const folders = response.data.folders;
@@ -528,6 +524,21 @@
         }
       },
 
+      filterFiles(value) {
+        this.selected = {};
+        switch (this.filterBy) {
+          case 'name':
+            this.filterByName(value);
+            break;
+          case 'ratio':
+            this.filterByRatio(value);
+            break;
+
+          default:
+            break;
+        }
+      },
+
       filterByName(value) {
         if (!this.currentPath) {
           return
@@ -546,29 +557,15 @@
         }
       },
 
-      getDefaultRatios(queryString, cb) {
-        cb([
-          {label: '4:3', value: '1.3333'},
-          {label: '5:4', value: '1.25'},
-          {label: '16:9', value: '1.7778'},
-        ])
-      },
-
-      handleRatioInput(value) {
+      filterByRatio(value) {
+        if (typeof value === 'object' && value.value != null) {
+          value = value.value;
+        }
         value *= 1;
         if (! value) {
           this.setCurrentFiles()
-        } else {
-          this.filterByRatio(value)
         }
-      },
 
-      handleRatioSelect(item) {
-        value = item.value*1
-        this.filterByRatio(value)
-      },
-
-      filterByRatio(value) {
         const allFiles = this.files[this.currentPath];
         if (allFiles.length) {
           const files = allFiles.filter(file => {
@@ -579,6 +576,14 @@
           })
           this.setCurrentFiles(files)
         }
+      },
+
+      getDefaultRatios(queryString, cb) {
+        cb([
+          {label: '4:3', value: '1.3333'},
+          {label: '5:4', value: '1.25'},
+          {label: '16:9', value: '1.7778'},
+        ])
       },
 
       sortFiles(value) {
@@ -630,13 +635,9 @@
           const path = '/media/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
           let thumb = `<img src="${path}"/>`;
 
-          // const size = file.width + ' x ' + file.height;
-          // thumb += `<div class="jc-media__image-size">${size}</div>`
-
           return thumb
         }
 
-        // return '<i class="md-icon md-icon-font md-theme-default">picture_as_pdf</i>'
         return '<span>txt</span>'
       },
 
@@ -670,6 +671,51 @@
         return moment(file.modified*1000).fromNow()
       },
 
+      promptFilename(tips, title, value) {
+        return this.$prompt(tips, title, {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputValue: value || '',
+          inputPattern: /^[a-z0-9\-_]+$/,
+          inputErrorMessage: '只能包含小写字母、数字、连字符和下划线',
+          showClose: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false,
+        });
+      },
+
+      confirm(content, title) {
+        return this.$confirm(content, title, {
+          confirmButtonText: '是的',
+          cancelButtonText: '取消',
+          type: 'warning',
+          showClose: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false,
+        });
+      },
+
+      process(config) {
+        const loading = this.$loading({
+          lock: true,
+          text: config.loading || '正在处理 ...',
+          background: 'rgba(255, 255, 255, 0.7)'
+        });
+
+        const data = _.extend({
+          cwd: this.currentPath
+        }, config.data || {});
+
+        return axios.post(config.action, data).then(response => {
+          loading.close()
+          return response;
+        }).catch((err) => {
+          loading.close()
+          this.$message.error(err);
+          console.error(err)
+        });
+      },
+
       renameFile(file, event) {
         if (event) {
           event.stopPropagation()
@@ -677,34 +723,28 @@
         const fileName = file.name.replace(/\.[^.]*$/, '');
         const ext = file.name.substr(fileName.length);
         const path = this.currentPath;
-        this.$prompt('', '文件名：', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValue: fileName,
-          inputPattern: /^[a-z0-9\-_]+$/,
-          inputErrorMessage: '文件夹名只能包含小写字母、数字、连字符和下划线'
-        }).then(({ value }) => {
-          if (value === fileName) {
-            return
-          }
+        this.promptFilename('', '文件名：', fileName).then(({ value }) => {
+          if (value === fileName) return;
 
-          const loading = this.$loading({
-            lock: true,
-            text: '正在修改文件名 ...',
-            background: 'rgba(255, 255, 255, 0.7)'
-          });
-          axios.post('/admin/medias/file/rename', {
-            path: path,
-            old_name: file.name,
-            new_name: value + ext,
+          this.process({
+            loading: '正在修改文件名 ...',
+            action: '/admin/medias/rename/files',
+            data: {
+              cwd: path,
+              old_name: file.name,
+              new_name: value + ext,
+            },
           }).then(response => {
-            this.load(path)
-            loading.close()
-          }).catch((err) => {
-            loading.close()
-            console.error(err)
-            this.$message.error(err);
-          })
+            switch (response.status) {
+              case 200:
+                this.$message.success(`文件 ${file.name} 已重命名为 ${value}${ext}`);
+                this.load(path);
+                break;
+              default:
+                this.$message.error(response.data);
+                break;
+            }
+          });
         }).catch(() => {});
       },
 
@@ -716,31 +756,30 @@
 
       deleteFile(file, event) {
         if (event) {
-          event.stopPropagation()
+          // event.stopPropagation()
         }
 
         const path = this.currentPath;
-        this.$confirm(`确定删除 ${file.name} ?`, '删除文件', {
-          confirmButtonText: '是的',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          const loading = this.$loading({
-            lock: true,
-            text: '正在删除文件 ...',
-            background: 'rgba(255, 255, 255, 0.7)'
-          });
-          axios.post('/admin/medias/file/delete', {
-            path: path,
-            file: file.name,
+        this.confirm(`确定删除 ${file.name} ?`, '删除文件')
+        .then(() => {
+          this.process({
+            action: '/admin/medias/delete/files',
+            loading: '正在删除文件 ...',
+            data: {
+              cwd: path,
+              name: file.name,
+            },
           }).then(response => {
-            this.load(path)
-            loading.close()
-          }).catch((err) => {
-            loading.close()
-            console.error(err)
-            this.$message.error(err);
-          })
+            switch (response.status) {
+              case 200:
+                this.load(path);
+                this.$message.success(`文件已删除`);
+                break;
+              default:
+                this.$message.error(response.data);
+                break;
+            }
+          });
         }).catch(() => {});
       },
 
@@ -753,62 +792,60 @@
           }
         }
         if (! selected.length) {
-          this.$message({
-            message: '未选中任何文件',
-            type: 'warning'
-          });
-          return
+          this.$message('未选中任何文件');
+          return;
         }
 
         const path = this.currentPath;
-        this.$confirm(`确定删除 ${selected.length} 个文件 ?`, '删除文件', {
-          confirmButtonText: '是的',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          const loading = this.$loading({
-            lock: true,
-            text: '正在删除文件 ...',
-            background: 'rgba(255, 255, 255, 0.7)'
-          });
-          axios.post('/admin/medias/file/delete', {
-            path: path,
-            file: selected,
+        this.confirm(`确定删除 ${selected.length} 个文件 ?`, '删除文件')
+        .then(() => {
+          this.process({
+            action: '/admin/medias/delete/files',
+            loading: '正在删除文件 ...',
+            data: {
+              cwd: path,
+              name: selected,
+            },
           }).then(response => {
-            this.load(path)
-            loading.close()
-          }).catch((err) => {
-            loading.close()
-            console.error(err)
-            this.$message.error(err);
-          })
+            switch (response.status) {
+              case 200:
+                this.load(path);
+                this.$message.success(`${selected.length} 个文件已删除`);
+                break;
+              case 206:
+                this.load(path);
+                this.$message.warning(`部分文件删除失败`);
+                break;
+              default:
+                this.$message.error(response.data);
+                break;
+            }
+          });
         }).catch(() => {});
       },
 
-      createFolter() {
+      createFolder() {
         const path = this.currentPath;
-        this.$prompt('', '文件夹名：', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputPattern: /^[a-z0-9\-_]+$/,
-          inputErrorMessage: '文件夹名只能包含小写字母、数字、连字符和下划线'
-        }).then(({ value }) => {
-          const loading = this.$loading({
-            lock: true,
-            text: '正在创建文件夹 ...',
-            background: 'rgba(255, 255, 255, 0.7)'
-          });
-          axios.post('/admin/medias/folder/create', {
-            path: path,
-            folder: value,
+        this.promptFilename('', '文件夹名：')
+        .then(({ value }) => {
+          this.process({
+            action: '/admin/medias/create/folders',
+            loading: '正在创建文件夹 ...',
+            data: {
+              cwd: path,
+              name: value,
+            },
           }).then(response => {
-            this.load(path)
-            loading.close()
-          }).catch((err) => {
-            loading.close()
-            console.error(err)
-            this.$message.error(err);
-          })
+            switch (response.status) {
+              case 200:
+                this.load(path);
+                this.$message.success(`文件夹创建成功`);
+                break;
+              default:
+                this.$message.error(response.data);
+                break;
+            }
+          });
         }).catch(() => {});
       },
 
@@ -821,8 +858,6 @@
           $item = $item.parents('.jc-media-item').first()
         }
         $item.toggleClass('is-selected')
-
-        // this.selected[file.name] = true;
       },
 
       selectAll() {
@@ -856,19 +891,16 @@
         });
       },
 
-      selectExit(file) {
-        const url = '/media/'+this.currentPath+'/'+file.name;
-        alert(url)
-      },
-
       openUpload() {
-        // this.uploadList = [];
+        this.uploadList = [];
         this.uploadDialogVisible = true;
       },
 
       closeUpload() {
+        // console.log('closeUpload');
+        // this.$set(this.$data, 'uploadList', []);
+        // console.log(clone(this.uploadList));
         this.uploadDialogVisible = false;
-        this.uploadList = [];
       },
 
       handleFileListChange(file, fileList) {
@@ -895,7 +927,8 @@
           return file.name
         })
         for (let i = 0; i < this.uploadList.length; i++) {
-          if (files.indexOf(this.uploadList[i].name) < 0) {
+          const file = this.uploadList[i];
+          if (files.indexOf(file.name) < 0 && file.percentage <= 0) {
             available++
           }
         }
@@ -905,7 +938,7 @@
       handleSubmitUpload() {
         this.filesUploading = this.availableUploads();
         if (this.filesUploading) {
-          this.uploadData.path = this.currentPath
+          this.uploadData.cwd = this.currentPath
           this.$refs.image_upload.submit();
         } else {
           this.closeUpload()
@@ -913,6 +946,7 @@
       },
 
       handleUploadSuccess(response) {
+        console.log(response)
         this.filesUploading--;
         if (this.filesUploading <= 0) {
           this.closeUpload()

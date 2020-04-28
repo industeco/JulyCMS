@@ -139,7 +139,12 @@ a.md-button {
   bottom: 0;
 }
 
-.md-button.md-small {
+.md-button:not(.md-fab).md-small {
   height: 30px;
   min-width: 72px;
+}
+
+.md-button:not(.md-fab).md-mini {
+  height: 28px;
+  min-width: 60px;
 }

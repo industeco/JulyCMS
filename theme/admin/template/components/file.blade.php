@@ -7,4 +7,9 @@
   @if ($help)
   <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $help }}</span>
   @endif
+  <button type="button" class="md-button md-raised md-small md-primary md-theme-default" @click="showMedias('{{ $truename }}')">
+    <div class="md-ripple">
+      <div class="md-button-content">浏 览</div>
+    </div>
+  </button>
 </el-form-item>
