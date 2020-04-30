@@ -71,7 +71,7 @@
           <label for="">呈现方式：</label>
           <el-select v-model="displayMode" size="small" :disabled="!currentPath">
             <el-option label="列表" value="table"></el-option>
-            <el-option label="卡片" value="card"></el-option>
+            <el-option label="双列" value="column"></el-option>
             <el-option label="网格" value="grid"></el-option>
           </el-select>
         </div>
@@ -88,231 +88,230 @@
           </div>
         </button>
       </div>
-      <div id="media-manager__files">
-        <div v-if="!currentPath || !currentFiles.length"
-          id="media-manager__files-empty">
-          <span v-if="loading" class="el-tree-node__loading-icon el-icon-loading"></span>
-          <span v-else>(空)</span>
-        </div>
-        <div v-if="currentPath && currentFiles.length && displayMode=='table'"
-          class="jc-table-wrapper files-container md-scrollbar md-theme-default">
-          <el-table
-            ref="files_table"
-            id="media-manager__files-table"
-            class="jc-table"
-            :data="currentFiles"
-            @hook:mounted="makeSelection"
-            @selection-change="handleSelectionChange">
-            <el-table-column
-              type="selection"
-              width="55">
-            </el-table-column>
-            <el-table-column
-              label="缩略图"
-              width="120">
-              <template slot-scope="scope">
-                <div class="jc-media__thumb" v-html="getThumb(scope.row)"></div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="name"
-              label="文件名"
-              sortable>
-            </el-table-column>
-            <el-table-column
-              label="尺寸"
-              width="100">
-              <template slot-scope="scope">
-                <span class="jc-media__aspect">@{{ getAspect(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="size"
-              label="大小"
-              width="100"
-              sortable>
-              <template slot-scope="scope">
-                <span class="jc-media__size">@{{ getFileSize(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="modified"
-              label="修改时间"
-              width="160"
-              sortable>
-              <template slot-scope="scope">
-                <span class="jc-media__modified">@{{ getLastModified(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              class="jc-operators-col"
-              prop="modified"
-              label="操作"
-              width="120">
-              <template slot-scope="scope">
-                <div class="jc-operators">
-                  <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
-                    @click="renameFile(scope.row)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
-                    </div>
-                  </button>
-                  <a :href="getPath(scope.row)" :download="scope.row.name" title="下载" class="md-button md-fab md-mini md-theme-default">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
-                    </div>
-                  </a>
-                  <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
-                    @click="deleteFile(scope.row)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
-                    </div>
-                  </button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-        <div v-if="currentPath && currentFiles.length && displayMode=='card'"
-          class="files-container md-scrollbar md-theme-default">
-          <ul id="media-manager__files-card">
-            <li v-for="file in currentFiles" :key="file.name"
-              :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
-              @click="toggleSelect(file, ...arguments)">
-              <div class="jc-media-item-checkbox md-elevation-2">
-                <i class="md-icon md-icon-font md-theme-default">check</i>
-              </div>
-              <div class="jc-media__thumb" v-html="getThumb(file)"></div>
-              <div class="jc-media__info">
-                <div class="jc-media__name">@{{ file.name }}</div>
-                <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
-                <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
-                <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
-                <div class="jc-operators">
-                  <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="renameFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
-                    </div>
-                  </button>
-                  <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="downloadFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
-                    </div>
-                  </a>
-                  <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="deleteFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div v-if="currentPath && currentFiles.length && displayMode=='grid'"
-          class="files-container md-scrollbar md-theme-default">
-          <ul id="media-manager__files-grid">
-            <li v-for="file in currentFiles" :key="file.name"
-              :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
-              @click="toggleSelect(file, ...arguments)">
-              <div class="jc-media-item-checkbox md-elevation-2">
-                <i class="md-icon md-icon-font md-theme-default">check</i>
-              </div>
-              <div class="jc-media__thumb" v-html="getThumb(file)"></div>
-              <div class="jc-media__info">
-                <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
-                <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
-                <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
-                <div class="jc-operators">
-                  <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="renameFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
-                    </div>
-                  </button>
-                  <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="downloadFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
-                    </div>
-                  </a>
-                  <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
-                    @click.stop="deleteFile(file)">
-                    <div class="md-ripple">
-                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-              <div class="jc-media__name">@{{ file.name }}</div>
-            </li>
-          </ul>
-        </div>
-        <div id="media-manager__footer">
-          <div id="media-manager__pagination">
-            <el-pagination
-              layout="prev, pager, next"
-              :page-size="20"
-              :total="currentFiles.length">
-            </el-pagination>
+      <div id="media-manager__files" class="jc-scroll-wrapper">
+        <div class="jc-scroll md-scrollbar md-theme-default">
+          <div v-if="!currentPath || !currentFiles.length"
+            id="media-manager__files-empty">
+            <span v-if="loading" class="el-tree-node__loading-icon el-icon-loading"></span>
+            <span v-else>(空)</span>
           </div>
-          <button :disabled="!this.currentPath" type="button" title="批量删除" class="md-button md-icon-button md-raised md-primary md-theme-default"
-            @click="batchDelete">
-            <div class="md-ripple">
-              <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
-            </div>
-          </button>
-          <button :disabled="!this.currentPath" type="button" title="新建文件夹" class="md-button md-icon-button md-raised md-primary md-theme-default"
-            @click="createFolder">
-            <div class="md-ripple">
-              <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">create_new_folder</i></div>
-            </div>
-          </button>
-          <button :disabled="!this.currentPath" type="button" title="上传" class="md-button md-icon-button md-raised md-primary md-theme-default"
-            @click="openUpload">
-            <div class="md-ripple">
-              <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">cloud_upload</i></div>
-            </div>
-          </button>
+          <div v-if="currentPath && currentFiles.length && displayMode=='table'"
+            class="jc-table-wrapper files-container md-scrollbar md-theme-default">
+            <el-table
+              ref="files_table"
+              id="media-manager__files-table"
+              class="jc-table"
+              :data="currentFiles"
+              @hook:mounted="makeSelection"
+              @selection-change="handleSelectionChange">
+              <el-table-column
+                type="selection"
+                width="55">
+              </el-table-column>
+              <el-table-column
+                label="缩略图"
+                width="120">
+                <template slot-scope="scope">
+                  <div class="jc-thumb" v-html="getThumb(scope.row)"></div>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="name"
+                label="文件名"
+                sortable>
+              </el-table-column>
+              <el-table-column
+                label="尺寸"
+                width="100">
+                <template slot-scope="scope">
+                  <span class="jc-media__aspect">@{{ getAspect(scope.row) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="size"
+                label="大小"
+                width="100"
+                sortable>
+                <template slot-scope="scope">
+                  <span class="jc-media__size">@{{ getFileSize(scope.row) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="modified"
+                label="修改时间"
+                width="160"
+                sortable>
+                <template slot-scope="scope">
+                  <span class="jc-media__modified">@{{ getLastModified(scope.row) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                class="jc-operators-col"
+                prop="modified"
+                label="操作"
+                width="120">
+                <template slot-scope="scope">
+                  <div class="jc-operators">
+                    <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                      @click="renameFile(scope.row)">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
+                      </div>
+                    </button>
+                    <a :href="getPath(scope.row)" :download="scope.row.name" title="下载" class="md-button md-fab md-mini md-theme-default">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
+                      </div>
+                    </a>
+                    <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                      @click="deleteFile(scope.row)">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
+                      </div>
+                    </button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div v-if="currentPath && currentFiles.length && displayMode=='column'"
+            class="files-container md-scrollbar md-theme-default">
+            <ul id="media-manager__files-column">
+              <li v-for="file in currentFiles" :key="file.name"
+                :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
+                @click="toggleSelect(file, ...arguments)">
+                <div class="jc-media-item-checkbox md-elevation-2">
+                  <i class="md-icon md-icon-font md-theme-default">check</i>
+                </div>
+                <div class="jc-thumb" v-html="getThumb(file)"></div>
+                <div class="jc-media__info">
+                  <div class="jc-media__name">@{{ file.name }}</div>
+                  <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
+                  <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
+                  <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
+                </div>
+                <div class="jc-operators">
+                  <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                    @click.stop="renameFile(file)">
+                    <div class="md-ripple">
+                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
+                    </div>
+                  </button>
+                  <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
+                    @click.stop="downloadFile(file)">
+                    <div class="md-ripple">
+                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
+                    </div>
+                  </a>
+                  <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                    @click.stop="deleteFile(file)">
+                    <div class="md-ripple">
+                      <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
+                    </div>
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div v-if="currentPath && currentFiles.length && displayMode=='grid'"
+            class="files-container md-scrollbar md-theme-default">
+            <ul id="media-manager__files-grid">
+              <li v-for="file in currentFiles" :key="file.name"
+                :class="{'jc-media-item':true, 'is-selected':selected[file.name]}"
+                @click="toggleSelect(file, ...arguments)">
+                <div class="jc-media-item-checkbox md-elevation-2">
+                  <i class="md-icon md-icon-font md-theme-default">check</i>
+                </div>
+                <div class="jc-thumb" v-html="getThumb(file)"></div>
+                <div class="jc-media__info">
+                  <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
+                  <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
+                  <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
+                  <div class="jc-operators">
+                    <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                      @click.stop="renameFile(file)">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
+                      </div>
+                    </button>
+                    <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
+                      @click.stop="downloadFile(file)">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
+                      </div>
+                    </a>
+                    <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                      @click.stop="deleteFile(file)">
+                      <div class="md-ripple">
+                        <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <div class="jc-media__name">@{{ file.name }}</div>
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
+      <div id="media-manager__footer">
+        <div id="media-manager__pagination">
+          <el-pagination
+            layout="prev, pager, next"
+            :page-size="20"
+            :total="currentFiles.length">
+          </el-pagination>
+        </div>
+        <button :disabled="!this.currentPath" type="button" title="批量删除" class="md-button md-icon-button md-raised md-dense md-primary md-theme-default"
+          @click="batchDelete">
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
+          </div>
+        </button>
+        <button :disabled="!this.currentPath" type="button" title="新建文件夹" class="md-button md-icon-button md-raised md-dense md-primary md-theme-default"
+          @click="createFolder">
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">create_new_folder</i></div>
+          </div>
+        </button>
+        <button :disabled="!this.currentPath" type="button" title="上传" class="md-button md-icon-button md-raised md-dense md-primary md-theme-default"
+          @click="showUpload">
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">cloud_upload</i></div>
+          </div>
+        </button>
       </div>
     </div>
     <el-dialog
       id="media-manager__upload-dialog"
-      title="上传文件"
+      ref="media_upload_dialog"
+      :title="upload.dialogTitle"
       top="-5vh"
-      :visible.sync="uploadDialogVisible"
-      :destroy-on-close="true">
-      <el-upload
-        id="media-manager__upload"
-        ref="image_upload"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+      :visible.sync="upload.dialogVisible">
+      <jc-media-upload
+        ref="media_upload"
         action="/admin/medias/upload"
-        :data="uploadData"
-        :on-success="handleUploadSuccess"
-        :auto-upload="false"
-        :file-list="uploadList"
-        :on-change="handleFileListChange"
-        :before-upload="checkUpload"
-        :accept="mimeTypes"
-        list-type="picture"
         name="files"
-        drag
-        multiple>
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      </el-upload>
+        :accept="allowedMimeTypes"
+        :data="upload.postData"
+        :file-exist="fileExist"
+        @status-change="handleUploadStatusChange"></jc-media-upload>
       <span slot="footer" class="dialog-footer">
-        <button type="button" class="md-button md-raised md-dense md-theme-default" @click="closeUpload">
+        <button type="button" class="md-button md-raised md-dense md-theme-default"
+          v-if="upload.status === 'standingby' || upload.status === 'ready'"
+          @click="closeUpload">
           <div class="md-ripple">
             <div class="md-button-content">取 消</div>
           </div>
         </button>
-        <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="handleSubmitUpload">
+        <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+          :disabled="upload.status === 'uploading' || upload.status === 'standingby'"
+          @click="handleSubmitUpload">
           <div class="md-ripple">
-            <div class="md-button-content">上 传</div>
+            <div class="md-button-content">@{{ upload.status==='complete'?'关 闭':'上 传' }}</div>
           </div>
         </button>
       </span>
@@ -360,47 +359,31 @@
         orderby: 'name.asc',
         loading: false,
 
-        uploadDialogVisible: false,
-        uploadList: [],
-        uploadData: {
-          _token: '{{ csrf_token() }}'
+        upload: {
+          dialogVisible: false,
+          dialogTitle: '文件上传',
+          status: 'standingby',
         },
       }
     },
 
     computed: {
-      mimeTypes() {
-        if (! this.currentPath) {
-          return ''
-        }
+      allowedMimeTypes() {
+        const path = this.currentPath;
+        if (! path) return '';
 
-        const category = this.category();
+        const category = path.replace(/\/.*/, '');
         if (category === 'files') {
-          return '{{ implode(config("media.categories.files.valid_mime"), ",") }}'
+          return '{{ implode(config("media.categories.files.valid_mime"), ",") }}';
         }
 
         if (category === 'images') {
-          return '{{ implode(config("media.categories.images.valid_mime"), ",") }}'
+          return '{{ implode(config("media.categories.images.valid_mime"), ",") }}';
         }
       },
     },
 
     methods: {
-      category(path) {
-        path = path || this.currentPath
-        const pos = path.indexOf('/');
-        return pos < 0 ? path : path.substr(0, pos)
-      },
-
-      allowDrag(node) {
-        return node.level > 1
-      },
-
-      allowDrop(draggingNode, dropNode, type) {
-        // console.log(dropNode)
-        return dropNode.level > 1 && draggingNode.data.path.substr(0,6) === dropNode.data.path.substr(0,6)
-      },
-
       getNodeClass(node) {
         const path = node.data.path
         if (this.files[path] == null) {
@@ -633,12 +616,12 @@
       getThumb(file) {
         if (file.mimeType && file.mimeType.substr(0, 5) == 'image') {
           const path = '/media/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
-          let thumb = `<img src="${path}"/>`;
+          let thumb = `<img src="${path}" class="jc-thumb__img"/>`;
 
           return thumb
         }
 
-        return '<span>txt</span>'
+        return '<span class="jc-thumb__ext">txt</span>'
       },
 
       getPath(file) {
@@ -772,8 +755,8 @@
           }).then(response => {
             switch (response.status) {
               case 200:
-                this.load(path);
                 this.$message.success(`文件已删除`);
+                this.load(path);
                 break;
               default:
                 this.$message.error(response.data);
@@ -809,12 +792,12 @@
           }).then(response => {
             switch (response.status) {
               case 200:
-                this.load(path);
                 this.$message.success(`${selected.length} 个文件已删除`);
+                this.load(path);
                 break;
               case 206:
-                this.load(path);
                 this.$message.warning(`部分文件删除失败`);
+                this.load(path);
                 break;
               default:
                 this.$message.error(response.data);
@@ -838,8 +821,8 @@
           }).then(response => {
             switch (response.status) {
               case 200:
-                this.load(path);
                 this.$message.success(`文件夹创建成功`);
+                this.load(path);
                 break;
               default:
                 this.$message.error(response.data);
@@ -854,7 +837,7 @@
         this.selected[file.name] = !selected;
 
         let $item = $(e.target);
-        if (! $item.hasClass('.jc-media-item')) {
+        if (! $item.hasClass('jc-media-item')) {
           $item = $item.parents('.jc-media-item').first()
         }
         $item.toggleClass('is-selected')
@@ -891,67 +874,44 @@
         });
       },
 
-      openUpload() {
-        this.uploadList = [];
-        this.uploadDialogVisible = true;
+      showUpload() {
+        if (this.upload.status !== 'standingby') {
+          this.$refs.media_upload.reset();
+          this.upload.status = 'standingby';
+        }
+        this.upload.dialogVisible = true;
       },
 
       closeUpload() {
-        // console.log('closeUpload');
-        // this.$set(this.$data, 'uploadList', []);
-        // console.log(clone(this.uploadList));
-        this.uploadDialogVisible = false;
+        this.upload.dialogVisible = false;
+        this.$refs.media_upload.clearFiles();
+        this.resetFilters()
+        this.load()
       },
 
-      handleFileListChange(file, fileList) {
-        this.uploadList = fileList.slice()
+      fileExist(file) {
+        const files = this.files[this.currentPath];
+        for (let i = 0, len = files.length; i < len; i++) {
+          if (file.name === files[i].name) return true;
+        }
+        return false;
       },
 
-      checkUpload(file) {
-        // 检查文件大小
-        if (file.size/1024/1024 > 2) {
-          return false
+      handleUploadStatusChange(status) {
+        this.upload.status = status;
+        if (status === 'complete') {
+          this.upload.dialogTitle = '上传报告：';
         }
-
-        // 检查文件是否已存在
-        for (let i = 0; i < this.currentFiles.length; i++) {
-          if (this.currentFiles[i].name == file.name) return false
-        }
-
-        return true
-      },
-
-      availableUploads() {
-        let available = 0;
-        const files = this.currentFiles.map(function(file) {
-          return file.name
-        })
-        for (let i = 0; i < this.uploadList.length; i++) {
-          const file = this.uploadList[i];
-          if (files.indexOf(file.name) < 0 && file.percentage <= 0) {
-            available++
-          }
-        }
-        return available;
       },
 
       handleSubmitUpload() {
-        this.filesUploading = this.availableUploads();
-        if (this.filesUploading) {
-          this.uploadData.cwd = this.currentPath
-          this.$refs.image_upload.submit();
+        if (this.upload.status === 'ready') {
+          this.$refs.media_upload.submit({
+            _token: '{{ csrf_token() }}',
+            cwd: this.currentPath,
+          });
         } else {
-          this.closeUpload()
-        }
-      },
-
-      handleUploadSuccess(response) {
-        console.log(response)
-        this.filesUploading--;
-        if (this.filesUploading <= 0) {
-          this.closeUpload()
-          this.resetFilters()
-          this.load()
+          this.closeUpload();
         }
       },
     },

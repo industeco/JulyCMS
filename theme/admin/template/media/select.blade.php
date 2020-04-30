@@ -87,7 +87,7 @@
             <label for="">呈现方式：</label>
             <el-select v-model="displayMode" size="small" :disabled="!currentPath">
               <el-option label="网格" value="grid"></el-option>
-              <el-option label="卡片" value="card"></el-option>
+              <el-option label="双列" value="column"></el-option>
             </el-select>
           </div>
           <button type="button" class="media-manager__tool md-button md-raised md-small md-primary md-theme-default"
@@ -103,29 +103,13 @@
             <span v-if="loading" class="el-tree-node__loading-icon el-icon-loading"></span>
             <span v-else>(空)</span>
           </div>
-          <div v-if="currentPath && currentFiles.length && displayMode=='card'"
-            class="files-container md-scrollbar md-theme-default">
-            <ul id="media-manager__files-card">
-              <li v-for="file in currentFiles" :key="file.name"
-                class="jc-media-item"
-                @dblclick="selectExit(file, ...arguments)">
-                <div class="jc-media__thumb" v-html="getThumb(file)"></div>
-                <div class="jc-media__info">
-                  <div class="jc-media__name">@{{ file.name }}</div>
-                  <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
-                  <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
-                  <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
-                </div>
-              </li>
-            </ul>
-          </div>
           <div v-if="currentPath && currentFiles.length && displayMode=='grid'"
             class="files-container md-scrollbar md-theme-default">
             <ul id="media-manager__files-grid">
               <li v-for="file in currentFiles" :key="file.name"
                 class="jc-media-item"
                 @dblclick="selectExit(file)">
-                <div class="jc-media__thumb" v-html="getThumb(file)"></div>
+                <div class="jc-thumb" v-html="getThumb(file)"></div>
                 <div class="jc-media__info">
                   <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
                   <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
@@ -135,21 +119,37 @@
               </li>
             </ul>
           </div>
-          <div id="media-manager__footer">
-            <div id="media-manager__pagination">
-              <el-pagination
-                layout="prev, pager, next"
-                :page-size="20"
-                :total="currentFiles.length">
-              </el-pagination>
-            </div>
-            <button :disabled="!this.currentPath" type="button" title="上传" class="md-button md-icon-button md-raised md-primary md-theme-default"
-              @click="openUpload">
-              <div class="md-ripple">
-                <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">cloud_upload</i></div>
-              </div>
-            </button>
+          <div v-if="currentPath && currentFiles.length && displayMode=='column'"
+            class="files-container md-scrollbar md-theme-default">
+            <ul id="media-manager__files-column">
+              <li v-for="file in currentFiles" :key="file.name"
+                class="jc-media-item"
+                @dblclick="selectExit(file, ...arguments)">
+                <div class="jc-thumb" v-html="getThumb(file)"></div>
+                <div class="jc-media__info">
+                  <div class="jc-media__name">@{{ file.name }}</div>
+                  <div class="jc-media__image-size" v-if="file.width && file.height">尺寸：@{{ getAspect(file) }}</div>
+                  <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
+                  <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
+                </div>
+              </li>
+            </ul>
           </div>
+        </div>
+        <div id="media-manager__footer">
+          <div id="media-manager__pagination">
+            <el-pagination
+              layout="prev, pager, next"
+              :page-size="20"
+              :total="currentFiles.length">
+            </el-pagination>
+          </div>
+          <button :disabled="!this.currentPath" type="button" title="上传" class="md-button md-icon-button md-raised md-primary md-theme-default"
+            @click="openUpload">
+            <div class="md-ripple">
+              <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">cloud_upload</i></div>
+            </div>
+          </button>
         </div>
       </div>
       <el-dialog
@@ -533,11 +533,12 @@
         getThumb(file) {
           if (file.mimeType && file.mimeType.substr(0, 5) == 'image') {
             const path = '/media/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
-            let thumb = `<img src="${path}"/>`;
-            return thumb;
+            let thumb = `<img src="${path}" class="jc-thumb__img"/>`;
+
+            return thumb
           }
 
-          return '<span>txt</span>';
+          return '<span class="jc-thumb__ext">txt</span>'
         },
 
         getPath(file) {

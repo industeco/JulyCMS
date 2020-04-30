@@ -31,7 +31,7 @@
         </el-dialog>
     </div>
 
-    <script src="/theme/admin/vendor/vue/vue.js"></script>
+    <script src="/theme/admin/js/app.js"></script>
     <script src="/theme/admin/vendor/element-ui/index.js"></script>
     <script>
         let dialog = new Vue({

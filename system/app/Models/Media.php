@@ -158,10 +158,19 @@ class Media
 
     protected function formatName($name)
     {
+        // 全部转为小写
         $name = strtolower($name);
-        $ext = pathinfo($name, PATHINFO_EXTENSION);
+
+        // 文件名和扩展名
         $filename = pathinfo($name, PATHINFO_FILENAME);
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+
+        // 替换双字节字符为下划线
+        $filename = preg_replace('/[^\x00-\xff]/u', '_', $filename);
+
+        // 替换其它非法字符为下划线
         $filename = preg_replace('/[^a-z0-9\-_]/', '_', $filename);
+
         return $filename.'.'.$ext;
     }
 
