@@ -144,7 +144,7 @@
 
       checkFile(file) {
         // 检查文件类型
-        if (this.accept.indexOf(file.type) < 0) {
+        if (!file.type || this.accept.indexOf(file.type) < 0) {
           return `${file.name} 类型不正确`;
         }
 

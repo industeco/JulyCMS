@@ -522,6 +522,11 @@
           this.setCurrentFiles(files)
         },
 
+        getExtension(file) {
+          const name = file.name;
+          return name.substr(name.lastIndexOf('.') + 1);
+        },
+
         getBasename(path) {
           return path && path.split('/').pop() || '';
         },
@@ -534,7 +539,7 @@
             return thumb
           }
 
-          return '<span class="jc-thumb__ext">txt</span>'
+          return '<span class="jc-thumb__ext">'+this.getExtension(file)+'</span>'
         },
 
         getPath(file) {
