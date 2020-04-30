@@ -1,0 +1,141 @@
+
+.jc-upload > .jc-scroll-warpper {
+  max-height: 600px;
+}
+
+.jc-upload .el-upload {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  cursor: auto;
+}
+
+.jc-upload .el-upload-dragger {
+  display: block;
+  width: 100%;
+  height: 180px;
+  border: 1px dashed #676767;
+  border-radius: 2px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.jc-upload .el-upload:focus .el-upload-dragger,
+.jc-upload .el-upload:hover .el-upload-dragger {
+  border-color: #448aff;
+}
+
+.jc-upload__filelist, .jc-upload__reportlist {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  max-height: 600px;
+  overflow: auto;
+  list-style: none;
+}
+
+.jc-upload-file {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 8px;
+  overflow: hidden;
+}
+
+.jc-upload-file > .jc-thumb {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.jc-upload-file > .md-button {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  opacity: 0;
+  z-index: 2;
+}
+
+.jc-upload-file:hover > .md-button {
+  opacity: 1;
+}
+
+.jc-upload-file > .el-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: rgba(0,0,0,.5);
+}
+
+.jc-upload-file > .el-progress-circle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.jc-upload-file > .el-progress__text {
+  color: #ffffff;
+}
+
+.is-uploading > .jc-upload-file > .el-progress {
+  z-index: 3;
+}
+
+.is-uploading > .jc-upload-file > .md-button {
+  display: none;
+}
+
+.jc-upload-report {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 5px 0 5px 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.jc-upload-report:first-child {
+  border-top: 1px solid #e0e0e0;
+}
+
+.jc-upload-report:before {
+  content: 'check_circle';
+  font-family: 'Material Icons';
+  color: green;
+  font-size: 30px;
+}
+
+.jc-upload-report.is-failed:before {
+  content: 'cancel';
+  color: #ff5252;
+}
+
+.jc-upload-report .jc-thumb {
+  width: 100px;
+  height: 75px;
+}
+
+.jc-upload-report__content {
+  flex: 1;
+  font-size: 13px;
+  padding-left: 20px;
+}
+
+.jc-upload-report__message {
+  margin-top: 5px;
+}
+
