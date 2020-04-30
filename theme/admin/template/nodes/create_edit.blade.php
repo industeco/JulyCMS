@@ -187,7 +187,7 @@
           node_type: '{{ $node_type }}',
           @foreach (array_merge($fields, $fields_aside) as $field)
           @if ($field['type']=='html')
-          {{ $field['truename'] }}: '{!! html_escape($field["value"]) !!}',
+          {{ $field['truename'] }}: `{!! html_escape($field["value"]) !!}`,
           @else
           {{ $field['truename'] }}: '{{ $field["value"] }}',
           @endif
@@ -399,20 +399,19 @@
 
         let form = this.$refs.main_form;
 
-        form.validate().then(function() {
-          // form.$el.submit()
-          const loading = app.$loading({
-            lock: true,
-            text: '正在保存内容 ...',
-            background: 'rgba(255, 255, 255, 0.7)',
-          });
+        const loading = this.$loading({
+          lock: true,
+          text: '正在保存内容 ...',
+          background: 'rgba(255, 255, 255, 0.7)',
+        });
 
+        form.validate().then(function() {
           const changed_values = app.getChangedValues();
           const changed_positions = app.getChangedPositions();
           @if ($id)
             if (!changed_values.length && !changed_positions.length) {
-              window.location.href = "/admin/nodes"
-              return
+              window.location.href = "/admin/nodes";
+              return;
             }
           @endif
 
@@ -426,9 +425,9 @@
 
           axios.{{ $id ? 'put' : 'post' }}('/admin/nodes{{ $id ? "/".$id : "" }}', node)
             .then(function(response) {
-              console.log(response)
-              loading.close()
-              // window.location.href = "/admin/nodes";
+              // console.log(response)
+              // loading.close()
+              window.location.href = "/admin/nodes";
             })
             .catch(function(error) {
               app.$message.error(error);
@@ -436,6 +435,7 @@
             })
         }).catch(function(error) {
           console.error(error);
+          loading.close();
         })
       },
     }

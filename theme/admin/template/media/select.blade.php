@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="/theme/admin/vendor/element-ui/theme-chalk/index.css">
   <link rel="stylesheet" href="/theme/admin/css/july.css">
   <style>
-    #main {padding: 20px;}
+    #app_main {padding: 20px; width: 100%;}
   </style>
 </head>
 <body>
   <script src="/theme/admin/js/svg.js"></script>
 
   <!-- 右下功能区 -->
-  <div class="md-scrollbar md-theme-default" id="main">
+  <div id="app_main">
     <div id="media-manager">
       <div id="media-manager__folders-tree" class="md-elevation-2">
         <h2>目录：</h2>
@@ -145,7 +145,7 @@
             </el-pagination>
           </div>
           <button :disabled="!this.currentPath" type="button" title="上传" class="md-button md-icon-button md-raised md-primary md-theme-default"
-            @click="openUpload">
+            @click="showUpload">
             <div class="md-ripple">
               <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">cloud_upload</i></div>
             </div>
@@ -572,6 +572,10 @@
           selection.forEach(row => {
             this.selected[row.name] = true;
           });
+        },
+
+        selectExit(file) {
+          chooseMedia('/media/'+this.currentPath+'/'+file.name);
         },
 
         showUpload() {

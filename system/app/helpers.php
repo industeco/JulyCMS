@@ -386,7 +386,7 @@ if (! function_exists('twig')) {
 if (! function_exists('html_escape')) {
     function html_escape($html)
     {
-        return str_replace('\'', '\\\'', $html);
+        return str_replace('`', '\\`', $html);
     }
 }
 

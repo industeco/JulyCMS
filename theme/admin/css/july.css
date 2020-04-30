@@ -714,7 +714,8 @@ h2.jc-form-info-item {
 }
 
 .jc-tree .jc-tree-nodeinfo {
-  padding: 0 8px;
+  width: 180px;
+  padding: 0 15px;
 }
 
 .jc-tree .jc-tree-nodeinfo + .jc-tree-nodeinfo {
@@ -1251,4 +1252,9 @@ h2.jc-form-info-item {
 
 #media-manager__upload-dialog .el-dialog__body {
   padding: 10px 20px;
+}
+
+
+.el-form-item__content .md-button {
+  margin: 0 5px;
 }

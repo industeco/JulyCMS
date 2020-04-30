@@ -181,7 +181,7 @@ class Node extends JulyModel
         parent::boot();
 
         static::deleted(function(Node $node) {
-            foreach ($node->nodeType->fields as $field) {
+            foreach ($node->fields() as $field) {
                 $field->deleteValue($node->id);
             }
         });

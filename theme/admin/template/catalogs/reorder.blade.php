@@ -23,7 +23,7 @@
       node-key="node_id">
       <div class="jc-tree-node-inner" slot-scope="{ node, data }">
         <svg class="jc-svg-icon jc-drag-handle"><use xlink:href="#jcon_drag"></use></svg>
-        <span class="el-tree-node__label">@{{ nodeInfo(data.node_id, 'title') }}</span>
+        <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ nodeInfo(data.node_id, 'title') }}</span>
         <span class="jc-tree-nodeinfo">类型：@{{ nodeInfo(data.node_id, 'node_type') }}</span>
         <span class="jc-tree-nodeinfo">上次修改：@{{ nodeInfo(data.node_id, 'updated_at') }}</span>
         <button
@@ -159,9 +159,10 @@
       nodeInfo(node_id, attr) {
         const node = this.nodes[node_id];
         if (node && (attr == 'updated_at' || attr == 'created_at')) {
-          return moment(node[attr]).fromNow()
+          const info = moment(node[attr]).fromNow();
+          return info.replace('minutes', 'mins').replace('seconds', 'secs');
         }
-        return node && node[attr] || '(已删除)'
+        return node && node[attr] || '(已删除)';
       },
 
       remove(node) {
