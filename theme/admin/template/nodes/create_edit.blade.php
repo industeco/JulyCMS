@@ -88,7 +88,7 @@
           node-key="node_id">
           <span :class="{'jc-tree-node-inner':true, 'is-homeless':isHomeless(node, '{{ $catalog }}')}" slot-scope="{ node, data }">
             <svg class="jc-svg-icon jc-drag-handle" v-if="isDraggable(node)"><use xlink:href="#jcon_drag"></use></svg>
-            <span class="el-tree-node__label">@{{ nodeTitle(data.node_id) }}</span>
+            <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ nodeTitle(data.node_id) }}</span>
             <button v-if="isHomeless(node, '{{ $catalog }}')"
               type="button" title="添加到末尾" class="md-button md-fab md-mini md-primary md-theme-default jc-theme-light"
               @click="appendNode('{{ $catalog }}')">
@@ -153,6 +153,11 @@
   }
 
   let initial_positions = {!! $positions ? json_encode($positions, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) : '{}' !!};
+  for (const key in initial_positions) {
+    if (initial_positions.hasOwnProperty(key)) {
+      initial_positions[key] = initial_positions[key][0];
+    }
+  }
 
   let catalog_nodes = @json($catalog_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
   for (const catalog in catalog_nodes) {
@@ -341,7 +346,7 @@
             break;
         }
 
-        Vue.set(this.node_positions, catalog, {
+        this.$set(this.node_positions, catalog, {
           parent_id: parent.level > 0 ? parent.data.node_id : null,
           prev_id: prev ? prev.data.node_id : null,
         })
@@ -351,7 +356,7 @@
         const map = {before:'之前',after:'之后',inner:'之内'};
         let desc = `[ ${catalogName} ] 目录的 `;
         if (!pos.parent_id && !pos.prev_id) {
-          desc += '第一个';
+          desc += '第一个；';
         } else {
           if (pos.prev_id) {
             desc += `[ ${pos.prev_id}: ${this.nodeTitle(pos.prev_id)} ] 之后；`;
