@@ -87,36 +87,8 @@
 
 @section('script')
 <script>
-  function clone(obj) {
-    return JSON.parse(JSON.stringify(obj))
-  }
-
-  // let mode = "{{ $truename ? 'edit' : 'create' }}";
-
-  // let nodes = @json($all_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
   let catalog_nodes = @json($catalog_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-
-  // let nodes_in_catalog = {};
-  // for (let i = 0; i < catalog_nodes.length; i++) {
-  //   nodes_in_catalog[catalog_nodes[i].node_id] = true;
-  // }
-
-  // catalog_nodes = toTree(catalog_nodes);
-
-  // function chooseSelectableNode() {
-  //   let selectable = [];
-  //   for (const id in nodes) {
-  //     if (nodes.hasOwnProperty(id)) {
-  //       if (! nodes_in_catalog[id]) {
-  //         selectable.push(nodes[id])
-  //       }
-  //     }
-  //   }
-  //   return selectable
-  // }
-
-  // let selectable_nodes = chooseSelectableNode();
 
   let app = new Vue({
     el: '#main_content',

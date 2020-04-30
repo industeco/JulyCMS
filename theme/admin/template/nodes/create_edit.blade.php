@@ -113,7 +113,16 @@
 @endsection
 
 @section('script')
-<script src="/theme/admin/js/recieveMedia.js"></script>
+
+{{-- 通过 script:template 保存 html 内容 --}}
+@foreach (array_merge($fields, $fields_aside) as $field)
+  @if ($field['type']=='html')
+  <script type="text/tmplate" id="field_value__{{ $field['truename'] }}">
+    {!! $field["value"] !!}
+  </script>
+  @endif
+@endforeach
+
 <script>
   window.showMediasWindow = function() {
     let mediaWindow = null;
@@ -157,6 +166,10 @@
     }
   }
 
+  function getHtmlFieldValue(fieldName) {
+    return document.getElementById('field_value__'+fieldName).innerHTML;
+  }
+
   let app = new Vue({
     el: '#main_content',
     data() {
@@ -187,9 +200,9 @@
           node_type: '{{ $node_type }}',
           @foreach (array_merge($fields, $fields_aside) as $field)
           @if ($field['type']=='html')
-          {{ $field['truename'] }}: `{!! html_escape($field["value"]) !!}`,
+          {{ $field['truename'] }}: getHtmlFieldValue("{{ $field['truename'] }}"),
           @else
-          {{ $field['truename'] }}: '{{ $field["value"] }}',
+          {{ $field['truename'] }}: `{{ $field["value"] }}`,
           @endif
           @endforeach
           tags: [],
