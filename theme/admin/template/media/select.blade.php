@@ -154,37 +154,34 @@
       </div>
       <el-dialog
         id="media-manager__upload-dialog"
-        title="上传文件"
+        ref="media_upload_dialog"
+        :title="upload.dialogTitle"
         top="-5vh"
-        :visible.sync="uploadDialogVisible"
-        :destroy-on-close="true">
-        <el-upload
-          id="media-manager__upload"
-          ref="image_upload"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        :show-close="false"
+        :visible.sync="upload.dialogVisible">
+        <jc-media-upload
+          ref="media_upload"
           action="/admin/medias/upload"
-          :data="uploadData"
-          :on-success="handleUploadSuccess"
-          :auto-upload="false"
-          :file-list="uploadList"
-          :on-change="handleFileListChange"
-          :before-upload="checkUpload"
-          :accept="mimeTypes"
-          list-type="picture"
           name="files"
-          drag
-          multiple>
-          <i class="el-icon-upload"></i>
-          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        </el-upload>
+          :accept="allowedMimeTypes"
+          :data="upload.postData"
+          :file-exist="fileExist"
+          @status-change="handleUploadStatusChange"></jc-media-upload>
         <span slot="footer" class="dialog-footer">
-          <button type="button" class="md-button md-raised md-dense md-theme-default" @click="closeUpload">
+          <button type="button" class="md-button md-raised md-dense md-theme-default"
+            v-if="upload.status === 'standingby' || upload.status === 'ready'"
+            @click="closeUpload">
             <div class="md-ripple">
               <div class="md-button-content">取 消</div>
             </div>
           </button>
-          <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="handleSubmitUpload">
+          <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+            :disabled="upload.status === 'uploading' || upload.status === 'standingby'"
+            @click="handleSubmitUpload">
             <div class="md-ripple">
-              <div class="md-button-content">上 传</div>
+              <div class="md-button-content">@{{ upload.status==='complete'?'关 闭':'上 传' }}</div>
             </div>
           </button>
         </span>
@@ -275,21 +272,20 @@
           orderby: 'name.asc',
           loading: false,
 
-          uploadDialogVisible: false,
-          uploadList: [],
-          uploadData: {
-            _token: '{{ csrf_token() }}'
+          upload: {
+            dialogVisible: false,
+            dialogTitle: '文件上传',
+            status: 'standingby',
           },
         }
       },
 
       computed: {
-        mimeTypes() {
-          if (! this.currentPath) {
-            return '';
-          }
+        allowedMimeTypes() {
+          const path = this.currentPath;
+          if (! path) return '';
 
-          const category = this.category();
+          const category = path.replace(/\/.*/, '');
           if (category === 'files') {
             return '{{ implode(config("media.categories.files.valid_mime"), ",") }}';
           }
@@ -301,34 +297,28 @@
       },
 
       methods: {
-        category(path) {
-          path = path || this.currentPath;
-          const pos = path.indexOf('/');
-          return pos < 0 ? path : path.substr(0, pos);
-        },
-
         getNodeClass(node) {
-          const path = node.data.path;
+          const path = node.data.path
           if (this.files[path] == null) {
-            return 'is-fresh';
+            return 'is-fresh'
           }
-          return '';
+          return ''
         },
 
         changeCurrentPath(data, node, treeNode) {
           const path = node.data.path;
           if (path == this.currentPath) {
-            return;
+            return
           }
 
-          this.resetFilters();
-          this.clearCurrentFiles();
+          this.resetFilters()
+          this.clearCurrentFiles()
           this.currentPath = path;
 
           if (this.files[path] == null) {
-            this.load(path);
+            this.load(path)
           } else {
-            this.setCurrentFiles();
+            this.setCurrentFiles()
           }
         },
 
@@ -336,19 +326,15 @@
           if (! this.currentPath) {
             return null;
           }
-          return this.$refs.folders.getNode(this.currentPath).treeNode;
+          return this.$refs.folders.getNode(this.currentPath).treeNode
         },
 
         load(path) {
           path = path || this.currentPath;
-          if (! path) {
-            return;
-          }
+          if (! path) return;
 
           const node = this.$refs.folders.getNode(path);
-          if (!node) {
-            return;
-          }
+          if (!node) return;
 
           const data = node.data;
 
@@ -361,52 +347,54 @@
 
           // 清空当前项
           if (path === this.currentPath) {
-            this.clearCurrentFiles();
+            this.clearCurrentFiles()
           }
 
           // 后台获取目录内容
-          axios.post('/admin/medias/under', {path: path}).then(function(response) {
-
+          axios.post('/admin/medias/under', {
+            cwd: this.currentPath,
+            path: path,
+          }).then(function(response) {
             // 重设子文件夹
             const subfolders = [];
             const folders = response.data.folders;
             for (let i = 0; i < folders.length; i++) {
               subfolders.push({
                 name: folders[i].name,
-                path: path+'/'+folders[i].name,
+                path: path+'/'+folders[i].name
               })
             }
-            app.$set(data, 'subfolders', subfolders);
+            app.$set(data, 'subfolders', subfolders)
 
             // 文件
             app.files[path] = response.data.files;
             if (app.currentPath === path) {
-              app.setCurrentFiles();
+              app.setCurrentFiles()
             }
 
             // 移除加载状态
-            app.loading = false;
-            $loading.remove();
+            app.loading = false
+            $loading.remove()
           }).catch()
         },
 
         clearCurrentFiles() {
-          this.selected = {};
-          this.$set(this.$data, 'currentFiles', []);
+          this.selected = {}
+          this.$set(this.$data, 'currentFiles', [])
         },
 
         setCurrentFiles(data) {
           if (data) {
-            this.filtered = true;
+            this.filtered = true
           } else {
-            data = this.files[this.currentPath];
-            this.filtered = false;
+            data = this.files[this.currentPath]
+            this.filtered = false
           }
-          this.$set(this.$data, 'currentFiles', clone(data));
+          this.$set(this.$data, 'currentFiles', clone(data))
         },
 
         reloadCurrentPath() {
-          this.load();
+          this.load()
         },
 
         resetFilters() {
@@ -428,7 +416,7 @@
             this.filterValues.width_ge = null;
             this.filterValues.width_le = 1920;
 
-            this.setCurrentFiles();
+            this.setCurrentFiles()
           }
         },
 
@@ -449,19 +437,19 @@
 
         filterByName(value) {
           if (!this.currentPath) {
-            return;
+            return
           }
           if (! value) {
             this.setCurrentFiles()
-            return;
+            return
           }
           const allFiles = this.files[this.currentPath];
           if (allFiles.length) {
-            value = value.toLowerCase();
+            value = value.toLowerCase()
             const files = allFiles.filter(file => {
-              return file.name.toLowerCase().indexOf(value) >= 0;
+              return file.name.toLowerCase().indexOf(value) >= 0
             })
-            this.setCurrentFiles(files);
+            this.setCurrentFiles(files)
           }
         },
 
@@ -471,59 +459,67 @@
           }
           value *= 1;
           if (! value) {
-            this.setCurrentFiles();
+            this.setCurrentFiles()
           }
 
           const allFiles = this.files[this.currentPath];
           if (allFiles.length) {
             const files = allFiles.filter(file => {
               if (file.width && file.height) {
-                return Math.abs(file.width/file.height - value) <= 0.0001;
+                return Math.abs(file.width/file.height - value) <= 0.0001
               }
-              return false;
+              return false
             })
-            this.setCurrentFiles(files);
+            this.setCurrentFiles(files)
           }
+        },
+
+        getDefaultRatios(queryString, cb) {
+          cb([
+            {label: '4:3', value: '1.3333'},
+            {label: '5:4', value: '1.25'},
+            {label: '16:9', value: '1.7778'},
+          ])
         },
 
         sortFiles(value) {
           if (!this.currentFiles.length) {
-            return;
+            return
           }
           const files = clone(this.currentFiles);
           switch (value) {
             case 'name.asc':
               files.sort(function(a, b) {
-                return a.name < b.name ? -1 : (a.name > b.name);
+                return a.name < b.name ? -1 : (a.name > b.name)
               })
               break;
             case 'name.desc':
               files.sort(function(a, b) {
-                return a.name > b.name ? -1 : (a.name < b.name);
+                return a.name > b.name ? -1 : (a.name < b.name)
               })
               break;
             case 'size.asc':
               files.sort(function(a, b) {
-                return a.size < b.size ? -1 : (a.size > b.size);
+                return a.size < b.size ? -1 : (a.size > b.size)
               })
               break;
             case 'size.desc':
               files.sort(function(a, b) {
-                return a.size > b.size ? -1 : (a.size < b.size);
+                return a.size > b.size ? -1 : (a.size < b.size)
               })
               break;
             case 'modified.asc':
               files.sort(function(a, b) {
-                return a.modified < b.modified ? -1 : (a.modified > b.modified);
+                return a.modified < b.modified ? -1 : (a.modified > b.modified)
               })
               break;
             case 'modified.desc':
               files.sort(function(a, b) {
-                return a.modified > b.modified ? -1 : (a.modified < b.modified);
+                return a.modified > b.modified ? -1 : (a.modified < b.modified)
               })
               break;
           }
-          this.setCurrentFiles(files);
+          this.setCurrentFiles(files)
         },
 
         getBasename(path) {
@@ -542,11 +538,11 @@
         },
 
         getPath(file) {
-          return '/media/'+this.currentPath+'/'+file.name;
+          return '/media/'+this.currentPath+'/'+file.name
         },
 
         getAspect(file) {
-          return file.width + ' x ' + file.height;
+          return file.width + ' x ' + file.height
         },
 
         getFileSize(file) {
@@ -564,76 +560,58 @@
             }
           }
 
-          return size.toFixed(2)+unit;
+          return size.toFixed(2)+unit
         },
 
         getLastModified(file) {
-          return moment(file.modified*1000).fromNow();
+          return moment(file.modified*1000).fromNow()
         },
 
-        selectExit(file) {
-          const url = '/media/'+this.currentPath+'/'+file.name;
-          chooseMedia(url);
-          // alert(url);
+        handleSelectionChange(selection) {
+          this.selected = {};
+          selection.forEach(row => {
+            this.selected[row.name] = true;
+          });
         },
 
-        openUpload() {
-          // this.uploadList = [];
-          this.uploadDialogVisible = true;
+        showUpload() {
+          if (this.upload.status !== 'standingby') {
+            this.$refs.media_upload.reset();
+            this.upload.status = 'standingby';
+          }
+          this.upload.dialogVisible = true;
         },
 
         closeUpload() {
-          this.uploadDialogVisible = false;
-          this.uploadList = [];
+          this.upload.dialogVisible = false;
+          this.$refs.media_upload.clearFiles();
+          this.resetFilters()
+          this.load()
         },
 
-        handleFileListChange(file, fileList) {
-          this.uploadList = fileList.slice();
+        fileExist(file) {
+          const files = this.files[this.currentPath];
+          for (let i = 0, len = files.length; i < len; i++) {
+            if (file.name === files[i].name) return true;
+          }
+          return false;
         },
 
-        checkUpload(file) {
-          // 检查文件大小
-          if (file.size/1024/1024 > 2) {
-            return false;
+        handleUploadStatusChange(status) {
+          this.upload.status = status;
+          if (status === 'complete') {
+            this.upload.dialogTitle = '上传报告：';
           }
-
-          // 检查文件是否已存在
-          for (let i = 0; i < this.currentFiles.length; i++) {
-            if (this.currentFiles[i].name == file.name) return false;
-          }
-
-          return true;
-        },
-
-        availableUploads() {
-          let available = 0;
-          const files = this.currentFiles.map(function(file) {
-            return file.name;
-          })
-          for (let i = 0; i < this.uploadList.length; i++) {
-            if (files.indexOf(this.uploadList[i].name) < 0) {
-              available++;
-            }
-          }
-          return available;
         },
 
         handleSubmitUpload() {
-          this.uploadsRemain = this.availableUploads();
-          if (this.uploadsRemain) {
-            this.uploadData.cwd = this.currentPath;
-            this.$refs.image_upload.submit();
+          if (this.upload.status === 'ready') {
+            this.$refs.media_upload.submit({
+              _token: '{{ csrf_token() }}',
+              cwd: this.currentPath,
+            });
           } else {
             this.closeUpload();
-          }
-        },
-
-        handleUploadSuccess(response) {
-          this.uploadsRemain--;
-          if (this.uploadsRemain <= 0) {
-            this.closeUpload();
-            this.resetFilters();
-            this.load();
           }
         },
       },

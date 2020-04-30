@@ -195,8 +195,18 @@
   font-size: 32px;
 }
 
-.el-textarea .el-input__count,
+.el-input .el-input__count,
+.el-textarea .el-input__count {
+  height: 20px;
+  line-height: 20px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: transparent;
+}
+
 .el-input .el-input__count .el-input__count-inner {
+  padding: 0;
   background-color: transparent;
 }
 
