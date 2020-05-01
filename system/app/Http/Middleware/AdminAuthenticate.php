@@ -17,7 +17,7 @@ class AdminAuthenticate
     public function handle($request, Closure $next)
     {
         if (Auth::guard('admin')->guest() && !$request->is('admin/login', 'admin/logout')) {
-            return redirect()->route('admin.login');
+            return redirect()->guest(route('admin.login'));
         }
 
         return $next($request);

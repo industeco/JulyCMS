@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Validator;
 class AdminLoginController extends Controller
 {
     /**
+     * Where to redirect users after login.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/admin';
+
+    /**
      * Show the login page.
      *
      * @return \Illuminate\Contracts\View\Factory|Redirect|\Illuminate\View\View
@@ -18,7 +25,7 @@ class AdminLoginController extends Controller
     public function showLoginForm()
     {
         if ($this->guard()->check()) {
-            return redirect($this->adminHome());
+            return redirect($this->redirectTo);
         }
 
         return view('admin::login');
@@ -58,7 +65,7 @@ class AdminLoginController extends Controller
 
         $request->session()->invalidate();
 
-        return redirect($this->adminHome());
+        return redirect($this->redirectTo);
     }
 
     /**
@@ -87,12 +94,7 @@ class AdminLoginController extends Controller
     {
         $request->session()->regenerate();
 
-        return redirect()->intended($this->adminHome());
-    }
-
-    protected function adminHome()
-    {
-        return route('admin.home');
+        return redirect()->intended($this->redirectTo);
     }
 
     /**
