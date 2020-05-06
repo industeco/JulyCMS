@@ -152,18 +152,18 @@
                 width="120">
                 <template slot-scope="scope">
                   <div class="jc-operators">
-                    <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                    <button type="button" title="改名" class="md-button md-fab md-mini md-light-primary md-theme-default"
                       @click="renameFile(scope.row)">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
                       </div>
                     </button>
-                    <a :href="getPath(scope.row)" :download="scope.row.name" title="下载" class="md-button md-fab md-mini md-theme-default">
+                    <a :href="getPath(scope.row)" :download="scope.row.name" title="下载" class="md-button md-fab md-mini md-light-primary md-theme-default">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
                       </div>
                     </a>
-                    <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                    <button type="button" title="删除" class="md-button md-fab md-mini md-light-accent md-theme-default"
                       @click="deleteFile(scope.row)">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
@@ -191,19 +191,19 @@
                   <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
                 </div>
                 <div class="jc-operators">
-                  <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                  <button type="button" title="改名" class="md-button md-fab md-mini md-light-primary md-theme-default"
                     @click.stop="renameFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
                     </div>
                   </button>
-                  <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
+                  <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-light-primary md-theme-default"
                     @click.stop="downloadFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
                     </div>
                   </a>
-                  <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                  <button type="button" title="删除" class="md-button md-fab md-mini md-light-accent md-theme-default"
                     @click.stop="deleteFile(file)">
                     <div class="md-ripple">
                       <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>
@@ -228,19 +228,19 @@
                   <div class="jc-media__size">大小：@{{ getFileSize(file) }}</div>
                   <div class="jc-media__modified">修改时间：@{{ getLastModified(file) }}</div>
                   <div class="jc-operators">
-                    <button type="button" title="改名" class="md-button md-fab md-mini md-theme-default"
+                    <button type="button" title="改名" class="md-button md-fab md-mini md-light-primary md-theme-default"
                       @click.stop="renameFile(file)">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div>
                       </div>
                     </button>
-                    <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-theme-default"
+                    <a :href="getPath(file)" :download="file.name" title="下载" class="md-button md-fab md-mini md-light-primary md-theme-default"
                       @click.stop="downloadFile(file)">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">get_app</i></div>
                       </div>
                     </a>
-                    <button type="button" title="删除" class="md-button md-fab md-mini md-theme-default"
+                    <button type="button" title="删除" class="md-button md-fab md-mini md-light-accent md-theme-default"
                       @click.stop="deleteFile(file)">
                       <div class="md-ripple">
                         <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div>

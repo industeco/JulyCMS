@@ -192,8 +192,8 @@
         }
 
         const data = {
-          'content_value_lang': '{{ $content_value_lang }}',
-          'interface_value_lang': '{{ $interface_value_lang }}',
+          'content_value_langcode': '{{ $content_value_langcode }}',
+          'interface_value_langcode': '{{ $interface_value_langcode }}',
           'catalog_nodes': toRecords(app.catalogNodes),
         };
 

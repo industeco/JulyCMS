@@ -105,7 +105,7 @@ class Catalog extends JulyModel implements GetNodes
      */
     public static function prepareRequest(Request $request, Catalog $catalog = null)
     {
-        $ilang = langcode('interface');
+        $ilang = langcode('interface_value');
         $config = [
             'interface_values' => [
                 'name' => [
@@ -123,7 +123,7 @@ class Catalog extends JulyModel implements GetNodes
             ];
         }
 
-        $clang = langcode('content');
+        $clang = langcode('content_value');
         $config['langcode'] = [
             'interface_value' => $ilang,
             'content_value' => $clang,
@@ -210,7 +210,7 @@ class Catalog extends JulyModel implements GetNodes
 
         $supplement = [
             'catalog' => $this->truename,
-            'langcode' => langcode('content'),
+            'langcode' => langcode('content_value'),
         ];
         foreach ($positions as $index => $position) {
             $positions[$index] = array_merge($position, $supplement);

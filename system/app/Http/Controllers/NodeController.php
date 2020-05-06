@@ -21,9 +21,16 @@ class NodeController extends Controller
      */
     public function index()
     {
-        // dd(Node::allNodes());
-        return view_with_lang('admin::nodes.index', [
-            'nodes' => Node::allNodes(),
+        $nodes = [];
+        foreach (Node::all() as $node) {
+            $data = $node->getData();
+            $data['templates'] = $node->suggestedTemplates();
+            unset($data['content']);
+            $nodes[$node->id] = $data;
+        }
+
+        return view_with_langcode('admin::nodes.index', [
+            'nodes' => $nodes,
             'catalogs' => describe(Catalog::all()),
         ]);
     }
@@ -35,7 +42,7 @@ class NodeController extends Controller
      */
     public function create()
     {
-        return view_with_lang('admin::nodes.choose_node_type', [
+        return view_with_langcode('admin::nodes.choose_node_type', [
             'nodeTypes' => describe(NodeType::all()),
         ]);
     }
@@ -50,7 +57,7 @@ class NodeController extends Controller
     {
         $fieldJigsaws = Node::retrieveFieldJigsaws($nodeType);
 
-        return view_with_lang('admin::nodes.create_edit', [
+        return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
             'node_type' => $nodeType->truename,
             'fields' => $fieldJigsaws['jigsaws'],
@@ -104,10 +111,6 @@ class NodeController extends Controller
      */
     public function edit(Node $node, $langcode = null)
     {
-        // $fields_aside = [];
-        // foreach (NodeField::fieldsAside() as $field) {
-        //     $fields_aside[$field['truename']] = FieldType::getJigsaws($field->toArray());
-        // }
         $fieldJigsaws = Node::retrieveFieldJigsaws($node->nodeType, $node->getData($langcode));
 
         $data = [
@@ -123,11 +126,11 @@ class NodeController extends Controller
         ];
 
         if ($langcode) {
-            $data['content_value_lang'] = $langcode;
+            $data['content_value_langcode'] = $langcode;
             $data['mode'] = 'translate';
         }
 
-        return view_with_lang('admin::nodes.create_edit', $data);
+        return view_with_langcode('admin::nodes.create_edit', $data);
     }
 
     /**
@@ -177,8 +180,51 @@ class NodeController extends Controller
      */
     public function translate(Node $node)
     {
-        return view_with_lang('admin::nodes.choose_langcode', [
-            'original_lang' => $node->langcode,
+        return view_with_langcode('admin::translate', [
+            'original_langcode' => $node->langcode,
+            'langs' => langcode('all'),
+            'base_url' => '/admin/nodes/'.$node->id,
         ]);
+    }
+
+    /**
+     * 渲染内容
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function render(Request $request)
+    {
+        // Log::info('Render nodes:');
+        // Log::info($request->all());
+
+        $nodes = $request->input('nodes');
+        if (empty($nodes)) {
+            $nodes = Node::fetchAll();
+        } else {
+            $nodes = Node::fetchMany($nodes);
+        }
+
+        $langs = $request->input('langcode') ?: array_keys(langcode('all'));
+        if (is_string($langs)) {
+            $langs = [$langs];
+        }
+
+        $twig = twig('default/template', true);
+
+        $success = [];
+        foreach ($nodes as $node) {
+            $result = [];
+            foreach ($langs as $langcode) {
+                if ($node->render($twig, $langcode)) {
+                    $result[$langcode] = true;
+                } else {
+                    $result[$langcode] = false;
+                }
+            }
+            $success[$node->id] = $result;
+        }
+
+        return Response::make($success);
     }
 }

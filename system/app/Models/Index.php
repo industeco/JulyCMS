@@ -19,9 +19,9 @@ class Index extends Model
      * @var array
      */
     protected $fillable = [
-        'is_preset',
-        'node_type',
+        'node_id',
+        'node_field',
+        'field_value',
         'langcode',
-        'updated_at',
     ];
 }

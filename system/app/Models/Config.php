@@ -88,9 +88,9 @@ class Config extends Model
             if (is_null($this->value_type)) {
                 $lang = 0;
             } elseif ($this->value_type == 'interface_value') {
-                $lang = config('request_lang') ?: langcode('interface_value');
+                $lang = config('request_langcode') ?: langcode('interface_value');
             } elseif ($this->value_type == 'content') {
-                $lang = $clang ?: (config('content_value_lang') ?: langcode('content'));
+                $lang = $clang ?: (config('content_value_langcode') ?: langcode('content_value'));
             }
 
             return $value[$lang] ?? null;

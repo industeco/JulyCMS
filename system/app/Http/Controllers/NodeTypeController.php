@@ -16,7 +16,7 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        return view_with_lang('admin::node_types.index', [
+        return view_with_langcode('admin::node_types.index', [
             'types' => describe(NodeType::all()),
         ]);
     }
@@ -31,7 +31,7 @@ class NodeTypeController extends Controller
         $lang = langcode();
 
         $availableFields = NodeField::where('is_preset', false)->get();
-        return view_with_lang('admin::node_types.create_edit', [
+        return view_with_langcode('admin::node_types.create_edit', [
             'truename' => '',
             'name' => '',
             'description' => '',
@@ -80,7 +80,7 @@ class NodeTypeController extends Controller
         $fields = NodeField::where('is_preset', false)->get();
         $data['availableFields'] = describe($fields, $lang);
 
-        return view_with_lang('admin::node_types.create_edit', $data);
+        return view_with_langcode('admin::node_types.create_edit', $data);
     }
 
     /**

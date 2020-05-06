@@ -14,7 +14,7 @@ use Twig\Extension\GlobalsInterface;
 
 class ContentsQuery extends AbstractExtension implements GlobalsInterface
 {
-    public function getGlobals()
+    public function getGlobals(): array
     {
         return [
             '_host' => config('app.url'),
@@ -142,7 +142,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function nodes(...$args)
     {
-        return NodeCollection::find($this->flatten($args));
+        return NodeCollection::find($this->args($args));
     }
 
     /**
@@ -156,7 +156,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function node_types(...$args)
     {
-        return NodeTypeCollection::find($this->flatten($args));
+        return NodeTypeCollection::find($this->args($args));
     }
 
     /**
@@ -170,10 +170,10 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function catalogs(...$args)
     {
-        return CatalogCollection::find($this->flatten($args));
+        return CatalogCollection::find($this->args($args));
     }
 
-    protected function flatten(array $args)
+    protected function args(array $args)
     {
         // 如果只有一个参数，而且是一个数组，则假设该数组是使用者真正想要指定的参数数组
         if (count($args) === 1 && is_array($args[0])) {

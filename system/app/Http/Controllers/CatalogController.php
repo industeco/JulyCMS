@@ -16,7 +16,7 @@ class CatalogController extends Controller
      */
     public function index()
     {
-        return view_with_lang('admin::catalogs.index', [
+        return view_with_langcode('admin::catalogs.index', [
             'catalogs' => describe(Catalog::all()),
         ]);
     }
@@ -28,7 +28,7 @@ class CatalogController extends Controller
      */
     public function create()
     {
-        return view_with_lang('admin::catalogs.create_edit', [
+        return view_with_langcode('admin::catalogs.create_edit', [
             'truename' => null,
         ]);
     }
@@ -64,7 +64,7 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view_with_lang('admin::catalogs.create_edit', describe($catalog));
+        return view_with_langcode('admin::catalogs.create_edit', describe($catalog));
     }
 
     /**
@@ -95,7 +95,7 @@ class CatalogController extends Controller
 
     public function reorder(Catalog $catalog)
     {
-        return view_with_lang('admin::catalogs.reorder', [
+        return view_with_langcode('admin::catalogs.reorder', [
             'truename' => $catalog->truename,
             'catalog_nodes' => $catalog->positions(),
             'all_nodes' => Node::allNodes(),

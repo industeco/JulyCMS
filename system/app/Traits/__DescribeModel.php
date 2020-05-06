@@ -51,9 +51,9 @@ trait DescribeModel
             }
 
             if ($descriptors = $config['descriptors'] ?? null) {
-                $original_lang = $data['langcode'];
+                $langcode = $data['langcode'];
                 foreach ($descriptors as $key => $value) {
-                    $data[$key] = $value[$lang] ?? $value[$original_lang];
+                    $data[$key] = $value[$lang] ?? $value[$langcode];
                 }
             }
 

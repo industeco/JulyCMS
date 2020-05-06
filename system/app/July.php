@@ -49,6 +49,7 @@ class July
         Route::get('nodes/create/{nodeType}', 'NodeController@createWith')->name($lang.'nodes.create_with');
         Route::get('nodes/{node}/translate', 'NodeController@translate')->name($lang.'nodes.translate');
         Route::get('nodes/{node}/translate/{langcode}', 'NodeController@edit')->name($lang.'nodes.translate_to');
+        Route::post('nodes/render', 'NodeController@render')->name($lang.'nodes.render');
         Route::resource('nodes', 'NodeController')->parameters([
             'nodes' => 'node',
         ])->names($lang.'nodes');

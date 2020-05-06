@@ -166,7 +166,7 @@ class NodeType extends JulyModel implements GetNodes
      */
     public static function prepareRequest(Request $request, NodeType $nodeType = null)
     {
-        $ilang = langcode('interface');
+        $ilang = langcode('interface_value');
         $config = [
             'interface_values' => [
                 'name' => [
@@ -184,7 +184,7 @@ class NodeType extends JulyModel implements GetNodes
             ];
         }
 
-        $clang = langcode('content');
+        $clang = langcode('content_value');
         $config['langcode'] = [
             'interface_value' => $ilang,
             'content_value' => $clang,

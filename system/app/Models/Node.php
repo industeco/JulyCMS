@@ -39,8 +39,8 @@ class Node extends JulyModel
 
     public function fields()
     {
-        $fieldAside = NodeField::findMany(NodeField::fieldsAside());
-        return $this->nodeType->fields->merge($fieldAside);
+        $globalFields = NodeField::findMany(NodeField::globalFields());
+        return $this->nodeType->fields->merge($globalFields);
     }
 
     public function catalogs()
@@ -113,7 +113,7 @@ class Node extends JulyModel
         unset($jigsaw);
 
         // 表单右侧字段碎片
-        $jigsawsAside = NodeField::retrieveFieldJigsawsAside($langcode);
+        $jigsawsAside = NodeField::retrieveGlobalFieldJigsaws($langcode);
         foreach ($jigsawsAside as $fieldName => &$jigsaw) {
             $jigsaw['value'] = $values[$fieldName] ?? null;
         }
@@ -202,12 +202,12 @@ class Node extends JulyModel
 
         if ($tpl = $this->template()) {
             // 更新文件名
-            $htmlFile = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
+            $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
 
             $twig->addGlobal('_node', $this);
 
             // 生成 html 并写入文件
-            return Storage::disk('public')->put($htmlFile, $twig->render($tpl, $node));
+            return Storage::disk('public')->put($file, $twig->render($tpl, $node));
         }
 
         return false;
@@ -233,7 +233,7 @@ class Node extends JulyModel
 
         $templates = [];
         if ($node['template']) {
-            $templates[] = $node['template'];
+            $templates[] = ltrim($node['template'], '/');
         }
 
         // 针对该节点的模板
@@ -245,12 +245,10 @@ class Node extends JulyModel
         return $templates;
     }
 
-    // public function hasField($truename)
-    // {
-    //     $nodeType = NodeType::fetch($this->attributes['node_type']);
-    //     $fields = array_merge($nodeType->retrieveFields(), NodeField::fieldsAside());
-    //     return in_array($truename, $fields);
-    // }
+    public function __isset($key)
+    {
+        return ! is_null($this->{$key});
+    }
 
     /**
      * Dynamically retrieve attributes on Node.
@@ -325,7 +323,7 @@ class Node extends JulyModel
      */
     public function get_descendants($catalog = null)
     {
-        CatalogCollection::find($catalog)->get_descendants($this->id);
+        return CatalogCollection::find($catalog)->get_descendants($this->id);
     }
 
     public function get_below($catalog = null)
@@ -341,7 +339,7 @@ class Node extends JulyModel
      */
     public function get_parent($catalog = null)
     {
-        CatalogCollection::find($catalog)->get_parent($this->id);
+        return CatalogCollection::find($catalog)->get_parent($this->id);
     }
 
     public function get_over($catalog = null)
@@ -357,7 +355,7 @@ class Node extends JulyModel
      */
     public function get_ancestors($catalog = null)
     {
-        CatalogCollection::find($catalog)->get_ancestors($this->id);
+        return CatalogCollection::find($catalog)->get_ancestors($this->id);
     }
 
     public function get_above($catalog = null)
@@ -373,7 +371,7 @@ class Node extends JulyModel
      */
     public function get_siblings($catalog = null)
     {
-        CatalogCollection::find($catalog)->get_siblings($this->id);
+        return CatalogCollection::find($catalog)->get_siblings($this->id);
     }
 
     public function get_around($catalog = null)

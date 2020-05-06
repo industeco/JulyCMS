@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($content_value_lang) }} ]</span>
+  {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($content_value_langcode) }} ]</span>
 @endsection
 
 {{-- @if ($mode === 'edit')
@@ -29,12 +29,14 @@
     </div>
     <div id="main_form_right">
       <h2 class="jc-form-info-item">通用非必填项</h2>
+      @if ($mode !== 'translate')
       <div class="jc-form-info-item">
         <button type="button" id="addto_catalogs_btn" class="md-button md-raised md-dense md-primary md-theme-default" @click="addtoCatalogsDialogVisible = true">
           <div class="md-button-content">添加到目录</div>
         </button>
         <p>已添加：@{{ current_catalogs }}</p>
       </div>
+      @endif
       <el-collapse>
         {{-- <el-collapse-item title="标签" name="1">
           <el-form-item label="标签" size="small" class="has-helptext">
@@ -182,7 +184,7 @@
       var isUniqueUrl = function(rule, value, callback) {
         if (value && value.length) {
           axios.post('/admin/checkunique/node__url', {
-            content_value_lang: '{{ $content_value_lang }}',
+            content_value_langcode: '{{ $content_value_langcode }}',
             url: value,
             id: {{ $id }},
           }).then(function(response) {
@@ -199,8 +201,8 @@
 
       return {
         node: {
-          content_value_lang: '{{ $content_value_lang }}',
-          interface_value_lang: '{{ $interface_value_lang }}',
+          content_value_langcode: '{{ $content_value_langcode }}',
+          interface_value_langcode: '{{ $interface_value_langcode }}',
           id: {{ $id }},
           node_type: '{{ $node_type }}',
           @foreach (array_merge($fields, $fields_aside) as $field)

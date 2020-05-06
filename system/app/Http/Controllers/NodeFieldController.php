@@ -113,7 +113,7 @@ class NodeFieldController extends Controller
      */
     public function uniqueUrl(Request $request)
     {
-        $langcode = $request->input('content_value_lang');
+        $langcode = $request->input('content_value_langcode');
         $url = $request->input('url');
 
         $condition = [

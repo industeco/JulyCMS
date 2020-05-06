@@ -18,7 +18,7 @@ class ConfigController extends Controller
         foreach (Config::all() as $option) {
             $entries[] = $option->describe();
         }
-        return view_with_lang('admin::configs.index', [
+        return view_with_langcode('admin::configs.index', [
             'entries' => $entries,
         ]);
     }

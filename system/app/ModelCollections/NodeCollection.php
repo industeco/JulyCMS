@@ -3,8 +3,7 @@
 namespace App\ModelCollections;
 
 use App\Models\Node;
-// use App\Models\NodeReference;
-// use App\Models\Catalog;
+use App\Contracts\GetNodes;
 
 class NodeCollection extends ModelCollection
 {
@@ -25,8 +24,9 @@ class NodeCollection extends ModelCollection
     public static function find($args)
     {
         if (empty($args)) {
-            return new static();
+            return new static(Node::fetchAll());
         }
+
         if (! is_array($args)) {
             $args = [$args];
         }
@@ -50,7 +50,7 @@ class NodeCollection extends ModelCollection
             }
 
             // 类型集，标签集等对象
-            elseif ($arg instanceof GetNodesInterface) {
+            elseif ($arg instanceof GetNodes) {
                 $items = array_merge($items, $arg->get_nodes()->all());
             }
         }

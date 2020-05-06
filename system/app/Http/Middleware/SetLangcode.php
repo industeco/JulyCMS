@@ -16,30 +16,33 @@ class SetLangcode
      */
     public function handle($request, Closure $next)
     {
-        if ($clang = $request->input('content_value_lang')) {
-            config(['content_value_lang' => $clang]);
-            // View::share('content_value_lang', $clang);
+        if ($clang = $request->input('content_value_langcode')) {
+            config(['content_value_langcode' => $clang]);
+            // View::share('content_value_langcode', $clang);
         }
 
-        if ($ilang = $request->input('interface_value_lang')) {
-            config(['interface_value_lang' => $ilang]);
-            // View::share('interface_value_lang', $ilang);
+        if ($ilang = $request->input('interface_value_langcode')) {
+            config(['interface_value_langcode' => $ilang]);
+            // View::share('interface_value_langcode', $ilang);
         }
 
         $langcode = null;
         if (preg_match('~^\/?(\w+)(\/|$)~', $request->getRequestUri(), $matches)) {
             $langcode = $matches[1];
         }
-        if ($langcode && in_array($langcode, langcode('available'))) {
-            config(['request_lang' => $langcode]);
-            // View::share('page_lang', $langcode);
+
+        $langs = langcode('all');
+        if ($langcode && ($langs[$langcode] ?? null)) {
+            config(['request_langcode' => $langcode]);
+            // View::share('page_langcode', $langcode);
         } else {
             if ($langcode == 'admin') {
-                config(['request_lang' => config('app.langcode.admin_page')]);
+                config(['request_langcode' => config('translate.default_langcode.admin_page')]);
             } else {
-                config(['request_lang' => config('app.langcode.site_page')]);
+                config(['request_langcode' => config('translate.default_langcode.site_page')]);
             }
         }
+
         return $next($request);
     }
 }

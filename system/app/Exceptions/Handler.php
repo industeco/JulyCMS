@@ -56,7 +56,8 @@ class Handler extends ExceptionHandler
         if ($exception instanceof HttpException) {
             $code = $exception->getStatusCode();
             $public = Storage::disk('public');
-            if ($public->exists($html = 'pages/'.langcode('page').'/errors/'.$code.'.html')) {
+            $html = 'pages/'.langcode('site_page').'/errors/'.$code.'.html';
+            if ($public->exists($html)) {
                 return response()->make($public->get($html), $code, $exception->getHeaders());
             }
         }

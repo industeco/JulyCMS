@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($interface_value_lang) }} ]</span>
+  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($interface_value_langcode) }} ]</span>
 @endsection
 
 @section('main_content')
@@ -94,7 +94,7 @@
                 handle=".jc-drag-handle"
                 tag="tbody">
                 <tr v-for="field in nodeType.fields.slice(1)" :key="field.truename">
-                  <td><i v-if="field.truename!='title'" class="md-icon md-icon-font md-theme-default jc-drag-handle">swap_vert</i></td>
+                  <td><i class="md-icon md-icon-font md-theme-default jc-drag-handle">swap_vert</i></td>
                   <td><span>@{{ field.truename }}</span></td>
                   <td><span :class="{'jc-label':true,'is-required':field.required}">@{{ field.label }}</span></td>
                   <td><span>@{{ field.description }}</span></td>
@@ -241,8 +241,8 @@
 
       return {
         nodeType: {
-          interface_value_lang: '{{ $interface_value_lang }}',
-          content_value_lang: '{{ $content_value_lang }}',
+          interface_value_langcode: '{{ $interface_value_langcode }}',
+          content_value_langcode: '{{ $content_value_langcode }}',
           truename: '{{ $truename }}',
           name: '{{ $name }}',
           description: '{{ $description }}',
@@ -279,8 +279,8 @@
         selectedFields: [],
 
         nodeField: {
-          content_value_lang: '{{ $content_value_lang }}',
-          interface_value_lang: '{{ $interface_value_lang }}',
+          content_value_langcode: '{{ $content_value_langcode }}',
+          interface_value_langcode: '{{ $interface_value_langcode }}',
           field_type: null,
           truename: '',
           length: 0,

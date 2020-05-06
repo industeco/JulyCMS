@@ -78,7 +78,7 @@
     <span class="jc-form-item-help">@{{ fileTypeHelp }}</span>
   </el-form-item>
   @endif
-  <el-form-item v-if="{{ $model }}.field_type=='text'" label="默认值 [{{ $content_value_lang }}]" prop="default" size="small" class="has-helptext">
+  <el-form-item v-if="{{ $model }}.field_type=='text'" label="默认值 [{{ $content_value_langcode }}]" prop="default" size="small" class="has-helptext">
     <el-input
       v-model="{{ $model }}.default"
       type="textarea"
@@ -87,7 +87,7 @@
       show-word-limit></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 超过『最大字数』会被截断</span>
   </el-form-item>
-  <el-form-item v-if="{{ $model }}.field_type=='text'" label="预选值 [{{ $content_value_lang }}]" size="small" class="has-helptext">
+  <el-form-item v-if="{{ $model }}.field_type=='text'" label="预选值 [{{ $content_value_langcode }}]" size="small" class="has-helptext">
     <div class="jc-table-wrapper">
       <table class="jc-table jc-dense is-editable with-operators with-line-number">
         <colgroup>

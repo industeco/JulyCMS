@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use App\Traits\CacheRetrieve;
 
-class JulyModel extends Model
+abstract class JulyModel extends Model
 {
     use CacheRetrieve;
 
@@ -47,8 +47,9 @@ class JulyModel extends Model
         if ($ids instanceof Arrayable) {
             $ids = $ids->toArray();
         }
+
         if (!is_array($ids)) {
-            $ids = [$ids];
+            $ids = (array) $ids;
         }
 
         $aliasPrefix = static::class.'/';
@@ -78,10 +79,26 @@ class JulyModel extends Model
         return collect($instances);
     }
 
+    public static function fetchAll()
+    {
+        $aliasPrefix = static::class.'/';
+        $app = app();
+
+        $instances = static::all();
+        foreach ($instances as $instance) {
+            $alias = $aliasPrefix.$instance->primary();
+            if (! $app->has($alias)) {
+                $app->instance($alias, $instance);
+            }
+        }
+
+        return collect($instances->all());
+    }
+
     public function forceUpdate()
     {
         if ($this->timestamps) {
-            $this->attributes[static::CREATED_AT] = Date::now();
+            $this->attributes[static::UPDATED_AT] = Date::now();
             $this->save();
         }
     }

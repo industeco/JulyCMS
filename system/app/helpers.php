@@ -196,33 +196,33 @@ if (! function_exists('langcode')) {
             case 'available':
             case 'all':
             case 'list':
-                return ['zh','en'];
+                return config('translate.langs');
 
             // 界面语言
             case 'interface':
             case 'interface_value':
-            case 'interface_value_lang':
-                return config('interface_value_lang') ?: config('app.langcode.interface_value');
+            case 'interface_value_langcode':
+                return config('interface_value_langcode') ?: config('translate.default_langcode.interface_value');
 
             // 内容语言
             case 'content':
             case 'content_value':
-            case 'content_value_lang':
-                return config('content_value_lang') ?: config('app.langcode.content_value');
+            case 'content_value_langcode':
+                return config('content_value_langcode') ?: config('translate.default_langcode.content_value');
 
             // 后台页面语言
             case 'admin':
             case 'admin_page':
-            case 'admin_page_lang':
-                return config('request_lang') ?: config('app.langcode.admin_page');
+            case 'admin_page_langcode':
+                return config('request_langcode') ?: config('translate.default_langcode.admin_page');
 
             // 站点页面语言
             case 'site':
             case 'site_page':
-            case 'site_page_lang':
+            case 'site_page_langcode':
             case 'page':
-            case 'page_lang':
-                return config('request_lang') ?: config('app.langcode.site_page');
+            case 'page_langcode':
+                return config('request_langcode') ?: config('translate.default_langcode.site_page');
 
             default:
                 return config('fallback_lacale');
@@ -337,7 +337,7 @@ if (! function_exists('short_url')) {
     }
 }
 
-if (! function_exists('view_with_lang')) {
+if (! function_exists('view_with_langcode')) {
     /**
      * Get the evaluated view contents for the given view.
      *
@@ -346,7 +346,7 @@ if (! function_exists('view_with_lang')) {
      * @param  array  $mergeData
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    function view_with_lang($view = null, $data = [], $mergeData = [])
+    function view_with_langcode($view = null, $data = [], $mergeData = [])
     {
         $factory = app(ViewFactory::class);
 
@@ -356,10 +356,10 @@ if (! function_exists('view_with_lang')) {
 
         $lang = langcode();
         $data = array_merge([
-            'content_value_lang' => $lang['content_value'],
-            'interface_value_lang' => $lang['interface_value'],
-            'admin_page_lang' => $lang['admin_page'],
-            'site_page_lang' => $lang['site_page'],
+            'content_value_langcode' => $lang['content_value'],
+            'interface_value_langcode' => $lang['interface_value'],
+            'admin_page_langcode' => $lang['admin_page'],
+            'site_page_langcode' => $lang['site_page'],
         ], $data);
 
         return $factory->make($view, $data, $mergeData);
@@ -367,9 +367,9 @@ if (! function_exists('view_with_lang')) {
 }
 
 if (! function_exists('twig')) {
-    function twig($debug = false)
+    function twig($path = 'default/template', $debug = false)
     {
-        $loader = new \Twig\Loader\FilesystemLoader('', twig_path());
+        $loader = new \Twig\Loader\FilesystemLoader($path, theme_path());
         if ($debug) {
             $twig = new \Twig\Environment($loader, ['debug' => true]);
             $twig->addExtension(new \Twig\Extension\DebugExtension());

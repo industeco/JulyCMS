@@ -77,35 +77,35 @@ class NodeField extends JulyModel
                     );
     }
 
-    public static function fieldsAside()
+    public static function globalFields()
     {
         return [
             'url','template','meta_title','meta_keywords','meta_description',
         ];
     }
 
-    public static function retrieveFieldJigsawsAside($langcode = null)
+    public static function retrieveGlobalFieldJigsaws($langcode = null)
     {
         $langcode = $langcode ?? langcode('admin_page');
 
         $lastModified = last_modified(view_path('components/'));
 
         $cacheKey = md5('fieldJigsawsAside/'.$langcode);
-        $jigsawsAside = Cache::get($cacheKey);
+        $jigsaws = Cache::get($cacheKey);
 
-        if (!$jigsawsAside || $jigsawsAside['created_at'] < $lastModified) {
-            $jigsawsAside = [];
-            foreach (NodeField::findMany(NodeField::fieldsAside()) as $field) {
-                $jigsawsAside[$field->truename] = FieldType::getJigsaws($field->toArray());
+        if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
+            $jigsaws = [];
+            foreach (NodeField::findMany(NodeField::globalFields()) as $field) {
+                $jigsaws[$field->truename] = FieldType::getJigsaws($field->toArray());
             }
-            $jigsawsAside = [
+            $jigsaws = [
                 'created_at' => time(),
-                'jigsaws' => $jigsawsAside,
+                'jigsaws' => $jigsaws,
             ];
-            Cache::put($cacheKey, $jigsawsAside);
+            Cache::put($cacheKey, $jigsaws);
         }
 
-        return $jigsawsAside['jigsaws'];
+        return $jigsaws['jigsaws'];
     }
 
     public function tableName()
@@ -193,7 +193,7 @@ class NodeField extends JulyModel
 
     // public static function cacheKey($truename, $node_id, $langcode = null)
     // {
-    //     $langcode = $langcode ?: langcode('content');
+    //     $langcode = $langcode ?: langcode('content_value');
     //     return 'node_fields/'.$truename.'/'.$node_id.'/'.$langcode;
     // }
 
@@ -202,7 +202,7 @@ class NodeField extends JulyModel
      */
     public function deleteValue($node_id, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: langcode('content_value');
 
         // 清除字段值缓存
         $this->cacheClear($this->truename.'/'.$node_id, $langcode);
@@ -224,7 +224,7 @@ class NodeField extends JulyModel
     {
         // Log::info("Updating field '{$this->truename}'");
 
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: langcode('content_value');
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
@@ -263,7 +263,7 @@ class NodeField extends JulyModel
      */
     public function getValue(Node $node, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: langcode('content_value');
 
         $cacheid = $this->truename.'/'.$node->id;
         if ($value = $this->cacheGet($cacheid, $langcode)) {

@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑目录':'新建目录' }} <span id="content_locale">[ {{ langname($interface_value_lang) }} ]</span>
+  {{ $truename?'编辑目录':'新建目录' }} <span id="content_locale">[ {{ langname($interface_value_langcode) }} ]</span>
 @endsection
 
 @section('main_content')
@@ -66,8 +66,8 @@
 
       return {
         catalog: {
-          interface_value_lang: '{{ $interface_value_lang }}',
-          content_value_lang: '{{ $content_value_lang }}',
+          interface_value_langcode: '{{ $interface_value_langcode }}',
+          content_value_langcode: '{{ $content_value_langcode }}',
           truename: '{{ $truename ?? '' }}',
           name: '{{ $name ?? '' }}',
           description: '{{ $description ?? '' }}',
