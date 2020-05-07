@@ -8,10 +8,14 @@ use App\Models\Node;
 use App\Casts\Json;
 use App\ModelIsomers\CatalogTree;
 use App\Contracts\GetNodes;
+use App\Contracts\HasModelConfig;
 use App\ModelCollections\NodeCollection;
+use App\Traits\CastModelConfig;
 
-class Catalog extends JulyModel implements GetNodes
+class Catalog extends JulyModel implements GetNodes, HasModelConfig
 {
+    use CastModelConfig;
+
     /**
      * 与模型关联的表名
      *
@@ -96,44 +100,58 @@ class Catalog extends JulyModel implements GetNodes
         return $nodes;
     }
 
-    /**
-     * 保存前对请求数据进行处理
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Catalog $catalog
-     * @return Array
-     */
-    public static function prepareRequest(Request $request, Catalog $catalog = null)
+    public function configStructure(): array
     {
-        $ilang = langcode('interface_value');
-        $config = [
-            'interface_values' => [
-                'name' => [
-                    $ilang => $request->input('name'),
-                ],
-                'description' => [
-                    $ilang => $request->input('description'),
-                ],
+        return [
+            'name' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'description' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
             ],
         ];
-
-        if ($catalog) {
-            return [
-                'config' => array_replace_recursive($catalog->config, $config),
-            ];
-        }
-
-        $clang = langcode('content_value');
-        $config['langcode'] = [
-            'interface_value' => $ilang,
-            'content_value' => $clang,
-        ];
-
-        return [
-            'truename' => $request->input('truename'),
-            'config' => $config,
-        ];
     }
+
+    // /**
+    //  * 保存前对请求数据进行处理
+    //  *
+    //  * @param \Illuminate\Http\Request $request
+    //  * @param \App\Models\Catalog $catalog
+    //  * @return Array
+    //  */
+    // public static function prepareRequest(Request $request, Catalog $catalog = null)
+    // {
+    //     $ilang = langcode('interface_value');
+    //     $config = [
+    //         'interface_values' => [
+    //             'name' => [
+    //                 $ilang => $request->input('name'),
+    //             ],
+    //             'description' => [
+    //                 $ilang => $request->input('description'),
+    //             ],
+    //         ],
+    //     ];
+
+    //     if ($catalog) {
+    //         return [
+    //             'config' => array_replace_recursive($catalog->config, $config),
+    //         ];
+    //     }
+
+    //     $clang = langcode('content_value');
+    //     $config['langcode'] = [
+    //         'interface_value' => $ilang,
+    //         'content_value' => $clang,
+    //     ];
+
+    //     return [
+    //         'truename' => $request->input('truename'),
+    //         'config' => $config,
+    //     ];
+    // }
 
     public static function allPositions()
     {

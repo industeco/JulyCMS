@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\HasModelConfig;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -10,6 +11,16 @@ use App\Traits\CacheRetrieve;
 abstract class JulyModel extends Model
 {
     use CacheRetrieve;
+
+    public static function make(array $attributes = [])
+    {
+        $instance = new static($attributes);
+        if ($instance instanceof HasModelConfig) {
+            $instance->config = $instance->buildConfig($attributes);
+        }
+
+        return $instance;
+    }
 
     public function primary()
     {
@@ -101,5 +112,15 @@ abstract class JulyModel extends Model
             $this->attributes[static::UPDATED_AT] = Date::now();
             $this->save();
         }
+    }
+
+    public function mixConfig(array $langcode = [])
+    {
+        $data = $this->toArray();
+        if ($this instanceof HasModelConfig) {
+            $data = array_merge($data, $this->getConfigOptions($langcode));
+            unset($data['config']);
+        }
+        return $data;
     }
 }

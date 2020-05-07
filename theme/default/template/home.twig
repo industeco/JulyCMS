@@ -7,7 +7,7 @@
     </div>
     <div id="hot-products" class="section">
       <ul>
-        {% for node in _catalog.get_under(4) -%}
+        {% for node in _catalog.get_under(0) -%}
           <li>{{ node.title }}</li>
         {%- endfor %}
       </ul>

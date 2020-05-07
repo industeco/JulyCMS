@@ -22,28 +22,42 @@ class TextField extends FieldTypeBase
     public static function configStructure(): array
     {
         return [
-            'length' => 'integer',
-            'required' => 'boolean',
-            'index_weight' => 'integer',
-            'interface_values' => [
-                'label' => 'string',
-                'help' => 'string',
-                'description' => 'string',
+            'length' => [
+                'cast' => 'integer',
+                'default' => 255,
             ],
-            'content_values' => [
-                'placeholder' => 'string',
-                'default' => 'string',
-                'datalist' => 'array',
+            'required' => [
+                'cast' => 'boolean',
+            ],
+            'index_weight' => [
+                'cast' => 'integer',
+            ],
+            'label' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'help' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+                'default' => '',
+            ],
+            'description' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'placeholder' => [
+                'type' => 'content_value',
+                'cast' => 'string',
+            ],
+            'default' => [
+                'type' => 'content_value',
+                'cast' => 'string',
+            ],
+            'datalist' => [
+                'type' => 'content_value',
+                'cast' => 'array',
             ],
         ];
-    }
-
-    public static function parameters(array $data)
-    {
-        return array_merge([
-            'length' => 255,
-            'help' => '',
-        ], describe($data));
     }
 
     public static function rules(array $parameters)

@@ -1,9 +1,14 @@
 <?php
 
+use App\Contracts\HasModelConfig;
 use App\Models\Config;
+use App\Models\JulyModel;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 if (! function_exists('auth')) {
     /**
@@ -242,70 +247,148 @@ if (! function_exists('langname')) {
     }
 }
 
-if (! function_exists('flatten_config')) {
+if (! function_exists('extract_config')) {
     /**
      * @param array $config
+     * @param array $structure
      * @param array $langcode
      */
-    function flatten_config(array $config, array $langcode)
+    function extract_config(array $config, array $structure, array $langcode = [])
     {
-        $result = [];
-        $original = $config['langcode'] ?? [];
+        $langcode = array_merge(langcode(), $langcode);
+        $original_langcode = $config['langcode'];
+        unset($config['langcode']);
 
+        $options = [];
         foreach ($config as $key => $value) {
-            if ($key == 'langcode') {
-                continue;
+            $meta = $structure[$key] ?? [];
+            $type = $meta['type'] ?? null;
+            if (($type === 'content' || $type === 'interface') && is_array($value)) {
+                $value = $value[$langcode[$type]] ?? $value[$original_langcode[$type]] ?? null;
             }
-            if ($key == 'interface_values' || $key == 'content_values') {
-                $lang_key = trim($key, 's');
-                $lang = $langcode[$lang_key] ?? null;
-                foreach ($value as $k => $v) {
-                    $result[$k] = $v[$lang] ?? $v[$original[$lang_key]];
-                }
-            } else {
-                $result[$key] = $value;
+
+            $options[$key] = $value;
+        }
+
+        // 填充默认值
+        foreach ($structure as $key => $meta) {
+            if (isset($meta['default']) && is_null($options[$key] ?? null)) {
+                $options[$key] = $meta['default'];
             }
         }
 
-        return $result;
+        return $options;
     }
 }
 
-if (! function_exists('describe')) {
-    function describe($records, array $langcode = null)
+if (! function_exists('build_config')) {
+    /**
+     * @param array $data
+     * @param array $structure
+     */
+    function build_config(array $data, array $structure)
     {
-        $langcode = $langcode ?: langcode();
+        $langcode = langcode();
+        $config = [
+            'langcode' => [
+                'content_value' => $langcode['content_value'],
+                'interface_value' => $langcode['interface_value'],
+            ],
+        ];
 
-        if (!(is_array($records) || $records instanceof Arrayable)) {
-            return [];
-        }
-
-        if ($records instanceof Arrayable) {
-            $records = $records->toArray();
-        }
-
-        if (($config = $records['config'] ?? null) && is_array($config)) {
-            unset($records['config']);
-            return array_merge($records, flatten_config($config, $langcode));
-        }
-
-        $results = [];
-        foreach ($records as $key => $record) {
-            if ($record instanceof Arrayable) {
-                $record = $record->toArray();
-            }
-            if (is_array($record)) {
-                if (($config = $record['config'] ?? null) && is_array($config)) {
-                    unset($record['config']);
-                    $record = array_merge($record, flatten_config($config, $langcode));
+        foreach ($data as $key => $value) {
+            if ($meta = $structure[$key] ?? null) {
+                if ($cast = $meta['cast'] ?? null) {
+                    $value = cast_value($value, $cast);
                 }
-                $results[] = $record;
-            } else {
-                $results[$key] = $record;
+                $type = $meta['type'] ?? null;
+                if ($type === 'content_value' || $type === 'interface_value') {
+                    $value = [
+                        $langcode[$type] => $value,
+                    ];
+                }
+                $config[$key] = $value;
             }
         }
 
-        return $results;
+        return $config;
+    }
+}
+
+if (! function_exists('cast_value')) {
+    function cast_value($value, $cast)
+    {
+        switch ($cast) {
+            case 'string':
+                return trim($value);
+
+            case 'integer':
+            case 'int':
+                return intval($value);
+
+            case 'boolean':
+            case 'bool':
+                return boolval($value);
+
+            case 'array':
+                $value = (array) $value;
+                return array_filter($value);
+
+            default:
+                return $value;
+        }
+    }
+}
+
+// if (! function_exists('flatten_config')) {
+//     /**
+//      * @param array $config
+//      * @param array $langcode
+//      */
+//     function flatten_config(array $config, array $langcode)
+//     {
+//         $result = [];
+//         $original = $config['langcode'] ?? [];
+
+//         foreach ($config as $key => $value) {
+//             if ($key == 'langcode') {
+//                 continue;
+//             }
+//             if ($key == 'interface_values' || $key == 'content_values') {
+//                 $lang_key = trim($key, 's');
+//                 $lang = $langcode[$lang_key] ?? null;
+//                 foreach ($value as $k => $v) {
+//                     $result[$k] = $v[$lang] ?? $v[$original[$lang_key]];
+//                 }
+//             } else {
+//                 $result[$key] = $value;
+//             }
+//         }
+
+//         return $result;
+//     }
+// }
+
+if (! function_exists('mix_config')) {
+    function mix_config($instances, array $langcode = [])
+    {
+        if ($instances instanceof JulyModel) {
+            return $instances->mixConfig($langcode);
+        }
+
+        if ($instances instanceof Collection) {
+            $results = [];
+            foreach ($instances as $instance) {
+                $results[] = mix_config($instance, $langcode);
+            }
+            return $results;
+        }
+
+        if ($instances instanceof Arrayable) {
+            return $instances->toArray();
+        }
+
+        return $instances;
     }
 }
 

@@ -21,13 +21,11 @@ class NodeTypeSeeder extends Seeder
                             'interface_value' => 'zh',
                             'content_value' => 'en',
                         ],
-                        'interface_values' => [
-                            'name' => [
-                                'zh' => '基础页面',
-                            ],
-                            'description' => [
-                                'zh' => '如「关于我们页」，「联系我们页」等',
-                            ],
+                        'name' => [
+                            'zh' => '基础页面',
+                        ],
+                        'description' => [
+                            'zh' => '如「关于我们页」，「联系我们页」等',
                         ],
                     ],
                 ],
@@ -41,13 +39,11 @@ class NodeTypeSeeder extends Seeder
                             'interface_value' => 'zh',
                             'content_value' => 'en',
                         ],
-                        'interface_values' => [
-                            'name' => [
-                                'zh' => '文章',
-                            ],
-                            'description' => [
-                                'zh' => '添加一篇文章',
-                            ],
+                        'name' => [
+                            'zh' => '文章',
+                        ],
+                        'description' => [
+                            'zh' => '添加一篇文章',
                         ],
                     ],
                 ],
@@ -61,13 +57,11 @@ class NodeTypeSeeder extends Seeder
                             'interface_value' => 'zh',
                             'content_value' => 'en',
                         ],
-                        'interface_values' => [
-                            'name' => [
-                                'zh' => '产品',
-                            ],
-                            'description' => [
-                                'zh' => '添加产品信息',
-                            ],
+                        'name' => [
+                            'zh' => '产品',
+                        ],
+                        'description' => [
+                            'zh' => '添加产品信息',
                         ],
                     ],
                 ],

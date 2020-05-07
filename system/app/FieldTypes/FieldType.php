@@ -83,11 +83,23 @@ class FieldType
         return $fieldType::value($records, $columns, $config);
     }
 
-    public static function getConfig(array $data)
+    public static function getConfigStructrue($type)
+    {
+        $fieldType = static::findOrFail($type);
+        return $fieldType::configStructure();
+    }
+
+    public static function buildConfig(array $data)
     {
         $fieldType = static::findOrFail($data['field_type'] ?? null);
-        return $fieldType::config($data);
+        return build_config($data, $fieldType::configStructure());
     }
+
+    // public static function getConfig(array $data)
+    // {
+    //     $fieldType = static::findOrFail($data['field_type'] ?? null);
+    //     return $fieldType::config($data);
+    // }
 
     public static function getJigsaws(array $data)
     {

@@ -17,7 +17,7 @@ class NodeTypeController extends Controller
     public function index()
     {
         return view_with_langcode('admin::node_types.index', [
-            'types' => describe(NodeType::all()),
+            'nodeTypes' => mix_config(NodeType::all()),
         ]);
     }
 
@@ -28,15 +28,18 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $lang = langcode();
+        $requiredFiels = [
+            NodeField::find('title')->mixConfig(),
+        ];
 
-        $availableFields = NodeField::where('is_preset', false)->get();
+        $optionalFields = NodeField::where('is_preset', false)->get();
+
         return view_with_langcode('admin::node_types.create_edit', [
             'truename' => '',
             'name' => '',
             'description' => '',
-            'fields' => [describe(NodeField::find('title'), $lang)],
-            'availableFields' => describe($availableFields, $lang),
+            'fields' => $requiredFiels,
+            'availableFields' => mix_config($optionalFields),
         ]);
     }
 
@@ -48,7 +51,8 @@ class NodeTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $nodeType = NodeType::create(NodeType::prepareRequest($request));
+        $nodeType = NodeType::make($request->all());
+        $nodeType->save();
         $nodeType->updateFields($request);
         return Response::make($nodeType);
     }
@@ -72,13 +76,11 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $lang = langcode();
+        $data = $nodeType->mixConfig();
+        $data['fields'] = $nodeType->retrieveFields();
 
-        $data = describe($nodeType, $lang);
-        $data['fields'] = describe($nodeType->retrieveFields(), $lang);
-
-        $fields = NodeField::where('is_preset', false)->get();
-        $data['availableFields'] = describe($fields, $lang);
+        $optionalFields = NodeField::where('is_preset', false)->get();
+        $data['availableFields'] = mix_config($optionalFields);
 
         return view_with_langcode('admin::node_types.create_edit', $data);
     }
@@ -92,7 +94,10 @@ class NodeTypeController extends Controller
      */
     public function update(Request $request, NodeType $nodeType)
     {
-        $nodeType->update(NodeType::prepareRequest($request, $nodeType));
+        $config = $nodeType->buildConfig($request->all());
+        $nodeType->update([
+            'config' => array_replace_recursive($nodeType->config, $config)
+        ]);
         $nodeType->updateFields($request);
         return Response::make();
     }

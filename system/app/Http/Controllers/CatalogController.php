@@ -17,7 +17,7 @@ class CatalogController extends Controller
     public function index()
     {
         return view_with_langcode('admin::catalogs.index', [
-            'catalogs' => describe(Catalog::all()),
+            'catalogs' => mix_config(Catalog::all()),
         ]);
     }
 
@@ -41,7 +41,9 @@ class CatalogController extends Controller
      */
     public function store(Request $request)
     {
-        $catalog = Catalog::create(Catalog::prepareRequest($request));
+        // $catalog = Catalog::create(Catalog::prepareRequest($request));
+        $catalog = Catalog::make($request->all());
+        $catalog->save();
         return Response::make($catalog);
     }
 
@@ -64,7 +66,7 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view_with_langcode('admin::catalogs.create_edit', describe($catalog));
+        return view_with_langcode('admin::catalogs.create_edit', $catalog->mixConfig());
     }
 
     /**
@@ -76,7 +78,11 @@ class CatalogController extends Controller
      */
     public function update(Request $request, Catalog $catalog)
     {
-        $catalog->update(Catalog::prepareRequest($request, $catalog));
+        // $catalog->update(Catalog::prepareRequest($request, $catalog));
+        $config = $catalog->buildConfig($request->all());
+        $catalog->update([
+            'config' => array_replace_recursive($catalog->config, $config)
+        ]);
         return Response::make();
     }
 

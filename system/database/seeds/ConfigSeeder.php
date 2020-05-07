@@ -21,13 +21,11 @@ class ConfigSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '默认内容语言',
-                        ],
-                        'description' => [
-                            'zh' => '添加内容时的默认语言',
-                        ],
+                    'label' => [
+                        'zh' => '默认内容语言',
+                    ],
+                    'description' => [
+                        'zh' => '添加内容时的默认语言',
                     ],
                     'value' => ['en'],
                 ],
@@ -40,13 +38,11 @@ class ConfigSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '默认站点语言',
-                        ],
-                        'description' => [
-                            'zh' => '网站页面默认使用哪种语言呈现',
-                        ],
+                    'label' => [
+                        'zh' => '默认站点语言',
+                    ],
+                    'description' => [
+                        'zh' => '网站页面默认使用哪种语言呈现',
                     ],
                     'value' => ['en'],
                 ],

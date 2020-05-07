@@ -21,10 +21,8 @@ class CatalogSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'interface_values' => [
-                        'name' => [
-                            'zh' => '默认目录',
-                        ],
+                    'name' => [
+                        'zh' => '默认目录',
                     ],
                 ],
             ],

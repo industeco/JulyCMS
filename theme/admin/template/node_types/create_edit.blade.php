@@ -246,7 +246,7 @@
           truename: '{{ $truename }}',
           name: '{{ $name }}',
           description: '{{ $description }}',
-          fields: @json($fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          fields: @json(array_values($fields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         },
 
         nodeTypeRules: {
@@ -313,7 +313,7 @@
           ],
         },
 
-        nodeFields: @json($availableFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        nodeFields: @json(array_values($availableFields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         fieldSelectorVisible: false,
         fieldEditorVisible: false,

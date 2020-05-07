@@ -6,11 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Casts\Json;
 use App\Contracts\GetNodes;
+use App\Contracts\HasModelConfig;
 use App\FieldTypes\FieldType;
 use App\ModelCollections\NodeCollection;
+use App\Traits\CastModelConfig;
 
-class NodeType extends JulyModel implements GetNodes
+class NodeType extends JulyModel implements GetNodes, HasModelConfig
 {
+    use CastModelConfig;
+
     /**
      * 与模型关联的表名
      *
@@ -78,6 +82,20 @@ class NodeType extends JulyModel implements GetNodes
                 );
     }
 
+    public function configStructure(): array
+    {
+        return [
+            'name' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'description' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+        ];
+    }
+
     public function retrieveFields($langcode = null)
     {
         $langcode = $langcode ?? langcode('admin_page');
@@ -88,11 +106,21 @@ class NodeType extends JulyModel implements GetNodes
         } else {
             $fields = [];
             foreach ($this->fields as $field) {
-                $field = $field->toArray();
+                $config = extract_config(
+                    array_replace_recursive($field->config, $field->pivot['config']),
+                    $field->configStructure
+                );
+                $field = array_merge($field->toArray(), $config);
                 $field['delta'] = $field['pivot']['delta'];
-                $field['config'] = array_replace_recursive($field['config'], $field['pivot']['config']);
                 unset($field['pivot']);
+                unset($field['config']);
                 $fields[] = $field;
+
+                // $field = $field->toArray();
+                // $field['delta'] = $field['pivot']['delta'];
+                // $field['config'] = array_replace_recursive($field['config'], $field['pivot']['config']);
+                // unset($field['pivot']);
+                // $fields[] = $field;
             }
             $this->cachePut($cacheid, $fields, $langcode);
         }
@@ -147,7 +175,7 @@ class NodeType extends JulyModel implements GetNodes
                 'node_type' => $node_type,
                 'node_field' => $field['truename'],
                 'delta' => $index,
-                'config' => FieldType::getConfig($field),
+                'config' => FieldType::buildConfig($field),
             ];
         }
 
@@ -157,44 +185,28 @@ class NodeType extends JulyModel implements GetNodes
         });
     }
 
-    /**
-     * 保存前对请求数据进行处理
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\NodeType $nodeType
-     * @return Array
-     */
-    public static function prepareRequest(Request $request, NodeType $nodeType = null)
-    {
-        $ilang = langcode('interface_value');
-        $config = [
-            'interface_values' => [
-                'name' => [
-                    $ilang => $request->input('name'),
-                ],
-                'description' => [
-                    $ilang => $request->input('description'),
-                ],
-            ],
-        ];
+    // /**
+    //  * 保存前对请求数据进行处理
+    //  *
+    //  * @param \Illuminate\Http\Request $request
+    //  * @param \App\Models\NodeType $nodeType
+    //  * @return Array
+    //  */
+    // public static function prepareRequest(Request $request, NodeType $nodeType = null)
+    // {
+    //     $config = static::buildConfig($request->all());
+    //     if ($nodeType) {
+    //         unset($config['langcode']);
+    //         return [
+    //             'config' => array_replace_recursive($nodeType->config, $config),
+    //         ];
+    //     }
 
-        if ($nodeType) {
-            return [
-                'config' => array_replace_recursive($nodeType->config, $config),
-            ];
-        }
-
-        $clang = langcode('content_value');
-        $config['langcode'] = [
-            'interface_value' => $ilang,
-            'content_value' => $clang,
-        ];
-
-        return [
-            'truename' => $request->input('truename'),
-            'config' => $config,
-        ];
-    }
+    //     return [
+    //         'truename' => $request->input('truename'),
+    //         'config' => $config,
+    //     ];
+    // }
 
     public function get_nodes(): NodeCollection
     {

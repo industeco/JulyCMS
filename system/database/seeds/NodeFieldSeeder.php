@@ -25,16 +25,14 @@ class NodeFieldSeeder extends Seeder
                     'length' => 100,
                     'required' => true,
                     'index_weight' => 10,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '标题',
-                        ],
-                        'help' => [
-                            'zh' => '内容标题，通常用作链接文字',
-                        ],
-                        'description' => [
-                            'zh' => '预设字段，不可删除',
-                        ],
+                    'label' => [
+                        'zh' => '标题',
+                    ],
+                    'help' => [
+                        'zh' => '内容标题，通常用作链接文字',
+                    ],
+                    'description' => [
+                        'zh' => '预设字段，不可删除',
                     ],
                 ],
             ],
@@ -50,15 +48,11 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 100,
                     'pattern' => 'url',
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '网址',
-                        ],
+                    'label' => [
+                        'zh' => '网址',
                     ],
-                    'content_values' => [
-                        'placeholder' => [
-                            'en' => '/index.html',
-                        ],
+                    'placeholder' => [
+                        'en' => '/index.html',
                     ],
                 ],
             ],
@@ -74,18 +68,14 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 100,
                     'pattern' => 'twig',
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '模板',
-                        ],
-                        'help' => [
-                            'zh' => 'twig 模板，用于生成页面',
-                        ],
+                    'label' => [
+                        'zh' => '模板',
                     ],
-                    'content_values' => [
-                        'placeholder' => [
-                            'en' => 'template-name.twig',
-                        ],
+                    'help' => [
+                        'zh' => 'twig 模板，用于生成页面',
+                    ],
+                    'placeholder' => [
+                        'en' => 'template-name.twig',
                     ],
                 ],
             ],
@@ -100,10 +90,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'length' => 100,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '标题',
-                        ],
+                    'label' => [
+                        'zh' => '标题',
                     ],
                 ],
             ],
@@ -118,10 +106,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'length' => 160,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '描述',
-                        ],
+                    'label' => [
+                        'zh' => '描述',
                     ],
                 ],
             ],
@@ -136,10 +122,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'length' => 160,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '关键字',
-                        ],
+                    'label' => [
+                        'zh' => '关键字',
                     ],
                 ],
             ],
@@ -152,10 +136,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'index_weight' => 1,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '内容',
-                        ],
+                    'label' => [
+                        'zh' => '内容',
                     ],
                 ],
             ],
@@ -169,10 +151,8 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 100,
                     'index_weight' => 10,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => 'H1',
-                        ],
+                    'label' => [
+                        'zh' => 'H1',
                     ],
                 ],
             ],
@@ -186,10 +166,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'file_type' => 'image',
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '主图',
-                        ],
+                    'label' => [
+                        'zh' => '主图',
                     ],
                 ],
             ],
@@ -203,10 +181,8 @@ class NodeFieldSeeder extends Seeder
                         'content_value' => 'en',
                     ],
                     'length' => 100,
-                    'interface_values' => [
-                        'label' => [
-                            'zh' => '主图 Alt',
-                        ],
+                    'label' => [
+                        'zh' => '主图 Alt',
                     ],
                 ],
             ],

@@ -24,31 +24,46 @@ class FileField extends FieldTypeBase
     public static function configStructure(): array
     {
         return [
-            'required' => 'boolean',
-            'file_type' => 'string',
-            'validations' => 'array',
-            'interface_values' => [
-                'label' => 'string',
-                'help' => 'string',
-                'description' => 'string',
+            'required' => [
+                'cast' => 'boolean',
+            ],
+            'file_type' => [
+                'cast' => 'string',
+            ],
+            'length' => [
+                'cast' => 'integer',
+                'default' => 100,
+            ],
+            'validations' => [
+                'cast' => 'array',
+            ],
+            'label' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'help' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+                'default' => '',
+            ],
+            'description' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
             ],
         ];
     }
 
     public static function parameters(array $data)
     {
-        $parameters = array_merge([
-            'help' => '',
-            'length' => 100,
-        ], describe($data));
+        $data = parent::parameters($data);
 
-        if ($fileType = $parameters['file_type'] ?? null) {
+        if ($fileType = $data['file_type'] ?? null) {
             if ($exts = config('rules.file_type.'.$fileType)) {
-                $parameters['help'] = '允许的扩展名：'.join(', ', $exts);
+                $data['help'] = '允许的扩展名：'.join(', ', $exts);
             }
         }
 
-        return $parameters;
+        return $data;
     }
 
     public static function rules(array $parameters)

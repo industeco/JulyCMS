@@ -31,7 +31,7 @@ class NodeController extends Controller
 
         return view_with_langcode('admin::nodes.index', [
             'nodes' => $nodes,
-            'catalogs' => describe(Catalog::all()),
+            'catalogs' => mix_config(Catalog::all()),
         ]);
     }
 
@@ -43,7 +43,7 @@ class NodeController extends Controller
     public function create()
     {
         return view_with_langcode('admin::nodes.choose_node_type', [
-            'nodeTypes' => describe(NodeType::all()),
+            'nodeTypes' => mix_config(NodeType::all()),
         ]);
     }
 

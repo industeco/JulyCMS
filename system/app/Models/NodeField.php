@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Casts\Json;
+use App\Contracts\HasModelConfig;
 use App\FieldTypes\FieldType;
+use App\Traits\CastModelConfig;
 
-class NodeField extends JulyModel
+class NodeField extends JulyModel implements HasModelConfig
 {
+    use CastModelConfig;
+
     /**
      * 与模型关联的表名
      *
@@ -75,6 +79,11 @@ class NodeField extends JulyModel
                         'delta',
                         'config'
                     );
+    }
+
+    public function configStructure(): array
+    {
+        return FieldType::getConfigStructrue($this->field_type);
     }
 
     public static function globalFields()
@@ -168,28 +177,28 @@ class NodeField extends JulyModel
         Schema::dropIfExists($this->tableName());
     }
 
-    /**
-     * 保存前对请求数据进行预处理
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return Array
-     */
-    public static function prepareRequest(Request $request, NodeField $nodeField = null)
-    {
-        $config = FieldType::getConfig($request->all());
-        if ($nodeField) {
-            unset($config['langcode']);
-            return [
-                'config' => array_replace_recursive($this->config, $config),
-            ];
-        } else {
-            return [
-                'truename' => $request->input('truename'),
-                'field_type' => $request->input('field_type'),
-                'config' => $config,
-            ];
-        }
-    }
+    // /**
+    //  * 保存前对请求数据进行预处理
+    //  *
+    //  * @param \Illuminate\Http\Request $request
+    //  * @return Array
+    //  */
+    // public static function prepareRequest(Request $request, NodeField $nodeField = null)
+    // {
+    //     $config = FieldType::getConfig($request->all());
+    //     if ($nodeField) {
+    //         unset($config['langcode']);
+    //         return [
+    //             'config' => array_replace_recursive($this->config, $config),
+    //         ];
+    //     } else {
+    //         return [
+    //             'truename' => $request->input('truename'),
+    //             'field_type' => $request->input('field_type'),
+    //             'config' => $config,
+    //         ];
+    //     }
+    // }
 
     // public static function cacheKey($truename, $node_id, $langcode = null)
     // {

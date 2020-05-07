@@ -16,7 +16,7 @@ class NodeFieldController extends Controller
      */
     public function index()
     {
-        return Response::make(describe(NodeField::all()));
+        return Response::make(mix_config(NodeField::all()));
     }
 
     /**
@@ -37,7 +37,8 @@ class NodeFieldController extends Controller
      */
     public function store(Request $request)
     {
-        $field = NodeField::create(NodeField::prepareRequest($request));
+        $field = NodeField::make($request->all());
+        $field->save();
         return Response::make($field);
     }
 

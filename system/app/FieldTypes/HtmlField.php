@@ -21,21 +21,26 @@ class HtmlField extends FieldTypeBase
     public static function configStructure(): array
     {
         return [
-            'required' => 'boolean',
-            'index_weight' => 'integer',
-            'interface_values' => [
-                'label' => 'string',
-                'help' => 'string',
-                'description' => 'string',
+            'required' => [
+                'cast' => 'boolean',
+            ],
+            'index_weight' => [
+                'cast' => 'integer',
+            ],
+            'label' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+            ],
+            'help' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
+                'default' => '',
+            ],
+            'description' => [
+                'type' => 'interface_value',
+                'cast' => 'string',
             ],
         ];
-    }
-
-    public static function parameters(array $data)
-    {
-        return array_merge([
-            'help' => '',
-        ], describe($data));
     }
 
     public static function element(array $parameters)

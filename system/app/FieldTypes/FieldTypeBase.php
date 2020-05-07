@@ -55,53 +55,18 @@ abstract class FieldTypeBase
 
     abstract public static function configStructure(): array;
 
-    public static function config(array $data)
-    {
-        $lang = langcode();
-
-        $config = [
-            'langcode' => [
-                'content_value' => $lang['content_value'],
-                'interface_value' => $lang['interface_value'],
-            ],
-            'interface_values' => [],
-            'content_values' => [],
-        ];
-
-        $structure = static::configStructure();
-
-        foreach ($structure as $key => $type) {
-            if ($key === 'interface_values' || $key === 'content_values') {
-                $lang_key = trim($key, 's');
-                foreach ($type as $k => $t) {
-                    if (isset($data[$k])) {
-                        $config[$key][$k] = [
-                            $lang[$lang_key] => static::cast($data[$k], $t),
-                        ];
-                    }
-                }
-            } else {
-                if (isset($data[$key])) {
-                    $config[$key] = static::cast($data[$key], $type);
-                }
-            }
-        }
-
-        if (empty($config['interface_values'])) {
-            unset($config['interface_values']);
-        }
-
-        if (empty($config['content_values'])) {
-            unset($config['content_values']);
-        }
-
-        return $config;
-    }
-
     /**
      *
      */
-    abstract public static function parameters(array $data);
+    public static function parameters(array $data)
+    {
+        $config = $data['config'] ?? null;
+        if (is_array($config)) {
+            $data = array_merge($data, extract_config($config, static::configStructure()));
+        }
+
+        return $data;
+    }
 
     abstract public static function element(array $parameters);
 
