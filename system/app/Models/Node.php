@@ -58,6 +58,15 @@ class Node extends JulyModel
         return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog')->toArray();
     }
 
+    public static function make(array $attributes = [])
+    {
+        $nodeType = NodeType::findOrFail($attributes['node_type'] ?? null);
+        return new static([
+            'node_type' => $nodeType->truename,
+            'langcode' => langcode('content_value'),
+        ]);
+    }
+
     public static function allNodes($langcode = null)
     {
         $nodes = [];
@@ -125,14 +134,14 @@ class Node extends JulyModel
         ];
     }
 
-    public static function prepareRequest(Request $request)
-    {
-        $nodeType = NodeType::findOrFail($request->input('node_type'));
-        return [
-            'node_type' => $nodeType->truename,
-            'langcode' => langcode('content_value'),
-        ];
-    }
+    // public static function prepareRequest(Request $request)
+    // {
+    //     $nodeType = NodeType::findOrFail($request->input('node_type'));
+    //     return [
+    //         'node_type' => $nodeType->truename,
+    //         'langcode' => langcode('content_value'),
+    //     ];
+    // }
 
     /**
      * 保存属性值

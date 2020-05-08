@@ -94,10 +94,7 @@ class NodeTypeController extends Controller
      */
     public function update(Request $request, NodeType $nodeType)
     {
-        $config = $nodeType->buildConfig($request->all());
-        $nodeType->update([
-            'config' => array_replace_recursive($nodeType->config, $config)
-        ]);
+        $nodeType->update($request->all());
         $nodeType->updateFields($request);
         return Response::make();
     }

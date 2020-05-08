@@ -16,7 +16,7 @@ class ConfigController extends Controller
     {
         $entries = [];
         foreach (Config::all() as $option) {
-            $entries[] = $option->describe();
+            $entries[] = $option->mixConfig();
         }
         return view_with_langcode('admin::configs.index', [
             'entries' => $entries,

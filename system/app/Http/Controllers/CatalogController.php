@@ -41,7 +41,6 @@ class CatalogController extends Controller
      */
     public function store(Request $request)
     {
-        // $catalog = Catalog::create(Catalog::prepareRequest($request));
         $catalog = Catalog::make($request->all());
         $catalog->save();
         return Response::make($catalog);
@@ -78,11 +77,7 @@ class CatalogController extends Controller
      */
     public function update(Request $request, Catalog $catalog)
     {
-        // $catalog->update(Catalog::prepareRequest($request, $catalog));
-        $config = $catalog->buildConfig($request->all());
-        $catalog->update([
-            'config' => array_replace_recursive($catalog->config, $config)
-        ]);
+        $catalog->update($request->all());
         return Response::make();
     }
 

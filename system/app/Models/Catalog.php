@@ -45,7 +45,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     public $incrementing = false;
 
     /**
-     * 不可批量赋值的属性。
+     * 可批量赋值的属性。
      *
      * @var array
      */
@@ -65,6 +65,15 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     protected $casts = [
         'is_preset' => 'boolean',
         'config' => Json::class,
+    ];
+
+    /**
+     * 哪些字段可更新（白名单）
+     *
+     * @var array
+     */
+    protected $updateOnly = [
+        'config',
     ];
 
     /**

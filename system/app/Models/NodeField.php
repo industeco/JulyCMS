@@ -46,7 +46,7 @@ class NodeField extends JulyModel implements HasModelConfig
     public $incrementing = false;
 
     /**
-     * 不可批量赋值的属性。
+     * 可批量赋值的属性。
      *
      * @var array
      */

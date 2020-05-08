@@ -37,7 +37,7 @@ class Config extends Model
     public $incrementing = false;
 
     /**
-     * 不可批量赋值的属性。
+     * 可批量赋值的属性。
      *
      * @var array
      */
@@ -67,9 +67,9 @@ class Config extends Model
         return $default;
     }
 
-    public function describe($clang = null)
+    public function mixConfig($clang = null)
     {
-        $item = $this->toArray();
+        $item = $this->getAttributes();
         unset($item['config']);
 
         $interface_values = $this->config['interface_values'] ?? [];

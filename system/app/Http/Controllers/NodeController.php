@@ -78,8 +78,12 @@ class NodeController extends Controller
      */
     public function store(Request $request)
     {
-        $node = Node::create(Node::prepareRequest($request));
-        $node->saveValues($request->all());
+        $data = $request->all();
+
+        $node = Node::make($data);
+        $node->save();
+
+        $node->saveValues($data);
 
         $positions = (array) $request->input('changed_positions');
         if ($positions) {

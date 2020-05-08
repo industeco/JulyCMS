@@ -12,6 +12,46 @@ abstract class JulyModel extends Model
 {
     use CacheRetrieve;
 
+    /**
+     * 哪些字段可更新（白名单）
+     *
+     * @var array
+     */
+    protected $updateOnly = [];
+
+    /**
+     * 哪些字段不可更新（黑名单）
+     *
+     * @var array
+     */
+    protected $updateExcept = [];
+
+    /**
+     * Update the model in the database.
+     *
+     * @param  array  $attributes
+     * @param  array  $options
+     * @return bool
+     */
+    public function update(array $attributes = [], array $options = [])
+    {
+        if (! $this->exists) {
+            return false;
+        }
+
+        if ($this instanceof HasModelConfig) {
+            $attributes['config'] = $this->buildConfig($attributes);
+        }
+
+        if ($this->updateOnly) {
+            $attributes = array_intersect_key($attributes, array_flip($this->updateOnly));
+        } elseif ($this->updateExcept) {
+            $attributes = array_diff_key($attributes, array_flip($this->updateExcept));
+        }
+
+        return $this->fill($attributes)->save($options);
+    }
+
     public static function make(array $attributes = [])
     {
         $instance = new static($attributes);
