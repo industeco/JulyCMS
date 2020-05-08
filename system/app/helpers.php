@@ -263,7 +263,7 @@ if (! function_exists('extract_config')) {
         foreach ($config as $key => $value) {
             $meta = $structure[$key] ?? [];
             $type = $meta['type'] ?? null;
-            if (($type === 'content' || $type === 'interface') && is_array($value)) {
+            if (($type === 'content_value' || $type === 'interface_value') && is_array($value)) {
                 $value = $value[$langcode[$type]] ?? $value[$original_langcode[$type]] ?? null;
             }
 

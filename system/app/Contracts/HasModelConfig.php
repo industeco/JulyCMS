@@ -26,13 +26,4 @@ interface HasModelConfig
      * @return array
      */
     public function buildConfig(array $data): array;
-
-    /**
-     * 构建配置数据时，根据配置结构对数值做相应转换
-     *
-     * @param mixed $value
-     * @param string $cast
-     * @return mixed
-     */
-    public static function castConfigOption($value, $cast);
 }

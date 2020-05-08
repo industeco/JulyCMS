@@ -182,16 +182,18 @@
     data() {
 
       var isUniqueUrl = function(rule, value, callback) {
-        if (value && value.length) {
+        if (!value || !value.length) {
+          callback();
+        } else {
           axios.post('/admin/checkunique/node__url', {
             content_value_langcode: '{{ $content_value_langcode }}',
             url: value,
             id: {{ $id }},
           }).then(function(response) {
             if (response.data.exists) {
-              callback(new Error('url 已存在'))
+              callback(new Error('url 已存在'));
             } else {
-              callback()
+              callback();
             }
           }).catch(function(error) {
             console.error(error);
@@ -440,8 +442,7 @@
           node.changed_values = changed_values;
           node.changed_positions = changed_positions;
 
-          console.log(node)
-          // return;
+          // console.log(node)
 
           axios.{{ $id ? 'put' : 'post' }}('/admin/nodes{{ $id ? "/".$id : "" }}', node)
             .then(function(response) {
@@ -450,12 +451,12 @@
               window.location.href = "/admin/nodes";
             })
             .catch(function(error) {
-              app.$message.error(error);
               loading.close()
+              app.$message.error(error);
             })
         }).catch(function(error) {
-          console.error(error);
           loading.close();
+          console.error(error);
         })
       },
     }

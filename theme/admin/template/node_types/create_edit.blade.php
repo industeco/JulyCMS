@@ -59,27 +59,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="field in nodeType.fields.slice(0,1)" :key="field.truename">
+                <tr>
                   <td></td>
-                  <td><span>@{{ field.truename }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':field.required}">@{{ field.label }}</span></td>
-                  <td><span>@{{ field.description }}</span></td>
-                  <td><span>@{{ field.field_type }}</span></td>
+                  <td><span>@{{ nodeType.field__title.truename }}</span></td>
+                  <td><span :class="{'jc-label':true,'is-required':nodeType.field__title.required}">@{{ nodeType.field__title.label }}</span></td>
+                  <td><span>@{{ nodeType.field__title.description }}</span></td>
+                  <td><span>@{{ nodeType.field__title.field_type }}</span></td>
                   <td>
                     <div class="jc-operators">
-                      <button
-                        type="button"
-                        class="md-button md-icon-button md-primary md-theme-default"
-                        title="编辑"
-                        @click="editField(field)">
+                      <button type="button" title="编辑" class="md-button md-icon-button md-primary md-theme-default"
+                        @click="editField(nodeType.field__title)">
                         <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
                         {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
                       </button>
-                      <button
-                        type="button"
-                        class="md-button md-icon-button md-accent md-theme-default"
-                        title="删除"
-                        disabled>
+                      <button type="button" title="删除" disabled class="md-button md-icon-button md-accent md-theme-default">
                         <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
                       </button>
                     </div>
@@ -93,7 +86,7 @@
                 ghost-class="jc-drag-ghost"
                 handle=".jc-drag-handle"
                 tag="tbody">
-                <tr v-for="field in nodeType.fields.slice(1)" :key="field.truename">
+                <tr v-for="field in nodeType.fields" :key="field.truename">
                   <td><i class="md-icon md-icon-font md-theme-default jc-drag-handle">swap_vert</i></td>
                   <td><span>@{{ field.truename }}</span></td>
                   <td><span :class="{'jc-label':true,'is-required':field.required}">@{{ field.label }}</span></td>
@@ -208,30 +201,51 @@
 
   let mode = "{{ $truename ? 'edit' : 'create' }}";
 
+  let currentFields = @json(array_values($fields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  let titleField = {
+    truename: 'title',
+    field_type: 'text',
+    is_preset: true,
+    langcode: 'zh',
+    label: '标题',
+    description: '内容类型预设字段，不可删除，不可排序',
+  };
+  for (let i = 0, len = currentFields.length; i < len; i++) {
+    if (currentFields[i].truename == 'title') {
+      titleField = currentFields[i];
+      currentFields.splice(i, 1);
+      break;
+    }
+  }
+
   let app = new Vue({
     el: '#main_content',
     data() {
       var isUniqueType = function(rule, value, callback) {
-        if (value && value.length) {
+        if (!value || !value.length) {
+          callback();
+        } else {
           axios.get('/admin/checkunique/node_types/'+value).then(function(response) {
             if (response.data.exists) {
-              callback(new Error('『真名』已存在'))
+              callback(new Error('『真名』已存在'));
             } else {
-              callback()
+              callback();
             }
           }).catch(function(error) {
             console.error(error);
-          })
+          });
         }
       };
 
       var isUniqueField = function(rule, value, callback) {
-        if (value && value.length) {
+        if (!value || !value.length) {
+          callback();
+        } else {
           axios.get('/admin/checkunique/node_fields/'+value).then(function(response) {
             if (response.data.exists) {
-              callback(new Error('『真名』已存在'))
+              callback(new Error('『真名』已存在'));
             } else {
-              callback()
+              callback();
             }
           }).catch(function(error) {
             console.error(error);
@@ -246,7 +260,8 @@
           truename: '{{ $truename }}',
           name: '{{ $name }}',
           description: '{{ $description }}',
-          fields: @json(array_values($fields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          field__title: titleField,
+          fields: currentFields,
         },
 
         nodeTypeRules: {
@@ -343,10 +358,7 @@
     },
 
     created: function() {
-
-      @if($truename)
-        this.initial_data = JSON.stringify(this.nodeType)
-      @endif
+      this.initial_data = JSON.stringify(this.nodeType)
 
       function transformDatalist(field) {
         if (field.field_type == 'text') {
@@ -417,47 +429,24 @@
             field.datalist = field.datalist.map(item => item.value);
 
             axios.post('/admin/node_fields', field).then(function(response) {
-              console.log(response)
+              // console.log(response)
               app.nodeType.fields.push(clone(app.nodeField))
               app.nodeFields.push(clone(app.nodeField))
               form.resetFields()
               loading.close()
               app.fieldSelectorVisible = false
             }).catch(function(error) {
-              console.error(error)
               loading.close()
+              console.error(error)
             })
           }).catch(function(error) {
             //...
           })
         } else {
-          const title = this.getFieldTitle();
-          Vue.set(this.nodeType, 'fields', [title].concat(clone(this.selectedFields)))
+          this.$set(this.nodeType, 'fields', clone(this.selectedFields))
           form.resetFields()
           this.fieldSelectorVisible = false
         }
-      },
-
-      getFieldTitle() {
-        let title = this.nodeType.fields[0];
-        if (title && title.truename != 'title') {
-          return title;
-        }
-
-        for (let i = 0, len = this.nodeType.fields.length; i < len; i++) {
-          if (this.nodeType.fields[i].truename == 'title') {
-            return this.nodeType.fields[i];
-          }
-        }
-
-        return {
-          truename: 'title',
-          field_type: 'text',
-          is_preset: true,
-          langcode: 'zh',
-          label: '标题',
-          description: '内容类型预设字段，不可删除，不可排序',
-        };
       },
 
       handleFieldEditorConfirm() {
@@ -483,15 +472,17 @@
       submitMainForm() {
         let form = this.$refs.main_form;
 
+        const loading = app.$loading({
+          lock: true,
+          text: mode=='create'?'正在新建类型 ...':'正在保存修改 ...',
+          background: 'rgba(255, 255, 255, 0.7)',
+        });
+
         form.validate().then(function() {
-          // form.$el.submit()
-          const loading = app.$loading({
-            lock: true,
-            text: mode=='create'?'正在新建类型 ...':'正在保存修改 ...',
-            background: 'rgba(255, 255, 255, 0.7)',
-          });
 
           let nodeType = clone(app.nodeType);
+          nodeType.fields.unshift(nodeType.field__title);
+          delete nodeType.field__title;
           nodeType.fields = nodeType.fields.map(function(field) {
             if (field.field_type == 'text' && field.datalist) {
               const datalist = field.datalist;
@@ -503,7 +494,7 @@
               }
             }
             return field
-          })
+          });
 
           @if($truename)
             if (app.initial_data === JSON.stringify(nodeType)) {
@@ -512,10 +503,12 @@
             }
           @endif
 
-          // const method = mode == 'edit' ? 'put' : 'post';
-          // const action = '/admin/node_types' + (mode == 'edit' ? '/'+app.nodeType.truename : '')
+          console.log(nodeType);
 
-          axios.{!! $truename ? "put('/admin/node_types/$truename'" : "post('/admin/node_types'" !!}, nodeType).then(function(response) {
+          const method = '{{ $truename ? "put" : "post" }}';
+          const action = '/admin/node_types' + '{{ $truename ? "/".$truename : "" }}';
+
+          axios[method](action, nodeType).then(function(response) {
             // loading.close()
             window.location.href = "/admin/node_types";
           }).catch(function(error) {
@@ -524,7 +517,8 @@
             loading.close()
           })
         }).catch(function(error) {
-          console.error(error);
+          loading.close();
+          // console.error(error);
         })
       },
     }

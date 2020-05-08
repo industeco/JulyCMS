@@ -95,7 +95,6 @@
     data() {
       return {
         catalogNodes: [],
-
         nodes: @json($all_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         selectableNodes: [],
         selectedNodes: null,
@@ -106,7 +105,7 @@
 
     created: function() {
       // 初始化目录数据
-      Vue.set(this.$data, 'catalogNodes', toTree(catalog_nodes));
+      this.$set(this.$data, 'catalogNodes', toTree(catalog_nodes));
 
       // 生成目录中已存在的节点的列表
       for (let i = 0; i < catalog_nodes.length; i++) {

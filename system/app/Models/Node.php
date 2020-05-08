@@ -70,7 +70,7 @@ class Node extends JulyModel
     public function getData($langcode = null)
     {
         return array_merge(
-            $this->toArray(),
+            $this->getAttributes(),
             $this->retrieveValues($langcode),
             $this->retrieveTags($langcode)
         );
@@ -232,15 +232,19 @@ class Node extends JulyModel
         if (!$node['url']) return [];
 
         $templates = [];
-        if ($node['template']) {
-            $templates[] = ltrim($node['template'], '/');
+        try {
+            if ($node['template']) {
+                $templates[] = ltrim($node['template'], '/');
+            }
+
+            // 针对该节点的模板
+            $templates[] = 'node--' . str_replace('/', '--', ltrim($node['url'], '/')) . '.twig';
+
+            // 针对该节点类型的模板
+            $templates[] = 'type--' . $node['node_type'] . '.twig';
+        } catch (\Throwable $th) {
+            dd($node);
         }
-
-        // 针对该节点的模板
-        $templates[] = 'node--' . str_replace('/', '--', ltrim($node['url'], '/')) . '.twig';
-
-        // 针对该节点类型的模板
-        $templates[] = 'type--' . $node['node_type']. '.twig';
 
         return $templates;
     }

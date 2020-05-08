@@ -203,11 +203,13 @@
   right: 0;
   top: 100%;
   background-color: transparent;
+  white-space: nowrap;
 }
 
 .el-input .el-input__count .el-input__count-inner {
   padding: 0;
   background-color: transparent;
+  white-space: nowrap;
 }
 
 .el-tabs__item.is-active,

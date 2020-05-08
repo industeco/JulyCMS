@@ -108,7 +108,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
             foreach ($this->fields as $field) {
                 $config = extract_config(
                     array_replace_recursive($field->config, $field->pivot['config']),
-                    $field->configStructure
+                    $field->configStructure()
                 );
                 $field = array_merge($field->toArray(), $config);
                 $field['delta'] = $field['pivot']['delta'];
@@ -175,7 +175,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 'node_type' => $node_type,
                 'node_field' => $field['truename'],
                 'delta' => $index,
-                'config' => FieldType::buildConfig($field),
+                'config' => json_encode(FieldType::buildConfig($field), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
             ];
         }
 
