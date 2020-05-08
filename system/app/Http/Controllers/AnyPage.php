@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
+
 class AnyPage extends Controller
 {
     /**
@@ -9,17 +11,21 @@ class AnyPage extends Controller
      *
      * @return View
      */
-    public function __invoke($url)
+    public function __invoke($url = '')
     {
-        $parameters = explode('/', strtolower($url));
+        $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
+
+        if (! Str::endsWith($url, '.html')) {
+            $url .= '/index.html';
+        }
 
         $langcode = langcode('site_page');
-        if ($parameters[0] !== $langcode) {
-            array_unshift($parameters, $langcode);
+        if (! Str::startsWith($url, $langcode.'/')) {
+            $url = $langcode.'/'.$url;
         }
 
         // 在 pages 目录查找文件
-        $file = public_path('pages/'.implode('/', $parameters));
+        $file = public_path('pages/'.$url);
         if (file_exists($file)) {
             return file_get_contents($file);
         }

@@ -481,7 +481,7 @@ body {
 
 #main_content {
   flex: 1;
-  padding: 20px 40px;
+  padding: 20px 40px 40px;
   /* border-top: 1px solid #bfbfbf; */
 }
 
