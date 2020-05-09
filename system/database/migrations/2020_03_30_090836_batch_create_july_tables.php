@@ -222,6 +222,9 @@ class BatchCreateJulyTables extends Migration
 
             // 语言代码
             $table->string('langcode', 12);
+
+            // 权重
+            $table->unsignedFloat('weight')->default(1);
         });
     }
 

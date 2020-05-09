@@ -55,13 +55,13 @@ class NodeController extends Controller
      */
     public function createWith(NodeType $nodeType)
     {
-        $fieldJigsaws = Node::retrieveFieldJigsaws($nodeType);
+        $langcode = langcode('admin_page');
 
         return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
             'node_type' => $nodeType->truename,
-            'fields' => $fieldJigsaws['jigsaws'],
-            'fields_aside' => $fieldJigsaws['jigsawsAside'],
+            'fields' => $nodeType->retrieveFieldJigsaws($langcode),
+            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($langcode),
             'positions' => [],
             'all_tags' => ['hot'],
             'all_nodes' => Node::allNodes(),
@@ -110,18 +110,19 @@ class NodeController extends Controller
      * 展示编辑或翻译界面
      *
      * @param  \App\Models\Node  $node
-     * @param  string  $langcode
+     * @param  string  $translateTo
      * @return \Illuminate\Http\Response
      */
-    public function edit(Node $node, $langcode = null)
+    public function edit(Node $node, $translateTo = null)
     {
-        $fieldJigsaws = Node::retrieveFieldJigsaws($node->nodeType, $node->getData($langcode));
+        $langcode = $translateTo ?? langcode('admin_page');
+        $values = $node->getData($langcode);
 
         $data = [
             'id' => $node->id,
             'node_type' => $node->node_type,
-            'fields' => $fieldJigsaws['jigsaws'],
-            'fields_aside' => $fieldJigsaws['jigsawsAside'],
+            'fields' => $node->nodeType->retrieveFieldJigsaws($langcode, $values),
+            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($langcode, $values),
             'positions' => $node->positions(),
             'all_tags' => ['hot'],
             'all_nodes' => Node::allNodes($langcode),
@@ -129,8 +130,8 @@ class NodeController extends Controller
             'mode' => 'edit',
         ];
 
-        if ($langcode) {
-            $data['content_value_langcode'] = $langcode;
+        if ($translateTo) {
+            $data['content_value_langcode'] = $translateTo;
             $data['mode'] = 'translate';
         }
 

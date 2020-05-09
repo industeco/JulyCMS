@@ -91,9 +91,26 @@
 
       <div id="navbar_left">
         <!-- 展开 / 折叠左侧菜单 -->
-        <button type="button" class="md-button md-icon-button md-theme-default" id="navbar_toggle" title="折叠/展开">
+        <button type="button" title="折叠/展开" class="md-button md-icon-button md-theme-default"
+          @click="toggleSidebar">
           <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
-          <i class="md-icon md-icon-font md-theme-default">menu</i>
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">menu</i></div>
+          </div>
+        </button>
+        <button type="button" class="md-button md-small md-primary md-theme-default"
+          @click="rebuildIndex">
+          <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
+          <div class="md-ripple">
+            <div class="md-button-content">重建索引</div>
+          </div>
+        </button>
+        <button type="button" class="md-button md-small md-primary md-theme-default"
+          @click="clearCache">
+          <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
+          <div class="md-ripple">
+            <div class="md-button-content">清除缓存</div>
+          </div>
         </button>
       </div>
 
@@ -101,26 +118,33 @@
       <div id="navbar_right">
         <!-- 搜索栏框 -->
         <form action="/search.php" method="GET" id="navbar_search">
-          <input type="text" name="keywords" placeholder="搜索" disabled>
+          <input type="text" name="keywords" placeholder="搜索（暂不可用）" disabled>
           <i class="md-icon md-icon-font md-theme-default">search</i>
         </form>
 
         <!-- 打开网站首页 -->
         <a href="/" target="_blank" class="md-button md-icon-button md-theme-default" title="网站首页">
-          <i class="md-icon md-icon-font md-theme-default">home</i>
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">home</i></div>
+          </div>
         </a>
 
         <!-- 打开后台首页 -->
         <a href="/admin" class="md-button md-icon-button md-theme-default" title="后台首页">
-          <i class="md-icon md-icon-font md-theme-default">dashboard</i>
+          <div class="md-ripple">
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">dashboard</i></div>
+          </div>
         </a>
 
         <!-- 当前用户下拉菜单 -->
         <div class="md-menu jc-dropdown">
-          <button type="button" class="jc-primary md-button md-icon-button md-primary md-theme-default" id="navbar_admin_btn">
-            <i class="md-icon md-icon-font md-theme-default">person</i>
+          <button type="button" class="jc-primary md-button md-icon-button md-primary md-theme-default"
+            @click.stop="toggleAdminMenu">
+            <div class="md-ripple">
+              <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">person</i></div>
+            </div>
           </button>
-          <div class="md-menu-content-medium md-menu-content md-theme-default" id="navbar_admin_menu" style="display: none;">
+          <div class="md-menu-content-medium md-menu-content md-theme-default" v-show="adminMenuVisible">
             <div class="md-menu-content-container md-theme-default">
               <ul class="md-list md-theme-default">
                 <li class="md-list-item md-menu-item md-theme-default">
@@ -144,7 +168,7 @@
     <div id="app_main" class="jc-scroll-wrapper">
       <div class="jc-scroll md-scrollbar md-theme-default">
         <div id="main_header">
-          <h1>@yield('h1', '七月 CMS 后台')</h1>
+          <h1>@yield('h1', '七月后台')</h1>
           {{-- <div id="translate_btn">@yield('translate_btn')</div> --}}
         </div>
         <div id="main_content">
@@ -157,10 +181,98 @@
   <script src="/theme/admin/vendor/moment/moment.min.js"></script>
   <script src="/theme/admin/js/app.js"></script>
   <script src="/theme/admin/vendor/element-ui/index.js"></script>
-  <script src="/theme/admin/js/menu.js"></script>
   <script src="/theme/admin/js/utils.js"></script>
+  <script>
+    // 左侧边栏有下级菜单项的点击展开效果
+    $('#app_sidebar .md-list-item-expand').each(function() {
+      const $item = $(this);
+      const $clickableBar = $item.children('.md-list-item-content');
+      const $submenu = $item.children('.md-list-expand');
+
+      let isExpanded = false;
+      if ($submenu.find('>.md-list>.md-list-item.is-active').length) {
+        isExpanded = true
+        $item.addClass('md-active')
+        $submenu.css('height', 'auto')
+      }
+
+      $clickableBar.click(function (e) {
+        e.stopPropagation()
+        isExpanded = !isExpanded;
+        $item.toggleClass('md-active');
+        if (isExpanded) {
+          $submenu.css('height', 'auto')
+        } else {
+          $submenu.css('height', 0)
+        }
+      })
+    });
+
+    // 导航栏
+    const navbar = new Vue({
+      el: '#app_navbar',
+      data() {
+        return {
+          adminMenuVisible: false,
+        };
+      },
+
+      methods: {
+        toggleSidebar() {
+          $('#layout_left').toggleClass('is-collapsed');
+        },
+
+        rebuildIndex() {
+          const loading = this.$loading({
+            lock: true,
+            text: '正在重建索引 ...',
+            background: 'rgba(255, 255, 255, 0.7)',
+          });
+
+          axios.get('/admin/cmd/rebuildindex').then(response => {
+            loading.close();
+            console.log(response);
+            this.$message.success('重建索引完成');
+          }).catch(error => {
+            loading.close();
+            console.error(error);
+            this.$message.error('重建索引失败');
+          });
+        },
+
+        clearCache() {
+          const loading = this.$loading({
+            lock: true,
+            text: '正在清除缓存 ...',
+            background: 'rgba(255, 255, 255, 0.7)',
+          });
+
+          axios.get('/admin/cmd/clearcache').then(response => {
+            loading.close();
+            console.log(response);
+            this.$message.success('缓存已清除');
+          }).catch(error => {
+            loading.close();
+            console.error(error);
+            this.$message.error('后台错误');
+          });
+        },
+
+        toggleAdminMenu() {
+          this.adminMenuVisible = !this.adminMenuVisible;
+          if (this.adminMenuVisible) {
+            // 当用户菜单显示时，点击其它任意地方隐藏
+            $(document).on('click.admin-toggle', function(e) {
+              navbar.toggleAdminMenu();
+            });
+          } else {
+            $(document).off('click.admin-toggle');
+          }
+        },
+      },
+    });
+  </script>
 
   @yield('script')
-
 </body>
 </html>

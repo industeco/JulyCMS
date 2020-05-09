@@ -17,6 +17,14 @@ a.md-button {
   box-shadow: none;
 }
 
+.md-dense .md-button-content {
+  padding: 0 10px;
+}
+
+.md-small .md-button-content {
+  padding: 0 5px;
+}
+
 .md-fab {
   width: 36px;
   height: 36px;

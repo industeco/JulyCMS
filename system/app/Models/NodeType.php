@@ -137,7 +137,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         return $fields;
     }
 
-    public function retrieveFieldJigsaws($langcode = null)
+    public function retrieveFieldJigsaws($langcode = null, array $values = null)
     {
         $langcode = $langcode ?? langcode('admin_page');
 
@@ -160,7 +160,14 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
             $this->cachePut($cacheid, $jigsaws, $langcode);
         }
 
-        return $jigsaws['jigsaws'];
+        $jigsaws = $jigsaws['jigsaws'];
+        if ($values) {
+            foreach ($jigsaws as $fieldName => &$jigsaw) {
+                $jigsaw['value'] = $values[$fieldName] ?? null;
+            }
+        }
+
+        return $jigsaws;
     }
 
     /**

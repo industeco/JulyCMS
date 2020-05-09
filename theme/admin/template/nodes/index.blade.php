@@ -40,7 +40,12 @@
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50"></el-table-column>
         <el-table-column label="ID" prop="id" width="100" sortable></el-table-column>
-        <el-table-column label="标题" prop="title" width="auto" sortable></el-table-column>
+        <el-table-column label="标题" prop="title" width="auto" sortable>
+          <template slot-scope="scope">
+            <a v-if="scope.row.url" :href="scope.row.url" target="_blank">@{{ scope.row.title }}</a>
+            <span v-else>@{{ scope.row.title }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="建议模板" prop="templates" width="auto" v-if="showSuggestedTemplates">
           <template slot-scope="scope">
             <span class="jc-suggested-template" v-for="template in scope.row.templates" :key="template">@{{ template }}</span>
@@ -134,12 +139,13 @@
         });
 
         axios.post('/admin/nodes/render', {nodes: nodes}).then((response) => {
-          console.log(response)
+          // console.log(response)
           loading.close();
+          this.$message.success('生成完成');
         }).catch(err => {
-          // console.error(err);
           loading.close();
-          this.$message.error(err);
+          console.error(err);
+          this.$message.error('发生错误');
         });
       },
     },

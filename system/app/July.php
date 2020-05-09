@@ -3,11 +3,12 @@
 namespace App;
 
 use App\Filemanager\Controllers;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 class July
 {
-    public static function AdminRoutes($lang = '')
+    public static function adminRoutes($lang = '')
     {
         if ($lang) {
             $lang .= '.';
@@ -68,5 +69,16 @@ class July
         Route::get('checkunique/node_types/{truename}', 'NodeTypeController@unique');
         Route::get('checkunique/catalogs/{truename}', 'CatalogController@unique');
         Route::post('checkunique/node__url', 'NodeFieldController@uniqueUrl');
+
+        // 命令执行
+        Route::get('cmd/clearcache', ['uses' => 'CommandController@clearCache', 'as' => 'cmd.clearcache']);
+        Route::get('cmd/rebuildindex', ['uses' => 'CommandController@rebuildIndex', 'as' => 'cmd.rebuildindex']);
+
+    }
+
+    public static function webRoutes()
+    {
+        Route::get('search', ['uses' => 'CommandController@search', 'as' => 'cmd.search']);
+        Route::get('{any}', 'AnyPage')->where('any', '.*');
     }
 }

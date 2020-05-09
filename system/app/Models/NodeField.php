@@ -93,19 +93,43 @@ class NodeField extends JulyModel implements HasModelConfig
         ];
     }
 
-    public static function retrieveGlobalFieldJigsaws($langcode = null)
+    public static function retrieveGlobalFields($langcode = null)
     {
         $langcode = $langcode ?? langcode('admin_page');
+        if (is_array($langcode)) {
+            $langcode = $langcode['content_value'] ?? langcode('admin_page');
+        }
+
+        $cacheKey = md5('globalFields/'.$langcode);
+        $fields = Cache::get($cacheKey);
+
+        if (! $fields) {
+            $fields = [];
+            foreach (NodeField::findMany(NodeField::globalFields()) as $field) {
+                $fields[$field->truename] = $field->mixConfig();
+            }
+            Cache::put($cacheKey, $fields);
+        }
+
+        return $fields;
+    }
+
+    public static function retrieveGlobalFieldJigsaws($langcode = null, array $values = null)
+    {
+        $langcode = $langcode ?? langcode('admin_page');
+        if (is_array($langcode)) {
+            $langcode = $langcode['content_value'] ?? langcode('admin_page');
+        }
 
         $lastModified = last_modified(view_path('components/'));
 
-        $cacheKey = md5('fieldJigsawsAside/'.$langcode);
+        $cacheKey = md5('globalFieldJigsaws/'.$langcode);
         $jigsaws = Cache::get($cacheKey);
 
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
-            foreach (NodeField::findMany(NodeField::globalFields()) as $field) {
-                $jigsaws[$field->truename] = FieldType::getJigsaws($field->toArray());
+            foreach (static::retrieveGlobalFields($langcode) as $field) {
+                $jigsaws[$field['truename']] = FieldType::getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),
@@ -114,7 +138,14 @@ class NodeField extends JulyModel implements HasModelConfig
             Cache::put($cacheKey, $jigsaws);
         }
 
-        return $jigsaws['jigsaws'];
+        $jigsaws = $jigsaws['jigsaws'];
+        if ($values) {
+            foreach ($jigsaws as $fieldName => &$jigsaw) {
+                $jigsaw['value'] = $values[$fieldName] ?? null;
+            }
+        }
+
+        return $jigsaws;
     }
 
     public function tableName()
@@ -176,35 +207,6 @@ class NodeField extends JulyModel implements HasModelConfig
     {
         Schema::dropIfExists($this->tableName());
     }
-
-    // /**
-    //  * 保存前对请求数据进行预处理
-    //  *
-    //  * @param \Illuminate\Http\Request $request
-    //  * @return Array
-    //  */
-    // public static function prepareRequest(Request $request, NodeField $nodeField = null)
-    // {
-    //     $config = FieldType::getConfig($request->all());
-    //     if ($nodeField) {
-    //         unset($config['langcode']);
-    //         return [
-    //             'config' => array_replace_recursive($this->config, $config),
-    //         ];
-    //     } else {
-    //         return [
-    //             'truename' => $request->input('truename'),
-    //             'field_type' => $request->input('field_type'),
-    //             'config' => $config,
-    //         ];
-    //     }
-    // }
-
-    // public static function cacheKey($truename, $node_id, $langcode = null)
-    // {
-    //     $langcode = $langcode ?: langcode('content_value');
-    //     return 'node_fields/'.$truename.'/'.$node_id.'/'.$langcode;
-    // }
 
     /**
      * 删除字段值

@@ -1,6 +1,6 @@
 /* 初始化界面框架 */
 (function() {
-  // 切换左侧边栏
+  切换左侧边栏
   const $sidebar = $('#layout_left');
   $('#navbar_toggle').click(function() {
     $sidebar.toggleClass('is-collapsed');

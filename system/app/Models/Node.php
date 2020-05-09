@@ -85,6 +85,20 @@ class Node extends JulyModel
         );
     }
 
+    public function searchableFields()
+    {
+        $fields = [];
+        foreach ($this->nodeType->retrieveFields() as $field) {
+            if ($field['is_searchable']) {
+                $fields[$field['truename']] = [
+                    'field_type' => $field['field_type'],
+                    'weight' => $field['weight'] ?? $field['index_weight'] ?? 1,
+                ];
+            }
+        }
+        return $fields;
+    }
+
     public function retrieveTags($langcode = null)
     {
         return [
@@ -110,29 +124,29 @@ class Node extends JulyModel
         return $values;
     }
 
-    public static function retrieveFieldJigsaws(NodeType $nodeType, array $values = [])
-    {
-        $langcode = langcode('admin_page');
+    // public static function retrieveFieldJigsaws(NodeType $nodeType, array $values = [])
+    // {
+    //     $langcode = langcode('admin_page');
 
-        // 表单左侧字段碎片
-        $jigsaws = $nodeType->retrieveFieldJigsaws($langcode);
-        foreach ($jigsaws as $fieldName => &$jigsaw) {
-            $jigsaw['value'] = $values[$fieldName] ?? null;
-        }
-        unset($jigsaw);
+    //     // 表单左侧字段碎片
+    //     $jigsaws = $nodeType->retrieveFieldJigsaws($langcode);
+    //     foreach ($jigsaws as $fieldName => &$jigsaw) {
+    //         $jigsaw['value'] = $values[$fieldName] ?? null;
+    //     }
+    //     unset($jigsaw);
 
-        // 表单右侧字段碎片
-        $jigsawsAside = NodeField::retrieveGlobalFieldJigsaws($langcode);
-        foreach ($jigsawsAside as $fieldName => &$jigsaw) {
-            $jigsaw['value'] = $values[$fieldName] ?? null;
-        }
-        unset($jigsaw);
+    //     // 表单右侧字段碎片
+    //     $jigsawsAside = NodeField::retrieveGlobalFieldJigsaws($langcode);
+    //     foreach ($jigsawsAside as $fieldName => &$jigsaw) {
+    //         $jigsaw['value'] = $values[$fieldName] ?? null;
+    //     }
+    //     unset($jigsaw);
 
-        return [
-            'jigsaws' => $jigsaws,
-            'jigsawsAside' => $jigsawsAside,
-        ];
-    }
+    //     return [
+    //         'jigsaws' => $jigsaws,
+    //         'jigsawsAside' => $jigsawsAside,
+    //     ];
+    // }
 
     // public static function prepareRequest(Request $request)
     // {

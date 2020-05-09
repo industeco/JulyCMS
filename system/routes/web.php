@@ -22,7 +22,7 @@ Route::group([
     'prefix' => 'admin',
     'middleware' => ['web', 'admin'],
 ], function() {
-    \App\July::AdminRoutes();
+    \App\July::adminRoutes();
 });
 
-Route::get('{any}', 'AnyPage')->where('any', '.*');
+\App\July::webRoutes();

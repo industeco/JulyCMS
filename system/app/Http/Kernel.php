@@ -34,7 +34,7 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
+            // \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SetLangcode::class,
         ],
@@ -45,6 +45,7 @@ class Kernel extends HttpKernel
         ],
 
         'admin' => [
+            \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\AdminAuthenticate::class,
         ],
     ];

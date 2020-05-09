@@ -241,10 +241,23 @@ body {
 
 /* 左侧 sidebar 样式 */
 
+@keyframes slideDown
+{
+  from {width: 220px;}
+  to {width: 60px;}
+}
+
+@keyframes slideUp
+{
+  from {width: 60px;}
+  to {width: 220px;}
+}
+
 #layout_left, #app_sidebar {
-  width: 220px;
-  transition: width .25s;
-  will-change: width;
+  min-width: 60px;
+  animation-name: slideUp;
+  animation-duration: 200ms;
+  animation-fill-mode: forwards;
 }
 
 #app_sidebar {
@@ -263,8 +276,7 @@ body {
 }
 
 #layout_left.is-collapsed, .is-collapsed > #app_sidebar {
-  min-width: 60px;
-  width: 60px;
+  animation-name: slideDown;
 }
 
 .is-collapsed > #app_sidebar {
