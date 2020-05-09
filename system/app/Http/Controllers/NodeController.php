@@ -199,14 +199,10 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        // Log::info('Render nodes:');
-        // Log::info($request->all());
-
-        $nodes = $request->input('nodes');
-        if (empty($nodes)) {
-            $nodes = Node::fetchAll();
-        } else {
-            $nodes = Node::fetchMany($nodes);
+        $nodes = Node::fetchAll();
+        $ids = $request->input('nodes');
+        if (! empty($ids)) {
+            $nodes = Node::fetchMany($ids);
         }
 
         $langs = $request->input('langcode') ?: array_keys(langcode('all'));
