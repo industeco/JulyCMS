@@ -67,6 +67,20 @@ class Node extends JulyModel
         ]);
     }
 
+    public static function urls($langcode = null)
+    {
+        $langcode = $langcode ?: config('translate.default_langcode.site_page');
+        $urls = [];
+        $nodes = Catalog::default()->get_nodes();
+        foreach ($nodes as $node) {
+            $node = $node->retrieveValues($langcode);
+            if ($url = $node['url'] ?? null) {
+                $urls[$url] = true;
+            }
+        }
+        return array_keys($urls);
+    }
+
     public static function allNodes($langcode = null)
     {
         $nodes = [];

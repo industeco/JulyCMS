@@ -3,12 +3,14 @@
 use App\Contracts\HasModelConfig;
 use App\Models\Config;
 use App\Models\JulyModel;
+use App\Models\Node;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('auth')) {
     /**
@@ -340,35 +342,6 @@ if (! function_exists('cast_value')) {
     }
 }
 
-// if (! function_exists('flatten_config')) {
-//     /**
-//      * @param array $config
-//      * @param array $langcode
-//      */
-//     function flatten_config(array $config, array $langcode)
-//     {
-//         $result = [];
-//         $original = $config['langcode'] ?? [];
-
-//         foreach ($config as $key => $value) {
-//             if ($key == 'langcode') {
-//                 continue;
-//             }
-//             if ($key == 'interface_values' || $key == 'content_values') {
-//                 $lang_key = trim($key, 's');
-//                 $lang = $langcode[$lang_key] ?? null;
-//                 foreach ($value as $k => $v) {
-//                     $result[$k] = $v[$lang] ?? $v[$original[$lang_key]];
-//                 }
-//             } else {
-//                 $result[$key] = $value;
-//             }
-//         }
-
-//         return $result;
-//     }
-// }
-
 if (! function_exists('mix_config')) {
     function mix_config($instances, array $langcode = [])
     {
@@ -489,5 +462,146 @@ if (! function_exists('last_modified')) {
             return $lastModified;
         }
         return null;
+    }
+}
+
+
+if (! function_exists('user_agent')) {
+    function user_agent($ua = null)
+    {
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
+        $uaGuess = $ua;
+
+        $system = "unknown";
+        if (preg_match("/(Windows Phone) \S+/", $ua, $match)
+            || preg_match("/(Windows) NT (\d+\.\d+)/", $ua, $match)
+            || preg_match("/(Android) (\d+\.\d+)/", $ua, $match)
+            || preg_match("/(iPhone);/", $ua, $match)
+            || preg_match("/(iPad);/", $ua, $match)
+            || preg_match("/(iPod);/", $ua, $match)
+            || preg_match("/(Mac OS)/", $ua, $match)
+            || preg_match("/\W(Linux)\W/", $ua, $match))
+        {
+            $system = $match[1];
+
+            if ($system === "Windows" && $match[2]) {
+                switch($match[2]){
+                    case "5.1":
+                        $system .= " XP";
+                        break;
+                    case "6.0":
+                        $system .= " Vista";
+                        break;
+                    case "6.1":
+                        $system .= " 7";
+                        break;
+                    case "6.2":
+                        $system .= " 8";
+                        break;
+                    case "6.3":
+                    case "10.0":
+                        $system .= " 10";
+                        break;
+                    default:
+                        break;
+                }
+            } elseif ($system === "Android" && $match[2]) {
+                $system += " "+$match[2];
+            }
+        }
+
+        $browser = "unknown";
+        if (preg_match("/(OPR)\/\S+/", $ua, $match)
+            || preg_match("/(Opera)[\/| ]\S+/", $ua, $match)
+            || (preg_match("/AppleWebKit\/\S+/", $ua)
+            && (preg_match("/(Edge)\/\S+/", $ua, $match)
+                || preg_match("/(Chrome)\/\S+/", $ua, $match)
+                || preg_match("/(Safari)\/\S+/", $ua, $match)))
+            || (preg_match("/rv:[^\)]+\) Gecko\/\d{8}/", $ua) && preg_match("/(Firefox)\/\S+/", $ua, $match)))
+        {
+            $browser = $match[1];
+            if ($browser==="OPR") {
+                $browser = "Opera";
+            }
+        } elseif (preg_match("/MSIE ([^;])+/", $ua, $match) || preg_match("/rv:([^)]+)/", $ua, $match)){
+            $browser = "IE " + $match[1];
+        }
+
+        if ($system != 'unknown') {
+            $uaGuess = "OS:{$system}, browser:{$browser}";
+        }
+
+        return $uaGuess;
+    }
+}
+
+if (! function_exists('build_google_sitemap')) {
+    /**
+     * 生成谷歌站点地图（xml 文件）
+     */
+    function build_google_sitemap(array $urls = null)
+    {
+        // 首页地址
+        $home = rtrim(config('app.url'), '\\/') . '/';
+
+        // pdf 信息
+        $pdfList = [];
+
+        // xml 文件
+        $xml = '<'.'?xml version="1.0" encoding="UTF-8" ?'.'>';
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
+        $xml .= ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
+        $xml .= ' xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9';
+        $xml .= ' http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"';
+        $xml .= ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+
+        $xml .= '<url><loc>'.$home.'</loc></url>';
+
+        $langcode = config('translate.default_langcode.site_page');
+        $path = 'pages/'.$langcode.'/';
+
+        $public = Storage::disk('public');
+
+        // 生成 xml 内容
+        $urls = $urls ?: Node::urls($langcode);
+        foreach ($urls as $url) {
+            $url = trim($url, '\\/');
+
+            if (! $public->exists($path.$url)) continue;
+
+            $xml .= '<url><loc>'.$home.$url.'</loc>';
+
+            $content = $public->get($path.$url);
+            if (empty($content)) {
+                $xml .= '</url>';
+                continue;
+            }
+
+            preg_match_all('/src="\/([^"]*?\.(?:jpg|jpeg|gif|png|webp))"/', $content, $matches, PREG_PATTERN_ORDER);
+            foreach(array_unique($matches[1]) as $src){
+                $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>";
+            }
+
+            $xml .= '</url>';
+
+            preg_match_all('/href="\/([^"]*?\.pdf)"/',$content, $matches, PREG_PATTERN_ORDER);
+            $pdfList = array_merge($pdfList, $matches[1]);
+        }
+
+        foreach(array_unique($pdfList) as $pdf) {
+            $xml .= '<url><loc>'.$home.$pdf.'</loc></url>';
+        }
+
+        $xml .= '</urlset>';
+
+        return $xml;
+    }
+}
+
+if (! function_exists('str_diff')) {
+    function str_diff($str1, $str2)
+    {
+        $str2 = str_replace(str_split($str1), '', $str2);
+        return strlen($str2);
     }
 }

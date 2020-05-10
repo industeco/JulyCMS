@@ -187,20 +187,79 @@ class Index extends Model
 
     public function getSearchResult(array $keywords)
     {
-        $this->tokenize($keywords);
+        // $this->tokenize($keywords);
+        $tokens = $this->splitByKeywords($keywords);
 
         $similar = $this->similar($this->attributes['field_value'], key($keywords));
-
-        $weight = 0;
-        foreach ($this->tokens as $token) {
-            $weight += $token['weight'];
-        }
-        $weight *= ($this->attributes['weight'] ?? 1) * pow(10, pow($similar, 3));
+        $weight = $this->weight*($this->attributes['weight'] ?? 1)*pow(10, pow($similar, 3));
 
         return [
-            'content' => $this->summary(),
+            'content' => $this->joinTokens($tokens),
             'weight' => $weight,
         ];
+    }
+
+    protected function splitByKeywords(array $keywords)
+    {
+        $this->weight = 0;
+        $content = trim($this->attributes['field_value']);
+        $tokens = [];
+        foreach ($keywords as $keyword => $weight) {
+            $pos = stripos($content, $keyword);
+            while ($pos !== false) {
+                $tokens[] = substr($content, 0, $pos);
+
+                $word = substr($content, $pos, strlen($keyword));
+                if ($word !== $keyword) {
+                    $weight *= 1 - str_diff($word, $keyword)*.5/strlen($keyword);
+                }
+                $this->weight += $weight;
+                $tokens[] = '<span class="keyword">' . $word . '</span>';
+
+                $content = substr($content, $pos + strlen($keyword));
+                $pos = stripos($content, $keyword);
+            }
+        }
+        if (!empty($content)) {
+            $tokens[] = $content;
+        }
+
+        return $tokens;
+    }
+
+    protected function joinTokens(array $tokens)
+    {
+        $content = trim($this->attributes['field_value']);
+        if (strlen($content) <= 200) {
+            return implode('', $tokens);
+        }
+
+        $pieces = [];
+        $length = 0;
+        foreach ($tokens as $index => $token) {
+            if ($index%2) {
+                $left = $tokens[$index-1];
+                if ($left) {
+                    $left = explode(' ', $tokens[$index-1]);
+                    $left = array_slice($left, -1*min(intval(count($left)/2), 5));
+                    $left = implode(' ', $left);
+                }
+
+                $right = explode(' ', $tokens[$index+1]);
+                $right = array_slice($right, 0, min(intval(count($right)/2), 5));
+                $right = implode(' ', $right);
+
+                $piece = $left.$token.$right;
+                $pieces[] = $piece;
+                $length += strlen($piece) - 29;
+
+                if ($length >= 200) {
+                    break;
+                }
+            }
+        }
+
+        return '... '.implode(' ... ', $pieces).' ...';
     }
 
     /**

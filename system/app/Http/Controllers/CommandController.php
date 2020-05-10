@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewMessage;
+use App\Models\Catalog;
 use App\Models\Index;
 use App\Models\Node;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 
 class CommandController extends Controller
 {
@@ -29,6 +32,18 @@ class CommandController extends Controller
         return Index::rebuild();
     }
 
+    public function newMessage(Request $request)
+    {
+        $msg = new NewMessage($request->all());
+        if ($msg->send()) {
+            $reply = 'Message sent! We will contact you soon.';
+        } else {
+            $reply = $msg->getError();
+        }
+
+        return view('admin::mail', ['message' => $reply]);
+    }
+
     /**
      * 检索关键词
      *
@@ -49,5 +64,13 @@ class CommandController extends Controller
 
         $twig = twig('default/template', true);
         return $twig->render('search.twig', $results);
+    }
+
+    public function buildGoogleSitemap()
+    {
+        $urls = Node::urls();
+        $sitemap = build_google_sitemap($urls);
+        Storage::disk('public')->put('sitemap.xml', $sitemap);
+        return true;
     }
 }

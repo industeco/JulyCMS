@@ -1,5 +1,6 @@
 <?php
 
+use App\July;
 use App\Models\NodeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,7 @@ Route::group([
     'prefix' => 'admin',
     'middleware' => ['web', 'admin'],
 ], function() {
-    \App\July::adminRoutes();
+    July::adminRoutes();
 });
 
-\App\July::webRoutes();
+July::webRoutes();

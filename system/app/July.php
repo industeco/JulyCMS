@@ -39,6 +39,11 @@ class July
             'node_types' => 'nodeType',
         ])->names($lang.'node_types');
 
+        // 标签
+        Route::resource('tags', 'TagController')->parameters([
+            'tags' => 'tag',
+        ])->names($lang.'tags');
+
         // 目录
         Route::get('catalogs/{catalog}/reorder', 'CatalogController@reorder')->name($lang.'catalogs.reorder');
         Route::put('catalogs/{catalog}/sort', 'CatalogController@sort')->name($lang.'catalogs.sort');
@@ -73,11 +78,13 @@ class July
         // 命令执行
         Route::get('cmd/clearcache', ['uses' => 'CommandController@clearCache', 'as' => 'cmd.clearcache']);
         Route::get('cmd/rebuildindex', ['uses' => 'CommandController@rebuildIndex', 'as' => 'cmd.rebuildindex']);
+        Route::get('cmd/buildgooglesitemap', ['uses' => 'CommandController@buildGoogleSitemap', 'as' => 'cmd.buildgooglesitemap']);
 
     }
 
     public static function webRoutes()
     {
+        Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'cmd.newmessage']);
         Route::get('search', ['uses' => 'CommandController@search', 'as' => 'cmd.search']);
         Route::get('{any}', 'AnyPage')->where('any', '.*');
     }

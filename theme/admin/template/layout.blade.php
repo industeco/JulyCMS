@@ -93,23 +93,26 @@
         <!-- 展开 / 折叠左侧菜单 -->
         <button type="button" title="折叠/展开" class="md-button md-icon-button md-theme-default"
           @click="toggleSidebar">
-          <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
           <div class="md-ripple">
             <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">menu</i></div>
           </div>
         </button>
         <button type="button" class="md-button md-small md-primary md-theme-default"
           @click="rebuildIndex">
-          <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
           <div class="md-ripple">
             <div class="md-button-content">重建索引</div>
           </div>
         </button>
         <button type="button" class="md-button md-small md-primary md-theme-default"
           @click="clearCache">
-          <!-- <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_menu"></use></svg> -->
           <div class="md-ripple">
             <div class="md-button-content">清除缓存</div>
+          </div>
+        </button>
+        <button type="button" class="md-button md-small md-primary md-theme-default"
+          @click="buildGoogleSitemap">
+          <div class="md-ripple">
+            <div class="md-button-content">生成谷歌站点地图</div>
           </div>
         </button>
       </div>
@@ -222,39 +225,60 @@
           $('#layout_left').toggleClass('is-collapsed');
         },
 
-        rebuildIndex() {
+        process(config) {
           const loading = this.$loading({
             lock: true,
-            text: '正在重建索引 ...',
+            text: config.longdingText || '正在处理 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          axios.get('/admin/cmd/rebuildindex').then(response => {
+          return axios[(config.method || 'get')](config.action).then(response => {
             loading.close();
-            console.log(response);
-            this.$message.success('重建索引完成');
+            return response;
           }).catch(error => {
             loading.close();
             console.error(error);
-            this.$message.error('重建索引失败');
+            this.$message.error('发生错误！请查看控制台');
+            return error;
+          });
+        },
+
+        rebuildIndex() {
+          this.process({
+            loadingText: '正在重建索引 ...',
+            method: 'get',
+            action: '/admin/cmd/rebuildindex',
+          }).then(response => {
+            status = response.status;
+            if (status && status >= 200 && status <= 299) {
+              this.$message.success('重建索引完成');
+            }
           });
         },
 
         clearCache() {
-          const loading = this.$loading({
-            lock: true,
-            text: '正在清除缓存 ...',
-            background: 'rgba(255, 255, 255, 0.7)',
+          this.process({
+            loadingText: '正在清除缓存 ...',
+            method: 'get',
+            action: '/admin/cmd/clearcache',
+          }).then(response => {
+            status = response.status;
+            if (status && status >= 200 && status <= 299) {
+              this.$message.success('缓存已清除');
+            }
           });
+        },
 
-          axios.get('/admin/cmd/clearcache').then(response => {
-            loading.close();
-            console.log(response);
-            this.$message.success('缓存已清除');
-          }).catch(error => {
-            loading.close();
-            console.error(error);
-            this.$message.error('后台错误');
+        buildGoogleSitemap() {
+          this.process({
+            loadingText: '正在生成谷歌站点地图 ...',
+            method: 'get',
+            action: '/admin/cmd/buildgooglesitemap',
+          }).then(response => {
+            status = response.status;
+            if (status && status >= 200 && status <= 299) {
+              this.$message.success('谷歌站点地图已生成');
+            }
           });
         },
 
