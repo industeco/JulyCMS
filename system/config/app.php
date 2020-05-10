@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'env' => env('APP_ENV', real_env()),
+    'env' => env('APP_ENV', 'production'),
 
     /*
     |--------------------------------------------------------------------------
@@ -240,25 +240,7 @@ return [
      */
     'installed' => env('APP_INSTALLED', false),
 
-    // /**
-    //  * 语言
-    //  */
-    // 'langcode' => [
-    //     // 可用语言列表
-    //     'available' => ['zh', 'en'],
-
-    //     // 界面值默认语言：中文
-    //     'interface_value' => 'zh',
-
-    //     // 内容值默认语言：英语
-    //     'content_value' => 'en',
-
-    //     // 站点页面默认语言：英语
-    //     'site_page' => 'en',
-
-    //     // 后台页面默认语言：中文
-    //     'admin_page' => 'zh',
-    // ],
+    'demo' => env('APP_DEMO', false),
 
     'ckeditor' => [
         'config' => [

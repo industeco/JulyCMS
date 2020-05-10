@@ -151,7 +151,8 @@
             <div class="md-menu-content-container md-theme-default">
               <ul class="md-list md-theme-default">
                 <li class="md-list-item md-menu-item md-theme-default">
-                  <a href="/admin/password" class="md-list-item-link md-list-item-container md-button-clean">
+                  <a href="#" class="md-list-item-link md-list-item-container md-button-clean"
+                    @click.prevent="pwd.dialogVisible = true">
                     <div class="md-list-item-content">修改密码 </div>
                   </a>
                 </li>
@@ -165,6 +166,40 @@
           </div>
         </div>
       </div>
+      <el-dialog
+        id="change_pwd"
+        ref="change_pwd"
+        title="修改密码"
+        top="-5vh"
+        :close-on-click-modal="false"
+        :append-to-body="true"
+        :visible.sync="pwd.dialogVisible">
+        <el-form :model="pwd.data" status-icon :rules="pwd.rules" ref="pwdForm" label-width="100px">
+          <el-form-item label="当前密码" size="small" prop="current_password" :error="pwd.currentPwdError">
+            <el-input type="password" native-size="40" v-model="pwd.data.current_password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" size="small" prop="password">
+            <el-input type="password" native-size="40" v-model="pwd.data.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="确认密码" size="small" prop="password_confirmation">
+            <el-input type="password" native-size="40" v-model="pwd.data.password_confirmation" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <button type="button" class="md-button md-raised md-dense md-theme-default"
+            @click="pwd.dialogVisible = false">
+            <div class="md-ripple">
+              <div class="md-button-content">取 消</div>
+            </div>
+          </button>
+          <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+            @click="changePwd">
+            <div class="md-ripple">
+              <div class="md-button-content">确 定</div>
+            </div>
+          </button>
+        </span>
+      </el-dialog>
     </nav>
 
     <!-- 右下功能区 -->
@@ -215,8 +250,52 @@
     const navbar = new Vue({
       el: '#app_navbar',
       data() {
+        var validatePass = (rule, value, callback) => {
+          if (value === '') {
+            callback(new Error('请输入密码'));
+          } else {
+            if (this.pwd.data.password_confirmation !== '') {
+              this.$refs.pwdForm.validateField('password_confirmation');
+            }
+            callback();
+          }
+        };
+
+        var validatePass2 = (rule, value, callback) => {
+          if (value === '') {
+            callback(new Error('请再次输入密码'));
+          } else if (value !== this.pwd.data.password) {
+            callback(new Error('两次输入密码不一致!'));
+          } else {
+            callback();
+          }
+        };
+
         return {
           adminMenuVisible: false,
+          pwd: {
+            data: {
+              current_password: '',
+              password: '',
+              password_confirmation: '',
+            },
+
+            rules: {
+              current_password: [
+                { required:true, message:'请输入当前密码', trigger: 'blur' },
+              ],
+              password: [
+                { min: 8, message: '至少 8 个字符', trigger: 'change' },
+                { validator: validatePass, trigger: 'blur' },
+              ],
+              password_confirmation: [
+                { min: 8, message: '至少 8 个字符', trigger: 'change' },
+                { validator: validatePass2, trigger: 'blur' },
+              ],
+            },
+            dialogVisible: false,
+            currentPassError: '',
+          },
         };
       },
 
@@ -292,6 +371,36 @@
           } else {
             $(document).off('click.admin-toggle');
           }
+        },
+
+        changePwd() {
+          this.pwd.currentPassError = '';
+
+          const loading = this.$loading({
+            lock: true,
+            text: '正在修改密码 ...',
+            background: 'rgba(0, 0, 0, 0.7)',
+          });
+
+          const form = this.$refs.pwdForm;
+          form.validate().then(() => {
+            axios.post('/admin/cmd/changepwd', clone(this.pwd.data)).then(response => {
+              loading.close();
+              console.log(response)
+              if (response.status === 200) {
+                this.pwd.dialogVisible = false;
+                this.$message.success('密码修改成功');
+              } else {
+                this.pwd.currentPassError = '密码错误';
+              }
+            }).catch(error => {
+              loading.close();
+              console.error(error);
+              this.$message.error('发生错误！请查看控制台');
+            });
+          }).catch(function(error) {
+            loading.close();
+          });
         },
       },
     });

@@ -17,6 +17,8 @@ class NewMessage
      */
     protected $data = [];
 
+    protected $ip;
+
     /**
      * 错误信息
      *
@@ -58,10 +60,13 @@ class NewMessage
      *
      * @return void
      */
-    public function __construct(array $data)
+    public function __construct(Request $request)
     {
-        $this->data = $data;
-        $this->data['user_agent'] = $this->data['user_agent'] ?? $this->getUserAgent();
+        $this->data = $request->all();
+        $this->ip = $request->ip();
+
+        $ua = $request->userAgent();
+        $this->data['user_agent'] = $request->input('user_agent') ?: $this->getUserAgent($ua);
 
         $os = strtoupper(substr(PHP_OS,0,3));
         if ($os === 'WIN') {
@@ -153,9 +158,7 @@ class NewMessage
             $content .= $tracks.$this->eol;
         }
 
-        if ($ip = $this->getIP()) {
-            $content .= $ip.$this->eol;
-        }
+        $content .= 'IP: '.$this->ip.' (https://www.iplocation.net/)'.$this->eol;
 
         return $content;
     }
@@ -189,26 +192,5 @@ class NewMessage
         }
 
         return $report;
-    }
-
-    protected function getIP()
-    {
-        $ip = '';
-
-        if ($_SERVER['REMOTE_ADDR']) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        } elseif (getenv("REMOTE_ADDR")) {
-            $ip = getenv("REMOTE_ADDR");
-        } elseif (getenv("HTTP_CLIENT_IP")) {
-            $ip = getenv("HTTP_CLIENT_IP");
-        }
-
-        if (preg_match('/[\d\.]{7,15}/', $ip, $matches)) {
-            $ip = $matches[0]." ( Details: https://www.iplocation.net/ )";
-        } else {
-            $ip = '( Unknown ip )';
-        }
-
-        return 'IP: '.$ip.$this->eol;
     }
 }

@@ -8,6 +8,9 @@ use App\Models\Index;
 use App\Models\Node;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class CommandController extends Controller
@@ -34,7 +37,7 @@ class CommandController extends Controller
 
     public function newMessage(Request $request)
     {
-        $msg = new NewMessage($request->all());
+        $msg = new NewMessage($request);
         if ($msg->send()) {
             $reply = 'Message sent! We will contact you soon.';
         } else {
@@ -72,5 +75,25 @@ class CommandController extends Controller
         $sitemap = build_google_sitemap($urls);
         Storage::disk('public')->put('sitemap.xml', $sitemap);
         return true;
+    }
+
+    public function changeAdminPwd(Request $request)
+    {
+        if (config('app.demo')) {
+            return response('');
+        }
+
+        $user = Auth::guard('admin')->user();
+
+        $valid = Hash::check($request->input('current_password'), $user->getAuthPassword());
+        if (! $valid) {
+            return response('', 202);
+        }
+
+        $user->password = Hash::make($request->input('password'));
+        $user->save();
+        Auth::guard('admin')->login($user);
+
+        return response('');
     }
 }

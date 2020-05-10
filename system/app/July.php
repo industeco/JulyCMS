@@ -76,6 +76,7 @@ class July
         Route::post('checkunique/node__url', 'NodeFieldController@uniqueUrl');
 
         // 命令执行
+        Route::post('cmd/changepwd', ['uses' => 'CommandController@changeAdminPwd', 'as' => 'cmd.changepwd']);
         Route::get('cmd/clearcache', ['uses' => 'CommandController@clearCache', 'as' => 'cmd.clearcache']);
         Route::get('cmd/rebuildindex', ['uses' => 'CommandController@rebuildIndex', 'as' => 'cmd.rebuildindex']);
         Route::get('cmd/buildgooglesitemap', ['uses' => 'CommandController@buildGoogleSitemap', 'as' => 'cmd.buildgooglesitemap']);
