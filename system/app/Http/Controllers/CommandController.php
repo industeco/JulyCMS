@@ -35,6 +35,9 @@ class CommandController extends Controller
         return Index::rebuild();
     }
 
+    /**
+     * 发送 New Message 邮件
+     */
     public function newMessage(Request $request)
     {
         $msg = new NewMessage($request);
@@ -50,7 +53,7 @@ class CommandController extends Controller
     /**
      * 检索关键词
      *
-     * @return array
+     * @return string
      */
     public function search(Request $request)
     {
@@ -69,6 +72,9 @@ class CommandController extends Controller
         return $twig->render('search.twig', $results);
     }
 
+    /**
+     * 生成谷歌站点地图（.xml 文件）
+     */
     public function buildGoogleSitemap()
     {
         $urls = Node::urls();
@@ -77,7 +83,10 @@ class CommandController extends Controller
         return true;
     }
 
-    public function changeAdminPwd(Request $request)
+    /**
+     * 修改后台用户密码
+     */
+    public function changeAdminPassword(Request $request)
     {
         if (config('app.demo')) {
             return response('');

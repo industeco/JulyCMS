@@ -1,12 +1,39 @@
-*
-!/install
-!/media
-!/pages
-!/system
-!/theme
+# ignore everything in the root,
+/*
+
+# except:
+!install/
+!media/
+!pages/
+!system/
+!theme/
 !.gitignore
 !.editorconfig
 !.htaccess
 !index.php
 !LICENSE
 !README.md
+
+# ignore everything in the pages directory,
+pages/*
+
+# ignore everything in the media directory,
+media/*
+
+# except
+!media/files/
+!media/images/
+
+# ignore everything in the media/files, media/images directory,
+media/files/*
+media/images/*
+
+# ignore everything in the theme directory,
+theme/*
+
+# except
+!theme/admin/
+!theme/default/
+
+# ignore everything in the theme/default directory,
+theme/default/*
