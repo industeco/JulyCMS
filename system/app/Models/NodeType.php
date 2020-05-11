@@ -105,6 +105,17 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         ];
     }
 
+    public static function countTypeNodes()
+    {
+        $typeNodes = [];
+        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
+        foreach ($records as $record) {
+            $typeNodes[$record->node_type] = $record->total;
+        }
+
+        return $typeNodes;
+    }
+
     public function retrieveFields($langcode = null)
     {
         $langcode = $langcode ?? langcode('admin_page');

@@ -285,10 +285,9 @@ body {
 }
 
 .is-collapsed > #app_sidebar:hover {
-  width: 220px;
   border-right: 0;
-  box-shadow: 0 14px 28px rgba(0,0,0,.25),0 10px 10px rgba(0,0,0,.22);
   box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 5px 8px 0 rgba(0, 0, 0, .14), 0 1px 14px 0 rgba(0, 0, 0, .12);
+  animation-name: slideUp;
 }
 
 #app_brand {
@@ -337,7 +336,7 @@ body {
 }
 
 #app_sidebar .md-list-item.md-inset .md-list-item-content {
-  padding-left: 49px;
+  padding-left: 54px;
 }
 
 #app_sidebar .md-list-item-content>.md-icon:first-child {
@@ -376,12 +375,12 @@ body {
 }
 
 .is-collapsed #app_sidebar .md-list-item.md-inset .md-list-item-content {
-  padding-left: 12px;
+  padding-left: 16px;
   font-size: 12px;
 }
 
 .is-collapsed #app_sidebar:hover .md-list-item.md-inset .md-list-item-content {
-  padding-left: 49px;
+  padding-left: 54px;
   font-size: 14px;
 }
 
@@ -596,7 +595,7 @@ h2.jc-form-info-item {
 }
 
 #main_form_right .el-collapse-item__wrap {
-  padding: 15px 20px;
+  padding: 5px 20px 20px;
   border: none;
   background-color: transparent;
 }
@@ -610,6 +609,12 @@ h2.jc-form-info-item {
 
 #addto_catalogs_dialog .el-dialog__body {
   padding: 20px 20px 0;
+}
+
+#addto_catalogs_dialog .el-tabs__content,
+#addto_catalogs_dialog .el-tab-pane,
+#addto_catalogs_dialog .jc-scroll-wrapper {
+  height: 100%;
 }
 
 .jc-tree .el-tree-node__content {

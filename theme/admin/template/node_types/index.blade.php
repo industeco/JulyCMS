@@ -43,7 +43,7 @@
                   <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
                 </a>
                 <button type="button" title="删除" class="md-button md-fab md-mini md-accent md-theme-default"
-                  onclick="deleteType('{{ $nodeType['truename'] }}')">
+                  onclick="deleteType('{{ $nodeType['truename'] }}')" {{ $nodeType['nodes'] ? 'disabled' : '' }}>
                   <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
                 </button>
               </div>

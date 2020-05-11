@@ -115,17 +115,19 @@ class NodeController extends Controller
      */
     public function edit(Node $node, $translateTo = null)
     {
-        $langcode = $translateTo ?? langcode('content_value');
-        $values = $node->getData($langcode);
+        $interface_lang = langcode('admin_page');
+        $content_lang = $translateTo ?? langcode('content_value');
+
+        $values = $node->getData($content_lang);
 
         $data = [
             'id' => $node->id,
             'node_type' => $node->node_type,
-            'fields' => $node->nodeType->retrieveFieldJigsaws($langcode, $values),
-            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($langcode, $values),
+            'fields' => $node->nodeType->retrieveFieldJigsaws($interface_lang, $values),
+            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang, $values),
             'positions' => $node->positions(),
             'all_tags' => ['hot'],
-            'all_nodes' => Node::allNodes($langcode),
+            'all_nodes' => Node::allNodes($content_lang),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'edit',
         ];

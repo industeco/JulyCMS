@@ -37,7 +37,7 @@
         <p>已添加：@{{ current_catalogs }}</p>
       </div>
       @endif
-      <el-collapse>
+      <el-collapse :value="['url','meta']">
         {{-- <el-collapse-item title="标签" name="1">
           <el-form-item label="标签" size="small" class="has-helptext">
             <el-select
@@ -57,11 +57,11 @@
             <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择或新建标签，新建时请注意当前语言版本</span>
           </el-form-item>
         </el-collapse-item> --}}
-        <el-collapse-item title="网址和模板" name="2">
+        <el-collapse-item title="网址和模板" name="url">
           {!! $fields_aside['url']['element'] !!}
           {!! $fields_aside['template']['element'] !!}
         </el-collapse-item>
-        <el-collapse-item title="META 信息" name="3">
+        <el-collapse-item title="META 信息" name="meta">
           {!! $fields_aside['meta_title']['element'] !!}
           {!! $fields_aside['meta_description']['element'] !!}
           {!! $fields_aside['meta_keywords']['element'] !!}
@@ -77,32 +77,36 @@
     :visible.sync="addtoCatalogsDialogVisible">
     <el-tabs tab-position="left" style="height: 560px;">
       @foreach (array_keys($catalog_nodes) as $catalog)
-      <el-tab-pane label="{{ $catalog }}" class="jc-scrollbar">
-        <el-tree
-          ref="catalog_{{ $catalog }}"
-          class="jc-tree"
-          :data="db.catalog_nodes.{{ $catalog }}"
-          :draggable="true"
-          :allow-drag="isDraggable"
-          :indent="20"
-          @node-drop="handleDrop('{{ $catalog }}', ...arguments)"
-          :default-expanded-keys="[{{ $id }}]"
-          node-key="node_id">
-          <span :class="{'jc-tree-node-inner':true, 'is-homeless':isHomeless(node, '{{ $catalog }}')}" slot-scope="{ node, data }">
-            <svg class="jc-svg-icon jc-drag-handle" v-if="isDraggable(node)"><use xlink:href="#jcon_drag"></use></svg>
-            <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ nodeTitle(data.node_id) }}</span>
-            <button v-if="isHomeless(node, '{{ $catalog }}')"
-              type="button" title="添加到末尾" class="md-button md-fab md-mini md-primary md-theme-default jc-theme-light"
-              @click="appendNode('{{ $catalog }}')">
-              <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">add</i></div></div>
-            </button>
-            <button v-if="isDraggable(node)"
-              type="button" title="从当前目录移除" class="md-button md-fab md-mini md-accent md-theme-default jc-theme-light"
-              @click="removeNode(node, '{{ $catalog }}')">
-              <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
-            </button>
-          </span>
-        </el-tree>
+      <el-tab-pane label="{{ $catalog }}">
+        <div class="jc-scroll-wrapper">
+          <div class="jc-scroll md-scrollbar md-theme-default">
+            <el-tree
+              ref="catalog_{{ $catalog }}"
+              class="jc-tree"
+              :data="db.catalog_nodes.{{ $catalog }}"
+              :draggable="true"
+              :allow-drag="isDraggable"
+              :indent="20"
+              @node-drop="handleDrop('{{ $catalog }}', ...arguments)"
+              :default-expanded-keys="[{{ $id }}]"
+              node-key="node_id">
+              <span :class="{'jc-tree-node-inner':true, 'is-homeless':isHomeless(node, '{{ $catalog }}')}" slot-scope="{ node, data }">
+                <svg class="jc-svg-icon jc-drag-handle" v-if="isDraggable(node)"><use xlink:href="#jcon_drag"></use></svg>
+                <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ nodeTitle(data.node_id) }}</span>
+                <button v-if="isHomeless(node, '{{ $catalog }}')"
+                  type="button" title="添加到末尾" class="md-button md-fab md-mini md-primary md-theme-default jc-theme-light"
+                  @click="appendNode('{{ $catalog }}')">
+                  <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">add</i></div></div>
+                </button>
+                <button v-if="isDraggable(node)"
+                  type="button" title="从当前目录移除" class="md-button md-fab md-mini md-accent md-theme-default jc-theme-light"
+                  @click="removeNode(node, '{{ $catalog }}')">
+                  <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
+                </button>
+              </span>
+            </el-tree>
+          </div>
+        </div>
       </el-tab-pane>
       @endforeach
     </el-tabs>

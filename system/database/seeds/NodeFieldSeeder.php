@@ -91,7 +91,7 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 100,
                     'label' => [
-                        'zh' => '标题',
+                        'zh' => 'META 标题',
                     ],
                 ],
             ],
@@ -107,7 +107,7 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 160,
                     'label' => [
-                        'zh' => '描述',
+                        'zh' => 'META 描述',
                     ],
                 ],
             ],
@@ -123,7 +123,7 @@ class NodeFieldSeeder extends Seeder
                     ],
                     'length' => 160,
                     'label' => [
-                        'zh' => '关键字',
+                        'zh' => 'META 关键字',
                     ],
                 ],
             ],

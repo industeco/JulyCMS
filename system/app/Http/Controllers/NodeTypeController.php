@@ -16,8 +16,15 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
+        $typeNodes = NodeType::countTypeNodes();
+        $nodeTypes = [];
+        foreach (mix_config(NodeType::all()) as $nodeType) {
+            $nodeType['nodes'] = $typeNodes[$nodeType['truename']] ?? 0;
+            $nodeTypes[] = $nodeType;
+        }
+
         return view_with_langcode('admin::node_types.index', [
-            'nodeTypes' => mix_config(NodeType::all()),
+            'nodeTypes' => $nodeTypes,
         ]);
     }
 
