@@ -542,7 +542,7 @@ if (! function_exists('build_google_sitemap')) {
     function build_google_sitemap(array $urls = null)
     {
         // 首页地址
-        $home = rtrim(config('app.url'), '\\/') . '/';
+        $home = rtrim(config('app.url'), '\\/');
 
         // pdf 信息
         $pdfList = [];
@@ -555,37 +555,33 @@ if (! function_exists('build_google_sitemap')) {
         $xml .= ' http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"';
         $xml .= ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
 
-        $xml .= '<url><loc>'.$home.'</loc></url>';
+        $xml .= '<url><loc>'.$home.'/'.'</loc></url>';
 
         $langcode = config('translate.default_langcode.site_page');
-        $path = 'pages/'.$langcode.'/';
+        $path = 'pages/'.$langcode;
 
-        $public = Storage::disk('public');
+        $disk = Storage::disk('public');
 
         // 生成 xml 内容
         $urls = $urls ?: Node::urls($langcode);
         foreach ($urls as $url) {
-            $url = trim($url, '\\/');
-
-            if (! $public->exists($path.$url)) continue;
+            if (! $disk->exists($path.$url)) continue;
 
             $xml .= '<url><loc>'.$home.$url.'</loc>';
 
-            $content = $public->get($path.$url);
+            $content = $disk->get($path.$url);
             if (empty($content)) {
                 $xml .= '</url>';
                 continue;
             }
 
-            preg_match_all('/src="\/([^"]*?\.(?:jpg|jpeg|gif|png|webp))"/', $content, $matches, PREG_PATTERN_ORDER);
-            foreach(array_unique($matches[1]) as $src){
+            foreach (extract_image_links($content) as $src) {
                 $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>";
             }
 
             $xml .= '</url>';
 
-            preg_match_all('/href="\/([^"]*?\.pdf)"/',$content, $matches, PREG_PATTERN_ORDER);
-            $pdfList = array_merge($pdfList, $matches[1]);
+            $pdfList = array_merge($pdfList, extract_pdf_links($content));
         }
 
         foreach(array_unique($pdfList) as $pdf) {
@@ -598,6 +594,49 @@ if (! function_exists('build_google_sitemap')) {
     }
 }
 
+if (! function_exists('extract_image_links')) {
+    /**
+     * 从 $html 中提取图片链接
+     *
+     * @param string $html
+     * @return array
+     */
+    function extract_image_links($html)
+    {
+        preg_match_all('/src="(\/[^"]*?\.(?:jpg|jpeg|gif|png|webp))"/', $html, $matches, PREG_PATTERN_ORDER);
+        return array_unique($matches[1]);
+    }
+}
+
+if (! function_exists('extract_pdf_links')) {
+    /**
+     * 从 $html 中提取 PDF 链接
+     *
+     * @param string $html
+     * @return array
+     */
+    function extract_pdf_links($html)
+    {
+        preg_match_all('/href="(\/[^"]*?\.pdf)"/',$html, $matches, PREG_PATTERN_ORDER);
+        return array_unique($matches[1]);
+    }
+}
+
+if (! function_exists('extract_page_links')) {
+    /**
+     * 从 $html 中提取页面链接
+     *
+     * @param string $html
+     * @return array
+     */
+    function extract_page_links($html)
+    {
+        preg_match_all('/href="(\/[^"]*?(\.html|\/))"/',$html, $matches, PREG_PATTERN_ORDER);
+        return array_unique($matches[1]);
+    }
+}
+
+
 if (! function_exists('str_diff')) {
     function str_diff($str1, $str2)
     {
@@ -605,3 +644,5 @@ if (! function_exists('str_diff')) {
         return strlen($str2);
     }
 }
+
+

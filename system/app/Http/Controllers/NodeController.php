@@ -115,7 +115,7 @@ class NodeController extends Controller
      */
     public function edit(Node $node, $translateTo = null)
     {
-        $langcode = $translateTo ?? langcode('admin_page');
+        $langcode = $translateTo ?? langcode('content_value');
         $values = $node->getData($langcode);
 
         $data = [
@@ -153,6 +153,7 @@ class NodeController extends Controller
         $changed_values = (array) $request->input('changed_values');
 
         if (!empty($changed_values)) {
+            Log::info($changed_values);
             // $node->update($node->prepareUpdate($request));
             $node->forceUpdate();
             $node->saveValues($request->all(), true);

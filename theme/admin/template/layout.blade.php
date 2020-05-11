@@ -115,13 +115,18 @@
             <div class="md-button-content">生成谷歌站点地图</div>
           </div>
         </button>
+        <a href="/admin/cmd/findinvalidlinks" target="_blank" class="md-button md-small md-primary md-theme-default">
+          <div class="md-ripple">
+            <div class="md-button-content">查找无效链接</div>
+          </div>
+        </a>
       </div>
 
       <!-- 导航栏右侧菜单 -->
       <div id="navbar_right">
         <!-- 搜索栏框 -->
-        <form action="/search.php" method="GET" id="navbar_search">
-          <input type="text" name="keywords" placeholder="搜索（暂不可用）" disabled>
+        <form action="/admin/cmd/search" method="GET" id="navbar_search">
+          <input type="text" name="keywords" placeholder="搜索">
           <i class="md-icon md-icon-font md-theme-default">search</i>
         </form>
 

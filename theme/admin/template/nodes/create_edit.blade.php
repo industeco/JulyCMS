@@ -211,7 +211,7 @@
           @if ($field['type']=='html')
           {{ $field['truename'] }}: getHtmlFieldValue("{{ $field['truename'] }}"),
           @else
-          {{ $field['truename'] }}: `{{ $field["value"] }}`,
+          {{ $field['truename'] }}: `{!! $field["value"] !!}`,
           @endif
           @endforeach
           tags: [],

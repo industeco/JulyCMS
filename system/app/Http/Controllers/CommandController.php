@@ -6,6 +6,7 @@ use App\Mail\NewMessage;
 use App\Models\Catalog;
 use App\Models\Index;
 use App\Models\Node;
+use App\Models\NodeField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -104,5 +105,46 @@ class CommandController extends Controller
         Auth::guard('admin')->login($user);
 
         return response('');
+    }
+
+    public function adminSearch(Request $request)
+    {
+        $keywords = $request->input('keywords');
+
+        $results = [];
+        foreach (NodeField::fetchAll() as $field) {
+            $results = array_merge($results, $field->search($keywords));
+        }
+
+        $titles = [];
+        foreach (NodeField::fetch('title')->records() as $record) {
+            $key = $record->node_id.'/'.$record->langcode;
+            $titles[$key] = $record->title_value;
+        }
+
+        $nodes = Node::fetchAll()->keyBy('id');
+        foreach ($results as &$result) {
+            $key = $result['node_id'].'/'.$result['langcode'];
+            $result['node_title'] = $titles[$key] ?? null;
+            $result['original_langcode'] = $nodes->get($result['node_id'])->langcode;
+        }
+
+        return view_with_langcode('admin::search', [
+            'keywords' => $keywords,
+            'results' => $results,
+        ]);
+    }
+
+    public function findInvalidLinks()
+    {
+        //
+        $invalidLinks = [];
+        foreach (Node::fetchAll() as $node) {
+            $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks());
+        }
+
+        return view_with_langcode('admin::invalid_links', [
+            'invalidLinks' => $invalidLinks,
+        ]);
     }
 }

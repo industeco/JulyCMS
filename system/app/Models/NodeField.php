@@ -12,6 +12,7 @@ use App\Casts\Json;
 use App\Contracts\HasModelConfig;
 use App\FieldTypes\FieldType;
 use App\Traits\CastModelConfig;
+use Illuminate\Support\Arr;
 
 class NodeField extends JulyModel implements HasModelConfig
 {
@@ -318,5 +319,63 @@ class NodeField extends JulyModel implements HasModelConfig
         static::deleted(function(NodeField $field) {
             $field->tableDown();
         });
+    }
+
+    public function search($keywords, $langcode = null)
+    {
+        $keywords = '%'.$keywords.'%';
+        $table = $this->tableName();
+
+        $conditions = [];
+        foreach ($this->columns() as $column) {
+            $conditions[] = [$column['name'], 'like', $keywords, 'or'];
+        }
+
+        if ($langcode) {
+            $records = DB::table($table)->where('langcode', $langcode)->where($conditions)->get();
+        } else {
+            $records = DB::table($table)->where($conditions)->get();
+        }
+
+        $fieldName = $this->truename;
+        $fieldType = $this->field_type;
+        $fieldLabel = $this->label();
+        $results = [];
+        foreach ($records as $record) {
+            $id = $record->node_id;
+            $lang = $record->langcode;
+            $key = $id.'/'.$fieldName.'/'.$lang;
+            if (! isset($results[$key])) {
+                $results[$key] = [
+                    'node_id' => $id,
+                    'node_field' => $fieldName,
+                    'field_type' => $fieldType,
+                    'field_label' => $fieldLabel,
+                    'langcode' => $lang,
+                ];
+            }
+        }
+
+        return array_values($results);
+    }
+
+    public function records($langcode = null)
+    {
+        $table = $this->tableName();
+        if ($langcode) {
+            return DB::table($table)->where('langcode', $langcode)->get();
+        } else {
+            return DB::table($table)->get();
+        }
+    }
+
+    public function label($langcode = null)
+    {
+        $label = $this->config['label'] ?? [];
+
+        $langcode = $langcode ?: langcode('admin_page');
+        $original_lang = $this->config['langcode']['interface_value'];
+
+        return $label[$langcode] ?? $label[$original_lang] ?? null;
     }
 }

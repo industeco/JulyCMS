@@ -251,6 +251,7 @@ return [
                 'overrides' => 'strong',
             ],
             'toolbarGroups' => [
+                [ 'name' => 'document', 'groups' => [ 'mode', 'document', 'doctools' ] ],
                 [ 'name' => 'clipboard', 'groups' => [ 'clipboard', 'undo' ] ],
                 [ 'name' => 'styles', 'groups' => [ 'styles' ] ],
                 [ 'name' => 'basicstyles', 'groups' => [ 'basicstyles', 'cleanup' ] ],
@@ -258,7 +259,6 @@ return [
                 [ 'name' => 'paragraph', 'groups' => [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] ],
                 [ 'name' => 'insert', 'groups' => [ 'insert' ] ],
                 [ 'name' => 'forms', 'groups' => [ 'forms' ] ],
-                [ 'name' => 'document', 'groups' => [ 'mode', 'document', 'doctools' ] ],
                 [ 'name' => 'tools', 'groups' => [ 'tools' ] ],
                 // [ 'name' => 'others', 'groups' => [ 'others' ] ],
                 // [ 'name' => 'editing', 'groups' => [ 'find', 'selection', 'spellchecker', 'editing' ] ],

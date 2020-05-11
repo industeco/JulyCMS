@@ -177,6 +177,7 @@ class Node extends JulyModel
     public function saveValues(array $values, $deleteNull = false)
     {
         $this->cacheClear($this->id.'/values', langcode('content_value'));
+        Log::info('CacheKey: '.$this->cacheKey($this->id.'/values', langcode('content_value')));
 
         $changed = $values['changed_values'];
         // Log::info('Saving Values. Values Changed:');
@@ -195,6 +196,8 @@ class Node extends JulyModel
                 $field->deleteValue($this->id);
             }
         }
+
+        Log::info($this->retrieveValues());
     }
 
     /**
@@ -284,6 +287,69 @@ class Node extends JulyModel
         }
 
         return $templates;
+    }
+
+    public function getHtml($langcode = null)
+    {
+        $url = $this->url;
+        if (! $url) {
+            return '';
+        }
+
+        $langcode = $langcode ?: $this->langcode;
+        $html = 'pages/'.$langcode.$url;
+
+        $disk = Storage::disk('public');
+        if (! $disk->exists($html)) {
+            return '';
+        }
+
+        return $disk->get($html);
+    }
+
+    public function findInvalidLinks($langcode = null)
+    {
+        $langcode = $langcode ?: $this->langcode;
+        $html = $this->getHtml($langcode);
+        if (! $html) {
+            return [];
+        }
+
+        $disk = Storage::disk('public');
+        $links = [];
+        $nodeInfo = [
+            'node_id' => $this->id,
+            'node_title' => $this->title,
+            'node_url' => $this->url,
+            'langcode' => $langcode,
+        ];
+
+        // images
+        foreach (extract_image_links($html) as $link) {
+            if (! $disk->exists($link)) {
+                $links[] = array_merge($nodeInfo, ['link' => $link]);
+            }
+        }
+
+        // PDFs
+        foreach (extract_pdf_links($html) as $link) {
+            if (! $disk->exists($link)) {
+                $links[] = array_merge($nodeInfo, ['link' => $link]);
+            }
+        }
+
+        // hrefs
+        foreach (extract_page_links($html) as $link) {
+            $url = $link;
+            if (substr($url, -5) !== '.html') {
+                $url = rtrim($url, '/').'/index.html';
+            }
+            if (!$disk->exists('pages'.$url) && !$disk->exists('pages/'.$langcode.$url)) {
+                $links[] = array_merge($nodeInfo, ['link' => $link]);
+            }
+        }
+
+        return $links;
     }
 
     public function __isset($key)
