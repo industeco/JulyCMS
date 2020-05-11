@@ -1,5 +1,8 @@
-/node_modules
-/media/*
-/pages/*
+/*
+!/install
+!/media
+!/pages
+!/system
+!/theme
 npm-debug.log
 yarn-error.log
