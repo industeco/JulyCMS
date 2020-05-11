@@ -1,8 +1,12 @@
-/*
+*
 !/install
 !/media
 !/pages
 !/system
 !/theme
-npm-debug.log
-yarn-error.log
+!.gitignore
+!.editorconfig
+!.htaccess
+!index.php
+!LICENSE
+!README.md

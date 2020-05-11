@@ -1,4 +1,6 @@
 *
+!.gitignore
 !/files
 !/images
-!.gitignore
+/files/*
+/images/*
