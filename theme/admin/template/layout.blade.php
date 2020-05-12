@@ -23,63 +23,40 @@
           <span>七月 cms</span>
         </a>
       </div>
-
       <ul class="md-list md-theme-default">
-        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/nodes')?' is-active':'' }}">
-          <a href="/admin/nodes" class="md-list-item-link md-list-item-container md-button-clean">
+        @foreach (config('jc.sidebar_menu') as $item)
+        @if ($item['url'])
+        <li class="md-list-item{{ under_route(Request::getPathInfo(), $item['url'])?' is-active':'' }}">
+          <a href="{{ $item['url'] }}" class="md-list-item-link md-list-item-container md-button-clean">
             <div class="md-list-item-content">
-              <i class="md-icon md-icon-font md-theme-default">create</i>
-              <span class="md-list-item-text">内容</span>
+              <i class="md-icon md-icon-font md-theme-default">{{ $item['icon'] }}</i>
+              <span class="md-list-item-text">{{ $item['title'] }}</span>
             </div>
           </a>
         </li>
-        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/node_types')?' is-active':'' }}">
-          <a href="/admin/node_types" class="md-list-item-link md-list-item-container md-button-clean">
-            <div class="md-list-item-content">
-              <i class="md-icon md-icon-font md-theme-default">category</i>
-              <span class="md-list-item-text">类型</span>
-            </div>
-          </a>
-        </li>
+        @else
         <li class="md-list-item">
           <div class="md-list-item-expand md-list-item-container md-button-clean">
             <div class="md-list-item-content">
-              <i class="md-icon md-icon-font md-theme-default">device_hub</i>
-              <span class="md-list-item-text">结构</span>
+              <i class="md-icon md-icon-font md-theme-default">{{ $item['icon'] }}</i>
+              <span class="md-list-item-text">{{ $item['title'] }}</span>
               <svg class="md-icon jc-svg-icon md-list-expand-icon"><use xlink:href="#jcon_expand_more"></use></svg>
             </div>
             <div class="md-list-expand">
               <ul class="md-list md-theme-default">
-                <li class="md-list-item md-inset{{ under_route(Request::getPathInfo(),'/admin/catalogs')?' is-active':'' }}">
-                  <a href="/admin/catalogs" class="md-list-item-link md-list-item-container md-button-clean">
-                    <div class="md-list-item-content">目录 </div>
+                @foreach ($item['children'] as $child)
+                <li class="md-list-item md-inset{{ under_route(Request::getPathInfo(), $child['url'])?' is-active':'' }}">
+                  <a href="{{ $child['url'] }}" class="md-list-item-link md-list-item-container md-button-clean">
+                    <div class="md-list-item-content">{{ $child['title'] }}</div>
                   </a>
                 </li>
-                <li class="md-list-item md-inset{{ under_route(Request::getPathInfo(),'/admin/tags')?' is-active':'' }}">
-                  <a href="/admin/tags" class="md-list-item-link md-list-item-container md-button-clean">
-                    <div class="md-list-item-content">标签 </div>
-                  </a>
-                </li>
+                @endforeach
               </ul>
             </div>
           </div>
         </li>
-        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/medias')?' is-active':'' }}">
-          <a href="/admin/medias" class="md-list-item-link md-list-item-container md-button-clean">
-            <div class="md-list-item-content">
-              <i class="md-icon md-icon-font md-theme-default">folder</i>
-              <span class="md-list-item-text">文件</span>
-            </div>
-          </a>
-        </li>
-        <li class="md-list-item{{ under_route(Request::getPathInfo(),'/admin/configs')?' is-active':'' }}">
-          <a href="/admin/configs" class="md-list-item-link md-list-item-container md-button-clean">
-            <div class="md-list-item-content">
-              <i class="md-icon md-icon-font md-theme-default">settings</i>
-              <span class="md-list-item-text">设置</span>
-            </div>
-          </a>
-        </li>
+        @endif
+        @endforeach
       </ul>
     </div>
   </div>

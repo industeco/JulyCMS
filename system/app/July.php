@@ -25,9 +25,10 @@ class July
         });
 
         // 配置
-        Route::resource('configs', 'ConfigController')->parameters([
-            'configs' => 'config',
-        ])->names($lang.'configs');
+        Route::get('config/basic/edit', ['uses' => 'JulyConfigController@editBasicSettings', 'as'=>'configs.edit_basic']);
+        Route::post('config/basic', ['uses' => 'JulyConfigController@updateBasicSettings', 'as'=>'configs.update_basic']);
+        Route::get('config/language/edit', ['uses' => 'JulyConfigController@editLanguageSettings', 'as'=>'configs.edit_language']);
+        Route::post('config/language', ['uses' => 'JulyConfigController@updateLanguageSettings', 'as'=>'configs.update_language']);
 
         // 字段
         Route::resource('node_fields', 'NodeFieldController')->parameters([

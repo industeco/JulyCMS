@@ -28,7 +28,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
         return [
             // 获取配置
             new TwigFunction('config', function ($key) {
-                return config($key) ?? config('july.' . $key) ?? config('app.' . $key) ?? null;
+                return config($key) ?? config('jc.' . $key) ?? config('app.' . $key) ?? null;
             }),
 
             // 格式化网址

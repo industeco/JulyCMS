@@ -238,7 +238,7 @@
           @endforeach
         },
 
-        ckeditorConfig: @json(config('app.ckeditor.config'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        ckeditorConfig: @json(config('jc.editor_config.ckeditor'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         db: {
           nodes: @json($all_nodes, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),

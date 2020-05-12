@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\ModelCollections\CatalogCollection;
+use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
 class Node extends JulyModel
@@ -79,6 +80,17 @@ class Node extends JulyModel
             }
         }
         return array_keys($urls);
+    }
+
+    public static function countByNodeType()
+    {
+        $nodes = [];
+        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
+        foreach ($records as $record) {
+            $nodes[$record->node_type] = $record->total;
+        }
+
+        return $nodes;
     }
 
     public static function allNodes($langcode = null)

@@ -58,7 +58,7 @@ class FileField extends FieldTypeBase
         $data = parent::parameters($data);
 
         if ($fileType = $data['file_type'] ?? null) {
-            if ($exts = config('rules.file_type.'.$fileType)) {
+            if ($exts = config('jc.rules.file_type.'.$fileType)) {
                 $data['help'] = '允许的扩展名：'.join(', ', $exts);
             }
         }
@@ -71,7 +71,7 @@ class FileField extends FieldTypeBase
         $rules = parent::rules($parameters);
 
         if ($fileType = $parameters['file_type'] ?? null) {
-            if ($exts = config('rules.file_type.'.$fileType)) {
+            if ($exts = config('jc.rules.file_type.'.$fileType)) {
                 $exts = join('|', $exts);
                 $rules[] = "{pattern: /^(\\/[a-z0-9\\-_]+)+\\.($exts)$/, message:'文件名格式不正确', trigger:'submit'}";
             }

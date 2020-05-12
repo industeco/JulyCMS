@@ -203,33 +203,37 @@ if (! function_exists('langcode')) {
             case 'available':
             case 'all':
             case 'list':
-                return config('translate.langs');
+                return config('jc.languages');
 
             // 界面语言
             case 'interface':
             case 'interface_value':
             case 'interface_value_langcode':
-                return config('interface_value_langcode') ?: config('translate.default_langcode.interface_value');
+                return config('interface_value_langcode') ?: config('jc.interface_lang');
 
             // 内容语言
             case 'content':
             case 'content_value':
             case 'content_value_langcode':
-                return config('content_value_langcode') ?: config('translate.default_langcode.content_value');
+                return config('content_value_langcode') ?: config('jc.content_lang');
 
             // 后台页面语言
             case 'admin':
             case 'admin_page':
             case 'admin_page_langcode':
-                return config('request_langcode') ?: config('translate.default_langcode.admin_page');
+                return config('jc.admin_page_lang');
 
             // 站点页面语言
             case 'site':
             case 'site_page':
             case 'site_page_langcode':
+                return config('jc.site_page_lang');
+
             case 'page':
             case 'page_langcode':
-                return config('request_langcode') ?: config('translate.default_langcode.site_page');
+            case 'request':
+            case 'request_langcode':
+                return config('request_langcode');
 
             default:
                 return config('fallback_lacale');
@@ -240,11 +244,7 @@ if (! function_exists('langcode')) {
 if (! function_exists('langname')) {
     function langname($langcode)
     {
-        $list = [
-            'zh' => '中文',
-            'en' => 'English',
-        ];
-
+        $list = language_list($langcode);
         return $list[$langcode] ?? $langcode;
     }
 }
@@ -333,6 +333,9 @@ if (! function_exists('cast_value')) {
                 return boolval($value);
 
             case 'array':
+                if (is_string($value)) {
+                    $value = json_encode($value);
+                }
                 $value = (array) $value;
                 return array_filter($value);
 
@@ -636,7 +639,6 @@ if (! function_exists('extract_page_links')) {
     }
 }
 
-
 if (! function_exists('str_diff')) {
     function str_diff($str1, $str2)
     {
@@ -645,4 +647,20 @@ if (! function_exists('str_diff')) {
     }
 }
 
+if (! function_exists('language_list')) {
+    function language_list($langcode)
+    {
+        $list = config('language_list.'.$langcode, []);
+        if ($list) {
+            return $list;
+        }
 
+        $file = base_path('language/'.$langcode.'.php');
+        if (is_file($file)) {
+            $list = require $file;
+            app('config')->set('language_list.'.$langcode, $list);
+        }
+
+        return $list;
+    }
+}

@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\View;
+use App\Models\JulyConfig;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,9 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // 加载数据库中的配置
+        JulyConfig::loadConfiguration();
+
+        // 添加视图命名空间
         view()->addNamespace('admin', public_path('theme/admin/template'));
         view()->addNamespace('theme', public_path('theme/default/template'));
-
-        // View::share();
     }
 }

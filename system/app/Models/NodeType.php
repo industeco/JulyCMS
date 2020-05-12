@@ -57,15 +57,6 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
     ];
 
     /**
-     * 哪些字段可更新（白名单）
-     *
-     * @var array
-     */
-    protected $updateOnly = [
-        'config',
-    ];
-
-    /**
      * The attributes that should be cast.
      *
      * @var array
@@ -73,6 +64,15 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
     protected $casts = [
         'is_preset' => 'boolean',
         'config' => Json::class,
+    ];
+
+    /**
+     * 哪些字段可更新（白名单）
+     *
+     * @var array
+     */
+    protected $updateOnly = [
+        'config',
     ];
 
     public function nodes()
@@ -91,6 +91,17 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 );
     }
 
+    public static function countByNodeField()
+    {
+        $types = [];
+        $records = DB::select('SELECT `node_field`, count(`node_field`) as `total` FROM `node_field_node_type` GROUP BY `node_field`');
+        foreach ($records as $record) {
+            $types[$record->node_type] = $record->total;
+        }
+
+        return $types;
+    }
+
     public function configStructure(): array
     {
         return [
@@ -103,17 +114,6 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 'cast' => 'string',
             ],
         ];
-    }
-
-    public static function countTypeNodes()
-    {
-        $typeNodes = [];
-        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
-        foreach ($records as $record) {
-            $typeNodes[$record->node_type] = $record->total;
-        }
-
-        return $typeNodes;
     }
 
     public function retrieveFields($langcode = null)

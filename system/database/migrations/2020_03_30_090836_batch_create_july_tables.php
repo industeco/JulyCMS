@@ -23,12 +23,6 @@ class BatchCreateJulyTables extends Migration
             // 是否预设
             $table->boolean('is_preset')->default(0);
 
-            // 界面值源语言（创建时的语言）
-            // $table->string('dlang', 12);
-
-            // 值的语言类型（界面或内容）
-            $table->string('value_type', 10)->nullable();
-
             // 值
             $table->binary('config');
 

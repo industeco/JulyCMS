@@ -336,7 +336,7 @@
 
         fieldTypes: @json(\App\FieldTypes\FieldType::getTypes(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
-        fileTypes: @json(config('rules.file_type'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        fileTypes: @json(config('jc.rules.file_type'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       }
     },
 

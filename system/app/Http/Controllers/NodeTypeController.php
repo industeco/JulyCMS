@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Node;
 use App\Models\NodeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -16,10 +17,10 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        $typeNodes = NodeType::countTypeNodes();
+        $nodeCount = Node::countByNodeType();
         $nodeTypes = [];
         foreach (mix_config(NodeType::all()) as $nodeType) {
-            $nodeType['nodes'] = $typeNodes[$nodeType['truename']] ?? 0;
+            $nodeType['nodes'] = $nodeCount[$nodeType['truename']] ?? 0;
             $nodeTypes[] = $nodeType;
         }
 

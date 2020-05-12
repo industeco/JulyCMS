@@ -331,6 +331,7 @@ body {
 
 #app_sidebar .md-list-item-content {
   padding: 4px 16px;
+  min-height: 45px;
   font-size: 14px;
   transition: padding .25s;
 }
@@ -344,11 +345,6 @@ body {
   font-size: 22px!important;
   transition: none;
   /* transform: scale(.84); */
-}
-
-#app_sidebar .md-list-item-content {
-  min-height: 45px;
-  /* color: #e2e7f0; */
 }
 
 #app_sidebar .md-list-expand-icon.jc-svg-icon {
@@ -374,9 +370,11 @@ body {
   fill: #448aff;
 }
 
-.is-collapsed #app_sidebar .md-list-item.md-inset .md-list-item-content {
-  padding-left: 16px;
+.is-collapsed #app_sidebar:not(:hover) .md-list-item.md-inset .md-list-item-content {
+  padding: 4px 5px;
   font-size: 12px;
+  text-align: center;
+  justify-content: center;
 }
 
 .is-collapsed #app_sidebar:hover .md-list-item.md-inset .md-list-item-content {
@@ -796,8 +794,16 @@ h2.jc-form-info-item {
   margin: 0;
 }
 
-.jc-embeded-field__buttons > .md-button {
-  margin: 0;
+.jc-embeded-field__header .jc-embeded-field__buttons {
+  display: flex;
+  align-items: center;
+}
+
+.jc-embeded-field__header .jc-embeded-field__buttons > .md-button {
+  margin: 0 0 0 10px;
+}
+
+.jc-embeded-field__header .jc-embeded-field__buttons > .md-icon-button {
   width: 30px;
   min-width: 30px;
   height: 30px;

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class NewMessage
 {
@@ -31,7 +32,7 @@ class NewMessage
      *
      * @var string
      */
-    protected $eol = '\n';
+    protected $eol = "\n";
 
     /**
      * 可用字段
@@ -82,6 +83,11 @@ class NewMessage
             $to = config('mail.to.address');
             $subject = 'New Message:';
             $mailBody = $this->getMailBody();
+            Log::info(compact('to', 'subject', 'mailBody'));
+
+            if (config('app.demo')) {
+                return true;
+            }
 
             if (mail($to, $subject, $mailBody)) {
                 return true;
