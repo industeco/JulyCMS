@@ -37,9 +37,9 @@ class SetLangcode
             // View::share('page_langcode', $langcode);
         } else {
             if ($langcode == 'admin') {
-                config(['request_langcode' => config('translate.default_langcode.admin_page')]);
+                config(['request_langcode' => config('jc.admin_page_lang')]);
             } else {
-                config(['request_langcode' => config('translate.default_langcode.site_page')]);
+                config(['request_langcode' => config('jc.site_page_lang')]);
             }
         }
 

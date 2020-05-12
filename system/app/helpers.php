@@ -560,7 +560,7 @@ if (! function_exists('build_google_sitemap')) {
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>';
 
-        $langcode = config('translate.default_langcode.site_page');
+        $langcode = config('jc.site_page_lang');
         $path = 'pages/'.$langcode;
 
         $disk = Storage::disk('public');
