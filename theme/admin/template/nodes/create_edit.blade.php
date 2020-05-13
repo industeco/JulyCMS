@@ -4,14 +4,6 @@
   {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($content_value_langcode) }} ]</span>
 @endsection
 
-{{-- @if ($mode === 'edit')
-  @section('translate_btn')
-    <a href="/admin/nodes/{{ $id }}/translate/zh" class="md-button md-dense md-raised md-primary md-theme-default">
-      <div class="md-ripple"><div class="md-button-content">翻译</div></div>
-    </a>
-  @endsection
-@endif --}}
-
 @section('main_content')
   <el-form id="main_form" ref="main_form"
     :model="node"
@@ -37,26 +29,23 @@
         <p>已添加：@{{ current_catalogs }}</p>
       </div>
       @endif
-      <el-collapse :value="['url','meta']">
-        {{-- <el-collapse-item title="标签" name="1">
+      <el-collapse :value="expanded" @change="handleCollapseChange">
+        <el-collapse-item title="标签" name="tags">
           <el-form-item label="标签" size="small" class="has-helptext">
-            <el-select
-              v-model="node.tags"
+            <el-select v-model="node.tags" placeholder="选择标签"
               multiple
               filterable
               allow-create
-              default-first-option
-              placeholder="选择标签">
+              default-first-option>
               <el-option
                 v-for="tag in db.tags"
-                :key="tag"
-                :label="tag"
-                :value="tag">
+                :value="tag"
+                :label="tag">
               </el-option>
             </el-select>
-            <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择或新建标签，新建时请注意当前语言版本</span>
+            <span class="jc-form-item-help"><i class="el-icon-info"></i> 新增时请留意当前语言版本</span>
           </el-form-item>
-        </el-collapse-item> --}}
+        </el-collapse-item>
         <el-collapse-item title="网址和模板" name="url">
           {!! $fields_aside['url']['element'] !!}
           {!! $fields_aside['template']['element'] !!}
@@ -218,7 +207,7 @@
           {{ $field['truename'] }}: `{!! $field["value"] !!}`,
           @endif
           @endforeach
-          tags: [],
+          tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         },
 
         node_positions: clone(initial_positions),
@@ -245,6 +234,8 @@
           tags: @json($all_tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
           catalog_nodes: catalog_nodes,
         },
+
+        expanded: ['url', 'meta'],
 
         addtoCatalogsDialogVisible: false,
 
@@ -277,6 +268,10 @@
 
           this.editorInited = true;
         }
+      },
+
+      handleCollapseChange(activeNames) {
+        this.$set(this.$data, 'expanded', activeNames);
       },
 
       nodeTitle(node_id) {
@@ -401,10 +396,8 @@
       getChangedValues() {
         const changed = [];
         for (const key in this.node) {
-          if (this.node.hasOwnProperty(key)) {
-            if (! isEqual(this.node[key], this.initial_data[key])) {
-              changed.push(key)
-            }
+          if (! isEqual(this.node[key], this.initial_data[key])) {
+            changed.push(key)
           }
         }
         return changed

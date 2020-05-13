@@ -14,7 +14,9 @@ class TagController extends Controller
      */
     public function index()
     {
-        return view_with_langcode('admin::tags.index');
+        return view_with_langcode('admin::tags.index', [
+            'tags' => Tag::all()->toArray(),
+        ]);
     }
 
     /**

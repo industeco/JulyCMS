@@ -90,5 +90,16 @@ function stringify(tar) {
 }
 
 function isEqual(v1, v2) {
+  const a1 = _.isArray(v1);
+  const a2 = _.isArray(v2);
+  if (a1 || a2) {
+    if (a1 && a2) {
+      if (v1.length !== v2.length) {
+        return false;
+      }
+      return _.difference(v1, v2).length === 0;
+    }
+    return false;
+  }
   return v1 == v2 || stringify(v1) == stringify(v2)
 }

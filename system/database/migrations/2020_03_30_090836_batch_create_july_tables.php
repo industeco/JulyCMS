@@ -110,7 +110,7 @@ class BatchCreateJulyTables extends Migration
         });
 
         Schema::create('tags', function (Blueprint $table) {
-            $table->id();
+            $table->string('tag', 32);
 
             // 是否预设
             $table->boolean('is_preset')->default(0);
@@ -118,25 +118,17 @@ class BatchCreateJulyTables extends Migration
             // 是否在页面上显示
             $table->boolean('is_show')->default(1);
 
-            // 源语言（创建时的语言）
+            // 标签原文（表示翻译自该标签）
+            $table->string('original', 32);
+
+            // 语言
             $table->string('langcode', 12);
 
             // 时间戳
             $table->timestamps();
-        });
 
-        Schema::create('tags_data', function (Blueprint $table) {
-            // 标签 id
-            $table->unsignedBigInteger('tag_id');
-
-            // 语言代码
-            $table->string('langcode', 12);
-
-            // 标签文字
-            $table->string('name', 50);
-
-            // 时间戳
-            $table->timestamps();
+            $table->primary('tag');
+            $table->unique(['original', 'langcode']);
         });
 
         Schema::create('nodes', function (Blueprint $table) {
@@ -178,11 +170,11 @@ class BatchCreateJulyTables extends Migration
 
         // 标签与内容关联表
         Schema::create('node_tag', function (Blueprint $table) {
-            // 标签 id
-            $table->unsignedBigInteger('tag_id');
-
             // 内容 id
             $table->unsignedBigInteger('node_id');
+
+            // 标签 id
+            $table->string('tag', 32);
 
             // 语言代码
             $table->string('langcode', 12);
@@ -235,15 +227,15 @@ class BatchCreateJulyTables extends Migration
         Schema::dropIfExists('catalog_node');
         // Schema::dropIfExists('nodes_data');
         Schema::dropIfExists('nodes');
-        Schema::dropIfExists('tags_data');
+        // Schema::dropIfExists('tags_data');
         Schema::dropIfExists('tags');
         Schema::dropIfExists('catalogs');
         Schema::dropIfExists('node_field_node_type');
         Schema::dropIfExists('node_types');
 
-        Models\NodeField::all()->each(function($field) {
+        foreach (Models\NodeField::all() as $field) {
             Schema::dropIfExists($field->tableName());
-        });
+        }
 
         Schema::dropIfExists('node_fields');
         Schema::dropIfExists('july_configs');

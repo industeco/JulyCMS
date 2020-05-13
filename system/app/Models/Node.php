@@ -46,12 +46,22 @@ class Node extends JulyModel
 
     public function catalogs()
     {
-        return $this->belongsToMany(Node::class, 'catalog_node', 'node_id', 'catalog')
+        return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog')
                 ->withPivot(
                     'parent_id',
                     'prev_id',
                     'langcode'
                 );
+    }
+
+    public function tags($langcode = null)
+    {
+        if ($langcode) {
+            return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+                ->wherePivot('langcode', $langcode);
+        }
+        return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+            ->withPivot('langcode');
     }
 
     public function positions()
@@ -125,10 +135,25 @@ class Node extends JulyModel
         return $fields;
     }
 
+    /**
+     * 获取内容标签
+     *
+     * @param string|null $langcode
+     * @return array
+     */
     public function retrieveTags($langcode = null)
     {
+        $langcode = $langcode ?: langcode('content_value');
+        $cacheid = $this->attributes['id'].'/tags';
+        if ($tags = static::cacheGet($cacheid, $langcode)) {
+            $tags = $tags['value'];
+        } else {
+            $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
+            static::cachePut($cacheid, $tags, $langcode);
+        }
+
         return [
-            'tags' => [],
+            'tags' => $tags,
         ];
     }
 
@@ -150,46 +175,13 @@ class Node extends JulyModel
         return $values;
     }
 
-    // public static function retrieveFieldJigsaws(NodeType $nodeType, array $values = [])
-    // {
-    //     $langcode = langcode('admin_page');
-
-    //     // 表单左侧字段碎片
-    //     $jigsaws = $nodeType->retrieveFieldJigsaws($langcode);
-    //     foreach ($jigsaws as $fieldName => &$jigsaw) {
-    //         $jigsaw['value'] = $values[$fieldName] ?? null;
-    //     }
-    //     unset($jigsaw);
-
-    //     // 表单右侧字段碎片
-    //     $jigsawsAside = NodeField::retrieveGlobalFieldJigsaws($langcode);
-    //     foreach ($jigsawsAside as $fieldName => &$jigsaw) {
-    //         $jigsaw['value'] = $values[$fieldName] ?? null;
-    //     }
-    //     unset($jigsaw);
-
-    //     return [
-    //         'jigsaws' => $jigsaws,
-    //         'jigsawsAside' => $jigsawsAside,
-    //     ];
-    // }
-
-    // public static function prepareRequest(Request $request)
-    // {
-    //     $nodeType = NodeType::findOrFail($request->input('node_type'));
-    //     return [
-    //         'node_type' => $nodeType->truename,
-    //         'langcode' => langcode('content_value'),
-    //     ];
-    // }
-
     /**
      * 保存属性值
      */
     public function saveValues(array $values, $deleteNull = false)
     {
         static::cacheClear($this->id.'/values', langcode('content_value'));
-        Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content_value')));
+        // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content_value')));
 
         $changed = $values['changed_values'];
         // Log::info('Saving Values. Values Changed:');
@@ -209,7 +201,15 @@ class Node extends JulyModel
             }
         }
 
-        Log::info($this->retrieveValues());
+        // Log::info($this->retrieveValues());
+    }
+
+    public function saveTags(array $tags, $langcode = null)
+    {
+        $langcode = $langcode ?: langcode('content_value');
+        Tag::createIfNotExist($tags, $langcode);
+
+        $this->tags($langcode)->sync($tags);
     }
 
     /**

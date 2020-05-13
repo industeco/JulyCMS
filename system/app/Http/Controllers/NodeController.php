@@ -10,6 +10,7 @@ use App\Models\Catalog;
 use App\Models\NodeField;
 use App\Models\NodeType;
 use App\FieldTypes\FieldType;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Log;
 
 class NodeController extends Controller
@@ -55,19 +56,33 @@ class NodeController extends Controller
      */
     public function createWith(NodeType $nodeType)
     {
-        $langcode = langcode('admin_page');
+        $interface_lang = langcode('admin_page');
+        $content_lang = langcode('content_value');
 
         return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
             'node_type' => $nodeType->truename,
-            'fields' => $nodeType->retrieveFieldJigsaws($langcode),
-            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($langcode),
+            'fields' => $nodeType->retrieveFieldJigsaws($interface_lang),
+            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang),
+            'tags' => [],
             'positions' => [],
-            'all_tags' => ['hot'],
-            'all_nodes' => Node::allNodes(),
+            'all_tags' => Tag::tags($content_lang),
+            'all_nodes' => $this->simpleNodes($content_lang),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'create',
         ]);
+    }
+
+    protected function simpleNodes($langcode)
+    {
+        $nodes = [];
+        foreach (Node::allNodes($langcode) as $node) {
+            $nodes[$node['id']] = [
+                'id' => $node['id'],
+                'title' => $node['title'],
+            ];
+        }
+        return $nodes;
     }
 
     /**
@@ -84,6 +99,10 @@ class NodeController extends Controller
         $node->save();
 
         $node->saveValues($data);
+
+        if ($tags = $request->input('tags')) {
+            $node->saveTags($tags);
+        }
 
         $positions = (array) $request->input('changed_positions');
         if ($positions) {
@@ -119,15 +138,15 @@ class NodeController extends Controller
         $content_lang = $translateTo ?? langcode('content_value');
 
         $values = $node->getData($content_lang);
-
         $data = [
             'id' => $node->id,
             'node_type' => $node->node_type,
             'fields' => $node->nodeType->retrieveFieldJigsaws($interface_lang, $values),
             'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang, $values),
+            'tags' => $values['tags'],
             'positions' => $node->positions(),
-            'all_tags' => ['hot'],
-            'all_nodes' => Node::allNodes($content_lang),
+            'all_tags' => Tag::tags($content_lang),
+            'all_nodes' => $this->simpleNodes($content_lang),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'edit',
         ];
@@ -152,13 +171,17 @@ class NodeController extends Controller
         // Log::info('Recieved update data:');
         // Log::info($request->all());
 
-        $changed_values = (array) $request->input('changed_values');
+        $changed = (array) $request->input('changed_values');
 
-        if (!empty($changed_values)) {
-            Log::info($changed_values);
+        if (!empty($changed)) {
+            Log::info($changed);
             // $node->update($node->prepareUpdate($request));
             $node->forceUpdate();
             $node->saveValues($request->all(), true);
+
+            if (in_array('tags', $changed)) {
+                $node->saveTags($request->input('tags'));
+            }
         }
 
         $positions = (array) $request->input('changed_positions');
