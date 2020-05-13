@@ -1,4 +1,7 @@
-<el-form-item label="{{ $label }}" prop="{{ $truename }}" size="small" class="{{ $help?'has-helptext':'' }}">
+<el-form-item prop="{{ $truename }}" size="small" class="{{ $help?'has-helptext':'' }}">
+  <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="{{ $truename }}" placement="right">
+    <span>{{ $label }}</span>
+  </el-tooltip>
   <ckeditor
     v-model="node.{{ $truename }}"
     tag-name="textarea"

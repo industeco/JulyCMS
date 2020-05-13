@@ -243,9 +243,10 @@ if (! function_exists('langcode')) {
 }
 
 if (! function_exists('langname')) {
-    function langname($langcode)
+    function langname($langcode, $interface_lang = null)
     {
-        $list = language_list($langcode);
+        $interface_lang = $interface_lang ?: langcode('admin_page');
+        $list = language_list($interface_lang);
         return $list[$langcode] ?? $langcode;
     }
 }
