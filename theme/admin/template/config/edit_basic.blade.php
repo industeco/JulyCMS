@@ -9,8 +9,11 @@
   label-position="top">
   <div id="main_form_left">
     @foreach (['owner','url','email'] as $name)
-    <el-form-item label="{{ $settings[$name]['label'] }}" prop="{{ $name }}" size="small"
+    <el-form-item prop="{{ $name }}" size="small"
       class="{{ $settings[$name]['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('{{ $name }}')" placement="right">
+        <span>{{ $settings[$name]['label'] }}</span>
+      </el-tooltip>
       <el-input
         v-model="settings.{{ $name }}"
         native-size="80"></el-input>
@@ -72,6 +75,10 @@
         }
 
         return changed;
+      },
+
+      useInTwig(name) {
+        return `@{{ config(jc.${name}) }}`;
       },
 
       submit() {

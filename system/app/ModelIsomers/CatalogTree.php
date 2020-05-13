@@ -22,11 +22,11 @@ class CatalogTree
         $this->catalog = $catalog;
 
         $cacheid = $catalog->id.'/treeNodes';
-        if ($treeNodes = $catalog->cacheGet($cacheid)) {
+        if ($treeNodes = Catalog::cacheGet($cacheid)) {
             $treeNodes = $treeNodes['value'];
         }else {
             $treeNodes = $this->getTreeNodes();
-            $catalog->cachePut($cacheid, $treeNodes);
+            Catalog::cachePut($cacheid, $treeNodes);
         }
         $this->nodes = collect($treeNodes);
     }

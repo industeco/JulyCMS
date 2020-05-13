@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Log;
 
 trait CacheRetrieve
 {
-    public function cacheKey($id, $langcode = null)
+    public static function cacheKey($key, $langcode = null)
     {
-        $key = static::class.'/'.trim($id);
+        $key = static::class.'/'.trim($key);
         if ($langcode) {
             $key .= '/'.$langcode;
         }
@@ -17,26 +17,26 @@ trait CacheRetrieve
         return md5($key);
     }
 
-    public function cachePut($id, $value, $langcode = null)
+    public static function cachePut($key, $value, $langcode = null)
     {
         // Log::info('CacheRetrieve Put:');
-        return Cache::put($this->cacheKey($id, $langcode), $value);
+        return Cache::put(static::cacheKey($key, $langcode), $value);
     }
 
-    public function cacheGet($id, $langcode = null)
+    public static function cacheGet($key, $langcode = null)
     {
         // Log::info('CacheRetrieve Get:');
-        $def = uniqid();
-        $value = Cache::get($this->cacheKey($id, $langcode), $def);
-        if ($value === $def) {
+        $uid = uniqid();
+        $value = Cache::get(static::cacheKey($key, $langcode), $uid);
+        if ($value === $uid) {
             return null;
         }
         return ['value' => $value];
     }
 
-    public function cacheClear($id, $langcode = null)
+    public static function cacheClear($key, $langcode = null)
     {
         // Log::info('CacheRetrieve Clear:');
-        return Cache::forget($this->cacheKey($id, $langcode));
+        return Cache::forget(static::cacheKey($key, $langcode));
     }
 }

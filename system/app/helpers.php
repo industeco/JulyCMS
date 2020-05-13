@@ -203,36 +203,37 @@ if (! function_exists('langcode')) {
             case 'available':
             case 'all':
             case 'list':
-                return config('jc.languages');
+                $langs = [];
+                $list = language_list('zh');
+                foreach (config('jc.languages') as $code) {
+                    $langs[$code] = $list[$code] ?? $code;
+                }
+                return $langs;
 
             // 界面语言
-            case 'interface':
             case 'interface_value':
-            case 'interface_value_langcode':
                 return config('interface_value_langcode') ?: config('jc.interface_lang');
 
+            case 'interface_value.default':
+                return config('jc.interface_lang');
+
             // 内容语言
-            case 'content':
             case 'content_value':
-            case 'content_value_langcode':
                 return config('content_value_langcode') ?: config('jc.content_lang');
 
+            case 'content_value.default':
+                return config('jc.content_lang');
+
             // 后台页面语言
-            case 'admin':
             case 'admin_page':
-            case 'admin_page_langcode':
                 return config('jc.admin_page_lang');
 
             // 站点页面语言
-            case 'site':
             case 'site_page':
-            case 'site_page_langcode':
                 return config('jc.site_page_lang');
 
-            case 'page':
-            case 'page_langcode':
+            case 'current_page':
             case 'request':
-            case 'request_langcode':
                 return config('request_langcode');
 
             default:

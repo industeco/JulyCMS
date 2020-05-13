@@ -137,14 +137,14 @@ class Node extends JulyModel
         $langcode = $langcode ?: langcode('content_value');
 
         $cacheid = $this->attributes['id'].'/values';
-        if ($values = $this->cacheGet($cacheid, $langcode)) {
+        if ($values = static::cacheGet($cacheid, $langcode)) {
             $values = $values['value'];
         } else {
             $values = [];
             foreach ($this->fields() as $field) {
                 $values[$field->truename] = $field->getValue($this, $langcode);
             }
-            $this->cachePut($cacheid, $values, $langcode);
+            static::cachePut($cacheid, $values, $langcode);
         }
 
         return $values;
@@ -188,8 +188,8 @@ class Node extends JulyModel
      */
     public function saveValues(array $values, $deleteNull = false)
     {
-        $this->cacheClear($this->id.'/values', langcode('content_value'));
-        Log::info('CacheKey: '.$this->cacheKey($this->id.'/values', langcode('content_value')));
+        static::cacheClear($this->id.'/values', langcode('content_value'));
+        Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content_value')));
 
         $changed = $values['changed_values'];
         // Log::info('Saving Values. Values Changed:');

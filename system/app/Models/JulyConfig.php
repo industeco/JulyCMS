@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
+use App\Traits\CacheRetrieve;
 use Illuminate\Support\Arr;
 
 class JulyConfig extends Model
 {
+    use CacheRetrieve;
+
     /**
      * 与模型关联的表名
      *
@@ -89,7 +92,7 @@ class JulyConfig extends Model
             'owner', 'url', 'email',
         ];
 
-        return static::getSettings($names, $langcode);
+        return static::retrieveConfiguration($names, $langcode);
     }
 
     /**
@@ -104,7 +107,7 @@ class JulyConfig extends Model
             'languages', 'content_lang', 'site_page_lang',
         ];
 
-        return static::getSettings($names, $langcode);
+        return static::retrieveConfiguration($names, $langcode);
     }
 
     /**
@@ -114,16 +117,28 @@ class JulyConfig extends Model
      * @param string $langcode
      * @return array
      */
-    public static function getSettings(array $names, $langcode = null)
+    public static function retrieveConfiguration(array $names, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('interface_value');
-
-        $settings = [];
-        foreach (static::findMany($names) as $entry) {
-            $settings[$entry->truename] = $entry->mixConfig($langcode);
+        $configuration = [];
+        $fresh = [];
+        foreach ($names as $truename) {
+            if ($entry = static::cacheGet($truename)) {
+                $configuration[$truename] = static::mixConfig($entry['value'], $langcode);
+            } else {
+                $configuration[$truename] = null;
+                $fresh[] = $truename;
+            }
         }
 
-        return $settings;
+        if ($fresh) {
+            foreach (static::findMany($fresh) as $entry) {
+                $entry = $entry->toArray();
+                static::cachePut($entry['truename'], $entry);
+                $configuration[$entry['truename']] = static::mixConfig($entry, $langcode);
+            }
+        }
+
+        return $configuration;
     }
 
     public function getValue($langcode = null)
@@ -132,24 +147,33 @@ class JulyConfig extends Model
         return cast_value($config['value'], $config['value_type']);
     }
 
-    public function mixConfig($langcode = null)
+    protected static function mixConfig($entry, $langcode = null)
     {
-        $attributes = $this->getAttributes();
-        $config = $this->config;
-
-        $ilang = Arr::get($config, 'langcode.interface_value') ?: langcode('interface_value');
+        $ilang = Arr::get($entry, 'langcode.interface_value') ?: langcode('interface_value');
         $langcode = $langcode ?: $ilang;
 
+        $config = $entry['config'];
+        unset($entry['config']);
         foreach (['label', 'description'] as $attribute) {
             if ($value = $config[$attribute] ?? null) {
-                $attributes[$attribute] = $value[$langcode] ?? $value[$ilang] ?? null;
+                $entry[$attribute] = $value[$langcode] ?? $value[$ilang] ?? null;
             } else {
-                $attributes[$attribute] = null;
+                $entry[$attribute] = null;
             }
         }
-        $attributes['value'] = $this->getValue();
-        unset($attributes['config']);
+        $entry['value'] = cast_value($config['value'], $config['value_type']);
 
-        return $attributes;
+        return $entry;
+    }
+
+    public static function updateConfiguration(array $configuration)
+    {
+        foreach (static::findMany(array_keys($configuration)) as $entry) {
+            static::cacheClear($entry->truename);
+            $entry->config = array_merge($entry->config, [
+                'value' => $configuration[$entry->truename],
+            ]);
+            $entry->save();
+        }
     }
 }

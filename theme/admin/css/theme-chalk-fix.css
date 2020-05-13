@@ -2,7 +2,7 @@
 /* element ui 样式修正 */
 
 .el-form-item.has-helptext + .el-form-item {
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .el-form--label-top .el-form-item__label {

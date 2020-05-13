@@ -180,8 +180,8 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
 
     public function removePosition(array $position)
     {
-        $this->cacheClear($this->id.'/catalogNodes');
-        $this->cacheClear($this->id.'/treeNodes');
+        static::cacheClear($this->id.'/catalogNodes');
+        static::cacheClear($this->id.'/treeNodes');
 
         // DB::delete("DELETE from catalog_node where `catalog`=? and (`node_id`=? or `path` like '%/$node_id/%' )");
         CatalogNode::where([
@@ -197,8 +197,8 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
 
     public function insertPosition(array $position)
     {
-        $this->cacheClear($this->id.'/catalogNodes');
-        $this->cacheClear($this->id.'/treeNodes');
+        static::cacheClear($this->id.'/catalogNodes');
+        static::cacheClear($this->id.'/treeNodes');
 
         // $position['catalog'] = $this->truename;
         $position['langcode'] = langcode('content_value');
@@ -232,8 +232,8 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
 
     public function updatePositions(array $positions)
     {
-        $this->cacheClear($this->id.'/catalogNodes');
-        $this->cacheClear($this->id.'/treeNodes');
+        static::cacheClear($this->id.'/catalogNodes');
+        static::cacheClear($this->id.'/treeNodes');
 
         $supplement = [
             'catalog' => $this->truename,
@@ -254,13 +254,13 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     public function retrieveCatalogNodes()
     {
         $cacheid = $this->id.'/catalogNodes';
-        if ($nodes = $this->cacheGet($cacheid)) {
+        if ($nodes = static::cacheGet($cacheid)) {
             $nodes = $nodes['value'];
         } else {
             $nodes = CatalogNode::where('catalog', $this->truename)
                 ->get(['node_id','parent_id','prev_id','path'])->toArray();
 
-            $this->cachePut($cacheid, $nodes);
+            static::cachePut($cacheid, $nodes);
         }
 
         return $nodes;

@@ -217,7 +217,7 @@ class NodeField extends JulyModel implements HasModelConfig
         $langcode = $langcode ?: langcode('content_value');
 
         // 清除字段值缓存
-        $this->cacheClear($this->truename.'/'.$node_id, $langcode);
+        static::cacheClear($this->truename.'/'.$node_id, $langcode);
 
         $table = $this->tableName();
         DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
@@ -240,7 +240,7 @@ class NodeField extends JulyModel implements HasModelConfig
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
-        $this->cacheClear($this->truename.'/'.$node_id, $langcode);
+        static::cacheClear($this->truename.'/'.$node_id, $langcode);
 
         $records = FieldType::getRecords($this->field_type, $value, $this->columns());
         if (is_null($records)) {
@@ -278,7 +278,7 @@ class NodeField extends JulyModel implements HasModelConfig
         $langcode = $langcode ?: langcode('content_value');
 
         $cacheid = $this->truename.'/'.$node->id;
-        if ($value = $this->cacheGet($cacheid, $langcode)) {
+        if ($value = static::cacheGet($cacheid, $langcode)) {
             $value = $value['value'];
         } else {
             $value = null;
@@ -302,7 +302,7 @@ class NodeField extends JulyModel implements HasModelConfig
             }
 
             // 缓存字段值
-            $this->cachePut($cacheid, $value, $langcode);
+            static::cachePut($cacheid, $value, $langcode);
         }
 
         return $value;

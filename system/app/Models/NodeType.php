@@ -121,7 +121,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         $langcode = $langcode ?? langcode('admin_page');
 
         $cacheid = $this->truename.'/fields';
-        if ($fields = $this->cacheGet($cacheid, $langcode)) {
+        if ($fields = static::cacheGet($cacheid, $langcode)) {
             $fields = $fields['value'];
         } else {
             $fields = [];
@@ -142,7 +142,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 // unset($field['pivot']);
                 // $fields[] = $field;
             }
-            $this->cachePut($cacheid, $fields, $langcode);
+            static::cachePut($cacheid, $fields, $langcode);
         }
 
         return $fields;
@@ -155,7 +155,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         $lastModified = last_modified(view_path('components/'));
 
         $cacheid = $this->truename.'/fieldJigsaws';
-        if ($jigsaws = $this->cacheGet($cacheid, $langcode)) {
+        if ($jigsaws = static::cacheGet($cacheid, $langcode)) {
             $jigsaws = $jigsaws['value'];
         }
 
@@ -168,7 +168,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 'created_at' => time(),
                 'jigsaws' => $jigsaws,
             ];
-            $this->cachePut($cacheid, $jigsaws, $langcode);
+            static::cachePut($cacheid, $jigsaws, $langcode);
         }
 
         $jigsaws = $jigsaws['jigsaws'];
@@ -192,8 +192,8 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         $langcode = langcode('admin_page');
 
         // 清除碎片缓存
-        $this->cacheClear($this->truename.'/fields', $langcode);
-        $this->cacheClear($this->truename.'/fieldJigsaws', $langcode);
+        static::cacheClear($this->truename.'/fields', $langcode);
+        static::cacheClear($this->truename.'/fieldJigsaws', $langcode);
 
         $node_type = $this->truename;
         $fields = [];
