@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class Tag extends JulyModel
@@ -43,7 +44,7 @@ class Tag extends JulyModel
         'tag',
         'is_preset',
         'is_show',
-        'original',
+        'original_tag',
         'langcode',
         'updated_at',
     ];
@@ -58,6 +59,32 @@ class Tag extends JulyModel
         'is_show' => 'boolean',
     ];
 
+    public static function createIfNotExist(array $tags, $langcode = null)
+    {
+        $langcode = $langcode ?: langcode('content_value');
+
+        $records = [];
+        $freshTags = collect($tags)->diff(Tag::allTags());
+        $supplement = [
+            'is_preset' => false,
+            'is_show' => true,
+            'langcode' => $langcode,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
+        ];
+        foreach ($freshTags as $tag) {
+            $records[] = array_merge([
+                'tag' => $tag,
+                'original_tag' => $tag,
+            ], $supplement);
+        }
+        if ($records) {
+            DB::table('tags')->insert($records);
+        }
+
+        return count($records);
+    }
+
     public function nodes($langcode = null)
     {
         if ($langcode) {
@@ -68,7 +95,7 @@ class Tag extends JulyModel
             ->withPivot('langcode');
     }
 
-    public static function tags($langcode = null)
+    public static function allTags($langcode = null)
     {
         if ($langcode) {
             return static::where('langcode', $langcode)->get()->pluck('tag')->toArray();
@@ -76,25 +103,66 @@ class Tag extends JulyModel
         return static::all()->pluck('tag')->toArray();
     }
 
-    public static function createIfNotExist(array $tags, $langcode = null)
+    public function getRightTag($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
-
-        $records = [];
-        $freshTags = collect($tags)->diff(Tag::tags());
-        foreach ($freshTags as $tag) {
-            $records[] = [
-                'tag' => $tag,
-                'is_preset' => false,
-                'is_show' => true,
-                'original' => $tag,
-                'langcode' => $langcode,
-            ];
-        }
-        if ($records) {
-            DB::table('tags')->insert($records);
+        if ($this->langcode === $langcode) {
+            return $this->attributes['tag'];
         }
 
-        return count($records);
+        $cluster = static::retrieveTagCluster($this->attributes['original_tag']);
+        if ($langcode) {
+            return $cluster[$langcode] ?? $this->attributes['tag'];
+        }
+
+        return $cluster;
+    }
+
+    public static function retrieveTagCluster($original_tag)
+    {
+        if ($cluster = static::cacheGet($original_tag)) {
+            return $cluster['value'];
+        }
+
+        $cluster = Tag::where('original_tag', $original_tag)->get()
+                    ->pluck('tag', 'langcode')->toArray();
+        static::cachePut($original_tag, $cluster);
+
+        return $cluster;
+    }
+
+    public static function saveChange(array $changes)
+    {
+        $tags = Tag::findMany(array_keys($changes))->keyBy('tag')->all();
+
+        $prepareDelete = [];
+        $prepareCreate = [];
+
+        foreach ($changes as $key => $value) {
+            $tag = $tags[$key] ?? null;
+            if ($tag) {
+                if ($value) {
+                    $tag->is_show = $value['is_show'];
+                    $tag->original_tag = $value['original_tag'];
+                    $tag->save();
+                } else {
+                    $prepareDelete[] = $key;
+                }
+            } elseif ($value) {
+                $time = Date::createFromTimestampMs($value['updated_at']);
+                $prepareCreate[] = array_replace($value, [
+                    'created_at' => $time,
+                    'updated_at' => $time,
+                ]);
+            }
+        }
+
+        if ($prepareDelete) {
+            DB::table('tags')->whereIn('tag', $prepareDelete)->delete();
+            DB::table('node_tag')->whereIn('tag', $prepareDelete)->delete();
+        }
+
+        if ($prepareCreate) {
+            DB::table('tags')->insert($prepareCreate);
+        }
     }
 }

@@ -117,7 +117,7 @@ class Node extends JulyModel
         return array_merge(
             $this->getAttributes(),
             $this->retrieveValues($langcode),
-            $this->retrieveTags($langcode)
+            ['tags' => $this->retrieveTags($langcode)]
         );
     }
 
@@ -133,28 +133,6 @@ class Node extends JulyModel
             }
         }
         return $fields;
-    }
-
-    /**
-     * 获取内容标签
-     *
-     * @param string|null $langcode
-     * @return array
-     */
-    public function retrieveTags($langcode = null)
-    {
-        $langcode = $langcode ?: langcode('content_value');
-        $cacheid = $this->attributes['id'].'/tags';
-        if ($tags = static::cacheGet($cacheid, $langcode)) {
-            $tags = $tags['value'];
-        } else {
-            $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
-            static::cachePut($cacheid, $tags, $langcode);
-        }
-
-        return [
-            'tags' => $tags,
-        ];
     }
 
     public function retrieveValues($langcode = null)
@@ -173,6 +151,32 @@ class Node extends JulyModel
         }
 
         return $values;
+    }
+
+    /**
+     * 获取内容标签
+     *
+     * @param string|null $langcode
+     * @return array
+     */
+    public function retrieveTags($langcode = null)
+    {
+        $langcode = $langcode ?: langcode('content_value');
+        $cacheid = $this->id.'/tags';
+        if ($tags = static::cacheGet($cacheid, $langcode)) {
+            $tags = $tags['value'];
+        } else {
+            $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
+            if (empty($tags)) {
+                $tags = [];
+                foreach ($this->tags($this->langcode)->get() as $tag) {
+                    $tags[] = $tag->getRightTag($langcode);
+                }
+            }
+            static::cachePut($cacheid, $tags, $langcode);
+        }
+
+        return $tags;
     }
 
     /**
@@ -207,8 +211,10 @@ class Node extends JulyModel
     public function saveTags(array $tags, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content_value');
+        static::cacheClear($this->id.'/tags', $langcode);
         Tag::createIfNotExist($tags, $langcode);
 
+        $tags = array_fill_keys($tags, ['langcode' => $langcode]);
         $this->tags($langcode)->sync($tags);
     }
 

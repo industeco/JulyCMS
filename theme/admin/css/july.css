@@ -410,6 +410,11 @@ body {
   margin-right: 20px;
 }
 
+#navbar_left > .md-button {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 #navbar_toggle {
   margin-left: 0;
 }
@@ -574,8 +579,8 @@ h2.jc-form-info-item {
 
 #main_form_right .el-collapse-item__header {
   height: auto;
-  line-height: 22px;
-  padding: 10px 20px;
+  line-height: 20px;
+  padding: 8px 20px;
   color: #0074bd;
   cursor: pointer;
   font-weight: bold;
@@ -593,13 +598,17 @@ h2.jc-form-info-item {
 }
 
 #main_form_right .el-collapse-item__wrap {
-  padding: 5px 20px 20px;
+  padding: 2px 20px 20px;
   border: none;
   background-color: transparent;
 }
 
 #main_form_right .el-collapse-item__wrap .el-collapse-item__content {
   padding: 0;
+}
+
+#node_tags_selector .el-select {
+  width: 100%;
 }
 
 

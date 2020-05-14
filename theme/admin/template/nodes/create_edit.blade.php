@@ -30,8 +30,8 @@
       </div>
       @endif
       <el-collapse :value="expanded" @change="handleCollapseChange">
-        <el-collapse-item title="标签" name="tags">
-          <el-form-item label="标签" size="small" class="has-helptext">
+        <el-collapse-item title="标签" name="tags" id="node_tags_selector">
+          <el-form-item size="small" class="has-helptext">
             <el-select v-model="node.tags" placeholder="选择标签"
               multiple
               filterable

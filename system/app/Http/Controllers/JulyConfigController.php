@@ -28,7 +28,7 @@ class JulyConfigController extends Controller
      */
     public function updateBasicSettings(Request $request)
     {
-        Log::info($request->all());
+        // Log::info($request->all());
 
         $changed = $request->only($request->input('_changed'));
         JulyConfig::updateConfiguration($changed);
@@ -56,7 +56,7 @@ class JulyConfigController extends Controller
      */
     public function updateLanguageSettings(Request $request)
     {
-        Log::info($request->all());
+        // Log::info($request->all());
 
         $changed = $request->only($request->input('_changed'));
         JulyConfig::updateConfiguration($changed);

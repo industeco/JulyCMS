@@ -199,7 +199,8 @@
 
           axios.post('/admin/config/language', settings).then(response => {
             loading.close();
-            console.log(response);
+            this.initial_data = clone(this.settings);
+            // console.log(response);
             this.$message.success('设置已更新');
           }).catch(err => {
             loading.close();

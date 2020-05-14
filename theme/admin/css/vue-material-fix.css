@@ -9,6 +9,10 @@ a.md-button {
   text-decoration: none;
 }
 
+.md-button .md-ripple {
+  padding: 0;
+}
+
 .md-button-content {
   padding: 0 15px;
 }
@@ -22,7 +26,13 @@ a.md-button {
 }
 
 .md-small .md-button-content {
-  padding: 0 5px;
+  padding: 0 10px;
+}
+
+.md-button.md-plain,
+.md-button:not(.md-raised):not(.md-icon-button):not(.md-fab) {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .md-fab {

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
@@ -15,7 +17,7 @@ class TagController extends Controller
     public function index()
     {
         return view_with_langcode('admin::tags.index', [
-            'tags' => Tag::all()->toArray(),
+            'tags' => Tag::all()->keyBy('tag')->toArray(),
         ]);
     }
 
@@ -66,12 +68,12 @@ class TagController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Tag $tag)
+    public function update(Request $request)
     {
-        //
+        Tag::saveChange($request->input('changed'));
+        return response('');
     }
 
     /**

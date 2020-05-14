@@ -66,7 +66,7 @@ class NodeController extends Controller
             'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang),
             'tags' => [],
             'positions' => [],
-            'all_tags' => Tag::tags($content_lang),
+            'all_tags' => Tag::allTags($content_lang),
             'all_nodes' => $this->simpleNodes($content_lang),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'create',
@@ -145,7 +145,7 @@ class NodeController extends Controller
             'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang, $values),
             'tags' => $values['tags'],
             'positions' => $node->positions(),
-            'all_tags' => Tag::tags($content_lang),
+            'all_tags' => Tag::allTags($content_lang),
             'all_nodes' => $this->simpleNodes($content_lang),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'edit',
@@ -174,7 +174,7 @@ class NodeController extends Controller
         $changed = (array) $request->input('changed_values');
 
         if (!empty($changed)) {
-            Log::info($changed);
+            // Log::info($changed);
             // $node->update($node->prepareUpdate($request));
             $node->forceUpdate();
             $node->saveValues($request->all(), true);

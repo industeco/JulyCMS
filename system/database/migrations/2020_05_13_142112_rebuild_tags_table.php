@@ -24,7 +24,7 @@ class RebuildTagsTable extends Migration
             $table->boolean('is_show')->default(1);
 
             // 标签原文（表示翻译自该标签）
-            $table->string('original', 32);
+            $table->string('original_tag', 32);
 
             // 语言
             $table->string('langcode', 12);
@@ -33,7 +33,7 @@ class RebuildTagsTable extends Migration
             $table->timestamps();
 
             $table->primary('tag');
-            $table->unique(['original', 'langcode']);
+            $table->unique(['original_tag', 'langcode']);
         });
     }
 

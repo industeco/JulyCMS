@@ -60,13 +60,13 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="url(scope.row.id, 'edit')" title="编辑" class="md-button md-fab md-mini md-primary md-theme-default">
+              <a :href="url(scope.row.id, 'edit')" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="url(scope.row.id, 'translate')" title="翻译" class="md-button md-fab md-mini md-primary md-theme-default">
+              <a :href="url(scope.row.id, 'translate')" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
-              <button type="button" title="删除" class="md-button md-fab md-mini md-accent md-theme-default"
+              <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click="deleteNode(scope.row.id)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
               </button>

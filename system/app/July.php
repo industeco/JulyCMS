@@ -41,9 +41,8 @@ class July
         ])->names($lang.'node_types');
 
         // 标签
-        Route::resource('tags', 'TagController')->parameters([
-            'tags' => 'tag',
-        ])->names($lang.'tags');
+        Route::get('tags', ['uses' => 'TagController@index', 'as'=>'tags.index']);
+        Route::post('tags', ['uses' => 'TagController@update', 'as'=>'tags.update']);
 
         // 目录
         Route::get('catalogs/{catalog}/reorder', 'CatalogController@reorder')->name($lang.'catalogs.reorder');
