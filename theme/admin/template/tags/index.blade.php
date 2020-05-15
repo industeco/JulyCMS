@@ -18,7 +18,8 @@
         :data="tags"
         row-key="tag"
         default-expand-all
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+        :tree-props="{children: 'children'}"
+        @row-contextmenu="handleRowRightClick"
         @row-click="handleRowClick">
         <el-table-column label="序号" type="index" width="80"></el-table-column>
         <el-table-column label="标签" prop="tag" width="auto" sortable></el-table-column>
@@ -43,7 +44,7 @@
               </button>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click.stop="deleteTag(scope.row)">
-                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
+                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
             </div>
           </template>
@@ -115,6 +116,24 @@
         </button>
       </span>
     </el-dialog>
+    <jc-contextmenu ref="contextmenu">
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="changeOriginal(currentTag)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
+            <span class="md-list-item-text">变更原文</span>
+          </div>
+        </div>
+      </li>
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="deleteTag(currentTag)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
+            <span class="md-list-item-text">删除标签</span>
+          </div>
+        </div>
+      </li>
+    </jc-contextmenu>
   </div>
 @endsection
 
@@ -127,6 +146,7 @@
       return {
         tagsMap: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         tags: [],
+
         currentTag: null,
         currentOriginal: null,
         originalList: [],
@@ -188,6 +208,11 @@
         }
       },
 
+      handleRowRightClick(row, column, event) {
+        this.currentTag = row;
+        this.$refs.contextmenu.show(event);
+      },
+
       diffForHumans(time) {
         return moment(time).fromNow();
       },
@@ -198,7 +223,9 @@
       },
 
       changeOriginal(tag) {
-        this.currentTag = tag;
+        tag = tag || this.currentTag;
+        if (!tag) return;
+
         const tags = [];
         if (tag.tag !== tag.original_tag) {
           tags.push(tag.tag);
@@ -207,6 +234,8 @@
           tags.push(t.tag);
         })
         this.$set(this.$data, 'originalList', tags);
+
+        this.currentTag = tag;
         this.currentOriginal = tag.original_tag;
         this.changeOriginalDialogVisible = true;
       },
@@ -254,8 +283,11 @@
       },
 
       deleteTag(tag) {
+        tag = tag || this.currentTag;
+        if (! tag) return;
+
         if (this.tagsMap[tag.tag]) {
-          this.$confirm(`确定要删除 ${tag.tag} 标签吗？（注意：如果有翻译版本会被一并删除）`, '删除标签', {
+          this.$confirm(`确定要删除 ${tag.tag} 标签吗？（注意！如果有翻译版本会被一并删除）`, '删除标签', {
             confirmButtonText: '删除',
             cancelButtonText: '取消',
             type: 'warning',
@@ -267,7 +299,7 @@
               });
             }
             this.$set(this.$data, 'tags', this.getTags());
-          }).catch();
+          }).catch((err)=>{});
         }
       },
 

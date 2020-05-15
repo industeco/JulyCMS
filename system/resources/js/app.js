@@ -24,6 +24,9 @@ Vue.use( CKEditor );
 import MediaUpload from './components/MediaUpload.vue';
 Vue.component('jc-media-upload', MediaUpload);
 
+import Contextmenu from './components/Contextmenu.vue';
+Vue.component('jc-contextmenu', Contextmenu);
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue

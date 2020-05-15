@@ -187,6 +187,11 @@
   display: block;
 }
 
+.el-table .cell > .el-table__expand-icon > .el-icon-arrow-right {
+  font-weight: 700;
+  color: #448aff;
+}
+
 .el-input-number__decrease, .el-input-number__increase {
   z-index: 2;
 }

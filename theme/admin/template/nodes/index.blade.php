@@ -37,6 +37,7 @@
     <div class="jc-table-wrapper">
       <el-table class="jc-table with-operators"
         :data="nodes"
+        @row-contextmenu="handleContextmenu"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50"></el-table-column>
         <el-table-column label="ID" prop="id" width="100" sortable></el-table-column>
@@ -60,21 +61,63 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="url(scope.row.id, 'edit')" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="'/admin/nodes/'+scope.row.id+'/edit'" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="url(scope.row.id, 'translate')" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="'/admin/nodes/'+scope.row.id+'/translate'" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click="deleteNode(scope.row.id)">
-                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
+                @click="deleteNode(scope.row)">
+                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
             </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
+    <jc-contextmenu ref="contextmenu">
+      <li class="md-list-item">
+        <a :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
+            <span class="md-list-item-text">编辑</span>
+          </div>
+        </a>
+      </li>
+      <li class="md-list-item">
+        <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-primary md-theme-default">translate</i>
+            <span class="md-list-item-text">翻译</span>
+          </div>
+        </a>
+      </li>
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="deleteNode(contextmenu.target)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
+            <span class="md-list-item-text">删除</span>
+          </div>
+        </div>
+      </li>
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="render(contextmenu.target)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-theme-default">description</i>
+            <span class="md-list-item-text">生成 HTML</span>
+          </div>
+        </div>
+      </li>
+      <li class="md-list-item">
+        <a :href="contextmenu.url" target="_blank" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-theme-default">visibility</i>
+            <span class="md-list-item-text">查看页面</span>
+          </div>
+        </a>
+      </li>
+    </jc-contextmenu>
   </div>
 @endsection
 
@@ -88,6 +131,12 @@
         nodes: @json(array_values($nodes), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         selected: [],
         showSuggestedTemplates: false,
+        contextmenu: {
+          target: null,
+          url: null,
+          editUrl: null,
+          translateUrl: null,
+        },
       };
     },
 
@@ -96,7 +145,9 @@
         return moment(time).fromNow();
       },
 
-      deleteNode(id) {
+      deleteNode(node) {
+        if (! node) return;
+
         this.$confirm(`确定要删除内容？`, '删除内容', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
@@ -107,7 +158,7 @@
             text: '正在删除 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
-          axios.delete('/admin/nodes/'+id).then(function(response) {
+          axios.delete('/admin/nodes/'+node.id).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success'
             loading.text = '已删除'
@@ -118,7 +169,23 @@
         }).catch();
       },
 
-      url(id, mode) {
+      handleContextmenu(row, column, event) {
+        if (event.target.tagName==='A' || column.label==='操作') {
+          return;
+        }
+
+        // this.targetNode = row;
+        const menu = this.contextmenu;
+        menu.target = row;
+        menu.url = row.url;
+        menu.editUrl = '/admin/nodes/'+row.id+'/edit';
+        menu.translateUrl = '/admin/nodes/'+row.id+'/translate';
+
+        this.$refs.contextmenu.show(event);
+      },
+
+      url(node, mode) {
+        if (! node) return '';
         return `/admin/nodes/${id}/${mode}`;
       },
 
@@ -126,16 +193,25 @@
         this.$set(this.$data, 'selected', selected);
       },
 
-      render() {
+      render(node) {
+        const nodes = [];
+        if (node) {
+          nodes.push(node.id);
+        } else {
+          this.selected.forEach(element => {
+            nodes.push(element.id);
+          });
+        }
+
+        if (! nodes.length) {
+          this.$message.info('未选中任何内容');
+          return;
+        }
+
         const loading = this.$loading({
           lock: true,
           text: '正在生成 ...',
           background: 'rgba(255, 255, 255, 0.7)',
-        });
-
-        const nodes = [];
-        this.selected.forEach(element => {
-          nodes.push(element.id);
         });
 
         axios.post('/admin/nodes/render', {nodes: nodes}).then((response) => {
@@ -150,8 +226,5 @@
       },
     },
   });
-  // function deleteNode(id) {
-  //   alert(id)
-  // }
 </script>
 @endsection

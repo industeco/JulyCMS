@@ -83,6 +83,8 @@ body {
 }
 
 .jc-table th>.cell, .jc-table td>.cell {
+  display: flex;
+  align-items: center;
   padding: 0;
   line-height: inherit;
 }
@@ -351,11 +353,10 @@ body {
   fill: #448aff;
 }
 
-#app_sidebar .md-list-item-container:not(.md-list-item-expand):hover,
+/*#app_sidebar .md-list-item-container:not(.md-list-item-expand):hover,
 #app_sidebar .md-list-item-expand > .md-list-item-content:hover {
-  /* background-color: rgba(255,255,255, .12); */
   background-color: rgba(0,0,0, .12);
-}
+} */
 
 #app_sidebar .is-active > .md-list-item-link > .md-list-item-content {
   color: #448aff;
@@ -1301,4 +1302,26 @@ h2.jc-form-info-item {
 
 .jc-twig-output {
   font-family: monospace!important;
+}
+
+.jc-contextmenu {
+  min-width: 180px;
+  border-radius: 2px;
+}
+
+.jc-contextmenu .md-list-item-content {
+  min-height: 36px;
+  padding: 0 24px 0 16px;
+  font-size: 14px;
+}
+
+.jc-contextmenu .md-list-item-content > .md-icon {
+  margin-right: 15px;
+  font-size: 22px!important;
+}
+
+.jc-contextmenu .md-list-item-container[disabled] .md-icon,
+.jc-contextmenu .md-list-item > .md-list-item-container[disabled] {
+  color: rgba(0,0,0,0.26);
+  color: var(--md-theme-default-disabled-on-background, rgba(0,0,0,0.26));
 }
