@@ -228,6 +228,34 @@ class CatalogTree
         return $siblings;
     }
 
+    /**
+     * 获取给定节点的前一个节点
+     *
+     * @param int $id
+     * @return int
+     */
+    public function prev($id)
+    {
+        if ($node = $this->nodes->get($id)) {
+            return $node['prev_id'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * 获取给定节点的后一个节点
+     *
+     * @param int $id
+     * @return int
+     */
+    public function next($id)
+    {
+        if ($node = $this->nodes->get($id)) {
+            return $node['next_id'] ?? null;
+        }
+        return null;
+    }
+
     // /**
     //  * 获取给定节点的父节点
     //  *

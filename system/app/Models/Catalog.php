@@ -386,9 +386,48 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
         return $this->get_siblings(...$args);
     }
 
+    /**
+     * 在指定的树中，获取当前节点的前一个节点
+     *
+     * @param int $id
+     * @return \App\Models\Node
+     */
+    public function get_prev($id)
+    {
+        if ($id = $this->tree()->prev($id)) {
+            return Node::fetch($id);
+        }
+        return null;
+    }
+
+    /**
+     * 在指定的树中，获取当前节点的后一个节点
+     *
+     * @param int $id
+     * @return \App\Models\Node
+     */
+    public function get_next($id)
+    {
+        if ($id = $this->tree()->next($id)) {
+            return Node::fetch($id);
+        }
+        return null;
+    }
+
     public function get_nodes(): NodeCollection
     {
         $ids = $this->tree()->nodes();
         return NodeCollection::find($ids);
+    }
+
+    /**
+     * 获取指定节点的路径（节点 id 集合）
+     *
+     * @param int $id
+     * @return \Illuminate\Support\Collection
+     */
+    public function get_path($id)
+    {
+        return collect($this->tree()->ancestors($id));
     }
 }

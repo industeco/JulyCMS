@@ -121,18 +121,36 @@ class CatalogCollection extends ModelCollection
         return $this->get_siblings(...$args);
     }
 
-    // /**
-    //  * 获取指定节点所在路径（节点 id 集合）
-    //  *
-    //  * @param array $args 用于指定节点的参数
-    //  * @return TreePath
-    //  */
-    // public function get_path(...$args)
-    // {
-    //     $path = TreePath::make();
-    //     foreach ($this->items as $tree) {
-    //         $path = $path->merge($tree->get_path(...$args));
-    //     }
-    //     return $path;
-    // }
+    /**
+     * 获取指定节点的路径（节点 id 集合）
+     *
+     * @param int $id
+     * @return \Illuminate\Support\Collection
+     */
+    public function get_path($id)
+    {
+        return $this->first()->get_path($id);
+    }
+
+    /**
+     * 在指定的树中，获取当前节点的前一个节点
+     *
+     * @param int $id
+     * @return \App\Models\Node
+     */
+    public function get_prev($id)
+    {
+        return $this->first()->get_prev($id);
+    }
+
+    /**
+     * 在指定的树中，获取当前节点的后一个节点
+     *
+     * @param int $id
+     * @return \App\Models\Node
+     */
+    public function get_next($id)
+    {
+        return $this->first()->get_next($id);
+    }
 }

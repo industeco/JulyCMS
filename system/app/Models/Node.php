@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\ModelCollections\CatalogCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
@@ -249,26 +250,33 @@ class Node extends JulyModel
      * 生成页面
      *
      * @param \Twig\Environment $twig
-     * @return bool
+     * @return string|null
      */
     public function render(Twig $twig, $langcode = null)
     {
-        $langcode = $langcode ?? langcode('content_value');
+        $langcode = $langcode ?: langcode('content_value');
 
         // 获取节点值
         $node = $this->getData($langcode);
 
         if ($tpl = $this->template()) {
-            // 更新文件名
-            $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
 
             $twig->addGlobal('_node', $this);
+            $twig->addGlobal('_path', $this->get_path());
 
-            // 生成 html 并写入文件
-            return Storage::disk('public')->put($file, $twig->render($tpl, $node));
+            // 生成 html
+            $html = $twig->render($tpl, $node);
+
+            // 写入文件
+            if ($node['url']) {
+                $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
+                Storage::disk('public')->put($file, $html);
+            }
+
+            return $html;
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -290,19 +298,15 @@ class Node extends JulyModel
         if (!$node['url']) return [];
 
         $templates = [];
-        try {
-            if ($node['template']) {
-                $templates[] = ltrim($node['template'], '/');
-            }
-
-            // 针对该节点的模板
-            $templates[] = 'node--' . str_replace('/', '--', ltrim($node['url'], '/')) . '.twig';
-
-            // 针对该节点类型的模板
-            $templates[] = 'type--' . $node['node_type'] . '.twig';
-        } catch (\Throwable $th) {
-            dd($node);
+        if ($node['template']) {
+            $templates[] = ltrim($node['template'], '/');
         }
+
+        // 针对该节点的模板
+        $templates[] = 'node--' . str_replace('/', '--', ltrim($node['url'], '/')) . '.twig';
+
+        // 针对该节点类型的模板
+        $templates[] = 'type--' . $node['node_type'] . '.twig';
 
         return $templates;
     }
@@ -425,7 +429,7 @@ class Node extends JulyModel
     }
 
     /**
-     * 在指定的树中，获取当前节点集的直接子节点
+     * 在指定的目录中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
      * @return NodeCollection
@@ -441,7 +445,7 @@ class Node extends JulyModel
     }
 
     /**
-     * 在指定的树中，获取当前节点的所有子节点
+     * 在指定的目录中，获取当前节点的所有子节点
      *
      * @param mixed $catalog
      * @return NodeCollection
@@ -457,7 +461,7 @@ class Node extends JulyModel
     }
 
     /**
-     * 在指定的树中，获取当前节点的直接父节点
+     * 在指定的目录中，获取当前节点的直接父节点
      *
      * @param mixed $catalog
      * @return NodeCollection
@@ -473,7 +477,7 @@ class Node extends JulyModel
     }
 
     /**
-     * 在指定的树中，获取当前节点的所有上级节点
+     * 在指定的目录中，获取当前节点的所有上级节点
      *
      * @param mixed $catalog
      * @return NodeCollection
@@ -489,7 +493,7 @@ class Node extends JulyModel
     }
 
     /**
-     * 在指定的树中，获取当前节点的相邻节点
+     * 在指定的目录中，获取当前节点的相邻节点
      *
      * @param mixed $catalog
      * @return NodeCollection
@@ -502,5 +506,38 @@ class Node extends JulyModel
     public function get_around($catalog = null)
     {
         return $this->get_siblings($catalog);
+    }
+
+    /**
+     * 在指定的目录中，获取当前节点的前一个节点
+     *
+     * @param mixed $catalog
+     * @return NodeCollection
+     */
+    public function get_prev($catalog = null)
+    {
+        return CatalogCollection::find($catalog)->get_prev($this->id);
+    }
+
+    /**
+     * 在指定的目录中，获取当前节点的后一个节点
+     *
+     * @param mixed $catalog
+     * @return NodeCollection
+     */
+    public function get_next($catalog = null)
+    {
+        return CatalogCollection::find($catalog)->get_next($this->id);
+    }
+
+    /**
+     * 获取当前节点在指定目录中的路径
+     *
+     * @param mixed $catalog
+     * @return \Illuminate\Support\Collection
+     */
+    public function get_path($catalog = null)
+    {
+        return CatalogCollection::find($catalog)->get_path($this->id);
     }
 }
