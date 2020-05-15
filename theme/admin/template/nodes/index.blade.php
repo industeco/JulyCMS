@@ -6,15 +6,42 @@
   <div id="main_tools">
     <div class="jc-btn-group">
       <a href="/admin/nodes/create" class="md-button md-dense md-raised md-primary md-theme-default">
-        <div class="md-ripple"><div class="md-button-content">新建</div></div>
+        <div class="md-ripple"><div class="md-button-content">新建内容</div></div>
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
         :disabled="!selected.length"
         @click="render">
-        <div class="md-ripple"><div class="md-button-content">生成</div></div>
+        <div class="md-ripple"><div class="md-button-content">生成 HTML</div></div>
       </button>
     </div>
     <div class="jc-options">
+      <div class="jc-option" id="contents_filter">
+        <label>筛选：</label>
+        <el-select v-model="filterBy" size="small" class="jc-filterby" @change="handleFilterByChange">
+          <el-option label="标题" value="title"></el-option>
+          <el-option label="内容类型" value="node_type"></el-option>
+          <el-option label="URL" value="url"></el-option>
+        </el-select>
+        <el-input
+          v-if="filterBy=='title'"
+          v-model="filterValues.title"
+          size="small"
+          native-size="20"
+          placeholder="内容标题"
+          @input="filterContents"></el-input>
+        <el-select v-if="filterBy=='node_type'" v-model="filterValues.node_type" size="small" placeholder="选择内容类型" @change="filterContents">
+          <el-option
+            v-for="(name, truename) in nodeTypes"
+            :key="truename"
+            :label="name"
+            :value="truename">
+          </el-option>
+        </el-select>
+        <el-select v-if="filterBy=='url'" v-model="filterValues.url" size="small" @change="filterContents">
+          <el-option label="有 URL" :value="true"></el-option>
+          <el-option label="没有 URL" :value="false"></el-option>
+        </el-select>
+      </div>
       <div class="jc-option">
         <label>显示『建议模板』：</label>
         <el-switch v-model="showSuggestedTemplates"></el-switch>
@@ -24,8 +51,8 @@
         <select id="nodes_view" class="jc-select">
           <option value="" selected>列表</option>
           <optgroup label="------- 目录 -------">
-            @foreach ($catalogs as $catalog)
-            <option value="{{ $catalog['truename'] }}">{{ $catalog['name'] }}</option>
+            @foreach ($catalogs as $truename => $name)
+            <option value="{{ $truename }}">{{ $name }}</option>
             @endforeach
           </optgroup>
         </select>
@@ -52,7 +79,12 @@
             <span class="jc-suggested-template" v-for="template in scope.row.templates" :key="template">@{{ template }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="类型" prop="node_type" width="120" sortable></el-table-column>
+        <el-table-column label="类型" prop="node_type" width="120" sortable>
+          <template slot-scope="scope">
+            <span>@{{ nodeTypes[scope.row.node_type] }}</span>
+          </template>
+        </el-table-column>
+        </el-table-column>
         <el-table-column label="上次修改" prop="updated_at" width="240" sortable>
           <template slot-scope="scope">
             <span>@{{ diffForHumans(scope.row.updated_at) }}</span>
@@ -129,6 +161,7 @@
     data() {
       return {
         nodes: @json(array_values($nodes), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        nodeTypes: @json($nodeTypes, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         selected: [],
         showSuggestedTemplates: false,
         contextmenu: {
@@ -137,7 +170,18 @@
           editUrl: null,
           translateUrl: null,
         },
+
+        filterBy: 'title',
+        filterValues: {
+          title: null,
+          node_type: null,
+          url: true,
+        },
       };
+    },
+
+    created() {
+      this.initial_data = clone(this.nodes);
     },
 
     methods: {
@@ -191,6 +235,77 @@
 
       handleSelectionChange(selected) {
         this.$set(this.$data, 'selected', selected);
+      },
+
+      handleFilterByChange(value) {
+        switch (value) {
+          case 'title':
+          case 'node_type':
+            this.filterValues[value] = null;
+            this.$set(this.$data, 'nodes', this.initial_data);
+            break;
+
+          case 'url':
+            this.filterValues.url = true;
+            this.$set(this.$data, 'nodes', this.filterByUrl(true));
+            break;
+        }
+      },
+
+      filterContents(value) {
+        switch (this.filterBy) {
+          case 'title':
+            this.$set(this.$data, 'nodes', this.filterByTitle(value));
+            break;
+          case 'node_type':
+            this.$set(this.$data, 'nodes', this.filterByNodeType(value));
+            break;
+          case 'url':
+            this.$set(this.$data, 'nodes', this.filterByUrl(value));
+            break;
+        }
+      },
+
+      filterByTitle(value) {
+        if (!value || !value.trim()) {
+          return this.initial_data;
+        }
+
+        const nodes = [];
+        value = value.trim().toLowerCase();
+        this.initial_data.forEach(node => {
+          if (node.title.toLowerCase().indexOf(value) >= 0) {
+            nodes.push(clone(node));
+          }
+        })
+
+        return nodes;
+      },
+
+      filterByNodeType(value) {
+        if (!value) {
+          return clone(this.initial_data);
+        }
+
+        const nodes = [];
+        this.initial_data.forEach(node => {
+          if (node.node_type === value) {
+            nodes.push(clone(node));
+          }
+        });
+
+        return nodes;
+      },
+
+      filterByUrl(value) {
+        const nodes = [];
+        this.initial_data.forEach(node => {
+          if ((value && node.url) || (!value && !node.url)) {
+            nodes.push(clone(node));
+          }
+        });
+
+        return nodes;
       },
 
       render(node) {

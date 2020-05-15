@@ -19,7 +19,7 @@ class NodeTypeController extends Controller
     {
         $nodeCount = Node::countByNodeType();
         $nodeTypes = [];
-        foreach (mix_config(NodeType::all()) as $nodeType) {
+        foreach (NodeType::columns() as $nodeType) {
             $nodeType['nodes'] = $nodeCount[$nodeType['truename']] ?? 0;
             $nodeTypes[] = $nodeType;
         }

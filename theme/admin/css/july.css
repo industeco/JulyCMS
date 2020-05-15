@@ -1325,3 +1325,11 @@ h2.jc-form-info-item {
   color: rgba(0,0,0,0.26);
   color: var(--md-theme-default-disabled-on-background, rgba(0,0,0,0.26));
 }
+
+#contents_filter .jc-filterby {
+  margin-right: 10px;
+}
+
+#contents_filter .el-select {
+  width: 130px;
+}

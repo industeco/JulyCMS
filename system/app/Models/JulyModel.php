@@ -163,4 +163,25 @@ abstract class JulyModel extends Model
         }
         return $data;
     }
+
+    /**
+     * @return array
+     */
+    public static function columns(array $columns = [], array $except = [])
+    {
+        $models = [];
+        foreach (static::fetchAll() as $model) {
+            $model = $model->mixConfig();
+            if ($columns) {
+                $model = array_intersect_key($model, array_flip($columns));
+            }
+            if ($except) {
+                $model = array_diff_key($model, array_flip($except));
+            }
+
+            $models[] = $model;
+        }
+
+        return $models;
+    }
 }

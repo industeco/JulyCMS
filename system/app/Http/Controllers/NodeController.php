@@ -30,9 +30,13 @@ class NodeController extends Controller
             $nodes[$node->id] = $data;
         }
 
+        $nodeTypes = collect(NodeType::columns(['truename', 'name']))->pluck('name', 'truename')->all();
+        $catalogs = collect(Catalog::columns(['truename', 'name']))->pluck('name', 'truename')->all();
+
         return view_with_langcode('admin::nodes.index', [
             'nodes' => $nodes,
-            'catalogs' => mix_config(Catalog::all()),
+            'nodeTypes' => $nodeTypes,
+            'catalogs' => $catalogs,
         ]);
     }
 
