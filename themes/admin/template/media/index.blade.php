@@ -620,7 +620,7 @@
 
       getThumb(file) {
         if (file.mimeType && file.mimeType.substr(0, 5) == 'image') {
-          const path = '/media/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
+          const path = '/'+this.currentPath+(file.thumb ? '/.thumbs/':'/')+file.name;
           let thumb = `<img src="${path}" class="jc-thumb__img"/>`;
 
           return thumb
@@ -630,7 +630,7 @@
       },
 
       getPath(file) {
-        return '/media/'+this.currentPath+'/'+file.name
+        return '/'+this.currentPath+'/'+file.name
       },
 
       getAspect(file) {

@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', '七月 CMS')</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
-  <link rel="stylesheet" href="/theme/admin/vendor/normalize.css/normalize.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/vue-material/vue-material.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/vue-material/theme/default.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/element-ui/theme-chalk/index.css">
-  <link rel="stylesheet" href="/theme/admin/css/july.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/normalize.css/normalize.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/vue-material.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/theme/default.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.css">
+  <link rel="stylesheet" href="/themes/admin/css/july.css">
 </head>
 <body>
-  <script src="/theme/admin/js/svg.js"></script>
+  <script src="/themes/admin/js/svg.js"></script>
 
   <!-- 左侧菜单 -->
   <div id="layout_left">
@@ -198,10 +198,10 @@
     </div>
   </div>
 
-  <script src="/theme/admin/vendor/moment/moment.min.js"></script>
-  <script src="/theme/admin/js/app.js"></script>
-  <script src="/theme/admin/vendor/element-ui/index.js"></script>
-  <script src="/theme/admin/js/utils.js"></script>
+  <script src="/themes/admin/vendor/moment/moment.min.js"></script>
+  <script src="/themes/admin/js/app.js"></script>
+  <script src="/themes/admin/vendor/element-ui/index.js"></script>
+  <script src="/themes/admin/js/utils.js"></script>
   <script>
     // 左侧边栏有下级菜单项的点击展开效果
     $('#app_sidebar .md-list-item-expand').each(function() {

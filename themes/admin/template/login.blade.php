@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>登录</title>
-  <link rel="stylesheet" href="/theme/admin/vendor/element-ui/theme-chalk/index.css">
-  <link rel="stylesheet" href="/theme/admin/css/element-fix.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.css">
+  <link rel="stylesheet" href="/themes/admin/css/element-fix.css">
 </head>
 <body>
   <div id="app">
@@ -31,8 +31,8 @@
     </el-dialog>
   </div>
 
-  <script src="/theme/admin/js/app.js"></script>
-  <script src="/theme/admin/vendor/element-ui/index.js"></script>
+  <script src="/themes/admin/js/app.js"></script>
+  <script src="/themes/admin/vendor/element-ui/index.js"></script>
   <script>
     let dialog = new Vue({
       el: '#app',

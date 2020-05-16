@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         JulyConfig::loadConfiguration();
 
         // 添加视图命名空间
-        view()->addNamespace('admin', public_path('theme/admin/template'));
-        view()->addNamespace('theme', public_path('theme/default/template'));
+        view()->addNamespace('admin', public_path('themes/admin/template'));
+        view()->addNamespace('theme', public_path('themes/default/template'));
     }
 }

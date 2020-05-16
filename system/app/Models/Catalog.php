@@ -203,15 +203,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             'catalog' => $this->truename,
             'langcode' => langcode('content_value'),
         ];
-        // $nodes = [];
-        // foreach ($positions as $position) {
-        //     $nodes[$position['node_id']] = array_merge([
-        //         'parent_id' => $position['parent_id'] ?? null,
-        //         'prev_id' => $position['prev_id'] ?? null,
-        //     ], $supplement);
-        // }
-
-        // $this->nodes()->sync($nodes);
         foreach ($positions as &$position) {
             $position = array_merge($position, $supplement);
         }

@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use App\Contracts\GetNodes;
+use App\ModelCollections\NodeCollection;
 
-class Tag extends JulyModel
+class Tag extends JulyModel implements GetNodes
 {
     /**
      * 与模型关联的表名
@@ -164,5 +166,11 @@ class Tag extends JulyModel
         if ($prepareCreate) {
             DB::table('tags')->insert($prepareCreate);
         }
+    }
+
+    public function get_nodes(): NodeCollection
+    {
+        $ids = $this->nodes()->pluck('id')->all();
+        return NodeCollection::find($ids);
     }
 }

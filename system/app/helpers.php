@@ -68,7 +68,7 @@ if (! function_exists('theme_path')) {
      */
     function theme_path($path = '')
     {
-        return public_path('theme/'.ltrim($path, '\\/'));
+        return public_path('themes/'.ltrim($path, '\\/'));
     }
 }
 
@@ -81,7 +81,7 @@ if (! function_exists('admin_path')) {
      */
     function admin_path($path = '')
     {
-        return public_path('theme/admin/'.ltrim($path, '\\/'));
+        return public_path('themes/admin/'.ltrim($path, '\\/'));
     }
 }
 
@@ -94,7 +94,7 @@ if (! function_exists('view_path')) {
      */
     function view_path($path = '')
     {
-        return public_path('theme/admin/template/'.ltrim($path, '\\/'));
+        return public_path('themes/admin/template/'.ltrim($path, '\\/'));
     }
 }
 
@@ -107,20 +107,7 @@ if (! function_exists('twig_path')) {
      */
     function twig_path($path = '')
     {
-        return public_path('theme/default/template/'.ltrim($path, '\\/'));
-    }
-}
-
-if (! function_exists('media_path')) {
-    /**
-     * Get the path to the media folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function media_path($path = '')
-    {
-        return public_path('media/'.ltrim($path, '\\/'));
+        return public_path('themes/default/template/'.ltrim($path, '\\/'));
     }
 }
 

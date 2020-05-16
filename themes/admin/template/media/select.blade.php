@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', '七月 CMS')</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
-  <link rel="stylesheet" href="/theme/admin/vendor/normalize.css/normalize.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/vue-material/vue-material.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/vue-material/theme/default.css">
-  <link rel="stylesheet" href="/theme/admin/vendor/element-ui/theme-chalk/index.css">
-  <link rel="stylesheet" href="/theme/admin/css/july.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/normalize.css/normalize.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/vue-material.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/theme/default.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.css">
+  <link rel="stylesheet" href="/themes/admin/css/july.css">
   <style>
     #app_main {padding: 20px; width: 100%;}
   </style>
 </head>
 <body>
-  <script src="/theme/admin/js/svg.js"></script>
+  <script src="/themes/admin/js/svg.js"></script>
 
   <!-- 右下功能区 -->
   <div id="app_main">
@@ -189,10 +189,10 @@
     </div>
   </div>
 
-  <script src="/theme/admin/vendor/moment/moment.min.js"></script>
-  <script src="/theme/admin/js/app.js"></script>
-  <script src="/theme/admin/vendor/element-ui/index.js"></script>
-  <script src="/theme/admin/js/utils.js"></script>
+  <script src="/themes/admin/vendor/moment/moment.min.js"></script>
+  <script src="/themes/admin/js/app.js"></script>
+  <script src="/themes/admin/vendor/element-ui/index.js"></script>
+  <script src="/themes/admin/js/utils.js"></script>
 
   <script>
     function getUrlParam(paramName) {

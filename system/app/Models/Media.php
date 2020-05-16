@@ -72,15 +72,16 @@ class Media
 
         $folders = [];
         foreach ($this->disk->directories($path) as $dir) {
-            $info = $this->dirInfo($dir);
-            if ($info['name'] !== '.thumbs') {
-                $folders[] = $info;
+            if (basename($dir) !== '.thumbs') {
+                $folders[] = $this->dirInfo($dir);
             }
         }
 
         $files = [];
         foreach ($this->disk->files($path) as $file) {
-            $files[] = $this->fileInfo($file);
+            if (basename($file) !== '.gitignore') {
+                $files[] = $this->fileInfo($file);
+            }
         }
 
         return compact('folders', 'files');

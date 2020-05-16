@@ -10,14 +10,14 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
-    <script src="/theme/admin/js/app.js" defer></script>
+    <script src="/themes/admin/js/app.js" defer></script>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     <!-- Styles -->
-    <link href="/theme/admin/css/app.css" rel="stylesheet">
+    <link href="/themes/admin/css/app.css" rel="stylesheet">
 </head>
 <body>
     <div id="app">
