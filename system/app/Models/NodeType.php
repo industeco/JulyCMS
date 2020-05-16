@@ -135,12 +135,6 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
                 unset($field['pivot']);
                 unset($field['config']);
                 $fields[] = $field;
-
-                // $field = $field->toArray();
-                // $field['delta'] = $field['pivot']['delta'];
-                // $field['config'] = array_replace_recursive($field['config'], $field['pivot']['config']);
-                // unset($field['pivot']);
-                // $fields[] = $field;
             }
             static::cachePut($cacheid, $fields, $langcode);
         }
@@ -195,45 +189,16 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         static::cacheClear($this->truename.'/fields', $langcode);
         static::cacheClear($this->truename.'/fieldJigsaws', $langcode);
 
-        $node_type = $this->truename;
         $fields = [];
         foreach ($request->input('fields', []) as $index => $field) {
-            $fields[] = [
-                'node_type' => $node_type,
-                'node_field' => $field['truename'],
+            $fields[$field['truename']] = [
                 'delta' => $index,
                 'config' => json_encode(FieldType::buildConfig($field), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
             ];
         }
 
-        DB::table('node_field_node_type')->where('node_type', $node_type)->delete();
-        DB::transaction(function() use ($fields) {
-            DB::table('node_field_node_type')->insert($fields);
-        });
+        $this->fields()->sync($fields);
     }
-
-    // /**
-    //  * 保存前对请求数据进行处理
-    //  *
-    //  * @param \Illuminate\Http\Request $request
-    //  * @param \App\Models\NodeType $nodeType
-    //  * @return Array
-    //  */
-    // public static function prepareRequest(Request $request, NodeType $nodeType = null)
-    // {
-    //     $config = static::buildConfig($request->all());
-    //     if ($nodeType) {
-    //         unset($config['langcode']);
-    //         return [
-    //             'config' => array_replace_recursive($nodeType->config, $config),
-    //         ];
-    //     }
-
-    //     return [
-    //         'truename' => $request->input('truename'),
-    //         'config' => $config,
-    //     ];
-    // }
 
     public function get_nodes(): NodeCollection
     {

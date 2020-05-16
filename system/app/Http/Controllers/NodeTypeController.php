@@ -18,10 +18,9 @@ class NodeTypeController extends Controller
     public function index()
     {
         $nodeCount = Node::countByNodeType();
-        $nodeTypes = [];
-        foreach (NodeType::columns() as $nodeType) {
+        $nodeTypes = NodeType::columns()->all();
+        foreach ($nodeTypes as &$nodeType) {
             $nodeType['nodes'] = $nodeCount[$nodeType['truename']] ?? 0;
-            $nodeTypes[] = $nodeType;
         }
 
         return view_with_langcode('admin::node_types.index', [

@@ -30,13 +30,10 @@ class NodeController extends Controller
             $nodes[$node->id] = $data;
         }
 
-        $nodeTypes = collect(NodeType::columns(['truename', 'name']))->pluck('name', 'truename')->all();
-        $catalogs = collect(Catalog::columns(['truename', 'name']))->pluck('name', 'truename')->all();
-
         return view_with_langcode('admin::nodes.index', [
             'nodes' => $nodes,
-            'nodeTypes' => $nodeTypes,
-            'catalogs' => $catalogs,
+            'nodeTypes' => NodeType::columns(['name','truename'])->pluck('name', 'truename')->all(),
+            'catalogs' => Catalog::columns(['name','truename'])->pluck('name', 'truename')->all(),
         ]);
     }
 
@@ -48,7 +45,7 @@ class NodeController extends Controller
     public function create()
     {
         return view_with_langcode('admin::nodes.choose_node_type', [
-            'nodeTypes' => mix_config(NodeType::all()),
+            'nodeTypes' => NodeType::columns()->all(),
         ]);
     }
 

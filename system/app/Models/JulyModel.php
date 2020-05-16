@@ -7,6 +7,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use App\Traits\CacheRetrieve;
+use Illuminate\Support\Collection;
 
 abstract class JulyModel extends Model
 {
@@ -165,23 +166,37 @@ abstract class JulyModel extends Model
     }
 
     /**
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
-    public static function columns(array $columns = [], array $except = [])
+    public static function columns($columns = null, $keyName = null, $except = false)
     {
-        $models = [];
-        foreach (static::fetchAll() as $model) {
-            $model = $model->mixConfig();
-            if ($columns) {
-                $model = array_intersect_key($model, array_flip($columns));
-            }
-            if ($except) {
-                $model = array_diff_key($model, array_flip($except));
-            }
-
-            $models[] = $model;
+        $columns = (array) $columns;
+        if ($columns) {
+            $columns = array_flip($columns);
         }
 
-        return $models;
+        $models = [];
+        foreach (static::all() as $model) {
+            $model = $model->mixConfig();
+            $key = $model[$keyName] ?? null;
+            if ($columns) {
+                $model = $except ? array_diff_key($model, $columns) : array_intersect_key($model, $columns);
+            }
+            if ($key) {
+                $models[$key] = $model;
+            } else {
+                $models[] = $model;
+            }
+        }
+
+        return collect($models);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public static function columnsExcept(array $columns = [], $keyName = null)
+    {
+        return static::columns($columns, $keyName, true);
     }
 }

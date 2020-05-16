@@ -91,10 +91,12 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     public function nodes()
     {
         return $this->belongsToMany(Node::class, 'catalog_node', 'catalog', 'node_id')
-                ->withPivot(
+                ->withPivot([
                     'parent_id',
-                    'prev_id'
-                );
+                    'prev_id',
+                    'path',
+                    'langcode',
+                ]);
     }
 
     public function nodesMerged()
@@ -104,6 +106,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             $values = $node->getData();
             $values['parent_id'] = $node->pivot->parent_id;
             $values['prev_id'] = $node->pivot->prev_id;
+            $values['path'] = $node->pivot->path;
             $nodes[] = $values;
         }
         return $nodes;
@@ -122,45 +125,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             ],
         ];
     }
-
-    // /**
-    //  * 保存前对请求数据进行处理
-    //  *
-    //  * @param \Illuminate\Http\Request $request
-    //  * @param \App\Models\Catalog $catalog
-    //  * @return Array
-    //  */
-    // public static function prepareRequest(Request $request, Catalog $catalog = null)
-    // {
-    //     $ilang = langcode('interface_value');
-    //     $config = [
-    //         'interface_values' => [
-    //             'name' => [
-    //                 $ilang => $request->input('name'),
-    //             ],
-    //             'description' => [
-    //                 $ilang => $request->input('description'),
-    //             ],
-    //         ],
-    //     ];
-
-    //     if ($catalog) {
-    //         return [
-    //             'config' => array_replace_recursive($catalog->config, $config),
-    //         ];
-    //     }
-
-    //     $clang = langcode('content_value');
-    //     $config['langcode'] = [
-    //         'interface_value' => $ilang,
-    //         'content_value' => $clang,
-    //     ];
-
-    //     return [
-    //         'truename' => $request->input('truename'),
-    //         'config' => $config,
-    //     ];
-    // }
 
     public static function allPositions()
     {
@@ -239,13 +203,25 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             'catalog' => $this->truename,
             'langcode' => langcode('content_value'),
         ];
-        foreach ($positions as $index => $position) {
-            $positions[$index] = array_merge($position, $supplement);
+        // $nodes = [];
+        // foreach ($positions as $position) {
+        //     $nodes[$position['node_id']] = array_merge([
+        //         'parent_id' => $position['parent_id'] ?? null,
+        //         'prev_id' => $position['prev_id'] ?? null,
+        //     ], $supplement);
+        // }
+
+        // $this->nodes()->sync($nodes);
+        foreach ($positions as &$position) {
+            $position = array_merge($position, $supplement);
         }
+        unset($position);
 
         DB::table('catalog_node')->where('catalog', $this->truename)->delete();
         DB::transaction(function() use ($positions) {
-            DB::table('catalog_node')->insert($positions);
+            foreach ($positions as $position) {
+                DB::table('catalog_node')->insert($position);
+            }
         });
 
         $this->forceUpdate();

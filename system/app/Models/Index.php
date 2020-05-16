@@ -32,7 +32,7 @@ class Index extends Model
     {
         $langcodes = array_keys(langcode('all'));
         $records = [];
-        foreach (Node::fetchAll() as $node) {
+        foreach (Node::all() as $node) {
             $fields = $node->searchableFields();
             $record = [
                 'node_id' => $node->id,
@@ -54,7 +54,9 @@ class Index extends Model
 
         DB::delete('DELETE FROM indexes;');
         DB::transaction(function() use ($records) {
-            DB::table('indexes')->insert($records);
+            foreach ($records as $record) {
+                DB::table('indexes')->insert($record);
+            }
         });
 
         return true;

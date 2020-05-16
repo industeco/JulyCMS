@@ -503,18 +503,18 @@
             }
           @endif
 
-          console.log(nodeType);
+          // console.log(nodeType);
 
           const method = '{{ $truename ? "put" : "post" }}';
           const action = '/admin/node_types' + '{{ $truename ? "/".$truename : "" }}';
 
           axios[method](action, nodeType).then(function(response) {
-            // loading.close()
+            loading.close()
             window.location.href = "/admin/node_types";
           }).catch(function(error) {
-            app.$message.error(error);
-            // console.error(error)
             loading.close()
+            console.error(error)
+            app.$message.error('发生错误，可查看控制台');
           })
         }).catch(function(error) {
           loading.close();

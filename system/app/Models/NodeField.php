@@ -154,7 +154,7 @@ class NodeField extends JulyModel implements HasModelConfig
         return 'node__' . $this->truename;
     }
 
-    public function columns()
+    public function tableColumns()
     {
         $columns = FieldType::getColumns($this->field_type, $this->config);
         if (count($columns) === 1) {
@@ -178,7 +178,7 @@ class NodeField extends JulyModel implements HasModelConfig
             // Log::info('TableUp: ' . $tableName);
 
             // 获取用于创建数据表列的参数
-            $columns = $this->columns();
+            $columns = $this->tableColumns();
             // Log::info($columns);
 
             // 创建数据表
@@ -242,7 +242,7 @@ class NodeField extends JulyModel implements HasModelConfig
         // 清除字段值缓存
         static::cacheClear($this->truename.'/'.$node_id, $langcode);
 
-        $records = FieldType::getRecords($this->field_type, $value, $this->columns());
+        $records = FieldType::getRecords($this->field_type, $value, $this->tableColumns());
         if (is_null($records)) {
             $this->deleteValue($node_id, $langcode);
         } else {
@@ -297,7 +297,7 @@ class NodeField extends JulyModel implements HasModelConfig
                     if ($this->pivot) {
                         $config = array_replace_recursive($config, $this->pivot->config);
                     }
-                    $value = FieldType::getValue($this->field_type, $records, $this->columns(), $config);
+                    $value = FieldType::getValue($this->field_type, $records, $this->tableColumns(), $config);
                 }
             }
 
@@ -327,7 +327,7 @@ class NodeField extends JulyModel implements HasModelConfig
         $table = $this->tableName();
 
         $conditions = [];
-        foreach ($this->columns() as $column) {
+        foreach ($this->tableColumns() as $column) {
             $conditions[] = [$column['name'], 'like', $keywords, 'or'];
         }
 
