@@ -1,20 +1,6 @@
 <?php
 
-// define('INSTALL_PATH', __DIR__);
-// define('LARAVEL_PATH', dirname(INSTALL_PATH) . '/system');
-
-// require INSTALL_PATH.'/php/DotenvEditor.php';
-// require INSTALL_PATH.'/php/EnvEntry.php';
-
-// $env = new JulyInstaller\DotenvEditor;
-// $env->load(LARAVEL_PATH.'/.env');
-
-// print('<pre>');
-// print_r($env->env);
-
-// exit;
-
-// July CMS 基于 Laravel 7，要求 PHP >= 7.2.5
+// JulyCMS 基于 Laravel 7，要求 PHP >= 7.2.5
 define('JULYCMS_MINIMUM_PHP_VERSION_ID', 70205);
 
 /**
@@ -27,7 +13,7 @@ if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < JULYCMS_MINIMUM_PHP_VERSION_I
 /*
  * Check for JSON extension
  */
-if (!function_exists('json_decode')) exit('JSON PHP Extension is required to install July CMS');
+if (!function_exists('json_decode')) exit('JSON PHP Extension is required to install JulyCMS');
 
 /*
  * PHP headers

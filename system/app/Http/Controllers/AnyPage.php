@@ -37,7 +37,7 @@ class AnyPage extends Controller
         }
 
         // 在 pages 目录查找文件
-        $file = public_path('pages/'.$url);
+        $file = public_path('storage/pages/'.$url);
         if (file_exists($file)) {
             return file_get_contents($file);
         }

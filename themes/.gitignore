@@ -1,7 +1,4 @@
-# ignore everything in this directory,
 /*
-
-# except:
 !/admin/
 !/default/
 !.gitignore

@@ -14,7 +14,20 @@ require INSTALL_PATH.'/php/DotenvEditor.php';
 require INSTALL_PATH.'/php/EnvEntry.php';
 
 $env = new JulyInstaller\DotenvEditor;
-$env->load(LARAVEL_PATH.'/.env');
+
+$envFile = LARAVEL_PATH.'/.env';
+$envExample = LARAVEL_PATH.'/.env.example';
+if (! is_file($envFile)) {
+    if (is_file($envExample)) {
+        copy($envExample, $envFile);
+    } else {
+        exit_error('找不到 .env 文件');
+    }
+}
+if (is_file($envExample)) {
+    unlink($envExample);
+}
+$env->load($envFile);
 
 if ($env->get('APP_INSTALLED')) {
     exit_error('已安装');

@@ -1,13 +1,10 @@
-# ignore everything in the root,
 /*
-
-# except:
 !/install/
 !/images/
 !/files/
-!/pages/
 !/themes/
 !/system/
+!/storage/
 !/.gitignore
 !/.editorconfig
 !/.htaccess
