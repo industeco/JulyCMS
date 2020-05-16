@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\HasModelConfig;
+use App\Models\Catalog;
 use App\Models\Config;
 use App\Models\JulyModel;
 use App\Models\Node;
@@ -550,18 +551,25 @@ if (! function_exists('build_google_sitemap')) {
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>';
 
         $langcode = config('jc.site_page_lang');
-        $path = 'pages/'.$langcode;
 
-        $disk = Storage::disk('public');
+        if (! $urls) {
+            $urls = [];
+            foreach (Catalog::default()->get_nodes() as $node) {
+                $node = $node->retrieveValues($langcode);
+                if ($url = $node['url'] ?? null) {
+                    $urls[$url] = true;
+                }
+            }
+            $urls = array_keys($urls);
+        }
 
         // 生成 xml 内容
-        $urls = $urls ?: Node::urls($langcode);
         foreach ($urls as $url) {
-            if (! $disk->exists($path.$url)) continue;
+            if ($url === '/404.html') continue;
 
             $xml .= '<url><loc>'.$home.$url.'</loc>';
 
-            $content = $disk->get($path.$url);
+            $content = Node::retrieveHtml($url, $langcode);
             if (empty($content)) {
                 $xml .= '</url>';
                 continue;

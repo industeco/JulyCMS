@@ -47,8 +47,7 @@
     ## Black listed folders
     ##
     RewriteRule ^system/.* index.php [L,NC]
-    RewriteRule ^theme/.*/template/.* index.php [L,NC]
-    RewriteRule ^pages/.* index.php [L,NC]
+    RewriteRule ^themes/.*/template/.* index.php [L,NC]
 
     # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

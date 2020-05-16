@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use App\ModelCollections\CatalogCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Twig\Environment as Twig;
 
 class Node extends JulyModel
@@ -77,20 +78,6 @@ class Node extends JulyModel
             'node_type' => $nodeType->truename,
             'langcode' => langcode('content_value'),
         ]);
-    }
-
-    public static function urls($langcode = null)
-    {
-        $langcode = $langcode ?: config('jc.site_page_lang');
-        $urls = [];
-        $nodes = Catalog::default()->get_nodes();
-        foreach ($nodes as $node) {
-            $node = $node->retrieveValues($langcode);
-            if ($url = $node['url'] ?? null) {
-                $urls[$url] = true;
-            }
-        }
-        return array_keys($urls);
     }
 
     public static function countByNodeType()
@@ -185,12 +172,12 @@ class Node extends JulyModel
      */
     public function saveValues(array $values, $deleteNull = false)
     {
-        static::cacheClear($this->id.'/values', langcode('content_value'));
+        $langcode = langcode('content_value');
+        static::cacheClear($this->id.'/values', $langcode);
         // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content_value')));
 
         $changed = $values['changed_values'];
-        // Log::info('Saving Values. Values Changed:');
-        // Log::info($changed);
+
         foreach ($this->fields() as $field) {
             if (! in_array($field->truename, $changed)) {
                 // Log::info("'{$field->truename}' is not changed.");
@@ -252,8 +239,9 @@ class Node extends JulyModel
      * @param \Twig\Environment $twig
      * @return string|null
      */
-    public function render(Twig $twig, $langcode = null)
+    public function render(Twig $twig = null, $langcode = null)
     {
+        $twig = $twig ?? $twig = twig('default/template', true);
         $langcode = $langcode ?: langcode('content_value');
 
         // 获取节点值
@@ -270,7 +258,7 @@ class Node extends JulyModel
             // 写入文件
             if ($node['url']) {
                 $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
-                Storage::disk('public')->put($file, $html);
+                Storage::disk('storage')->put($file, $html);
             }
 
             return $html;
@@ -311,33 +299,50 @@ class Node extends JulyModel
         return $templates;
     }
 
-    public function getHtml($langcode = null)
+    public static function findByUrl($url, $langcode = null)
     {
-        $url = $this->url;
-        if (! $url) {
-            return '';
+        $url = '/'.ltrim($url, '/');
+        $record = DB::table('node__url')->where('url_value', $url)->first();
+        if ($record) {
+            return static::find($record->node_id);
+        }
+        return null;
+    }
+
+    public static function retrieveHtml($url, $langcode = null)
+    {
+        $langcode = $langcode ?: langcode('site_page');
+        $langs = langcode('all');
+        if (! isset($langs[$langcode])) {
+            return null;
         }
 
-        $langcode = $langcode ?: $this->langcode;
-        $html = 'pages/'.$langcode.$url;
+        $url = '/'.ltrim($url, '/');
+        if (Str::startsWith($url, '/'.$langcode.'/')) {
+            $url = substr($url, strlen($langcode)+1);
+        }
+        $file = 'pages/'.$langcode.$url;
 
-        $disk = Storage::disk('public');
-        if (! $disk->exists($html)) {
-            return '';
+        $disk = Storage::disk('storage');
+        if ($disk->exists($file)) {
+            return $disk->get($file);;
         }
 
-        return $disk->get($html);
+        if ($node = static::findByUrl($url, $langcode)) {
+            return $node->render(null, $langcode);
+        }
+
+        return null;
     }
 
     public function findInvalidLinks($langcode = null)
     {
         $langcode = $langcode ?: $this->langcode;
-        $html = $this->getHtml($langcode);
+        $html = static::retrieveHtml($this->url, $langcode);
         if (! $html) {
             return [];
         }
 
-        $disk = Storage::disk('public');
         $links = [];
         $nodeInfo = [
             'node_id' => $this->id,
@@ -345,6 +350,8 @@ class Node extends JulyModel
             'node_url' => $this->url,
             'langcode' => $langcode,
         ];
+
+        $disk = Storage::disk('public');
 
         // images
         foreach (extract_image_links($html) as $link) {
@@ -361,6 +368,7 @@ class Node extends JulyModel
         }
 
         // hrefs
+        $disk = Storage::disk('storage');
         foreach (extract_page_links($html) as $link) {
             $url = $link;
             if (substr($url, -5) !== '.html') {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Node;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -17,12 +18,13 @@ class AnyPage extends Controller
         $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
 
         if (basename($url) === 'sitemap.xml') {
-            $file = public_path('pages/'.$url);
-            if (file_exists($file)) {
-                $content = @file_get_contents($file);
+            $file = 'sitemap.xml';
+            $disk = Storage::disk('public');
+            if ($disk->exists($file)) {
+                $content = $disk->get($file);
             } else {
                 $content = build_google_sitemap();
-                Storage::disk('public')->put('sitemap.xml', $content);
+                $disk->put('sitemap.xml', $content);
             }
             return $content;
         }
@@ -31,15 +33,9 @@ class AnyPage extends Controller
             $url .= '/index.html';
         }
 
-        $langcode = langcode('site_page');
-        if (! Str::startsWith($url, $langcode.'/')) {
-            $url = $langcode.'/'.$url;
-        }
-
-        // 在 pages 目录查找文件
-        $file = public_path('storage/pages/'.$url);
-        if (file_exists($file)) {
-            return file_get_contents($file);
+        if ($html = Node::retrieveHtml($url))
+        {
+            return $html;
         }
 
         abort(404);

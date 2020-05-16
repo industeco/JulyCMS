@@ -78,9 +78,9 @@ class CommandController extends Controller
      */
     public function buildGoogleSitemap()
     {
-        $urls = Node::urls();
-        $sitemap = build_google_sitemap($urls);
+        $sitemap = build_google_sitemap();
         Storage::disk('public')->put('sitemap.xml', $sitemap);
+
         return true;
     }
 
