@@ -24,8 +24,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // 加载数据库中的配置
-        JulyConfig::loadConfiguration();
+        try {
+            // 加载数据库中的配置
+            JulyConfig::loadConfiguration();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
 
         // 添加视图命名空间
         view()->addNamespace('admin', public_path('themes/admin/template'));

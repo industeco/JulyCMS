@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('MAIL_MAILER', 'sendmail'),
 
     /*
     |--------------------------------------------------------------------------
@@ -75,7 +75,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS'),
-        'name' => env('MAIL_FROM_NAME'),
+        'name' => env('MAIL_FROM_NAME', env('APP_OWNER')),
     ],
 
     'to' => [
