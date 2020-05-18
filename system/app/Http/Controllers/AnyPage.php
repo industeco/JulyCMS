@@ -33,8 +33,7 @@ class AnyPage extends Controller
             $url .= '/index.html';
         }
 
-        if ($html = Node::retrieveHtml($url))
-        {
+        if ($html = Node::retrieveHtml($url)) {
             return $html;
         }
 

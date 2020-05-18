@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\View;
 
-class SetLangcode
+class DetectLangcode
 {
     /**
      * Handle an incoming request.
@@ -18,12 +18,10 @@ class SetLangcode
     {
         if ($clang = $request->input('content_value_langcode')) {
             config(['content_value_langcode' => $clang]);
-            // View::share('content_value_langcode', $clang);
         }
 
         if ($ilang = $request->input('interface_value_langcode')) {
             config(['interface_value_langcode' => $ilang]);
-            // View::share('interface_value_langcode', $ilang);
         }
 
         $langcode = null;
@@ -32,9 +30,8 @@ class SetLangcode
         }
 
         $langs = langcode('all');
-        if ($langcode && ($langs[$langcode] ?? null)) {
+        if ($langcode && isset($langs[$langcode])) {
             config(['request_langcode' => $langcode]);
-            // View::share('page_langcode', $langcode);
         } else {
             if ($langcode == 'admin') {
                 config(['request_langcode' => config('jc.admin_page_lang')]);

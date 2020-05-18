@@ -14,7 +14,7 @@ a.md-button {
 }
 
 .md-button-content {
-  padding: 0 15px;
+  padding: 0 20px;
 }
 
 .md-button.md-theme-default[disabled] {
@@ -22,7 +22,7 @@ a.md-button {
 }
 
 .md-dense .md-button-content {
-  padding: 0 10px;
+  padding: 0 15px;
 }
 
 .md-small .md-button-content {

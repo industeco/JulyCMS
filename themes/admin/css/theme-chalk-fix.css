@@ -46,7 +46,7 @@
 }
 
 .el-input {
-  display: inline-block;
+  /* display: inline-block; */
   width: auto;
   max-width: 100%;
 }
@@ -78,6 +78,10 @@
   line-height: 20px;
 }
 
+.el-form-item__content {
+  display: flex;
+  align-items: center;
+}
 
 .el-form-item__content > .jc-form-item-help {
   position: absolute;

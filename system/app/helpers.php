@@ -193,7 +193,8 @@ if (! function_exists('langcode')) {
             case 'list':
                 $langs = [];
                 $list = language_list('zh');
-                foreach (config('jc.languages') as $code) {
+                $langcodes = config('jc.languages') ?? ['en','zh'];
+                foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }
                 return $langs;

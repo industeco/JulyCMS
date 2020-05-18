@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/', 'HomePage');
+Route::get('install', ['uses'=>'InstallController@home', 'as'=>'install.home']);
+Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.install']);
+Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
 
 Route::group([
     'prefix' => 'admin',

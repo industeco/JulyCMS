@@ -1287,6 +1287,7 @@ h2.jc-form-info-item {
 }
 
 .el-form-item__content .md-button {
+  min-width: auto;
   margin: 0 5px;
 }
 

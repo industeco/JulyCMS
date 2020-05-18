@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models\Administrator;
+use Illuminate\Support\Facades\Hash;
 
 class AdministratorsTableSeeder extends Seeder
 {
@@ -14,8 +15,8 @@ class AdministratorsTableSeeder extends Seeder
     {
         // create a user.
         Administrator::create([
-            'truename' => config('admin_truename', 'admin'),
-            'password' => bcrypt(config('admin_password', 'admin666')),
+            'truename' => config('admin_name', 'admin'),
+            'password' => Hash::make(config('admin_password', 'admin666')),
             'name'     => '管理员',
         ]);
     }
