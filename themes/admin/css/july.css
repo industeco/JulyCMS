@@ -85,6 +85,7 @@ body {
 .jc-table th>.cell, .jc-table td>.cell {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   padding: 0;
   line-height: inherit;
 }
@@ -1293,6 +1294,7 @@ h2.jc-form-info-item {
 
 .jc-suggested-template {
   display: block;
+  width: 100%;
   margin: 0;
   line-height: 1.15;
 }

@@ -13,7 +13,7 @@ use Twig\TwigFilter;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
-class ContentsQuery extends AbstractExtension implements GlobalsInterface
+class QueryInTwig extends AbstractExtension implements GlobalsInterface
 {
     public function getGlobals(): array
     {

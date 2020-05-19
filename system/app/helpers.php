@@ -427,7 +427,7 @@ if (! function_exists('twig')) {
             $twig = new \Twig\Environment($loader);
         }
 
-        $twig->addExtension(new \App\TwigExtensions\ContentsQuery());
+        $twig->addExtension(new \App\TwigExtensions\QueryInTwig());
 
         return $twig;
     }
