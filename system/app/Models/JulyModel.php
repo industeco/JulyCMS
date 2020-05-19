@@ -63,6 +63,11 @@ abstract class JulyModel extends Model
         return $instance;
     }
 
+    public static function primaryKeyName()
+    {
+        return 'id';
+    }
+
     public function primary()
     {
         return $this->attributes[$this->primaryKey] ?? null;

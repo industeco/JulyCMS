@@ -8,7 +8,51 @@ use App\Models\Node;
 
 abstract class ModelCollection extends Collection implements GetNodes
 {
-    abstract public static function find($arg);
+    protected static $model;
+    protected static $primaryKey;
+
+    public static function find($args)
+    {
+        $model = static::$model;
+        $primaryKey = static::$primaryKey;
+
+        if (empty($args)) {
+            return (new static($model::fetchAll()))->keyBy($primaryKey);
+        }
+
+        if ($args instanceof static) {
+            return $args;
+        }
+
+        if ($args instanceof Collection) {
+            $args = $args->all();
+        }
+
+        if (! is_array($args)) {
+            $args = [$args];
+        }
+
+        return static::findArray($args);
+    }
+
+    public static function findArray(array $args)
+    {
+        $model = static::$model;
+        $primaryKey = static::$primaryKey;
+
+        $items = [];
+        foreach ($args as $arg) {
+            if ($arg instanceof static) {
+                $items = array_merge($items, $arg->all());
+            } elseif ($arg instanceof $model) {
+                $items[$arg->$primaryKey] = $arg;
+            } elseif ($model = $model::fetch($arg)) {
+                $items[$model->$primaryKey] = $model;
+            }
+        }
+
+        return (new static($items))->keyBy($primaryKey);
+    }
 
     /**
      * 进一步获取节点集

@@ -83,6 +83,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     protected $catalogTree = null;
 
+    public static function primaryKeyName()
+    {
+        return 'truename';
+    }
+
     public static function default()
     {
         return static::fetch('main');

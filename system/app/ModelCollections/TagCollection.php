@@ -4,37 +4,15 @@ namespace App\ModelCollections;
 
 use App\Models\NodeTag;
 use App\Models\Tag;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TagCollection extends ModelCollection
 {
+    protected static $model = Tag::class;
+    protected static $primaryKey = 'tag';
+
     protected $matches = 1;
-
-    public static function find($args)
-    {
-        if (empty($args)) {
-            return new static(Tag::fetchAll());
-        }
-
-        if (! is_array($args)) {
-            $args = [$args];
-        }
-
-        $items = [];
-        foreach ($args as $arg) {
-            if (is_string($arg)) {
-                if ($tag = Tag::fetch($arg)) {
-                    $items[$tag->tag] = $tag;
-                }
-            } elseif ($arg instanceof Tag) {
-                $items[$arg->tag] = $arg;
-            } elseif ($arg instanceof static) {
-                $items = array_merge($items, $arg->all());
-            }
-        }
-
-        return new static($items);
-    }
 
     public function match($matches)
     {

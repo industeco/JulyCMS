@@ -61,6 +61,11 @@ class Tag extends JulyModel implements GetNodes
         'is_show' => 'boolean',
     ];
 
+    public static function primaryKeyName()
+    {
+        return 'tag';
+    }
+
     public static function createIfNotExist(array $tags, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content_value');

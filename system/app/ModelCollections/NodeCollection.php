@@ -4,33 +4,16 @@ namespace App\ModelCollections;
 
 use App\Models\Node;
 use App\Contracts\GetNodes;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class NodeCollection extends ModelCollection
 {
-    /**
-     * 获取节点集
-     *
-     * @param mixed $args 用于获取节点的参数，可以是：
-     *  - 节点
-     *  - 节点 id
-     *  - 节点集
-     *  - 节点类型集
-     *  - 节点目录集
-     *  - 节点标签集
-     * 或以上类型组成的数组
-     *
-     * @return \App\ModelCollections\NodeCollection
-     */
-    public static function find($args)
+    protected static $model = Node::class;
+    protected static $primaryKey = 'id';
+
+    public static function findArray(array $args)
     {
-        if (empty($args)) {
-            return new static(Node::fetchAll()->keyBy('id'));
-        }
-
-        if (! is_array($args)) {
-            $args = [$args];
-        }
-
         $items = [];
         foreach ($args as $arg) {
             // 节点 id
@@ -55,7 +38,7 @@ class NodeCollection extends ModelCollection
             }
         }
 
-        return new static($items);
+        return (new static($items))->keyBy('id');
     }
 
     /**
@@ -141,6 +124,31 @@ class NodeCollection extends ModelCollection
     public function get_around($catalog = null)
     {
         return $this->get_siblings($catalog);
+    }
+
+    public function get_types()
+    {
+        $types = $this->pluck('node_type')->unique()->all();
+        return NodeTypeCollection::find($types);
+    }
+
+    public function get_tags()
+    {
+        $ids = $this->pluck('id')->unique()->all();
+        $langcode = config('current_render_langcode') ?? langcode('site_page');
+
+        $tags = DB::table('node_tag')
+            ->whereIn('node_id', $ids)
+            ->where('langcode', $langcode)
+            ->get('tag')->pluck('tag')->all();
+
+        return TagCollection::find($tags);
+    }
+
+    public function get_catalog()
+    {
+        $types = $this->pluck('node_type')->unique()->all();
+        return NodeTypeCollection::find($types);
     }
 
     // /**

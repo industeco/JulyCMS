@@ -60,6 +60,11 @@ class JulyConfig extends Model
         'config' => Json::class,
     ];
 
+    public static function primaryKeyName()
+    {
+        return 'truename';
+    }
+
     public static function loadConfiguration()
     {
         $configuration = [];

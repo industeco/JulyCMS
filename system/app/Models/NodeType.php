@@ -75,6 +75,11 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         'config',
     ];
 
+    public static function primaryKeyName()
+    {
+        return 'truename';
+    }
+
     public function nodes()
     {
         return $this->hasMany(Node::class, 'node_type');

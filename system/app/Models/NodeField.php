@@ -71,6 +71,11 @@ class NodeField extends JulyModel implements HasModelConfig
         'config' => Json::class,
     ];
 
+    public static function primaryKeyName()
+    {
+        return 'truename';
+    }
+
     public function types()
     {
         return $this->belongsToMany(NodeType::class, 'node_field_node_type', 'node_field', 'node_type')
