@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\ModelCollections\CatalogCollection;
+use App\ModelCollections\TagCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -242,7 +243,9 @@ class Node extends JulyModel
     public function render(Twig $twig = null, $langcode = null)
     {
         $twig = $twig ?? $twig = twig('default/template', true);
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: langcode('site_page');
+
+        config()->set('current_render_langcode', $langcode);
 
         // 获取节点值
         $node = $this->getData($langcode);
@@ -547,5 +550,43 @@ class Node extends JulyModel
     public function get_path($catalog = null)
     {
         return CatalogCollection::find($catalog)->get_path($this->id);
+    }
+
+    /**
+     * 获取内容标签
+     *
+     * @return \App\Models\NodeType
+     */
+    public function get_type()
+    {
+        return $this->nodeType;
+    }
+
+    /**
+     * 获取内容标签
+     *
+     * @return \App\ModelCollections\CatalogCollection
+     */
+    public function get_catalogs()
+    {
+        $catalogs = $this->catalogs()->get()->keyBy('truename');
+        return CatalogCollection::make($catalogs);
+    }
+
+    /**
+     * 获取内容标签
+     *
+     * @return \App\ModelCollections\TagCollection
+     */
+    public function get_tags()
+    {
+        $langcode = config('current_render_langcode') ?? langcode('site_page');
+        $tags = $this->tags($langcode)->get()->keyBy('tag');
+        return TagCollection::make($tags);
+    }
+
+    public function get_url()
+    {
+        return rtrim(config('jc.url'), '/').'/'.ltrim($this->url, '/');
     }
 }

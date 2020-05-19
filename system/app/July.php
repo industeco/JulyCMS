@@ -83,11 +83,4 @@ class July
         Route::get('cmd/buildgooglesitemap', ['uses' => 'CommandController@buildGoogleSitemap', 'as' => 'cmd.buildgooglesitemap']);
         Route::get('cmd/findinvalidlinks', ['uses' => 'CommandController@findInvalidLinks', 'as' => 'cmd.findInvalidLinks']);
     }
-
-    public static function webRoutes()
-    {
-        Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'cmd.newmessage']);
-        Route::get('search', ['uses' => 'CommandController@search', 'as' => 'cmd.search']);
-        Route::get('{any}', 'AnyPage')->where('any', '.*');
-    }
 }

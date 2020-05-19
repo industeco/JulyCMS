@@ -24,7 +24,7 @@ class NodeCollection extends ModelCollection
     public static function find($args)
     {
         if (empty($args)) {
-            return new static(Node::fetchAll());
+            return new static(Node::fetchAll()->keyBy('id'));
         }
 
         if (! is_array($args)) {
@@ -51,7 +51,7 @@ class NodeCollection extends ModelCollection
 
             // 类型集，标签集等对象
             elseif ($arg instanceof GetNodes) {
-                $items = array_merge($items, $arg->get_nodes()->all());
+                $items = array_merge($items, $arg->get_nodes()->keyBy('id')->all());
             }
         }
 

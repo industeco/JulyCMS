@@ -170,7 +170,7 @@ class Tag extends JulyModel implements GetNodes
 
     public function get_nodes(): NodeCollection
     {
-        $ids = $this->nodes()->pluck('id')->all();
+        $ids = $this->nodes()->pluck('id')->unique()->all();
         return NodeCollection::find($ids);
     }
 }

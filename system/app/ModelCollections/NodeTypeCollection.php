@@ -2,6 +2,7 @@
 
 namespace App\ModelCollections;
 
+use App\Models\Node;
 use App\Models\NodeType;
 
 class NodeTypeCollection extends ModelCollection
@@ -9,7 +10,7 @@ class NodeTypeCollection extends ModelCollection
     public static function find($args)
     {
         if (empty($args)) {
-            return new static();
+            return new static(NodeType::fetchAll()->keyBy('truename'));
         }
         if (! is_array($args)) {
             $args = [$args];
@@ -28,5 +29,12 @@ class NodeTypeCollection extends ModelCollection
         }
 
         return new static($items);
+    }
+
+    public function get_nodes(): NodeCollection
+    {
+        $types = $this->pluck('truename')->all();
+        $nodes = Node::whereIn('node_type', $types)->get('id')->pluck('id')->all();
+        return NodeCollection::find($nodes);
     }
 }

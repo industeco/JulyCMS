@@ -1,9 +1,6 @@
 <?php
 
 use App\July;
-use App\Models\NodeType;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,10 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('install', ['uses'=>'InstallController@home', 'as'=>'install.home']);
-Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.install']);
-Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
-
+// 后台
 Route::group([
     'prefix' => 'admin',
     'middleware' => ['web', 'admin'],
@@ -28,4 +22,12 @@ Route::group([
     July::adminRoutes();
 });
 
-July::webRoutes();
+// 安装
+Route::get('install', ['uses'=>'InstallController@home', 'as'=>'install.home']);
+Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.install']);
+Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
+
+// 前台
+Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'cmd.newmessage']);
+Route::get('search', ['uses' => 'CommandController@search', 'as' => 'cmd.search']);
+Route::get('{any}', 'AnyPage')->where('any', '.*');

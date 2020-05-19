@@ -9,10 +9,7 @@ class CatalogCollection extends ModelCollection
     public static function find($args)
     {
         if (empty($args)) {
-            $catalog = Catalog::default();
-            return new static([
-                $catalog->truename => $catalog,
-            ]);
+            return new static(Catalog::fetchAll()->keyBy('truename'));
         }
 
         if (! is_array($args)) {
@@ -22,19 +19,14 @@ class CatalogCollection extends ModelCollection
         $items = [];
         foreach ($args as $arg) {
             if (is_string($arg)) {
-                if ($catalog = Catalog::find($arg)) {
+                if ($catalog = Catalog::fetch($arg)) {
                     $items[$catalog->truename] = $catalog;
                 }
             } elseif ($arg instanceof Catalog) {
                 $items[$arg->truename] = $arg;
             } elseif ($arg instanceof static) {
-                $items = array_merge($items, $arg->toArray());
+                $items = array_merge($items, $arg->all());
             }
-        }
-
-        if (empty($items)) {
-            $catalog = Catalog::default();
-            $items[$catalog->truename] = $catalog;
         }
 
         return new static($items);

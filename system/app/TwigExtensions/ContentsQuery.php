@@ -6,6 +6,7 @@ use App\Models;
 use App\ModelCollections\CatalogCollection;
 use App\ModelCollections\NodeCollection;
 use App\ModelCollections\NodeTypeCollection;
+use App\ModelCollections\TagCollection;
 use Illuminate\Support\Str;
 use Twig\TwigFunction;
 use Twig\TwigFilter;
@@ -17,8 +18,8 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
-            '_host' => config('app.url'),
-            '_email' => config('mail.to.address'),
+            '_host' => config('jc.url'),
+            '_email' => config('jc.email'),
             '_catalog' => Models\Catalog::default(),
         ];
     }
@@ -31,12 +32,6 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
                 return config($key) ?? config('jc.' . $key) ?? config('app.' . $key) ?? null;
             }),
 
-            // 格式化网址
-            new TwigFunction('url', [$this, 'url']),
-
-            // 格式化媒体地址（图片，PDF等）
-            new TwigFunction('src', [$this, 'src']),
-
             // 获取节点集
             new TwigFunction('nodes', [$this, 'nodes']),
 
@@ -47,7 +42,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
             new TwigFunction('catalogs', [$this, 'catalogs']),
 
             // 获取标签集
-            // new TwigFunction('tags', [$this, 'tags']),
+            new TwigFunction('tags', [$this, 'tags']),
         ];
     }
 
@@ -60,7 +55,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
                 $id = preg_replace('/\s+|[^\w\-]/', '_', trim($input));
 
                 if (!$id) {
-                    return 'id_' . Str::random(6);
+                    return 'jc_' . Str::random(5);
                 }
 
                 return $id;
@@ -72,60 +67,12 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
                 $class = preg_replace('/\s+|[^\w\-]/', '_', trim($input));
 
                 if (!$class) {
-                    return 'class_' . Str::random(6);
+                    return 'jc-' . Str::random(5);
                 }
 
                 return $class;
             }),
         ];
-    }
-
-    /**
-     * 格式化网址
-     *
-     * @param string $path 网址
-     * @param string $format 格式化方式：absolute, relative, full
-     * @return string
-     */
-    public function url($path)
-    {
-        return url($path);
-    }
-
-    /**
-     * 格式化媒体资源（图片、PDF等）的地址
-     *
-     * @param string $path 媒体资源（图片、PDF等）的地址
-     * @param string $format 格式化方式：absolute, relative, full
-     * @return string
-     */
-    public function src($path)
-    {
-        return $path;
-    }
-
-    /**
-     * 格式化路径为绝对路径，相对路径或全路径（以域名开头）
-     *
-     * @param string $path 待格式化的路径
-     * @param string $format 格式化方式
-     * @return string
-     */
-    protected function formatPath($path, $format)
-    {
-        $path = ltrim($path, '/');
-        switch($format)
-        {
-            case 'absolute':
-                return '/' . $path;
-
-            case 'relative':
-                return $path;
-
-            case 'full':
-                return url($path);
-        }
-        return $path;
     }
 
     /**
@@ -142,7 +89,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function nodes(...$args)
     {
-        return NodeCollection::find($this->args($args));
+        return NodeCollection::find($this->formatArguments($args));
     }
 
     /**
@@ -156,7 +103,7 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function node_types(...$args)
     {
-        return NodeTypeCollection::find($this->args($args));
+        return NodeTypeCollection::find($this->formatArguments($args));
     }
 
     /**
@@ -170,10 +117,24 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
      */
     public function catalogs(...$args)
     {
-        return CatalogCollection::find($this->args($args));
+        return CatalogCollection::find($this->formatArguments($args));
     }
 
-    protected function args(array $args)
+    /**
+     * 获取标签集
+     *
+     * @param string|array $args 用于获取标签的参数，可以是：
+     *  - 标签
+     *  - 标签名
+     *
+     * @return \App\ModelCollections\TagCollection
+     */
+    public function tags(...$args)
+    {
+        return TagCollection::find($this->formatArguments($args));
+    }
+
+    protected function formatArguments(array $args)
     {
         // 如果只有一个参数，而且是一个数组，则假设该数组是使用者真正想要指定的参数数组
         if (count($args) === 1 && is_array($args[0])) {
@@ -181,19 +142,4 @@ class ContentsQuery extends AbstractExtension implements GlobalsInterface
         }
         return $args;
     }
-
-    // /**
-    //  * 获取标签集
-    //  *
-    //  * @param string|int|array $args 用于获取标签的参数，可以是：
-    //  *  - 标签
-    //  *  - 标签名
-    //  *  - 标签 id
-    //  *
-    //  * @return \App\ModelCollections\TagCollection
-    //  */
-    // public function tags(...$args)
-    // {
-    //     return TagCollection::find($args);
-    // }
 }
