@@ -316,6 +316,7 @@ class Node extends JulyModel
     {
         $langcode = $langcode ?: langcode('site_page');
         $langs = langcode('all');
+
         if (! isset($langs[$langcode])) {
             return null;
         }

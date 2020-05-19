@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'languages' => ['zh', 'en'],
+    'content_lang' => 'en',
+    'interface_lang' => 'zh',
+    'site_page_lang' => 'en',
+    'admin_page_lang' => 'zh',
+
     'editor_config' => [
         'ckeditor' => [
             'fillEmptyBlocks' => false,

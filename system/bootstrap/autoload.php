@@ -11,19 +11,6 @@ define('JULY_VERSION', '2.0.0');
 
 /*
 |--------------------------------------------------------------------------
-| Register Core Helpers
-|--------------------------------------------------------------------------
-|
-| We cannot rely on Composer's load order when calculating the weight of
-| each package. This line ensures that the core global helpers are
-| always given priority one status.
-|
-*/
-
-require __DIR__.'/../app/helpers.php';
-
-/*
-|--------------------------------------------------------------------------
 | Register The Composer Auto Loader
 |--------------------------------------------------------------------------
 |

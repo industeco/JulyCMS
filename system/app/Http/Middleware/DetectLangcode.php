@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\View;
 
 class DetectLangcode
 {
@@ -17,11 +16,11 @@ class DetectLangcode
     public function handle($request, Closure $next)
     {
         if ($clang = $request->input('content_value_langcode')) {
-            config(['content_value_langcode' => $clang]);
+            config(['current_content_lang' => $clang]);
         }
 
         if ($ilang = $request->input('interface_value_langcode')) {
-            config(['interface_value_langcode' => $ilang]);
+            config(['current_interface_lang' => $ilang]);
         }
 
         $langcode = null;
@@ -29,7 +28,7 @@ class DetectLangcode
             $langcode = $matches[1];
         }
 
-        $langs = langcode('all');
+        $langs = \langcode('all');
         if ($langcode && isset($langs[$langcode])) {
             config(['request_langcode' => $langcode]);
         } else {

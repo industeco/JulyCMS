@@ -20,24 +20,3 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
-
-// Route::get('/install', function() {
-//     if (config('app.installed')) {
-//         return Response::make([
-//             'success' => false,
-//             'msg' => '',
-//         ], 404);
-//     }
-
-//     Artisan::call('key:generate');
-//     Artisan::call('migrate', [
-//         '--seed' => true,
-//     ]);
-
-//     Config::set('app.installed', true);
-
-//     return Response::make([
-//         'success' => true,
-//         'msg' => '安装成功',
-//     ]);
-// });

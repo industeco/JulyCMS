@@ -1,17 +1,12 @@
 <?php
 
-use App\Contracts\HasModelConfig;
 use App\Models\Catalog;
-use App\Models\Config;
 use App\Models\JulyModel;
 use App\Models\Node;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('auth')) {
     /**
@@ -193,7 +188,7 @@ if (! function_exists('langcode')) {
             case 'list':
                 $langs = [];
                 $list = language_list('zh');
-                $langcodes = config('jc.languages') ?? ['en','zh'];
+                $langcodes = config('jc.languages');
                 foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }
@@ -201,14 +196,14 @@ if (! function_exists('langcode')) {
 
             // 界面语言
             case 'interface_value':
-                return config('interface_value_langcode') ?: config('jc.interface_lang');
+                return config('current_interface_lang') ?: config('jc.interface_lang');
 
             case 'interface_value.default':
                 return config('jc.interface_lang');
 
             // 内容语言
             case 'content_value':
-                return config('content_value_langcode') ?: config('jc.content_lang');
+                return config('current_content_lang') ?: config('jc.content_lang');
 
             case 'content_value.default':
                 return config('jc.content_lang');
