@@ -5,7 +5,7 @@ body {
 
 #install {
   display: block;
-  max-width: 800px;
+  max-width: 720px;
   margin: auto;
   padding: 0;
   position: absolute;
@@ -20,9 +20,8 @@ body {
 .jc-install-title {
   text-align: center;
   margin: 0;
-  padding: 30px 0 20px;
+  padding: 40px 20px 30px;
   line-height: 1.15;
-  color: #0a3f70;
   color: #0074bd;
   border-bottom: 1px solid #bfbfbf;
 }
@@ -32,7 +31,7 @@ body {
 }
 
 #install_steps {
-  padding: 20px;
+  padding: 30px 20px;
 }
 
 .jc-install-step-content,
