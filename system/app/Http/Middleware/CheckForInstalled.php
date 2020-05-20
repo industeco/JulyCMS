@@ -17,9 +17,8 @@ class CheckForInstalled
     public function handle($request, Closure $next)
     {
         $installed = config('app.installed');
-        $toInstall = $request->is('install');
-        $toMigrate = $request->is('install/migrate');
-        if (($installed && ($toInstall || $toMigrate)) || (!$installed && !$toInstall)) {
+        $toInstall = $request->is('install') || $request->is('install/migrate');
+        if (($installed && $toInstall) || (!$installed && !$toInstall)) {
             throw new NotFoundHttpException();
         }
         return $next($request);

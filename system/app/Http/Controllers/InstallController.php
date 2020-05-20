@@ -61,8 +61,13 @@ class InstallController extends Controller
 
     public function migrate(Request $request)
     {
-        Config::set('admin_name', $request->input('admin_name'));
-        Config::set('admin_password', $request->input('admin_password'));
+        $disk = Storage::disk('public');
+        $env = $disk->get('system/.env');
+        $env .= "APP_INSTALLED=true\n";
+        $disk->put('system/.env', $env);
+
+        app('config')->set('admin_name', $request->input('admin_name'));
+        app('config')->set('admin_password', $request->input('admin_password'));
 
         Artisan::call('migrate', [
             '--seed' => true,
@@ -80,7 +85,6 @@ class InstallController extends Controller
             'APP_KEY' => $this->generateRandomKey(),
             'APP_URL' => $values['app_url'],
             'APP_OWNER' => $values['app_owner'],
-            'APP_INSTALLED' => 'true',
             'DB_DATABASE' => $values['db_database'],
             'MAIL_TO_ADDRESS' => $values['mail_to_address'],
             'MAIL_TO_NAME' => substr($values['mail_to_address'], 0, strpos($values['mail_to_address'], '@')),
