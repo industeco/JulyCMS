@@ -78,11 +78,6 @@
   line-height: 20px;
 }
 
-.el-form-item__content {
-  display: flex;
-  align-items: center;
-}
-
 .el-form-item__content > .jc-form-item-help {
   position: absolute;
   top: 100%;

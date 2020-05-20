@@ -1336,3 +1336,8 @@ h2.jc-form-info-item {
 #contents_filter .el-select {
   width: 130px;
 }
+
+.jc-form-item-group {
+  display: flex;
+  align-items: center;
+}

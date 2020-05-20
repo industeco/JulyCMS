@@ -61,28 +61,32 @@
                 placeholder="admin"></el-input>
             </el-form-item>
             <el-form-item label="管理密码" prop="admin_password">
-              <el-input
-                size="medium"
-                native-size="50"
-                v-model="settings.admin_password">
-              </el-input>
-              <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-                @click="randomPassword">
-                <div class="md-ripple"><div class="md-button-content">随机</div></div>
-              </button>
+              <div class="jc-form-item-group">
+                <el-input
+                  size="medium"
+                  native-size="50"
+                  v-model="settings.admin_password">
+                </el-input>
+                <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+                  @click="randomPassword">
+                  <div class="md-ripple"><div class="md-button-content">随机</div></div>
+                </button>
+              </div>
             </el-form-item>
             <el-form-item label="数据文件" prop="db_database" class="has-helptext">
-              <el-input
-                size="medium"
-                native-size="50"
-                v-model="settings.db_database"
-                placeholder="database.db3">
-              </el-input>
+              <div class="jc-form-item-group">
+                <el-input
+                  size="medium"
+                  native-size="50"
+                  v-model="settings.db_database"
+                  placeholder="database.db3">
+                </el-input>
+                <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+                  @click="randomDatabase">
+                  <div class="md-ripple"><div class="md-button-content">随机</div></div>
+                </button>
+              </div>
               <span class="jc-form-item-help"><i class="el-icon-info"></i> SQLite 数据文件</span>
-              <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-                @click="randomDatabase">
-                <div class="md-ripple"><div class="md-button-content">随机</div></div>
-              </button>
             </el-form-item>
             <el-form-item label="所属企业" prop="app_owner">
               <el-input
