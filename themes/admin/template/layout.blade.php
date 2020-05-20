@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', '七月 CMS')</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
-  <link rel="stylesheet" href="/themes/admin/vendor/normalize.css/normalize.css">
-  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/vue-material.css">
-  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/theme/default.css">
-  <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/normalize.css/normalize.min.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.min.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/vue-material.min.css">
+  <link rel="stylesheet" href="/themes/admin/vendor/vue-material/theme/default.min.css">
   <link rel="stylesheet" href="/themes/admin/css/july.css">
 </head>
 <body>

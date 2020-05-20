@@ -657,3 +657,67 @@ if (! function_exists('language_list')) {
         return $list;
     }
 }
+
+if (! function_exists('get_file_list')) {
+    /**
+     * 根据白名单获取文件列表
+     *
+     * @param array $list 白名单
+     * @param string|null $root 起始目录
+     * @return array 文件名列表，格式：[文件路径 => 新的文件路径|'']
+     */
+    function get_file_list(array $list, $root = null)
+    {
+        $files = [];
+        $root = rtrim($root ?: public_path(), '/').'/';
+        foreach ($list as $original => $target) {
+            if ('/*' === substr($original, -2)) {
+                $original = substr($original, 0, strlen($original)-1);
+                if ($target) {
+                    $target = rtrim($target, '/').'/';
+                }
+                $_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root.$original));
+                foreach ($_files as $name => $file) {
+                    $filePath = str_replace('\\', '/', $file->getRealPath());
+                    $relativePath = substr($filePath, strlen($root));
+                    if ($file->isDir()) {
+                        $relativePath .= '/';
+                    }
+                    $files[$relativePath] = $target ? $target.substr($filePath, strlen($root.$original)) : '';
+                }
+            } else {
+                $files[$original] = $target;
+            }
+        }
+
+        return $files;
+    }
+}
+
+if (! function_exists('package_files')) {
+    /**
+     * 打包文件
+     *
+     * @param string $pkg 文件名
+     * @param array $files 文件名列表，格式：[文件路径 => 新的文件路径|'']
+     * @return file
+     */
+    function package_files($pkg, array $files)
+    {
+        $zip = new \ZipArchive();
+        $zip->open($pkg, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+        $path = rtrim(public_path(), '/').'/';
+        foreach ($files as $file => $newName) {
+            $filePath = $path.$file;
+            if (substr($file, -1) === '/' || is_dir($filePath)) {
+                $zip->addEmptyDir($file);
+            } elseif (is_file($filePath)) {
+                $zip->addFile($filePath, $newName ?: $file);
+            }
+        }
+        $zip->close();
+
+        return true;
+    }
+}

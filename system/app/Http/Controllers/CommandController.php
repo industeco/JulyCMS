@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CommandController extends Controller
 {
@@ -137,7 +138,6 @@ class CommandController extends Controller
 
     public function findInvalidLinks()
     {
-        //
         $invalidLinks = [];
         foreach (Node::fetchAll() as $node) {
             $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks());

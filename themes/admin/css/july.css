@@ -909,10 +909,6 @@ h2.jc-form-info-item {
   width: 40px;
 }
 
-.jc-table.is-draggable .jc-drag-handle {
-  /* transform: scale(.8); */
-}
-
 #main_tools {
   display: flex;
   justify-content: space-between;
