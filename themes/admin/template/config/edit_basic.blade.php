@@ -78,7 +78,7 @@
       },
 
       useInTwig(name) {
-        return `@{{ config(jc.${name}) }}`;
+        return `@{{ config('jc.${name}') }}`;
       },
 
       submit() {
