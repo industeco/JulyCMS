@@ -10,7 +10,7 @@
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
         :disabled="!selected.length"
-        @click="render">
+        @click="render()">
         <div class="md-ripple"><div class="md-button-content">生成 HTML</div></div>
       </button>
     </div>

@@ -52,8 +52,8 @@
         </el-collapse-item>
         <el-collapse-item title="META 信息" name="meta">
           {!! $fields_aside['meta_title']['element'] !!}
-          {!! $fields_aside['meta_description']['element'] !!}
           {!! $fields_aside['meta_keywords']['element'] !!}
+          {!! $fields_aside['meta_description']['element'] !!}
         </el-collapse-item>
       </el-collapse>
     </div>
