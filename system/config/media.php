@@ -5,6 +5,10 @@ return [
         'files' => [
             'valid_mime' => [
                 'application/pdf',
+                'application/vnd.ms-powerpoint',
+                'application/msword',
+                'application/vnd.ms-excel',
+                'application/x-dwg',
             ],
         ],
         'images' => [
@@ -14,6 +18,9 @@ return [
                 'image/png',
                 'image/gif',
                 'image/svg+xml',
+                'image/x-icon',
+                'image/bmp',
+                'image/webp',
             ],
         ],
     ],
