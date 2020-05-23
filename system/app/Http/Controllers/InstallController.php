@@ -26,13 +26,13 @@ class InstallController extends Controller
         $phpRequirements = [
             'BCMath',
             'Ctype',
-            'Fileinfo',
             'JSON',
-            'Mbstring',
-            'OpenSSL',
-            'PDO',
             'Tokenizer',
             'XML',
+            'Fileinfo',
+            'Mbstring',
+            'OpenSSL',
+            'PDO_SQLite',
         ];
 
         foreach ($phpRequirements as $requirement) {

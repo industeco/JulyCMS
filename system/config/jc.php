@@ -41,8 +41,8 @@ return [
             'image' => [
                 'png','jpg','jpeg','webp','bmp','svg','gif','ico',
             ],
-            'pdf' => [
-                'pdf',
+            'file' => [
+                'pdf', 'doc', 'ppt', 'xls', 'dwg',
             ],
         ],
 
