@@ -144,7 +144,8 @@
 
       checkFile(file) {
         // 检查文件类型
-        if (!file.type || this.accept.indexOf(file.type) < 0) {
+        const ext = this.fileExtension(file);
+        if (!ext || this.accept.indexOf('.'+ext) < 0) {
           return `${file.name} 类型不正确`;
         }
 
