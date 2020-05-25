@@ -74,6 +74,12 @@ class InstallController extends Controller
             '--force' => true,
         ]);
 
+        Artisan::call('cache:clear');
+
+        // 清除生成的静态页面
+        Storage::disk('storage')->deleteDirectory('pages');
+        Storage::disk('storage')->makeDirectory('pages');
+
         return response('');
     }
 

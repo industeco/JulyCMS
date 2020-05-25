@@ -2,6 +2,8 @@
 
 use App\Models\JulyConfig;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class JulyConfigSeeder extends Seeder
 {
@@ -159,8 +161,11 @@ class JulyConfigSeeder extends Seeder
             ],
         ];
 
-        foreach ($configuration as $entry) {
-            JulyConfig::create($entry);
-        }
+        DB::transaction(function() use($configuration) {
+            foreach ($configuration as $entry) {
+                $entry['config'] = json_encode($entry['config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+                DB::table('july_configs')->insert($entry);
+            }
+        });
     }
 }

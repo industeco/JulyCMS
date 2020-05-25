@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models\NodeField;
+use Illuminate\Support\Facades\DB;
 
 class NodeFieldSeeder extends Seeder
 {
@@ -188,8 +189,15 @@ class NodeFieldSeeder extends Seeder
             ],
         ];
 
-        foreach ($fields as $field) {
-            NodeField::create($field);
+        DB::transaction(function() use($fields) {
+            foreach ($fields as $field) {
+                $field['config'] = json_encode($field['config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+                DB::table('node_fields')->insert($field);
+            }
+        });
+
+        foreach (NodeField::all() as $field) {
+            $field->tableUp();
         }
     }
 }

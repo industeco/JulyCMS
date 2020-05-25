@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models;
+use Illuminate\Support\Facades\DB;
 
 class NodeTypeSeeder extends Seeder
 {
@@ -29,7 +30,7 @@ class NodeTypeSeeder extends Seeder
                         ],
                     ],
                 ],
-                'fields' => ['content','h1'],
+                'fields' => ['title','content','h1'],
             ],
             [
                 'type' => [
@@ -47,7 +48,7 @@ class NodeTypeSeeder extends Seeder
                         ],
                     ],
                 ],
-                'fields' => ['content','h1','image_src','image_alt'],
+                'fields' => ['title','content','h1','image_src','image_alt'],
             ],
             [
                 'type' => [
@@ -65,22 +66,24 @@ class NodeTypeSeeder extends Seeder
                         ],
                     ],
                 ],
-                'fields' => ['content','h1','image_src','image_alt'],
+                'fields' => ['title','content','h1','image_src','image_alt'],
             ],
         ];
 
-        foreach ($nodeTypes as $type) {
-            Models\NodeType::create($type['type']);
+        DB::transaction(function() use($nodeTypes) {
+            foreach ($nodeTypes as $nodeType) {
+                $type = $nodeType['type'];
+                $type['config'] = json_encode($type['config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+                DB::table('node_types')->insert($type);
 
-            $truename = $type['type']['truename'];
-            array_unshift($type['fields'], 'title');
-            foreach ($type['fields'] as $index => $field) {
-                Models\NodeTypeNodeField::create([
-                    'node_type' => $truename,
-                    'node_field' => $field,
-                    'delta' => $index,
-                ]);
+                foreach ($nodeType['fields'] as $index => $field) {
+                    DB::table('node_field_node_type')->insert([
+                        'node_type' => $type['truename'],
+                        'node_field' => $field,
+                        'delta' => $index,
+                    ]);
+                }
             }
-        }
+        });
     }
 }

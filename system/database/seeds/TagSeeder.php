@@ -2,6 +2,7 @@
 
 use App\Models\Tag;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class TagSeeder extends Seeder
 {
@@ -43,8 +44,10 @@ class TagSeeder extends Seeder
             ],
         ];
 
-        foreach ($tags as $tag) {
-            Tag::create($tag);
-        }
+        DB::transaction(function() use($tags) {
+            foreach ($tags as $tag) {
+                DB::table('tags')->insert($tag);
+            }
+        });
     }
 }
