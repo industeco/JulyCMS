@@ -163,6 +163,14 @@
           }
         };
 
+        let validateOwner = (rule, value, callback) => {
+          if (/[\\"']/.test(value)) {
+            callback(new Error('企业名不能包含 \\ 和 "'));
+          } else {
+            callback();
+          }
+        };
+
         let validateAdminName = (rule, value, callback) => {
           if (/[^a-zA-Z0-9\-_ ]/.test(value)) {
             callback(new Error('管理账号不能含有特殊字符'));
@@ -205,6 +213,7 @@
             ],
             app_owner: [
               { required: true, message: '企业名不能为空', trigger: 'blur' },
+              { validator: validateOwner, trigger: 'blur' },
             ],
             mail_to_address: [
               { required: true, message: '邮箱不能为空', trigger: 'blur' },

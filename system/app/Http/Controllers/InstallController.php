@@ -84,7 +84,7 @@ class InstallController extends Controller
             'APP_DEBUG' => config('app.debug') ? 'true' : 'false',
             'APP_KEY' => $this->generateRandomKey(),
             'APP_URL' => $values['app_url'],
-            'APP_OWNER' => $values['app_owner'],
+            'APP_OWNER' => '"'.$values['app_owner'].'"',
             'DB_DATABASE' => $values['db_database'],
             'MAIL_TO_ADDRESS' => $values['mail_to_address'],
             'MAIL_TO_NAME' => substr($values['mail_to_address'], 0, strpos($values['mail_to_address'], '@')),
