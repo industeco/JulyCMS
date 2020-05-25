@@ -95,7 +95,7 @@ class NodeField extends JulyModel implements HasModelConfig
     public static function globalFields()
     {
         return [
-            'url','template','meta_title','meta_keywords','meta_description',
+            'template','url','meta_title','meta_keywords','meta_description','meta_canonical',
         ];
     }
 

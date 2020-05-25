@@ -298,7 +298,7 @@
           interface_value_langcode: '{{ $interface_value_langcode }}',
           field_type: null,
           truename: '',
-          length: 0,
+          length: 100,
           required: false,
           is_searchable: true,
           index_weight: 1,

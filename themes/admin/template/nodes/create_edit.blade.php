@@ -54,6 +54,7 @@
           {!! $fields_aside['meta_title']['element'] !!}
           {!! $fields_aside['meta_keywords']['element'] !!}
           {!! $fields_aside['meta_description']['element'] !!}
+          {!! $fields_aside['meta_canonical']['element'] !!}
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -225,6 +226,9 @@
           ],
           @endif
           @endforeach
+          meta_canonical: [
+            {type: 'url', message: '权威页面必须为完整网址', trigger: 'blur'},
+          ],
         },
 
         ckeditorConfig: @json(config('jc.editor_config.ckeditor'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),

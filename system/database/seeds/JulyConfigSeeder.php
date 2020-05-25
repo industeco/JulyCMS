@@ -30,7 +30,28 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '语言主要用于内容翻译，后台界面暂不支持多语言（始终为中文）。',
                     ],
                     'value_type' => 'array',
-                    'value' => ['en','zh'],
+                    'value' => [
+                        'en' => true,
+                        'zh' => false,
+                    ],
+                ],
+            ],
+            [
+                'truename' => 'multi_language',
+                'is_preset' => true,
+                'config' => [
+                    'langcode' => [
+                        'interface_value' => 'zh',
+                        'content_value' => 'en',
+                    ],
+                    'label' => [
+                        'zh' => '多语言',
+                    ],
+                    'description' => [
+                        'zh' => '若启用多语言，则可以通过带语言代码的网址访问，如：/en/index.html',
+                    ],
+                    'value_type' => 'boolean',
+                    'value' => false,
                 ],
             ],
             [

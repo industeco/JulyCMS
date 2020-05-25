@@ -233,22 +233,35 @@ class NodeController extends Controller
             $nodes = Node::fetchMany($ids);
         }
 
-        $langs = $request->input('langcode') ?: array_keys(langcode('all'));
-        if (is_string($langs)) {
-            $langs = [$langs];
-        }
-
         $twig = twig('default/template', true);
 
+        // 多语言生成
+        // $langs = $request->input('langcode') ?: array_keys(langcode('all'));
+        // if (is_string($langs)) {
+        //     $langs = [$langs];
+        // }
+
+        // $success = [];
+        // foreach ($nodes as $node) {
+        //     $result = [];
+        //     foreach ($langs as $langcode) {
+        //         if ($node->render($twig, $langcode)) {
+        //             $result[$langcode] = true;
+        //         } else {
+        //             $result[$langcode] = false;
+        //         }
+        //     }
+        //     $success[$node->id] = $result;
+        // }
+
         $success = [];
+        $langcode = langcode('site_page');
         foreach ($nodes as $node) {
             $result = [];
-            foreach ($langs as $langcode) {
-                if ($node->render($twig, $langcode)) {
-                    $result[$langcode] = true;
-                } else {
-                    $result[$langcode] = false;
-                }
+            if ($node->render($twig, $langcode)) {
+                $result[$langcode] = true;
+            } else {
+                $result[$langcode] = false;
             }
             $success[$node->id] = $result;
         }

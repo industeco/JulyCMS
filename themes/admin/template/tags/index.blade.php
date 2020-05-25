@@ -144,7 +144,7 @@
 
     data() {
       return {
-        tagsMap: {{ $tags ? json_encode($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) : '{}' }},
+        tagsMap: {!! $tags ? json_encode($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) : '{}' !!},
         tags: [],
 
         currentTag: null,

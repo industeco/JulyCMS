@@ -2,6 +2,7 @@
 
 namespace App\FieldTypes;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 
 class TextField extends FieldTypeBase
@@ -12,10 +13,20 @@ class TextField extends FieldTypeBase
 
     public static function columns(array $config)
     {
-        $column = [
-            'type' => 'string',
-            'parameters' => $config['parameters'] ?? [],
-        ];
+        $length = $config['length'] ?? 0;
+        $parameters = $config['parameters'] ?? [];
+        if ($length > 0) {
+            $column = [
+                'type' => 'string',
+                'parameters' => array_replace(['length' => $length], $parameters),
+            ];
+        } else {
+            unset($parameters['length']);
+            $column = [
+                'type' => 'text',
+                'parameters' => $parameters,
+            ];
+        }
         return [$column];
     }
 

@@ -1,7 +1,20 @@
 <?php
 
 return [
-    'languages' => ['zh', 'en'],
+    'languages' => [
+        'zh' => [
+            'interface_value' => true,
+            'admin_page' => true,
+            'content_value' => false,
+            'site_page' => false,
+        ],
+        'en' => [
+            'interface_value' => false,
+            'admin_page' => false,
+            'content_value' => true,
+            'site_page' => true,
+        ],
+    ],
     'content_lang' => 'en',
     'interface_lang' => 'zh',
     'site_page_lang' => 'en',

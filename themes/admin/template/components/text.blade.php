@@ -4,17 +4,20 @@
   </el-tooltip>
   <el-input
     v-model="node.{{ $truename }}"
-    @if ($length <= 100)
-    native-size="{{ $length < 50 ? 60 : 100 }}"
-    @else
+    @if ($length > 100 || $length === 0)
     type="textarea"
     rows="3"
+    @else
+    native-size="{{ $length < 50 ? 60 : 100 }}"
     @endif
     @if ($placeholder ?? null)
     placeholder="{{ $placeholder }}"
     @endif
+    @if ($length > 0)
     maxlength="{{ $length }}"
-    show-word-limit></el-input>
+    show-word-limit
+    @endif
+    ></el-input>
   @if ($help)
   <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $help }}</span>
   @endif

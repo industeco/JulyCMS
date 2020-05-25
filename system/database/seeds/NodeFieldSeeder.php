@@ -129,6 +129,22 @@ class NodeFieldSeeder extends Seeder
                 ],
             ],
             [
+                'truename' => 'meta_canonical',
+                'field_type' => 'text',
+                'is_preset' => true,
+                'is_searchable' => false,
+                'config' => [
+                    'langcode' => [
+                        'interface_value' => 'zh',
+                        'content_value' => 'en',
+                    ],
+                    'length' => 100,
+                    'label' => [
+                        'zh' => '权威页面',
+                    ],
+                ],
+            ],
+            [
                 'truename' => 'content',
                 'field_type' => 'html',
                 'config' => [

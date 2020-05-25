@@ -255,6 +255,14 @@ class Node extends JulyModel
             $twig->addGlobal('_node', $this);
             $twig->addGlobal('_path', $this->get_path());
 
+            $canonical = '/'.ltrim($node['url'], '/');
+            if ($langcode === langcode('site_page')) {
+                $canonical = rtrim(config('jc.url'), '/').$canonical;
+            } else {
+                $canonical = rtrim(config('jc.url'), '/').'/'.$langcode.$canonical;
+            }
+            $twig->addGlobal('_canonical', $canonical);
+
             // 生成 html
             $html = $twig->render($tpl, $node);
 
@@ -314,9 +322,12 @@ class Node extends JulyModel
 
     public static function retrieveHtml($url, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('site_page');
-        $langs = langcode('all');
+        $langcode = $langcode ?: langcode('current_page');
+        if ($langcode !== langcode('site_page')) {
+            return null;
+        }
 
+        $langs = langcode('all');
         if (! isset($langs[$langcode])) {
             return null;
         }
