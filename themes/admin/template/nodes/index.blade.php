@@ -96,9 +96,11 @@
               <a :href="'/admin/nodes/'+scope.row.id+'/edit'" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
+              @if (config('jc.multi_language'))
               <a :href="'/admin/nodes/'+scope.row.id+'/translate'" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
+              @endif
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click="deleteNode(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
@@ -117,6 +119,7 @@
           </div>
         </a>
       </li>
+      @if (config('jc.multi_language'))
       <li class="md-list-item">
         <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean">
           <div class="md-list-item-content">
@@ -125,6 +128,7 @@
           </div>
         </a>
       </li>
+      @endif
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" @click.stop="deleteNode(contextmenu.target)">
           <div class="md-list-item-content md-ripple">

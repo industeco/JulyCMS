@@ -233,6 +233,17 @@ if (! function_exists('langcode')) {
     }
 }
 
+if (! function_exists('content_accessible')) {
+    function content_accessible($langcode)
+    {
+        if ($langcode === langcode('site_page')) {
+            return true;
+        }
+
+        return config('jc.multi_language') && config('jc.langcode.'.$langcode.'.site_page');
+    }
+}
+
 if (! function_exists('langname')) {
     function langname($langcode, $interface_lang = null)
     {

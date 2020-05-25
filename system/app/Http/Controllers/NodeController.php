@@ -212,6 +212,10 @@ class NodeController extends Controller
      */
     public function translate(Node $node)
     {
+        if (!config('jc.multi_language')) {
+            abort(404);
+        }
+
         return view_with_langcode('admin::translate', [
             'original_langcode' => $node->langcode,
             'langs' => langcode('all'),
@@ -236,32 +240,25 @@ class NodeController extends Controller
         $twig = twig('default/template', true);
 
         // 多语言生成
-        // $langs = $request->input('langcode') ?: array_keys(langcode('all'));
-        // if (is_string($langs)) {
-        //     $langs = [$langs];
-        // }
+        if (config('jc.multi_language')) {
+            $langs = $request->input('langcode') ?: array_keys(langcode('all'));
+            if (is_string($langs)) {
+                $langs = [$langs];
+            }
+        } else {
+            $langs = [langcode('site_page')];
+        }
 
-        // $success = [];
-        // foreach ($nodes as $node) {
-        //     $result = [];
-        //     foreach ($langs as $langcode) {
-        //         if ($node->render($twig, $langcode)) {
-        //             $result[$langcode] = true;
-        //         } else {
-        //             $result[$langcode] = false;
-        //         }
-        //     }
-        //     $success[$node->id] = $result;
-        // }
 
         $success = [];
-        $langcode = langcode('site_page');
         foreach ($nodes as $node) {
             $result = [];
-            if ($node->render($twig, $langcode)) {
-                $result[$langcode] = true;
-            } else {
-                $result[$langcode] = false;
+            foreach ($langs as $langcode) {
+                if ($node->render($twig, $langcode)) {
+                    $result[$langcode] = true;
+                } else {
+                    $result[$langcode] = false;
+                }
             }
             $success[$node->id] = $result;
         }

@@ -312,23 +312,25 @@ class Node extends JulyModel
 
     public static function findByUrl($url, $langcode = null)
     {
+        $langcode = $langcode ?: langcode('content_value.default');
         $url = '/'.ltrim($url, '/');
-        $record = DB::table('node__url')->where('url_value', $url)->first();
+
+        $record = DB::table('node__url')->where([
+            ['url_value', $url],
+            ['langcode', $langcode],
+        ])->first();
+
         if ($record) {
             return static::find($record->node_id);
         }
+
         return null;
     }
 
     public static function retrieveHtml($url, $langcode = null)
     {
         $langcode = $langcode ?: langcode('current_page');
-        if ($langcode !== langcode('site_page')) {
-            return null;
-        }
-
-        $langs = langcode('all');
-        if (! isset($langs[$langcode])) {
+        if (!content_accessible($langcode)) {
             return null;
         }
 
