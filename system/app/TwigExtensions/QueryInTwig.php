@@ -89,7 +89,11 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      */
     public function nodes(...$args)
     {
-        return NodeCollection::find($this->formatArguments($args));
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return NodeCollection::findAll();
+        }
+        return NodeCollection::find($args);
     }
 
     /**
@@ -103,7 +107,11 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      */
     public function node_types(...$args)
     {
-        return NodeTypeCollection::find($this->formatArguments($args));
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return NodeTypeCollection::findAll();
+        }
+        return NodeTypeCollection::find($args);
     }
 
     /**
@@ -117,7 +125,11 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      */
     public function catalogs(...$args)
     {
-        return CatalogCollection::find($this->formatArguments($args));
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return CatalogCollection::findAll();
+        }
+        return CatalogCollection::find($args);
     }
 
     /**
@@ -131,15 +143,10 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      */
     public function tags(...$args)
     {
-        return TagCollection::find($this->formatArguments($args));
-    }
-
-    protected function formatArguments(array $args)
-    {
-        // 如果只有一个参数，而且是一个数组，则假设该数组是使用者真正想要指定的参数数组
-        if (count($args) === 1 && is_array($args[0])) {
-            $args = $args[0];
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return TagCollection::findAll();
         }
-        return $args;
+        return TagCollection::find($args);
     }
 }

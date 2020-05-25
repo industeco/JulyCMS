@@ -13,11 +13,8 @@ abstract class ModelCollection extends Collection implements GetNodes
 
     public static function find($args)
     {
-        $model = static::$model;
-        $primaryKey = static::$primaryKey;
-
         if (empty($args)) {
-            return (new static($model::fetchAll()))->keyBy($primaryKey);
+            return new static;
         }
 
         if ($args instanceof static) {
@@ -33,6 +30,13 @@ abstract class ModelCollection extends Collection implements GetNodes
         }
 
         return static::findArray($args);
+    }
+
+    public static function findAll()
+    {
+        $model = static::$model;
+        $primaryKey = static::$primaryKey;
+        return (new static($model::fetchAll()))->keyBy($primaryKey);
     }
 
     public static function findArray(array $args)

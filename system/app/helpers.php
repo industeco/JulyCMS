@@ -721,3 +721,26 @@ if (! function_exists('package_files')) {
         return true;
     }
 }
+
+if (! function_exists('format_arguments')) {
+    /**
+     * 格式化传入参数
+     *
+     * @param array $args 文件名
+     * @return array
+     */
+    function format_arguments(array $args)
+    {
+        // 如果只有一个参数，而且是一个数组，则假设该数组才是用户真正想要传入的参数
+        if (count($args) === 1 && is_array($args[0])) {
+            $args = $args[0];
+        }
+
+        // 过滤掉 null 和空字符串
+        $args = array_filter($args, function($item) {
+            return !(is_null($item) || $item === '');
+        });
+
+        return array_values($args);
+    }
+}

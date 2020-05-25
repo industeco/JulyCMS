@@ -258,6 +258,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_children(...$args)
     {
+        $args = format_arguments($args);
+        if (empty($args)) {
+            $args = [0];
+        }
+
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
@@ -279,6 +284,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_descendants(...$args)
     {
+        $args = format_arguments($args);
+        if (empty($args)) {
+            $args = [0];
+        }
+
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
@@ -303,6 +313,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_parent(...$args)
     {
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return new NodeCollection;
+        }
+
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
@@ -324,6 +339,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_ancestors(...$args)
     {
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return new NodeCollection;
+        }
+
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
@@ -345,6 +365,11 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_siblings(...$args)
     {
+        $args = format_arguments($args);
+        if (empty($args)) {
+            return new NodeCollection;
+        }
+
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
@@ -366,6 +391,10 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_prev($id)
     {
+        if (!$id) {
+            return null;
+        }
+
         if ($id = $this->tree()->prev($id)) {
             return Node::fetch($id);
         }
@@ -380,6 +409,10 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_next($id)
     {
+        if (!$id) {
+            return null;
+        }
+
         if ($id = $this->tree()->next($id)) {
             return Node::fetch($id);
         }
@@ -400,6 +433,10 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     public function get_path($id)
     {
+        if (!$id) {
+            return collect();
+        }
+
         return collect($this->tree()->ancestors($id));
     }
 }
