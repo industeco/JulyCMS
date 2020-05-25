@@ -3,12 +3,25 @@
 namespace App\ModelCollections;
 
 use App\Models\Catalog;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class CatalogCollection extends ModelCollection
 {
     protected static $model = Catalog::class;
     protected static $primaryKey = 'truename';
+
+    /**
+     * Get the first item from the collection passing the given truth test.
+     *
+     * @param  callable|null  $callback
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function first(callable $callback = null, $default = null)
+    {
+        return Arr::first($this->items, $callback, $default) ?? Catalog::default();
+    }
 
     /**
      * 获取指定节点的直接子节点
@@ -18,7 +31,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_children(...$args)
     {
-        return $this->first()->get_children(...$args);
+        $this->first()->get_children(...$args);
     }
 
     public function get_under(...$args)
@@ -34,7 +47,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_descendants(...$args)
     {
-        return $this->first()->get_descendants(...$args);
+        $this->first()->get_descendants(...$args);
     }
 
     public function get_below(...$args)
@@ -51,7 +64,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_parent(...$args)
     {
-        return $this->first()->get_parent(...$args);
+        $this->first()->get_parent(...$args);
     }
 
     public function get_over(...$args)
@@ -67,7 +80,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_ancestors(...$args)
     {
-        return $this->first()->get_ancestors(...$args);
+        $this->first()->get_ancestors(...$args);
     }
 
     public function get_above(...$args)
@@ -83,7 +96,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_siblings(...$args)
     {
-        return $this->first()->get_siblings(...$args);
+        $this->first()->get_siblings(...$args);
     }
 
     public function get_around(...$args)
@@ -99,7 +112,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_path($id)
     {
-        return $this->first()->get_path($id);
+        $this->first()->get_path($id);
     }
 
     /**
@@ -110,7 +123,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_prev($id)
     {
-        return $this->first()->get_prev($id);
+        $this->first()->get_prev($id);
     }
 
     /**
@@ -121,6 +134,6 @@ class CatalogCollection extends ModelCollection
      */
     public function get_next($id)
     {
-        return $this->first()->get_next($id);
+        $this->first()->get_next($id);
     }
 }
