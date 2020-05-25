@@ -151,6 +151,12 @@ class NodeCollection extends ModelCollection
         return NodeTypeCollection::find($types);
     }
 
+    public function match_tags(array $tags, $matches = null)
+    {
+        $nodes = TagCollection::find($tags)->match($matches)->get_nodes();
+        return $this->only($nodes->pluck('id'));
+    }
+
     // /**
     //  * 在指定的树中，获取当前节点的相邻节点
     //  *

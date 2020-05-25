@@ -14,14 +14,15 @@ class JulyConfigSeeder extends Seeder
      */
     public function run()
     {
+        $clang = langcode('content_value.default');
         $configuration = [
             [
-                'truename' => 'languages',
+                'truename' => 'langcode.list',
                 'is_preset' => true,
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '可用语言',
@@ -30,37 +31,16 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '语言主要用于内容翻译，后台界面暂不支持多语言（始终为中文）。',
                     ],
                     'value_type' => 'array',
-                    'value' => [
-                        'en' => true,
-                        'zh' => false,
-                    ],
+                    'value' => config('jc.langcode.list'),
                 ],
             ],
             [
-                'truename' => 'multi_language',
+                'truename' => 'langcode.content_value',
                 'is_preset' => true,
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
-                    ],
-                    'label' => [
-                        'zh' => '多语言',
-                    ],
-                    'description' => [
-                        'zh' => '若启用多语言，则可以通过带语言代码的网址访问，如：/en/index.html',
-                    ],
-                    'value_type' => 'boolean',
-                    'value' => false,
-                ],
-            ],
-            [
-                'truename' => 'content_lang',
-                'is_preset' => true,
-                'config' => [
-                    'langcode' => [
-                        'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '内容默认语言',
@@ -69,16 +49,16 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '添加内容时默认使用的语言',
                     ],
                     'value_type' => 'string',
-                    'value' => 'en',
+                    'value' => $clang,
                 ],
             ],
             [
-                'truename' => 'interface_lang',
+                'truename' => 'langcode.interface_value',
                 'is_preset' => true,
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '界面值默认语言',
@@ -87,16 +67,16 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '添加界面值时默认使用的语言',
                     ],
                     'value_type' => 'string',
-                    'value' => 'zh',
+                    'value' => langcode('interface_value.default'),
                 ],
             ],
             [
-                'truename' => 'site_page_lang',
+                'truename' => 'langcode.site_page',
                 'is_preset' => true,
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '站点默认语言',
@@ -105,16 +85,16 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '网站页面默认使用哪种语言呈现',
                     ],
                     'value_type' => 'string',
-                    'value' => 'en',
+                    'value' => langcode('site_page'),
                 ],
             ],
             [
-                'truename' => 'admin_page_lang',
+                'truename' => 'langcode.admin_page',
                 'is_preset' => true,
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '后台界面默认语言',
@@ -123,7 +103,7 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '后台界面默认使用哪种语言呈现',
                     ],
                     'value_type' => 'string',
-                    'value' => 'zh',
+                    'value' => langcode('admin_page'),
                 ],
             ],
             [
@@ -132,13 +112,10 @@ class JulyConfigSeeder extends Seeder
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '首页网址',
-                    ],
-                    'description' => [
-                        'zh' => '',
                     ],
                     'value_type' => 'string',
                     'value' => config('app.url'),
@@ -150,13 +127,10 @@ class JulyConfigSeeder extends Seeder
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '邮箱',
-                    ],
-                    'description' => [
-                        'zh' => '',
                     ],
                     'value_type' => 'string',
                     'value' => config('mail.to.address'),
@@ -168,16 +142,31 @@ class JulyConfigSeeder extends Seeder
                 'config' => [
                     'langcode' => [
                         'interface_value' => 'zh',
-                        'content_value' => 'en',
+                        'content_value' => $clang,
                     ],
                     'label' => [
                         'zh' => '网站所有者（公司名）',
                     ],
-                    'description' => [
-                        'zh' => '',
-                    ],
                     'value_type' => 'string',
                     'value' => config('app.owner'),
+                ],
+            ],
+            [
+                'truename' => 'multi_language',
+                'is_preset' => true,
+                'config' => [
+                    'langcode' => [
+                        'interface_value' => 'zh',
+                        'content_value' => $clang,
+                    ],
+                    'label' => [
+                        'zh' => '多语言',
+                    ],
+                    'description' => [
+                        'zh' => '若启用多语言，则可以通过带语言代码的网址访问，如：/en/index.html',
+                    ],
+                    'value_type' => 'boolean',
+                    'value' => config('jc.multi_language', false),
                 ],
             ],
         ];

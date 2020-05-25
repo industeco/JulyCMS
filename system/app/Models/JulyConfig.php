@@ -109,7 +109,7 @@ class JulyConfig extends Model
     public static function getLanguageSettings($langcode = null)
     {
         $names = [
-            'languages', 'content_lang', 'site_page_lang',
+            'langcode.list', 'langcode.content_value', 'langcode.site_page', 'multi_language',
         ];
 
         return static::retrieveConfiguration($names, $langcode);

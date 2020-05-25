@@ -1,24 +1,28 @@
 <?php
 
 return [
-    'languages' => [
-        'zh' => [
-            'interface_value' => true,
-            'admin_page' => true,
-            'content_value' => false,
-            'site_page' => false,
+    'langcode' => [
+        'list' => [
+            'zh' => [
+                'interface_value' => true,
+                'admin_page' => true,
+                'content_value' => false,
+                'site_page' => false,
+            ],
+            'en' => [
+                'interface_value' => false,
+                'admin_page' => false,
+                'content_value' => true,
+                'site_page' => true,
+            ],
         ],
-        'en' => [
-            'interface_value' => false,
-            'admin_page' => false,
-            'content_value' => true,
-            'site_page' => true,
-        ],
+        'content_value' => 'en',
+        'interface_value' => 'zh',
+        'site_page' => 'en',
+        'admin_page' => 'zh',
     ],
-    'content_lang' => 'en',
-    'interface_lang' => 'zh',
-    'site_page_lang' => 'en',
-    'admin_page_lang' => 'zh',
+
+    'multi_language' => false,
 
     'editor_config' => [
         'ckeditor' => [

@@ -72,6 +72,42 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
 
                 return $class;
             }),
+
+            // 使用 tags 过滤节点集
+            new TwigFilter('tags', function($nodes, array $options = []) {
+                if ($nodes instanceof NodeCollection) {
+                    $match = array_pop($options);
+                    if (!is_int($match)) {
+                        $options[] = $match;
+                        $match = null;
+                    }
+                    if (count($options) === 1 && is_array($options[0])) {
+                        $options = $options[0];
+                    }
+                    if (!empty($options)) {
+                        return $nodes->match_tags($options, $match);
+                    }
+                }
+
+                return $nodes;
+            }, ['is_variadic' => true]),
+
+            // 按内容类型过滤节点集
+            new TwigFilter('types', function($nodes, array $options = []) {
+
+                if ($nodes instanceof NodeCollection) {
+                    if (count($options) === 1 && is_array($options[0])) {
+                        $options = $options[0];
+                    }
+                    if (!empty($options)) {
+                        return $nodes->filter(function($node) use($options) {
+                            return in_array($node->node_type, $options);
+                        })->keyBy('id');
+                    }
+                }
+
+                return $nodes;
+            }, ['is_variadic' => true]),
         ];
     }
 

@@ -16,29 +16,36 @@ class DetectLangcode
     public function handle($request, Closure $next)
     {
         if ($clang = $request->input('content_value_langcode')) {
-            config(['current_content_lang' => $clang]);
+            config(['request.langcode.content_value' => $clang]);
         }
 
         if ($ilang = $request->input('interface_value_langcode')) {
-            config(['current_interface_lang' => $ilang]);
+            config(['request.langcode.interface_value' => $ilang]);
         }
 
+        config([
+            'request.langcode.current_page' => $this->getCurrentPageLangcode($request->getRequestUri()),
+        ]);
+
+        return $next($request);
+    }
+
+    protected function getCurrentPageLangcode($uri)
+    {
         $langcode = null;
-        if (preg_match('~^\/?(\w+)(\/|$)~', $request->getRequestUri(), $matches)) {
+        if (preg_match('~^\/?(\w+)(\/|$)~', $uri, $matches)) {
             $langcode = $matches[1];
+        }
+
+        if ($langcode == 'admin') {
+            return config('jc.langcode.admin_page');
         }
 
         $langs = \langcode('all');
         if ($langcode && isset($langs[$langcode])) {
-            config(['request_langcode' => $langcode]);
-        } else {
-            if ($langcode == 'admin') {
-                config(['request_langcode' => config('jc.admin_page_lang')]);
-            } else {
-                config(['request_langcode' => config('jc.site_page_lang')]);
-            }
+            return $langcode;
         }
 
-        return $next($request);
+        return config('jc.langcode.site_page');
     }
 }

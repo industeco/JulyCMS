@@ -7,11 +7,25 @@
   :model="settings"
   label-position="top">
   <div id="main_form_left">
-    <div class="el-form-item el-form-item--small jc-embeded-field {{ $settings['languages']['description']?'has-helptext':'' }}">
+    <el-form-item prop="multi_language" size="small"
+      class="{{ $settings['multi_language']['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('multi_language')" placement="right">
+        <span>{{ $settings['multi_language']['label'] }}</span>
+      </el-tooltip>
+      <el-switch
+        v-model="settings['multi_language']"
+        active-text="启用"
+        inactive-text="不启用">
+      </el-switch>
+      @if ($settings['multi_language']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['multi_language']['description'] }}</span>
+      @endif
+    </el-form-item>
+    <div class="el-form-item el-form-item--small jc-embeded-field {{ $settings['langcode.list']['description']?'has-helptext':'' }}">
       <div class="el-form-item__content">
         <div class="jc-embeded-field__header">
-          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('languages')" placement="right">
-            <label class="el-form-item__label">{{ $settings['languages']['label'] }}</label>
+          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('langcode.list')" placement="right">
+            <label class="el-form-item__label">{{ $settings['langcode.list']['label'] }}</label>
           </el-tooltip>
           <div class="jc-embeded-field__buttons">
             <el-select v-model="selected" placeholder="--选择语言--" size="small" filterable>
@@ -33,24 +47,24 @@
         <div class="jc-table-wrapper">
           <table class="jc-table jc-dense is-draggable with-operators">
             <colgroup>
-              <col width="100px">
+              <col width="180px">
               <col width="auto">
-              <col width="150px">
-              <col width="150px">
+              <col width="auto">
+              <col width="100px">
             </colgroup>
             <thead>
               <tr>
-                <th>代码</th>
-                <th>语言</th>
-                <th>是否预设</th>
-                <th>操作</th>
+                <th>语言 | 代码</th>
+                <th>可翻译</th>
+                <th>可访问</th>
+                <th>删除</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="langcode in settings.languages" :key="langcode">
-                <td><span>@{{ langcode }}</span></td>
-                <td><span>@{{ languageList[langcode] }}</span></td>
-                <td><span>@{{ isPreset(langcode) ? '是' : '否' }}</span></td>
+              <tr v-for="(info, langcode) in settings['langcode.list']" :key="langcode">
+                <td><span>@{{ languageList[langcode]+' | '+langcode }}</span></td>
+                <td><el-switch v-model="info['content_value']" :disabled="langcode==='en'" @change="handleContentValueChange(langcode)"></el-switch></td>
+                <td><el-switch v-model="info['site_page']" :disabled="langcode==='en'" @change="handleSitePageChange(langcode)"></el-switch></td>
                 <td>
                   <div class="jc-operators">
                     <button
@@ -67,30 +81,45 @@
             </tbody>
           </table>
         </div>
-        @if ($settings['languages']['description'])
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['languages']['description'] }}</span>
+        @if ($settings['langcode.list']['description'])
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['langcode.list']['description'] }}</span>
         @endif
       </div>
     </div>
-    @foreach (array_diff_key($settings, ['languages'=>1]) as $item)
-    <el-form-item prop="{{ $item['truename'] }}" size="small"
-      class="{{ $item['description']?'has-helptext':'' }}">
-      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('{{ $item['truename'] }}')" placement="right">
-        <span>{{ $item['label'] }}</span>
+    <el-form-item size="small"
+      class="{{ $settings['langcode.content_value']['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('langcode.content_value')" placement="right">
+        <span>{{ $settings['langcode.content_value']['label'] }}</span>
       </el-tooltip>
-      <el-select v-model="settings.{{ $item['truename'] }}">
+      <el-select v-model="settings['langcode.content_value']">
         <el-option
-          v-for="langcode in settings.languages"
+          v-for="langcode in contentLangcodes"
           :key="langcode"
           :label="'['+langcode+'] '+languageList[langcode]"
           :value="langcode">
         </el-option>
       </el-select>
-      @if ($item['description'])
-      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $item['description'] }}</span>
+      @if ($settings['langcode.content_value']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['langcode.content_value']['description'] }}</span>
       @endif
     </el-form-item>
-    @endforeach
+    <el-form-item size="small"
+      class="{{ $settings['langcode.site_page']['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('langcode.site_page')" placement="right">
+        <span>{{ $settings['langcode.site_page']['label'] }}</span>
+      </el-tooltip>
+      <el-select v-model="settings['langcode.site_page']">
+        <el-option
+          v-for="langcode in siteLangcodes"
+          :key="langcode"
+          :label="'['+langcode+'] '+languageList[langcode]"
+          :value="langcode">
+        </el-option>
+      </el-select>
+      @if ($settings['langcode.site_page']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['langcode.site_page']['description'] }}</span>
+      @endif
+    </el-form-item>
     <div id="main_form_bottom" class="is-button-item">
       <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="submit">
         <div class="md-button-content">保存</div>
@@ -110,13 +139,13 @@
     data() {
       return {
         settings: {
-          languages: @json($settings['languages']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-          @foreach (array_diff_key($settings, ['languages'=>1]) as $item)
-          {{ $item['truename'] }}: "{{ $item['value'] }}",
-          @endforeach
+          'langcode.list': @json($settings['langcode.list']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          'multi_language': {{ $settings['multi_language']['value'] ? 'true' : 'false' }},
+          'langcode.content_value': "{{ $settings['langcode.content_value']['value'] }}",
+          'langcode.site_page': "{{ $settings['langcode.site_page']['value'] }}",
         },
         selected: null,
-        languageList: @json(language_list('zh'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        languageList: @json(language_list(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       };
     },
 
@@ -127,7 +156,29 @@
     computed: {
       languageSelectable() {
         const code = this.selected;
-        return code && this.languageList[code] && this.settings.languages.indexOf(code) < 0;
+        return code && this.languageList[code] && !this.settings['langcode.list'][code];
+      },
+
+      contentLangcodes() {
+        const list = this.settings['langcode.list'];
+        const langcodes = [];
+        for (const key in list) {
+          if (list[key].content_value) {
+            langcodes.push(key);
+          }
+        }
+        return langcodes;
+      },
+
+      siteLangcodes() {
+        const list = this.settings['langcode.list'];
+        const langcodes = [];
+        for (const key in list) {
+          if (list[key].site_page) {
+            langcodes.push(key);
+          }
+        }
+        return langcodes;
       },
     },
 
@@ -147,24 +198,59 @@
           return;
         }
         const code = this.selected;
-        const index = this.settings.languages.indexOf(code);
-        if (index < 0) {
-          this.settings.languages.push(code)
-        } else {
+        const index = this.settings['langcode.list'][code];
+        if (this.settings['langcode.list'][code]) {
           this.$message.warning('已存在');
+        } else {
+          this.settings['langcode.list'][code] = {
+            content_value: true,
+            site_page: true,
+            interface_value: false,
+            admin_page: false,
+          };
         }
         this.selected = null;
       },
 
       removeLanguage(langcode) {
-        const index = this.settings.languages.indexOf(langcode);
-        if (index >= 0) {
-          this.settings.languages.splice(index, 1);
+        if (this.settings['langcode.list'][langcode]) {
+          const list = clone(this.settings['langcode.list']);
+          delete list[langcode];
+          this.$set(this.settings, 'langcode.list', list);
+          // this.settings['langcode.list'].splice(index, 1);
         }
 
-        for (const key in this.settings) {
-          this.settings[key] === langcode;
+        this.resetDefaultLangcode('langcode.content_value', langcode);
+        this.resetDefaultLangcode('langcode.site_page', langcode);
+      },
+
+      resetDefaultLangcode(key, langcode) {
+        if (this.settings[key] === langcode) {
           this.settings[key] = this.initial_data[key];
+        }
+      },
+
+      handleContentValueChange(langcode) {
+        const status = this.settings['langcode.list'][langcode];
+        if (status['site_page'] && !status['content_value']) {
+          status['site_page'] = false;
+        }
+
+        if (!status['site_page']) {
+          this.resetDefaultLangcode('langcode.site_page', langcode);
+        }
+        if (!status['content_value']) {
+          this.resetDefaultLangcode('langcode.content_value', langcode);
+        }
+      },
+
+      handleSitePageChange(langcode) {
+        const status = this.settings['langcode.list'][langcode];
+        if (status['site_page'] && !status['content_value']) {
+          status['content_value'] = true;
+        }
+        if (!status['site_page']) {
+          this.resetDefaultLangcode('langcode.site_page', langcode);
         }
       },
 

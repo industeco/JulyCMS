@@ -187,8 +187,8 @@ if (! function_exists('langcode')) {
             case 'all':
             case 'list':
                 $langs = [];
-                $list = language_list('zh');
-                $langcodes = config('jc.languages');
+                $list = language_list();
+                $langcodes = array_keys(config('jc.langcode.list'));
                 foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }
@@ -196,30 +196,37 @@ if (! function_exists('langcode')) {
 
             // 界面语言
             case 'interface_value':
-                return config('current_interface_lang') ?: config('jc.interface_lang');
+                return config('request.langcode.interface_value') ?: config('jc.langcode.interface_value');
 
+            // 默认界面语言
             case 'interface_value.default':
-                return config('jc.interface_lang');
+                return config('jc.langcode.interface_value');
 
             // 内容语言
             case 'content_value':
-                return config('current_content_lang') ?: config('jc.content_lang');
+                return config('request.langcode.content_value') ?: config('jc.langcode.content_value');
 
+            // 默认内容语言
             case 'content_value.default':
-                return config('jc.content_lang');
+                return config('jc.langcode.content_value');
 
             // 后台页面语言
             case 'admin_page':
-                return config('jc.admin_page_lang');
+                return config('jc.langcode.admin_page');
 
             // 站点页面语言
             case 'site_page':
-                return config('jc.site_page_lang');
+                return config('jc.langcode.site_page');
 
+            // 当前请求语言
             case 'current_page':
-            case 'request':
-                return config('request_langcode');
+                return config('request.langcode.current_page');
 
+            // 请求语言数组
+            case 'request':
+                return config('request.langcode');
+
+            // Laravel 设置的默认语言
             default:
                 return config('fallback_lacale');
         }
@@ -641,8 +648,10 @@ if (! function_exists('str_diff')) {
 }
 
 if (! function_exists('language_list')) {
-    function language_list($langcode)
+    function language_list($langcode = null)
     {
+        $langcode = $langcode ?: langcode('admin_page');
+
         $list = config('language_list.'.$langcode, []);
         if ($list) {
             return $list;

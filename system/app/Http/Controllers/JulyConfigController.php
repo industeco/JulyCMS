@@ -56,9 +56,13 @@ class JulyConfigController extends Controller
      */
     public function updateLanguageSettings(Request $request)
     {
-        // Log::info($request->all());
+        $data = $request->all();
+        $changed = [];
+        foreach ($request->input('_changed') as $key) {
+            $changed[$key] = $data[$key];
+        }
+        // Log::info($changed);
 
-        $changed = $request->only($request->input('_changed'));
         JulyConfig::updateConfiguration($changed);
 
         return response('');

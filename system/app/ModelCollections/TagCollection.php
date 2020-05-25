@@ -14,21 +14,31 @@ class TagCollection extends ModelCollection
 
     protected $matches = 1;
 
-    public function match($matches)
+    public function match($matches = null)
     {
-        $this->matches = intval($matches) ?: 1;
+        switch ($matches) {
+            case 'any':
+                $this->matches = 1;
+                break;
+            case 'all':
+                $this->matches = $this->count();
+                break;
+
+            default:
+                $this->matches = intval($matches) ?: 1;
+                break;
+        }
+        return $this;
+    }
+
+    public function match_all()
+    {
+        $this->matches = $this->count();
 
         return $this;
     }
 
-    public function matchAll()
-    {
-        $this->matches = count($this->items);
-
-        return $this;
-    }
-
-    public function matchAny()
+    public function match_any()
     {
         $this->matches = 1;
 
