@@ -23,7 +23,9 @@
         @row-click="handleRowClick">
         <el-table-column label="序号" type="index" width="80"></el-table-column>
         <el-table-column label="标签" prop="tag" width="auto" sortable></el-table-column>
+        @if (config('jc.multi_language'))
         <el-table-column label="标签原文" prop="original_tag" width="auto" sortable></el-table-column>
+        @endif
         <el-table-column label="页面可见" prop="is_show" width="150" sortable>
           <template slot-scope="scope">
             <el-switch v-model="scope.row.is_show" @click.stop="toggleTagShow(scope.row)"></el-switch>
@@ -38,10 +40,12 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
+              @if (config('jc.multi_language'))
               <button title="变更原文" class="md-button md-fab md-dense md-primary md-theme-default"
                 @click.stop="changeOriginal(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </button>
+              @endif
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click.stop="deleteTag(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
@@ -56,6 +60,7 @@
         <div class="md-button-content">保存更改</div>
       </button>
     </div>
+    @if (config('jc.multi_language'))
     <el-dialog
       ref="change_tag_original"
       title="变更原文"
@@ -86,6 +91,7 @@
         </button>
       </span>
     </el-dialog>
+    @endif
     <el-dialog
       ref="create_tag"
       title="新建标签"
@@ -117,6 +123,7 @@
       </span>
     </el-dialog>
     <jc-contextmenu ref="contextmenu">
+      @if (config('jc.multi_language'))
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" @click.stop="changeOriginal(currentTag)">
           <div class="md-list-item-content md-ripple">
@@ -125,6 +132,7 @@
           </div>
         </div>
       </li>
+      @endif
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" @click.stop="deleteTag(currentTag)">
           <div class="md-list-item-content md-ripple">

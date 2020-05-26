@@ -76,7 +76,7 @@ class NodeFieldSeeder extends Seeder
                         'zh' => 'twig 模板，用于生成页面',
                     ],
                     'placeholder' => [
-                        'en' => 'template-name.twig',
+                        'en' => '/home.twig',
                     ],
                 ],
             ],

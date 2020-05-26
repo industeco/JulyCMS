@@ -16,14 +16,14 @@ class JulyConfig extends Model
      *
      * @var string
      */
-    protected $table = 'july_configs';
+    protected $table = 'configs';
 
     /**
      * 主键
      *
      * @var string
      */
-    protected $primaryKey = 'truename';
+    protected $primaryKey = 'name';
 
     /**
      * 主键“类型”。
@@ -45,9 +45,8 @@ class JulyConfig extends Model
      * @var array
      */
     protected $fillable = [
-        'truename',
-        'is_preset',
-        'config',
+        'name',
+        'data',
     ];
 
     /**
@@ -56,8 +55,7 @@ class JulyConfig extends Model
      * @var array
      */
     protected $casts = [
-        'is_preset' => 'boolean',
-        'config' => Json::class,
+        'data' => Json::class,
     ];
 
     public static function primaryKeyName()
@@ -109,7 +107,7 @@ class JulyConfig extends Model
     public static function getLanguageSettings($langcode = null)
     {
         $names = [
-            'langcode.list', 'langcode.content_value', 'langcode.site_page', 'multi_language',
+            'langcode.accessible', 'langcode.content_value', 'langcode.site_page', 'multi_language',
         ];
 
         return static::retrieveConfiguration($names, $langcode);
@@ -126,20 +124,20 @@ class JulyConfig extends Model
     {
         $configuration = [];
         $fresh = [];
-        foreach ($names as $truename) {
-            if ($entry = static::cacheGet($truename)) {
-                $configuration[$truename] = static::mixConfig($entry['value'], $langcode);
+        foreach ($names as $name) {
+            if ($entry = static::cacheGet($name)) {
+                $configuration[$name] = static::mixConfig($entry['value'], $langcode);
             } else {
-                $configuration[$truename] = null;
-                $fresh[] = $truename;
+                $configuration[$name] = null;
+                $fresh[] = $name;
             }
         }
 
         if ($fresh) {
             foreach (static::findMany($fresh) as $entry) {
                 $entry = $entry->toArray();
-                static::cachePut($entry['truename'], $entry);
-                $configuration[$entry['truename']] = static::mixConfig($entry, $langcode);
+                static::cachePut($entry['name'], $entry);
+                $configuration[$entry['name']] = static::mixConfig($entry, $langcode);
             }
         }
 
@@ -148,8 +146,8 @@ class JulyConfig extends Model
 
     public function getValue($langcode = null)
     {
-        $config = $this->config;
-        return cast_value($config['value'], $config['value_type']);
+        $data = $this->data;
+        return cast_value($data['value'], $data['value_type']);
     }
 
     protected static function mixConfig($entry, $langcode = null)
@@ -157,16 +155,16 @@ class JulyConfig extends Model
         $ilang = Arr::get($entry, 'langcode.interface_value') ?: langcode('interface_value');
         $langcode = $langcode ?: $ilang;
 
-        $config = $entry['config'];
-        unset($entry['config']);
+        $data = $entry['data'];
+        unset($entry['data']);
         foreach (['label', 'description'] as $attribute) {
-            if ($value = $config[$attribute] ?? null) {
+            if ($value = $data[$attribute] ?? null) {
                 $entry[$attribute] = $value[$langcode] ?? $value[$ilang] ?? null;
             } else {
                 $entry[$attribute] = null;
             }
         }
-        $entry['value'] = cast_value($config['value'], $config['value_type']);
+        $entry['value'] = cast_value($data['value'], $data['value_type']);
 
         return $entry;
     }
@@ -174,9 +172,9 @@ class JulyConfig extends Model
     public static function updateConfiguration(array $configuration)
     {
         foreach (static::findMany(array_keys($configuration)) as $entry) {
-            static::cacheClear($entry->truename);
-            $entry->config = array_merge($entry->config, [
-                'value' => $configuration[$entry->truename],
+            static::cacheClear($entry->name);
+            $entry->data = array_merge($entry->data, [
+                'value' => cast_value($configuration[$entry->name], $entry->data['value_type']),
             ]);
             $entry->save();
         }

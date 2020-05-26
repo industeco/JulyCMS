@@ -27,9 +27,16 @@ class CommandController extends Controller
         // 清除缓存
         Artisan::call('cache:clear');
 
-        // 清除生成的静态页面
-        Storage::disk('storage')->deleteDirectory('pages');
-        Storage::disk('storage')->makeDirectory('pages');
+        // 清空 storage/pages 目录
+        $disk = Storage::disk('storage');
+        foreach ($disk->files('pages') as $file) {
+            if ($file !== 'pages/.gitignore') {
+                $disk->delete($file);
+            }
+        }
+        foreach ($disk->directories('pages') as $dir) {
+            $disk->deleteDirectory($dir);
+        }
 
         return true;
     }

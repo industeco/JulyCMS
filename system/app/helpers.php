@@ -144,21 +144,6 @@ if (! function_exists('real_env')) {
         $pregDevUrl = '/^(127\.0\.0\.1|localhost)$|\.(test|dev)$/i';
 
         return preg_match($pregDevUrl, $_SERVER['HTTP_HOST'] ?? '') ? 'local' : 'production';
-
-        // $map = ['127.0.0.1' => 'localhost'];
-
-        // $host = strtolower($_SERVER['HTTP_HOST'] ?? '');
-        // $host = $map[$host] ?? $host;
-
-        // $env_host = strtolower(preg_replace('~^https?://~i', '', env('APP_URL', 'http://localhost')));
-        // $env_host = $map[$env_host] ?? $env_host;
-
-        // $pregDevUrl = '/^(127\.0\.0\.1|localhost)$|\.(test|dev)$/i';
-        // if (!preg_match($pregDevUrl, $env_host) && $host === $env_host) {
-        //     return 'production';
-        // }
-
-        // return 'local';
     }
 }
 
@@ -188,7 +173,7 @@ if (! function_exists('langcode')) {
             case 'list':
                 $langs = [];
                 $list = language_list();
-                $langcodes = array_keys(config('jc.langcode.list'));
+                $langcodes = array_keys(config('jc.langcode.accessible'));
                 foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }

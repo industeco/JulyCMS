@@ -16,15 +16,12 @@ class BatchCreateJulyTables extends Migration
     public function up()
     {
         // 配置
-        Schema::create('july_configs', function (Blueprint $table) {
+        Schema::create('configs', function (Blueprint $table) {
             // 字段真名
-            $table->char('truename', 32)->primary();
-
-            // 是否预设
-            $table->boolean('is_preset')->default(0);
+            $table->char('name', 100)->primary();
 
             // 值
-            $table->binary('config');
+            $table->binary('data');
 
             // 时间戳
             $table->timestamps();

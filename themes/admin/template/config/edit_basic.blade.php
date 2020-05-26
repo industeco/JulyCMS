@@ -42,7 +42,7 @@
       return {
         settings: {
           @foreach ($settings as $item)
-          {{ $item['truename'] }}: "{{ $item['value'] }}",
+          "{{ $item['name'] }}": "{{ $item['value'] }}",
           @endforeach
         },
         rules: {

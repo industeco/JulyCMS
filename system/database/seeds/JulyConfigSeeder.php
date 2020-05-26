@@ -14,12 +14,11 @@ class JulyConfigSeeder extends Seeder
      */
     public function run()
     {
-        $clang = langcode('content_value.default');
+        $clang = config('jc.langcode.content_value');
         $configuration = [
             [
-                'truename' => 'langcode.list',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'langcode.accessible',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -31,13 +30,12 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '语言主要用于内容翻译，后台界面暂不支持多语言（始终为中文）。',
                     ],
                     'value_type' => 'array',
-                    'value' => config('jc.langcode.list'),
+                    'value' => config('jc.langcode.accessible'),
                 ],
             ],
             [
-                'truename' => 'langcode.content_value',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'langcode.content_value',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -53,9 +51,8 @@ class JulyConfigSeeder extends Seeder
                 ],
             ],
             [
-                'truename' => 'langcode.interface_value',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'langcode.interface_value',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -67,13 +64,12 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '添加界面值时默认使用的语言',
                     ],
                     'value_type' => 'string',
-                    'value' => langcode('interface_value.default'),
+                    'value' => config('jc.langcode.interface_value'),
                 ],
             ],
             [
-                'truename' => 'langcode.site_page',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'langcode.site_page',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -85,13 +81,12 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '网站页面默认使用哪种语言呈现',
                     ],
                     'value_type' => 'string',
-                    'value' => langcode('site_page'),
+                    'value' => config('jc.langcode.site_page'),
                 ],
             ],
             [
-                'truename' => 'langcode.admin_page',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'langcode.admin_page',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -103,13 +98,12 @@ class JulyConfigSeeder extends Seeder
                         'zh' => '后台界面默认使用哪种语言呈现',
                     ],
                     'value_type' => 'string',
-                    'value' => langcode('admin_page'),
+                    'value' => config('jc.langcode.admin_page'),
                 ],
             ],
             [
-                'truename' => 'url',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'url',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -122,9 +116,8 @@ class JulyConfigSeeder extends Seeder
                 ],
             ],
             [
-                'truename' => 'email',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'email',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -137,9 +130,8 @@ class JulyConfigSeeder extends Seeder
                 ],
             ],
             [
-                'truename' => 'owner',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'owner',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -152,9 +144,8 @@ class JulyConfigSeeder extends Seeder
                 ],
             ],
             [
-                'truename' => 'multi_language',
-                'is_preset' => true,
-                'config' => [
+                'name' => 'multi_language',
+                'data' => [
                     'langcode' => [
                         'interface_value' => 'zh',
                         'content_value' => $clang,
@@ -173,8 +164,8 @@ class JulyConfigSeeder extends Seeder
 
         DB::transaction(function() use($configuration) {
             foreach ($configuration as $entry) {
-                $entry['config'] = json_encode($entry['config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-                DB::table('july_configs')->insert($entry);
+                $entry['data'] = json_encode($entry['data'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+                DB::table('configs')->insert($entry);
             }
         });
     }

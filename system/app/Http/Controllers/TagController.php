@@ -16,8 +16,13 @@ class TagController extends Controller
      */
     public function index()
     {
+        if (config('jc.multi_language')) {
+            $tags = Tag::all();
+        } else {
+            $tags = Tag::where('langcode', langcode('site_page'))->get();
+        }
         return view_with_langcode('admin::tags.index', [
-            'tags' => Tag::all()->keyBy('tag')->toArray(),
+            'tags' => $tags->keyBy('tag')->toArray(),
         ]);
     }
 

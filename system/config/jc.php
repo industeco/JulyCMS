@@ -2,7 +2,7 @@
 
 return [
     'langcode' => [
-        'list' => [
+        'accessible' => [
             'zh' => [
                 'interface_value' => true,
                 'admin_page' => true,
@@ -16,10 +16,10 @@ return [
                 'site_page' => true,
             ],
         ],
-        'content_value' => 'en',
         'interface_value' => 'zh',
-        'site_page' => 'en',
         'admin_page' => 'zh',
+        'content_value' => 'en',
+        'site_page' => 'en',
     ],
 
     'multi_language' => false,
@@ -64,7 +64,7 @@ return [
         ],
 
         'pattern' => [
-            'url' => '/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/',
+            'url' => '/^(\\/[a-z0-9\\-_]+)+\\.html$/',
             'twig' => '/^(\\/[a-z0-9\\-_]+)+(\\.html)?\\.twig$/',
             'email' => '\'email\'',
         ],

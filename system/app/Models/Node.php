@@ -327,16 +327,31 @@ class Node extends JulyModel
         return null;
     }
 
+    /**
+     * 根据指定的 url 读取内容
+     *
+     * @param string $url
+     * @param string|null $langcode
+     * @return string|null
+     */
     public static function retrieveHtml($url, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('current_page');
-        if (!content_accessible($langcode)) {
-            return null;
-        }
-
         $url = '/'.ltrim($url, '/');
-        if (Str::startsWith($url, '/'.$langcode.'/')) {
-            $url = substr($url, strlen($langcode)+1);
+        if (config('jc.multi_language')) {
+            $langcode = $langcode ?: langcode('current_page');
+            if (!config('jc.langcode.accessible.'.$langcode.'.site_page')) {
+                return null;
+            }
+
+            if (Str::startsWith($url, '/'.$langcode.'/')) {
+                $url = substr($url, strlen('/'.$langcode));
+            }
+        } else {
+            if ($langcode && $langcode !== langcode('site_page')) {
+                return null;
+            } else {
+                $langcode = langcode('site_page');
+            }
         }
         $file = 'pages/'.$langcode.$url;
 
