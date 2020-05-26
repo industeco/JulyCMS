@@ -267,14 +267,14 @@ class Node extends JulyModel
     public function render(Twig $twig = null, $langcode = null)
     {
         $twig = $twig ?? $twig = twig('default/template', true);
-        $langcode = $langcode ?: langcode('site_page');
+        $langcode = $langcode ?: $this->langcode;
 
         config()->set('current_render_langcode', $langcode);
 
         // 获取节点值
         $node = $this->getData($langcode);
 
-        if ($tpl = $this->template()) {
+        if ($tpl = $this->template($langcode)) {
 
             $twig->addGlobal('_node', $this);
             $twig->addGlobal('_path', $this->get_path());
@@ -305,9 +305,9 @@ class Node extends JulyModel
     /**
      * 获取可能的模板
      */
-    public function template()
+    public function template($langcode = null)
     {
-        foreach ($this->suggestedTemplates() as $tpl) {
+        foreach ($this->suggestedTemplates($langcode) as $tpl) {
             if (is_file(twig_path($tpl))) {
                 return $tpl;
             }
@@ -315,9 +315,9 @@ class Node extends JulyModel
         return null;
     }
 
-    public function suggestedTemplates()
+    public function suggestedTemplates($langcode = null)
     {
-        $node = $this->getData();
+        $node = $this->getData($langcode);
         if (!$node['url']) return [];
 
         $templates = [];
@@ -325,8 +325,19 @@ class Node extends JulyModel
             $templates[] = ltrim($node['template'], '/');
         }
 
-        // 针对该节点的模板
-        $templates[] = 'node--' . str_replace('/', '--', ltrim($node['url'], '/')) . '.twig';
+        // 按 url
+        $url = str_replace('/', '--', trim($node['url'], '\\/'));
+        $templates[] = 'url--'.($langcode ? $langcode.'-' : '').$url.'.twig';
+
+        // 按 id
+        if ($langcode) {
+            $templates[] = 'node--'.$langcode.'-'.$node['id'].'.twig';
+        }
+        $templates[] = 'node--'.$node['id'].'.twig';
+
+        if ($parent = Catalog::default()->tree()->parent($this->id)) {
+            $templates[] = 'under--' . $parent[0] . '.twig';
+        }
 
         // 针对该节点类型的模板
         $templates[] = 'type--' . $node['node_type'] . '.twig';
