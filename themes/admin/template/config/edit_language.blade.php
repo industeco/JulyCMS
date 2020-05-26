@@ -21,12 +21,12 @@
       <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['multi_language']['description'] }}</span>
       @endif
     </el-form-item>
-    <div class="el-form-item el-form-item--small jc-embeded-field {{ $settings['langcode.accessible']['description']?'has-helptext':'' }}"
+    <div class="el-form-item el-form-item--small jc-embeded-field {{ $settings['langcode.permissions']['description']?'has-helptext':'' }}"
       v-if="settings['multi_language']">
       <div class="el-form-item__content">
         <div class="jc-embeded-field__header">
-          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('langcode.accessible')" placement="right">
-            <label class="el-form-item__label">{{ $settings['langcode.accessible']['label'] }}</label>
+          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('langcode.permissions')" placement="right">
+            <label class="el-form-item__label">{{ $settings['langcode.permissions']['label'] }}</label>
           </el-tooltip>
           <div class="jc-embeded-field__buttons">
             <el-select v-model="selected" placeholder="--选择语言--" size="small" filterable>
@@ -62,7 +62,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(info, langcode) in settings['langcode.accessible']" :key="langcode">
+              <tr v-for="(info, langcode) in settings['langcode.permissions']" :key="langcode">
                 <td><span>@{{ languageList[langcode]+' | '+langcode }}</span></td>
                 <td><el-switch v-model="info['content_value']" :disabled="langcode==='en'" @change="handleContentValueChange(langcode)"></el-switch></td>
                 <td><el-switch v-model="info['site_page']" :disabled="langcode==='en'" @change="handleSitePageChange(langcode)"></el-switch></td>
@@ -82,8 +82,8 @@
             </tbody>
           </table>
         </div>
-        @if ($settings['langcode.accessible']['description'])
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['langcode.accessible']['description'] }}</span>
+        @if ($settings['langcode.permissions']['description'])
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings['langcode.permissions']['description'] }}</span>
         @endif
       </div>
     </div>
@@ -142,7 +142,7 @@
     data() {
       return {
         settings: {
-          'langcode.accessible': @json($settings['langcode.accessible']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          'langcode.permissions': @json($settings['langcode.permissions']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
           'multi_language': {{ $settings['multi_language']['value'] ? 'true' : 'false' }},
           'langcode.content_value': "{{ $settings['langcode.content_value']['value'] }}",
           'langcode.site_page': "{{ $settings['langcode.site_page']['value'] }}",
@@ -159,11 +159,11 @@
     computed: {
       languageSelectable() {
         const code = this.selected;
-        return code && this.languageList[code] && !this.settings['langcode.accessible'][code];
+        return code && this.languageList[code] && !this.settings['langcode.permissions'][code];
       },
 
       contentLangcodes() {
-        const list = this.settings['langcode.accessible'];
+        const list = this.settings['langcode.permissions'];
         const langcodes = [];
         for (const key in list) {
           if (list[key].content_value) {
@@ -174,7 +174,7 @@
       },
 
       siteLangcodes() {
-        const list = this.settings['langcode.accessible'];
+        const list = this.settings['langcode.permissions'];
         const langcodes = [];
         for (const key in list) {
           if (list[key].site_page) {
@@ -201,11 +201,11 @@
           return;
         }
         const code = this.selected;
-        const index = this.settings['langcode.accessible'][code];
-        if (this.settings['langcode.accessible'][code]) {
+        const index = this.settings['langcode.permissions'][code];
+        if (this.settings['langcode.permissions'][code]) {
           this.$message.warning('已存在');
         } else {
-          this.settings['langcode.accessible'][code] = {
+          this.settings['langcode.permissions'][code] = {
             content_value: true,
             site_page: true,
             interface_value: false,
@@ -216,11 +216,11 @@
       },
 
       removeLanguage(langcode) {
-        if (this.settings['langcode.accessible'][langcode]) {
-          const list = clone(this.settings['langcode.accessible']);
+        if (this.settings['langcode.permissions'][langcode]) {
+          const list = clone(this.settings['langcode.permissions']);
           delete list[langcode];
-          this.$set(this.settings, 'langcode.accessible', list);
-          // this.settings['langcode.accessible'].splice(index, 1);
+          this.$set(this.settings, 'langcode.permissions', list);
+          // this.settings['langcode.permissions'].splice(index, 1);
         }
 
         this.resetDefaultLangcode('langcode.content_value', langcode);
@@ -234,7 +234,7 @@
       },
 
       handleContentValueChange(langcode) {
-        const status = this.settings['langcode.accessible'][langcode];
+        const status = this.settings['langcode.permissions'][langcode];
         if (status['site_page'] && !status['content_value']) {
           status['site_page'] = false;
         }
@@ -248,7 +248,7 @@
       },
 
       handleSitePageChange(langcode) {
-        const status = this.settings['langcode.accessible'][langcode];
+        const status = this.settings['langcode.permissions'][langcode];
         if (status['site_page'] && !status['content_value']) {
           status['content_value'] = true;
         }

@@ -4,7 +4,7 @@
   </el-tooltip>
   <el-input
     v-model="node.{{ $truename }}"
-    @if ($length > 100 || $length === 0)
+    @if ($length > 200 || $length === 0)
     type="textarea"
     rows="3"
     @else

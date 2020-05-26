@@ -23,7 +23,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 200,
                     'required' => true,
                     'index_weight' => 10,
                     'label' => [
@@ -47,7 +47,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 200,
                     'pattern' => 'url',
                     'label' => [
                         'zh' => '网址',
@@ -67,7 +67,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 200,
                     'pattern' => 'twig',
                     'label' => [
                         'zh' => '模板',
@@ -90,7 +90,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 255,
                     'label' => [
                         'zh' => 'META 标题',
                     ],
@@ -106,7 +106,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 160,
+                    'length' => 255,
                     'label' => [
                         'zh' => 'META 描述',
                     ],
@@ -122,7 +122,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 160,
+                    'length' => 255,
                     'label' => [
                         'zh' => 'META 关键字',
                     ],
@@ -138,7 +138,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 255,
                     'label' => [
                         'zh' => '权威页面',
                     ],
@@ -166,7 +166,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 200,
                     'index_weight' => 10,
                     'label' => [
                         'zh' => 'H1',
@@ -197,7 +197,7 @@ class NodeFieldSeeder extends Seeder
                         'interface_value' => 'zh',
                         'content_value' => 'en',
                     ],
-                    'length' => 100,
+                    'length' => 200,
                     'label' => [
                         'zh' => '主图 Alt',
                     ],

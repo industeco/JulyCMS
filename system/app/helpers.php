@@ -7,6 +7,8 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 if (! function_exists('auth')) {
     /**
@@ -173,7 +175,7 @@ if (! function_exists('langcode')) {
             case 'list':
                 $langs = [];
                 $list = language_list();
-                $langcodes = array_keys(config('jc.langcode.accessible'));
+                $langcodes = array_keys(config('jc.langcode.permissions'));
                 foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }
@@ -218,14 +220,42 @@ if (! function_exists('langcode')) {
     }
 }
 
-if (! function_exists('content_accessible')) {
-    function content_accessible($langcode)
+if (! function_exists('available_langcodes')) {
+    /**
+     * 获取可用语言列表
+     *
+     * @param string $type: 'site_page', 'content_value', 'admin_page', 'interface_value'
+     * @return array
+     */
+    function available_langcodes($type = 'site_page')
     {
-        if ($langcode === langcode('site_page')) {
-            return true;
+        if (!$type) {
+            return [];
         }
 
-        return config('jc.multi_language') && config('jc.langcode.'.$langcode.'.site_page');
+        $langcodes = [];
+        foreach (config('jc.langcode.permissions') as $key => $value) {
+            if ($value[$type] ?? false) {
+                $langcodes[] = $key;
+            }
+        }
+
+        return $langcodes;
+    }
+}
+
+if (! function_exists('format_url')) {
+    function format_request_uri($url)
+    {
+        $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
+        if (config('jc.multi_langcode')) {
+            $langcode = langcode('current_page');
+            if (strpos($url, $langcode.'/') === 0) {
+                $url = substr($url, strlen($langcode.'/'));
+            }
+        }
+
+        return $url;
     }
 }
 
@@ -457,7 +487,6 @@ if (! function_exists('last_modified')) {
     }
 }
 
-
 if (! function_exists('user_agent')) {
     function user_agent($ua = null)
     {
@@ -531,7 +560,7 @@ if (! function_exists('build_google_sitemap')) {
     /**
      * 生成谷歌站点地图（xml 文件）
      */
-    function build_google_sitemap(array $urls = null)
+    function build_google_sitemap($langcode)
     {
         // 首页地址
         $home = rtrim(config('app.url'), '\\/');
@@ -549,44 +578,34 @@ if (! function_exists('build_google_sitemap')) {
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>';
 
-        $langcode = config('jc.site_page_lang');
-
-        if (! $urls) {
-            $urls = [];
-            foreach (Catalog::default()->get_nodes() as $node) {
-                $node = $node->retrieveValues($langcode);
-                if ($url = $node['url'] ?? null) {
-                    $urls[$url] = true;
-                }
-            }
-            $urls = array_keys($urls);
-        }
+        $urls = DB::table('node__url')
+                ->where('langcode', $langcode)
+                ->get()
+                ->pluck('url_value', 'node_id')
+                ->all();
 
         // 生成 xml 内容
-        foreach ($urls as $url) {
-            if ($url === '/404.html') continue;
+        foreach (Catalog::default()->get_nodes() as $node) {
+            $url = $urls[$node->id] ?? null;
+            if (!$url || $url === '/404.html') continue;
 
-            $xml .= '<url><loc>'.$home.$url.'</loc>';
-
-            $content = Node::retrieveHtml($url, $langcode);
-            if (empty($content)) {
-                $xml .= '</url>';
+            $html = $node->getHtml($langcode);
+            if (is_null($html)) {
                 continue;
             }
+            $xml .= '<url><loc>'.$home.$url.'</loc>';
 
-            foreach (extract_image_links($content) as $src) {
+            foreach (extract_image_links($html) as $src) {
                 $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>";
             }
-
             $xml .= '</url>';
 
-            $pdfList = array_merge($pdfList, extract_pdf_links($content));
+            $pdfList = array_merge($pdfList, extract_pdf_links($html));
         }
 
         foreach(array_unique($pdfList) as $pdf) {
             $xml .= '<url><loc>'.$home.$pdf.'</loc></url>';
         }
-
         $xml .= '</urlset>';
 
         return $xml;

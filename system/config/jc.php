@@ -2,7 +2,7 @@
 
 return [
     'langcode' => [
-        'accessible' => [
+        'permissions' => [
             'zh' => [
                 'interface_value' => true,
                 'admin_page' => true,

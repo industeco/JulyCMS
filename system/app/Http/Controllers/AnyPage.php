@@ -10,22 +10,35 @@ use Illuminate\Support\Str;
 class AnyPage extends Controller
 {
     /**
-     * 返回首页
+     * 返回任意页面
      *
      * @return View
      */
     public function __invoke($url = '')
     {
-        $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
+        $langcode = langcode('current_page');
+        if (!config('jc.multi_language') && $langcode !== langcode('site_page')) {
+            abort(404);
+        }
 
-        if (basename($url) === 'sitemap.xml') {
-            $file = 'sitemap.xml';
-            $disk = Storage::disk('public');
+        if (!config('jc.langcode.permissions.'.$langcode.'.site_page')) {
+            abort(404);
+        }
+
+        $url = format_request_uri($url);
+
+        if ($url === '404.html') {
+            abort(404);
+        }
+
+        if ($url === 'sitemap.xml') {
+            $disk = Storage::disk('storage');
+            $file = 'pages/'.$langcode.'/sitemap.xml';
             if ($disk->exists($file)) {
                 $content = $disk->get($file);
             } else {
-                $content = build_google_sitemap();
-                $disk->put('sitemap.xml', $content);
+                $content = build_google_sitemap($langcode);
+                $disk->put($file, $content);
             }
             return $content;
         }
@@ -34,8 +47,10 @@ class AnyPage extends Controller
             $url .= '/index.html';
         }
 
-        if ($html = Node::retrieveHtml($url)) {
-            return $html;
+        if ($node = Node::findByUrl($url, $langcode)) {
+            if ($html = $node->getHtml($langcode)) {
+                return $html;
+            }
         }
 
         abort(404);

@@ -4,8 +4,8 @@
   </el-tooltip>
   <el-input
     v-model="node.{{ $truename }}"
-    native-size="100"
-    maxlength="100"
+    native-size="200"
+    maxlength="200"
     show-word-limit></el-input>
   @if ($help)
   <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $help }}</span>

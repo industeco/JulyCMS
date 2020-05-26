@@ -50,7 +50,7 @@ class NodeCollection extends ModelCollection
     public function get_children($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        CatalogCollection::find($catalog)->get_children(...$ids);
+        return CatalogCollection::find($catalog)->get_children(...$ids);
     }
 
     public function get_under($catalog = null)
@@ -67,7 +67,7 @@ class NodeCollection extends ModelCollection
     public function get_descendants($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        CatalogCollection::find($catalog)->get_descendants(...$ids);
+        return CatalogCollection::find($catalog)->get_descendants(...$ids);
     }
 
     public function get_below($catalog = null)
@@ -84,7 +84,7 @@ class NodeCollection extends ModelCollection
     public function get_parent($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        CatalogCollection::find($catalog)->get_parent(...$ids);
+        return CatalogCollection::find($catalog)->get_parent(...$ids);
     }
 
     public function get_over($catalog = null)
@@ -101,7 +101,7 @@ class NodeCollection extends ModelCollection
     public function get_ancestors($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        CatalogCollection::find($catalog)->get_ancestors(...$ids);
+        return CatalogCollection::find($catalog)->get_ancestors(...$ids);
     }
 
     public function get_above($catalog = null)
@@ -118,7 +118,7 @@ class NodeCollection extends ModelCollection
     public function get_siblings($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        CatalogCollection::find($catalog)->get_siblings(...$ids);
+        return CatalogCollection::find($catalog)->get_siblings(...$ids);
     }
 
     public function get_around($catalog = null)

@@ -93,8 +93,15 @@ class CommandController extends Controller
      */
     public function buildGoogleSitemap()
     {
-        $sitemap = build_google_sitemap();
-        Storage::disk('public')->put('sitemap.xml', $sitemap);
+        if (config('jc.multi_language')) {
+            $langcodes = available_langcodes('site_page');
+        } else {
+            $langcodes = [langcode('site_page')];
+        }
+        foreach ($langcodes as $langcode) {
+            $sitemap = build_google_sitemap($langcode);
+            Storage::disk('storage')->put('pages/'.$langcode.'/sitemap.xml', $sitemap);
+        }
 
         return true;
     }
@@ -152,9 +159,16 @@ class CommandController extends Controller
 
     public function findInvalidLinks()
     {
+        if (config('jc.multi_language')) {
+            $langcodes = available_langcodes('site_page');
+        } else {
+            $langcodes = [langcode('site_page')];
+        }
         $invalidLinks = [];
         foreach (Node::fetchAll() as $node) {
-            $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks());
+            foreach ($langcodes as $langcode) {
+                $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks($langcode));
+            }
         }
 
         return view_with_langcode('admin::invalid_links', [

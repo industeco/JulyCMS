@@ -280,30 +280,29 @@ class NodeField extends JulyModel implements HasModelConfig
      */
     public function getValue(Node $node, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: $node->langcode;
 
         $cacheid = $this->truename.'/'.$node->id;
         if ($value = static::cacheGet($cacheid, $langcode)) {
             $value = $value['value'];
         } else {
             $value = null;
-            $table = $this->tableName();
-            $records = DB::select("SELECT * FROM `$table` WHERE `node_id`=? ORDER BY `delta`", [$node->id]);
-            if ($records) {
-                $records = collect($records)->groupBy('langcode');
-                $records = $records->get($langcode) ?: $records->get($node->langcode);
-                if ($records) {
-                    $records = $records->map(function($record) {
-                        return (array) $record;
-                    })->toArray();
+            $records = DB::table($this->tableName())->where([
+                ['node_id', $node->id],
+                ['langcode', $langcode],
+            ])->orderBy('delta')->get();
 
-                    // 借助字段类型格式化数据库记录
-                    $config = $this->config;
-                    if ($this->pivot) {
-                        $config = array_replace_recursive($config, $this->pivot->config);
-                    }
-                    $value = FieldType::getValue($this->field_type, $records, $this->tableColumns(), $config);
+            if ($records->count()) {
+                $records = $records->map(function($record) {
+                    return (array) $record;
+                })->all();
+
+                // 借助字段类型格式化数据库记录
+                $config = $this->config;
+                if ($this->pivot) {
+                    $config = array_replace_recursive($config, $this->pivot->config);
                 }
+                $value = FieldType::getValue($this->field_type, $records, $this->tableColumns(), $config);
             }
 
             // 缓存字段值

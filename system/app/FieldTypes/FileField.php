@@ -15,7 +15,7 @@ class FileField extends FieldTypeBase
         $column = [
             'type' => 'string',
             'parameters' => [
-                'length' => 100,
+                'length' => 200,
             ],
         ];
         return [$column];
@@ -32,7 +32,7 @@ class FileField extends FieldTypeBase
             ],
             'length' => [
                 'cast' => 'integer',
-                'default' => 100,
+                'default' => 200,
             ],
             'validations' => [
                 'cast' => 'array',

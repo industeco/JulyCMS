@@ -169,6 +169,30 @@ class Node extends JulyModel
     }
 
     /**
+     * 获取内容标签
+     *
+     * @param string|null $langcode
+     * @return array
+     */
+    public static function retrieveUrls($langcode = null)
+    {
+        $langcode = $langcode ?: langcode('content_value');
+        $cacheid = 'node/urls';
+        if ($tags = static::cacheGet($cacheid, $langcode)) {
+            $urls = $tags['value'];
+        } else {
+            $urls = [];
+            $records = DB::table('node__url')->where('langcode', $langcode)->get(['node_id', 'url_value']);
+            if ($records) {
+                //
+            }
+            static::cachePut($cacheid, $tags, $langcode);
+        }
+
+        return $tags;
+    }
+
+    /**
      * 保存属性值
      */
     public function saveValues(array $values, $deleteNull = false)
@@ -327,50 +351,27 @@ class Node extends JulyModel
         return null;
     }
 
-    /**
-     * 根据指定的 url 读取内容
-     *
-     * @param string $url
-     * @param string|null $langcode
-     * @return string|null
-     */
-    public static function retrieveHtml($url, $langcode = null)
+    public function getHtml($langcode = null)
     {
-        $url = '/'.ltrim($url, '/');
-        if (config('jc.multi_language')) {
-            $langcode = $langcode ?: langcode('current_page');
-            if (!config('jc.langcode.accessible.'.$langcode.'.site_page')) {
-                return null;
+        $langcode = $langcode ?: $this->langcode;
+
+        $values = $this->retrieveValues($langcode);
+        if ($url = $values['url'] ?? null) {
+            $file = 'pages/'.$langcode.$url;
+            $disk = Storage::disk('storage');
+            if ($disk->exists($file)) {
+                return $disk->get($file);;
             }
 
-            if (Str::startsWith($url, '/'.$langcode.'/')) {
-                $url = substr($url, strlen('/'.$langcode));
-            }
-        } else {
-            if ($langcode && $langcode !== langcode('site_page')) {
-                return null;
-            } else {
-                $langcode = langcode('site_page');
-            }
-        }
-        $file = 'pages/'.$langcode.$url;
-
-        $disk = Storage::disk('storage');
-        if ($disk->exists($file)) {
-            return $disk->get($file);;
-        }
-
-        if ($node = static::findByUrl($url, $langcode)) {
-            return $node->render(null, $langcode);
+            return $this->render(null, $langcode);
         }
 
         return null;
     }
 
-    public function findInvalidLinks($langcode = null)
+    public function findInvalidLinks($langcode)
     {
-        $langcode = $langcode ?: $this->langcode;
-        $html = static::retrieveHtml($this->url, $langcode);
+        $html = $this->getHtml($langcode);
         if (! $html) {
             return [];
         }

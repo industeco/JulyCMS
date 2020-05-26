@@ -31,7 +31,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_children(...$args)
     {
-        $this->first()->get_children(...$args);
+        return $this->first()->get_children(...$args);
     }
 
     public function get_under(...$args)
@@ -47,7 +47,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_descendants(...$args)
     {
-        $this->first()->get_descendants(...$args);
+        return $this->first()->get_descendants(...$args);
     }
 
     public function get_below(...$args)
@@ -64,7 +64,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_parent(...$args)
     {
-        $this->first()->get_parent(...$args);
+        return $this->first()->get_parent(...$args);
     }
 
     public function get_over(...$args)
@@ -80,7 +80,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_ancestors(...$args)
     {
-        $this->first()->get_ancestors(...$args);
+        return $this->first()->get_ancestors(...$args);
     }
 
     public function get_above(...$args)
@@ -96,7 +96,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_siblings(...$args)
     {
-        $this->first()->get_siblings(...$args);
+        return $this->first()->get_siblings(...$args);
     }
 
     public function get_around(...$args)
@@ -112,7 +112,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_path($id)
     {
-        $this->first()->get_path($id);
+        return $this->first()->get_path($id);
     }
 
     /**
@@ -123,7 +123,7 @@ class CatalogCollection extends ModelCollection
      */
     public function get_prev($id)
     {
-        $this->first()->get_prev($id);
+        return $this->first()->get_prev($id);
     }
 
     /**
@@ -134,6 +134,6 @@ class CatalogCollection extends ModelCollection
      */
     public function get_next($id)
     {
-        $this->first()->get_next($id);
+        return $this->first()->get_next($id);
     }
 }

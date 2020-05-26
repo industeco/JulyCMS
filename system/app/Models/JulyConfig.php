@@ -58,16 +58,11 @@ class JulyConfig extends Model
         'data' => Json::class,
     ];
 
-    public static function primaryKeyName()
-    {
-        return 'truename';
-    }
-
     public static function loadConfiguration()
     {
         $configuration = [];
         foreach (static::all() as $entry) {
-            $configuration['jc.'.$entry->truename] = $entry->getValue();
+            $configuration['jc.'.$entry->name] = $entry->getValue();
         }
         app('config')->set($configuration);
 
@@ -107,7 +102,7 @@ class JulyConfig extends Model
     public static function getLanguageSettings($langcode = null)
     {
         $names = [
-            'langcode.accessible', 'langcode.content_value', 'langcode.site_page', 'multi_language',
+            'langcode.permissions', 'langcode.content_value', 'langcode.site_page', 'multi_language',
         ];
 
         return static::retrieveConfiguration($names, $langcode);

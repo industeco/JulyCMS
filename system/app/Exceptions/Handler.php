@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Models\Node;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use Illuminate\Support\Facades\Storage;
@@ -55,10 +56,10 @@ class Handler extends ExceptionHandler
         // 修改错误页面（如 404 页）获取方式，优先读取对应的 html 文件
         if ($exception instanceof HttpException) {
             $code = $exception->getStatusCode();
-            $public = Storage::disk('public');
-            $html = 'pages/'.langcode('site_page').'/errors/'.$code.'.html';
-            if ($public->exists($html)) {
-                return response()->make($public->get($html), $code, $exception->getHeaders());
+            $langcode = langcode('current_page');
+
+            if ($node = Node::findByUrl('/'.$code.'.html', $langcode)) {
+                return $node->getHtml($langcode);
             }
         }
 
