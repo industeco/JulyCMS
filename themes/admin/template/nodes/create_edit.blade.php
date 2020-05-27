@@ -48,7 +48,19 @@
         </el-collapse-item>
         <el-collapse-item title="网址和模板" name="url">
           {!! $fields_aside['url']['element'] !!}
-          {!! $fields_aside['template']['element'] !!}
+          <el-form-item prop="template" size="small" class="has-helptext">
+            <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="template" placement="right">
+              <span>模板</span>
+            </el-tooltip>
+            <el-autocomplete
+              v-model="node.template"
+              native-size="100"
+              placeholder="/home.twig"
+              maxlength="200"
+              :fetch-suggestions="showTemplates"
+              show-word-limit></el-autocomplete>
+              <span class="jc-form-item-help"><i class="el-icon-info"></i> twig 模板，用于生成页面</span>
+          </el-form-item>
         </el-collapse-item>
         <el-collapse-item title="META 信息" name="meta">
           {!! $fields_aside['meta_title']['element'] !!}
@@ -236,6 +248,7 @@
         db: {
           nodes: @json($all_nodes, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
           tags: @json($all_tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          templates: @json($all_templates, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
           catalog_nodes: catalog_nodes,
         },
 
@@ -254,7 +267,12 @@
     },
 
     created: function() {
-      this.initial_data = clone(this.node)
+      this.initial_data = clone(this.node);
+      const templates = [];
+      this.db.templates.forEach(element => {
+        templates.push({value: element});
+      });
+      this.db.templates = templates;
     },
 
     methods: {
@@ -272,6 +290,10 @@
 
           this.editorInited = true;
         }
+      },
+
+      showTemplates(queryString, cb) {
+        cb(this.db.templates);
       },
 
       handleCollapseChange(activeNames) {
@@ -427,6 +449,15 @@
           text: '正在保存内容 ...',
           background: 'rgba(255, 255, 255, 0.7)',
         });
+
+        for (const key in this.node) {
+          if (this.$refs['ckeditor_'+key]) {
+            const editor = this.$refs['ckeditor_'+key];
+            if (editor.instance && editor.instance.mode !== 'wysiwyg') {
+              editor.instance.setMode('wysiwyg');
+            }
+          }
+        }
 
         form.validate().then(function() {
           const changed_values = app.getChangedValues();

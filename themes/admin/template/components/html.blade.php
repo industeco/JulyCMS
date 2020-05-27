@@ -3,6 +3,7 @@
     <span>{{ $label }}</span>
   </el-tooltip>
   <ckeditor
+    ref="ckeditor_{{ $truename }}"
     v-model="node.{{ $truename }}"
     tag-name="textarea"
     :config="ckeditorConfig"

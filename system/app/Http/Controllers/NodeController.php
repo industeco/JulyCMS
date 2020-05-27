@@ -11,6 +11,7 @@ use App\Models\NodeField;
 use App\Models\NodeType;
 use App\FieldTypes\FieldType;
 use App\Models\Tag;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class NodeController extends Controller
@@ -69,6 +70,7 @@ class NodeController extends Controller
             'positions' => [],
             'all_tags' => Tag::allTags($content_lang),
             'all_nodes' => $this->simpleNodes($content_lang),
+            'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'create',
         ]);
@@ -148,6 +150,7 @@ class NodeController extends Controller
             'positions' => $node->positions(),
             'all_tags' => Tag::allTags($content_lang),
             'all_nodes' => $this->simpleNodes($content_lang),
+            'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'edit',
         ];
@@ -264,5 +267,10 @@ class NodeController extends Controller
         }
 
         return Response::make($success);
+    }
+
+    protected function getTwigTemplates()
+    {
+        return NodeField::find('template')->records()->pluck('template_value')->all();
     }
 }
