@@ -293,7 +293,7 @@
       :visible.sync="upload.dialogVisible">
       <jc-media-upload
         ref="media_upload"
-        action="/admin/medias/upload"
+        action="{{ short_route('media.upload') }}"
         name="files"
         :accept="allowedMimeTypes"
         :data="upload.postData"
@@ -438,7 +438,7 @@
         }
 
         // 后台获取目录内容
-        axios.post('/admin/medias/under', {
+        axios.post("{{ short_route('media.under') }}", {
           cwd: this.currentPath,
           path: path,
         }).then(function(response) {
@@ -716,7 +716,7 @@
 
           this.process({
             loading: '正在修改文件名 ...',
-            action: '/admin/medias/rename/files',
+            action: "{{ short_route('media.rename', 'files') }}",
             data: {
               cwd: path,
               old_name: file.name,
@@ -751,7 +751,7 @@
         this.confirm(`确定删除 ${file.name} ?`, '删除文件')
         .then(() => {
           this.process({
-            action: '/admin/medias/delete/files',
+            action: "{{ short_route('media.delete', 'files') }}",
             loading: '正在删除文件 ...',
             data: {
               cwd: path,
@@ -788,7 +788,7 @@
         this.confirm(`确定删除 ${selected.length} 个文件 ?`, '删除文件')
         .then(() => {
           this.process({
-            action: '/admin/medias/delete/files',
+            action: "{{ short_route('media.delete', 'files') }}",
             loading: '正在删除文件 ...',
             data: {
               cwd: path,
@@ -817,7 +817,7 @@
         this.promptFilename('', '文件夹名：')
         .then(({ value }) => {
           this.process({
-            action: '/admin/medias/create/folders',
+            action: "{{ short_route('media.mkdir') }}",
             loading: '正在创建文件夹 ...',
             data: {
               cwd: path,

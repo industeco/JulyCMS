@@ -150,9 +150,10 @@ if (! function_exists('real_env')) {
 }
 
 if (! function_exists('under_route')) {
-    function under_route($current, $parent)
+    function under_route($route, $path)
     {
-        return $current == $parent || strpos($current, $parent.'/') === 0;
+        $route = short_route($route);
+        return $path == $route || strpos($path, $route.'/') === 0;
     }
 }
 
@@ -241,6 +242,29 @@ if (! function_exists('available_langcodes')) {
         }
 
         return $langcodes;
+    }
+}
+
+if (! function_exists('available_languages')) {
+    /**
+     * 获取可用语言列表
+     *
+     * @param string $type: 'site_page', 'content_value', 'admin_page', 'interface_value'
+     * @return array
+     */
+    function available_languages($type = 'site_page', $interface = null)
+    {
+        $interface = $interface ?: langcode('admin_page');
+        $list = language_list($interface);
+
+        $languages = [];
+        foreach (config('jc.langcode.permissions') as $key => $value) {
+            if (!$type || ($value[$type] ?? false)) {
+                $languages[$key] = $list[$key] ?? $key;
+            }
+        }
+
+        return $languages;
     }
 }
 

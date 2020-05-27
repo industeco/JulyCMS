@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="/admin/node_types/create" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_route('node_types.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建类型</div></div>
       </a>
     </div>
@@ -23,12 +23,14 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="'/admin/node_types/'+scope.row.truename+'/edit'" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('edit', scope.row.truename)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="'/admin/node_types/'+scope.row.truename+'/translate'" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default" disabled>
+              @if (config('jc.multi_language'))
+              <a :href="getUrl('translate', scope.row.truename)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default" disabled>
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
+              @endif
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click="deleteType(scope.row)" :disabled="scope.row.nodes>0">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
@@ -47,6 +49,7 @@
           </div>
         </a>
       </li>
+      @if (config('jc.multi_language'))
       <li class="md-list-item">
         <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
           <div class="md-list-item-content">
@@ -55,6 +58,7 @@
           </div>
         </a>
       </li>
+      @endif
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteType(contextmenu.target)">
           <div class="md-list-item-content md-ripple">
@@ -83,6 +87,10 @@
           translatable: false,
           deletable: false,
         },
+
+        editUrl: "{{ short_route('node_types.edit', '#truename#') }}",
+        deleteUrl: "{{ short_route('node_types.destroy', '#truename#') }}",
+        translateUrl: "{{ short_route('node_types.translate', '#truename#') }}",
       };
     },
 
@@ -94,11 +102,20 @@
 
         const _tar = this.contextmenu;
         _tar.target = row;
-        _tar.editUrl = '/admin/node_types/'+row.truename+'/edit';
+        _tar.editUrl = this.editUrl.replace('#truename#', row.truename);
         _tar.deletable = row.nodes <= 0;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
+      },
+
+      getUrl(route, key) {
+        switch (route) {
+          case 'edit':
+            return this.editUrl.replace('#truename#', key)
+          case 'translate':
+            return this.translateUrl.replace('#truename#', key)
+        }
       },
 
       deleteType(nodeType) {
@@ -111,18 +128,18 @@
           cancelButtonText: '取消',
           type: 'warning',
         }).then(() => {
-          const loading = _vue.$loading({
+          const loading = this.$loading({
             lock: true,
             text: '正在删除 ...',
             background: 'rgba(0, 0, 0, 0.7)',
           });
-          axios.delete('/admin/node_types/'+truename).then(function(response) {
+          axios.delete(this.deleteUrl.replace('#truename#', truename)).then(function(response) {
             // console.log(response)
-            loading.spinner = 'el-icon-success'
-            loading.text = '已删除'
-            window.location.reload()
+            loading.spinner = 'el-icon-success';
+            loading.text = '已删除';
+            window.location.reload();
           }).catch(function(error) {
-            console.error(error)
+            console.error(error);
           })
         }).catch((err) => {});
       },

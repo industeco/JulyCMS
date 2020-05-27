@@ -341,12 +341,12 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          const loading = app.$loading({
+          const loading = this.$loading({
             lock: true,
             text: '正在保存 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
-          axios.post('/admin/tags', {changed:changed}).then(function(response) {
+          axios.post("{{ short_route('tags.update') }}", {changed:changed}).then(function(response) {
             console.log(response);
             loading.close();
             this.$message.success('保存成功');
@@ -356,7 +356,7 @@
             loading.close();
             this.$message.error('发生错误，可查看控制台');
           })
-        }).catch();
+        }).catch(()=>{});
       },
     },
   });

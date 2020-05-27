@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'admin' => [
+        'prefix' => 'july/admin',
+    ],
+
     'langcode' => [
         'permissions' => [
             'zh' => [
@@ -48,7 +52,7 @@ return [
                 // [ 'name' => 'about', 'groups' => [ 'about' ] ],
             ],
             'removeButtons' => 'Underline,Styles,Strike,Italic,Indent,Outdent,Blockquote,About,SpecialChar,HorizontalRule,Scayt,Cut,Copy,Paste,PasteText,PasteFromWord',
-            'filebrowserImageBrowseUrl' => '/admin/medias/select',
+            'filebrowserImageBrowseUrl' => '/july/admin/medias/select',
             'image_previewText' => ' ',
         ],
     ],
@@ -74,30 +78,30 @@ return [
         [
             'title' => '内容',
             'icon' => 'create',
-            'url' => '/admin/nodes',
+            'route' => 'nodes.index',
             'children' => [],
         ],
         [
             'title' => '类型',
             'icon' => 'category',
-            'url' => '/admin/node_types',
+            'route' => 'node_types.index',
             'children' => [],
         ],
         [
             'title' => '结构',
             'icon' => 'device_hub',
-            'url' => null,
+            'route' => null,
             'children' => [
                 [
                     'title' => '目录',
                     'icon' => null,
-                    'url' => '/admin/catalogs',
+                    'route' => 'catalogs.index',
                     'children' => [],
                 ],
                 [
                     'title' => '标签',
                     'icon' => null,
-                    'url' => '/admin/tags',
+                    'route' => 'tags.index',
                     'children' => [],
                 ],
             ],
@@ -105,24 +109,24 @@ return [
         [
             'title' => '文件',
             'icon' => 'folder',
-            'url' => '/admin/medias',
+            'route' => 'media.index',
             'children' => [],
         ],
         [
             'title' => '设置',
             'icon' => 'settings',
-            'url' => null,
+            'route' => null,
             'children' => [
                 [
                     'title' => '基本设置',
                     'icon' => null,
-                    'url' => '/admin/config/basic/edit',
+                    'route' => 'configs.basic.edit',
                     'children' => [],
                 ],
                 [
                     'title' => '语言',
                     'icon' => null,
-                    'url' => '/admin/config/language/edit',
+                    'route' => 'configs.language.edit',
                     'children' => [],
                 ],
             ],

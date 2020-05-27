@@ -146,7 +146,7 @@
 
       if (!mediaWindow || mediaWindow.closed) {
         mediaWindow = window.open(
-          '/admin/medias/select',
+          "{{ short_route('media.select') }}",
           'chooseMedia',
           `resizable,scrollbars,status,top=${top},left=${left},width=${width},height=${height}`
         );
@@ -191,7 +191,8 @@
         if (!value || !value.length) {
           callback();
         } else {
-          axios.post('/admin/checkunique/node__url', {
+          const action = "{{ short_route('checkunique.url') }}";
+          axios.post(action, {
             content_value_langcode: '{{ $content_value_langcode }}',
             url: value,
             id: {{ $id }},
@@ -464,7 +465,7 @@
           const changed_positions = app.getChangedPositions();
           @if ($id)
             if (!changed_values.length && !changed_positions.length) {
-              window.location.href = "/admin/nodes";
+              window.location.href = "{{ short_route('nodes.index') }}";
               return;
             }
           @endif
@@ -475,12 +476,17 @@
           node.changed_positions = changed_positions;
 
           // console.log(node)
+          @if ($id)
+          const action = "{{ short_route('nodes.update', $id) }}";
+          @else
+          const action = "{{ short_route('nodes.store') }}";
+          @endif
 
-          axios.{{ $id ? 'put' : 'post' }}('/admin/nodes{{ $id ? "/".$id : "" }}', node)
+          axios.{{ $id ? 'put' : 'post' }}(action, node)
             .then(function(response) {
               // console.log(response)
               // loading.close()
-              window.location.href = "/admin/nodes";
+              window.location.href = "{{ short_route('nodes.index') }}";
             })
             .catch(function(error) {
               loading.close()

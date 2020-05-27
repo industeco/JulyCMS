@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 // 后台
 Route::group([
-    'prefix' => 'admin',
+    'prefix' => config('jc.admin.prefix'),
     'middleware' => ['web', 'admin'],
 ], function() {
     July::adminRoutes();
@@ -28,6 +28,6 @@ Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.inst
 Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
 
 // 前台
-Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'cmd.newmessage']);
-Route::get('search', ['uses' => 'CommandController@search', 'as' => 'cmd.search']);
+Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'userCommand.newmessage']);
+Route::get('search', ['uses' => 'CommandController@search', 'as' => 'userCommand.search']);
 Route::get('{any}', 'AnyPage')->where('any', '.*');

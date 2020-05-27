@@ -286,7 +286,7 @@
           const settings = clone(this.settings);
           settings._changed = changed;
 
-          axios.post('/admin/config/language', settings).then(response => {
+          axios.post("{{ short_route('configs.language.update') }}", settings).then(response => {
             loading.close();
             this.initial_data = clone(this.settings);
             // console.log(response);

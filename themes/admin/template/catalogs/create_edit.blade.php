@@ -52,7 +52,8 @@
 
       var isUnique = function(rule, value, callback) {
         if (value && value.length) {
-          axios.get('/admin/checkunique/catalogs/'+value).then(function(response) {
+          const action = "{{ short_route('checkunique.catalogs', '#value#') }}";
+          axios.get(action.replace('#value#', value)).then(function(response) {
             if (response.data.exists) {
               callback(new Error('『真名』已存在'))
             } else {
@@ -113,17 +114,20 @@
 
           @if($truename)
             if (app.initial_data === JSON.stringify(app.catalog)) {
-              window.location.href = "/admin/catalogs";
-              return
+              window.location.href = "{{ short_route('catalogs.index') }}";
+              return;
             }
           @endif
 
-          // const method = mode == 'edit' ? 'put' : 'post';
-          // const action = '/admin/catalogs' + (mode == 'edit' ? '/'+app.catalog.truename : '')
+          @if($truename)
+          const action = "{{ short_route('catalogs.update', $truename) }}";
+          @else
+          const action = "{{ short_route('catalogs.store') }}";
+          @endif
 
-          axios.{!! $truename ? "put('/admin/catalogs/$truename'" : "post('/admin/catalogs'" !!}, app.catalog).then(function(response) {
+          axios.{{ $truename ? 'put' : 'post' }}(action, app.catalog).then(function(response) {
             // loading.close()
-            window.location.href = "/admin/catalogs";
+            window.location.href = "{{ short_route('catalogs.index') }}";
           }).catch(function(error) {
             app.$message.error(error);
             // console.error(error)

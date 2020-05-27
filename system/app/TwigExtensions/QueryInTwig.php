@@ -75,15 +75,14 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
 
             // 使用 tags 过滤节点集
             new TwigFilter('tags', function($nodes, array $options = []) {
-                if ($nodes instanceof NodeCollection) {
+                if ($nodes instanceof NodeCollection && !empty($options)) {
                     $match = array_pop($options);
                     if (!is_int($match)) {
                         $options[] = $match;
-                        $match = null;
+                        $match = 1;
                     }
-                    if (count($options) === 1 && is_array($options[0])) {
-                        $options = $options[0];
-                    }
+
+                    $options = collect($options)->flatten()->all();
                     if (!empty($options)) {
                         return $nodes->match_tags($options, $match);
                     }

@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use App\Models\Node;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -59,7 +61,9 @@ class Handler extends ExceptionHandler
             $langcode = langcode('current_page');
 
             if ($node = Node::findByUrl('/'.$code.'.html', $langcode)) {
-                return $node->getHtml($langcode);
+                if ($html = $node->getHtml($langcode)) {
+                    return Router::toResponse($request, $html);
+                }
             }
         }
 

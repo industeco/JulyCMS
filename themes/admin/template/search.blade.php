@@ -33,11 +33,12 @@
 
     methods: {
       url(row) {
-        let url = '/admin/nodes/' + row.node_id + '/';
         if (row.original_langcode === row.langcode) {
-          url += 'edit';
+          const url = "{{ short_route('nodes.edit', '#id#') }}";
+          return url.replace('#id#', row.node_id);
         } else {
-          url += 'translate/'+row.langcode;
+          const url = "{{ short_route('nodes.translate_to', ['#id#','#langcode#']) }}";
+          return url.replace('#id#', row.node_id).replace('#langcode#', row.langcode);
         }
         return url;
       },

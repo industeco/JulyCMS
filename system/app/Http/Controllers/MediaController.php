@@ -45,18 +45,13 @@ class MediaController extends Controller
         return Response::make($message, $this->media->getCode());
     }
 
-    public function create(Request $request, $type = 'folders')
+    public function makeDir(Request $request)
     {
         $cwd = $request->input('cwd');
         $name = $request->input('name');
 
-        if ($type === 'folders') {
-            $message = $this->media->prepare($cwd)->mkdir($name);
-            $code = $this->media->getCode();
-        } else {
-            $message = '暂无法创建文件';
-            $code = 405;
-        }
+        $message = $this->media->prepare($cwd)->mkdir($name);
+        $code = $this->media->getCode();
 
         return Response::make($message, $code);
     }

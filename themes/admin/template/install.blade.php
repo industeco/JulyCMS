@@ -310,7 +310,7 @@
         },
 
         login() {
-          location.href = '/admin/login';
+          location.href = "{{ short_route('admin.login') }}";
         },
       },
     });

@@ -35,6 +35,8 @@ class NodeController extends Controller
             'nodes' => $nodes,
             'nodeTypes' => NodeType::columns(['name','truename'])->pluck('name', 'truename')->all(),
             'catalogs' => Catalog::columns(['name','truename'])->pluck('name', 'truename')->all(),
+            'all_tags' => Tag::allTags(),
+            'languages' => available_languages('content_value'),
         ]);
     }
 
@@ -271,6 +273,6 @@ class NodeController extends Controller
 
     protected function getTwigTemplates()
     {
-        return NodeField::find('template')->records()->pluck('template_value')->all();
+        return NodeField::find('template')->records()->pluck('template_value')->sort()->unique()->all();
     }
 }

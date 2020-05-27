@@ -94,16 +94,16 @@ class CatalogController extends Controller
         return Response::make();
     }
 
-    public function reorder(Catalog $catalog)
+    public function sort(Catalog $catalog)
     {
-        return view_with_langcode('admin::catalogs.reorder', [
+        return view_with_langcode('admin::catalogs.sort', [
             'truename' => $catalog->truename,
             'catalog_nodes' => $catalog->positions(),
             'all_nodes' => Node::allNodes(),
         ]);
     }
 
-    public function sort(Request $request, Catalog $catalog)
+    public function updateOrders(Request $request, Catalog $catalog)
     {
         // return Response::make($request->input('catalog_nodes'));
         $catalog->updatePositions($request->input('catalog_nodes'));

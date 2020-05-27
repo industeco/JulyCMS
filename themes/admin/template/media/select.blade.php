@@ -163,7 +163,7 @@
         :visible.sync="upload.dialogVisible">
         <jc-media-upload
           ref="media_upload"
-          action="/admin/medias/upload"
+          action="{{ short_route('media.upload') }}"
           name="files"
           :accept="allowedMimeTypes"
           :data="upload.postData"
@@ -351,7 +351,7 @@
           }
 
           // 后台获取目录内容
-          axios.post('/admin/medias/under', {
+          axios.post("{{ short_route('media.under') }}", {
             cwd: this.currentPath,
             path: path,
           }).then(function(response) {

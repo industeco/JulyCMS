@@ -225,7 +225,8 @@
         if (!value || !value.length) {
           callback();
         } else {
-          axios.get('/admin/checkunique/node_types/'+value).then(function(response) {
+          const action = "{{ short_route('checkunique.node_types', '#truename#') }}";
+          axios.get(action.replace('#truename#', value)).then(function(response) {
             if (response.data.exists) {
               callback(new Error('『真名』已存在'));
             } else {
@@ -241,7 +242,8 @@
         if (!value || !value.length) {
           callback();
         } else {
-          axios.get('/admin/checkunique/node_fields/'+value).then(function(response) {
+          const action = "{{ short_route('checkunique.node_fields', '#truename#') }}";
+          axios.get(action.replace('#truename#', value)).then(function(response) {
             if (response.data.exists) {
               callback(new Error('『真名』已存在'));
             } else {
@@ -428,7 +430,7 @@
             let field = clone(app.nodeField);
             field.datalist = field.datalist.map(item => item.value);
 
-            axios.post('/admin/node_fields', field).then(function(response) {
+            axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
               // console.log(response)
               app.nodeType.fields.push(clone(app.nodeField))
               app.nodeFields.push(clone(app.nodeField))
@@ -497,25 +499,26 @@
           });
 
           @if($truename)
-            if (app.initial_data === JSON.stringify(nodeType)) {
-              window.location.href = "/admin/node_types";
-              return
-            }
+          if (app.initial_data === JSON.stringify(nodeType)) {
+            window.location.href = "{{ short_route('node_types.index') }}";
+            return;
+          }
           @endif
 
-          // console.log(nodeType);
+          @if ($truename)
+          const action = "{{ short_route('node_types.update', $truename) }}";
+          @else
+          const action = "{{ short_route('node_types.store') }}";
+          @endif
 
-          const method = '{{ $truename ? "put" : "post" }}';
-          const action = '/admin/node_types' + '{{ $truename ? "/".$truename : "" }}';
-
-          axios[method](action, nodeType).then(function(response) {
-            loading.close()
-            window.location.href = "/admin/node_types";
+          axios.{{ $truename ? 'put' : 'post' }}(action, nodeType).then(function(response) {
+            loading.close();
+            window.location.href = "{{ short_route('node_types.index') }}";
           }).catch(function(error) {
-            loading.close()
-            console.error(error)
+            loading.close();
+            console.error(error);
             app.$message.error('发生错误，可查看控制台');
-          })
+          });
         }).catch(function(error) {
           loading.close();
           // console.error(error);

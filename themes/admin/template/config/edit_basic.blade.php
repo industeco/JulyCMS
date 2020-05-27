@@ -102,7 +102,7 @@
           const settings = clone(this.settings);
           settings._changed = changed;
 
-          axios.post('/admin/config/basic', settings).then(response => {
+          axios.post("{{ short_route('configs.basic.update') }}", settings).then(response => {
             loading.close();
             this.initial_data = clone(this.settings);
             // console.log(response);

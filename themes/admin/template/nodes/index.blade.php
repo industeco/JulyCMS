@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="/admin/nodes/create" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_route('nodes.create') }}" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建内容</div></div>
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
@@ -20,7 +20,11 @@
         <el-select v-model="filterBy" size="small" class="jc-filterby" @change="handleFilterByChange">
           <el-option label="标题" value="title"></el-option>
           <el-option label="内容类型" value="node_type"></el-option>
-          <el-option label="URL" value="url"></el-option>
+          <el-option label="网址" value="url"></el-option>
+          <el-option label="标签" value="tags"></el-option>
+          @if (config('jc.multi_language'))
+          <el-option label="语言版本" value="langcode"></el-option>
+          @endif
         </el-select>
         <el-input
           v-if="filterBy=='title'"
@@ -41,6 +45,21 @@
           <el-option label="有 URL" :value="true"></el-option>
           <el-option label="没有 URL" :value="false"></el-option>
         </el-select>
+        <el-select size="small"
+          v-if="filterBy=='tags'"
+          v-model="filterValues.tags"
+          multiple
+          @change="filterContents">
+          <el-option v-for="tag in tags" :key="tag" :value="tag">@{{ tag }}</el-option>
+        </el-select>
+        @if (config('jc.multi_language'))
+        <el-select size="small"
+          v-if="filterBy=='langcode'"
+          v-model="filterValues.langcode"
+          @change="filterContents">
+          <el-option v-for="(langname, langcode) in languages" :key="langcode" :value="langcode">@{{ langname }}</el-option>
+        </el-select>
+        @endif
       </div>
       <div class="jc-option">
         <label>显示『建议模板』：</label>
@@ -74,6 +93,11 @@
             <span v-else>@{{ scope.row.title }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="标签" prop="tags" width="auto">
+          <template slot-scope="scope">
+            <el-tag type="primary" size="small" effect="dark" v-for="tag in scope.row.tags" :key="tag">@{{ tag }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="建议模板" prop="templates" width="auto" v-if="showSuggestedTemplates">
           <template slot-scope="scope">
             <span class="jc-suggested-template" v-for="template in scope.row.templates" :key="template">@{{ template }}</span>
@@ -93,11 +117,11 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="'/admin/nodes/'+scope.row.id+'/edit'" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
               @if (config('jc.multi_language'))
-              <a :href="'/admin/nodes/'+scope.row.id+'/translate'" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
               @endif
@@ -180,7 +204,16 @@
           title: null,
           node_type: null,
           url: true,
+          langcode: "{{ langcode('content_value') }}",
+          tags: [],
         },
+
+        tags: @json($all_tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        languages: @json($languages, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+
+        editUrl: "{{ short_route('nodes.edit', '#id#') }}",
+        deleteUrl: "{{ short_route('nodes.destroy', '#id#') }}",
+        translateUrl: "{{ short_route('nodes.translate', '#id#') }}",
       };
     },
 
@@ -191,6 +224,15 @@
     methods: {
       diffForHumans(time) {
         return moment(time).fromNow();
+      },
+
+      getUrl(route, id) {
+        switch (route) {
+          case 'edit':
+            return this.editUrl.replace('#id#', id)
+          case 'translate':
+            return this.translateUrl.replace('#id#', id)
+        }
       },
 
       deleteNode(node) {
@@ -206,7 +248,7 @@
             text: '正在删除 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
-          axios.delete('/admin/nodes/'+node.id).then(function(response) {
+          axios.delete(this.deleteUrl.replace('_id', node.id)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success'
             loading.text = '已删除'
@@ -226,15 +268,10 @@
         const menu = this.contextmenu;
         menu.target = row;
         menu.url = row.url;
-        menu.editUrl = '/admin/nodes/'+row.id+'/edit';
-        menu.translateUrl = '/admin/nodes/'+row.id+'/translate';
+        menu.editUrl = this.editUrl.replace('#id#', row.id);
+        menu.translateUrl = this.translateUrl.replace('#id#', row.id);
 
         this.$refs.contextmenu.show(event);
-      },
-
-      url(node, mode) {
-        if (! node) return '';
-        return `/admin/nodes/${id}/${mode}`;
       },
 
       handleSelectionChange(selected) {
@@ -257,22 +294,30 @@
       },
 
       filterContents(value) {
+        let nodes = null;
         switch (this.filterBy) {
           case 'title':
-            this.$set(this.$data, 'nodes', this.filterByTitle(value));
+            nodes = this.filterByTitle(value);
             break;
           case 'node_type':
-            this.$set(this.$data, 'nodes', this.filterByNodeType(value));
+            nodes = this.filterByNodeType(value);
             break;
           case 'url':
-            this.$set(this.$data, 'nodes', this.filterByUrl(value));
+            nodes = this.filterByUrl(value);
+            break;
+          case 'tags':
+            nodes = this.filterByTags(value);
+            break;
+          case 'langcode':
+            nodes = this.filterByLangcode(value);
             break;
         }
+        this.$set(this.$data, 'nodes', nodes || clone(this.initial_data));
       },
 
       filterByTitle(value) {
         if (!value || !value.trim()) {
-          return this.initial_data;
+          return clone(this.initial_data);
         }
 
         const nodes = [];
@@ -312,6 +357,42 @@
         return nodes;
       },
 
+      filterByTags() {
+        const tags = this.filterValues.tags;
+        if (! tags.length) {
+          return clone(this.initial_data);
+        }
+
+        const nodes = [];
+        this.initial_data.forEach(node => {
+          if (node.tags.length) {
+            for (let i = 0; i < tags.length; i++) {
+              if (node.tags.indexOf(tags[i]) >= 0) {
+                nodes.push(clone(node));
+                break;
+              }
+            }
+          }
+        });
+
+        return nodes;
+      },
+
+      filterByLangcode(langcode) {
+        if (!value) {
+          return clone(this.initial_data);
+        }
+
+        const nodes = [];
+        this.initial_data.forEach(node => {
+          if (node.langcode === langcode) {
+            nodes.push(clone(node));
+          }
+        });
+
+        return nodes;
+      },
+
       render(node) {
         const nodes = [];
         if (node) {
@@ -333,7 +414,7 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        axios.post('/admin/nodes/render', {nodes: nodes}).then((response) => {
+        axios.post("{{ short_route('nodes.render') }}", {nodes: nodes}).then((response) => {
           // console.log(response)
           loading.close();
           this.$message.success('生成完成');

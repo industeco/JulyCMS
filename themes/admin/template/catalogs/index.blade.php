@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="/admin/catalogs/create" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_route('catalogs.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建目录</div></div>
       </a>
     </div>
@@ -22,14 +22,11 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="'/admin/catalogs/'+scope.row.truename+'/edit'" title="修改" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('edit', scope.row.truename)" title="修改" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="'/admin/catalogs/'+scope.row.truename+'/reorder'" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('sort', scope.row.truename)" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">sort</i></div></div>
-              </a>
-              <a :href="'/admin/catalogs/'+scope.row.truename+'/translate'" title="翻译" class="md-button md-fab md-dense md-theme-default" disabled>
-                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 onclick="deleteCatalog(scope.row)" :disabled="scope.row.is_preset">
@@ -50,18 +47,10 @@
         </a>
       </li>
       <li class="md-list-item">
-        <a :href="contextmenu.resortUrl" class="md-list-item-link md-list-item-container md-button-clean">
+        <a :href="contextmenu.sortUrl" class="md-list-item-link md-list-item-container md-button-clean">
           <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-primary md-theme-default">sort</i>
             <span class="md-list-item-text">排序</span>
-          </div>
-        </a>
-      </li>
-      <li class="md-list-item">
-        <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-primary md-theme-default">translate</i>
-            <span class="md-list-item-text">翻译</span>
           </div>
         </a>
       </li>
@@ -94,6 +83,9 @@
           translatable: false,
           deletable: false,
         },
+        editUrl: "{{ short_route('catalogs.edit', '#truename#') }}",
+        sortUrl: "{{ short_route('catalogs.sort', '#truename#') }}",
+        deleteUrl: "{{ short_route('catalogs.destroy', '#truename#') }}",
       };
     },
 
@@ -105,30 +97,39 @@
 
         const _tar = this.contextmenu;
         _tar.target = row;
-        _tar.editUrl = '/admin/catalogs/'+row.truename+'/edit';
-        _tar.resortUrl = '/admin/catalogs/'+row.truename+'/reorder';
+        _tar.editUrl = this.editUrl.replace('#truename#', row.truename);
+        _tar.sortUrl = this.sortUrl.replace('#truename#', row.truename);
         _tar.deletable = !row.is_preset;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
       },
 
+      getUrl(route, truename) {
+        switch (route) {
+          case 'edit':
+            return this.editUrl.replace('#truename#', truename);
+          case 'sort':
+            return this.sortUrl.replace('#truename#', truename);
+        }
+      },
+
       deleteCatalog(catalog) {
         if (catalog.is_preset) {
           return;
         }
-        const truename = nodeType.truename;
+        const truename = catalog.truename;
         this.$confirm(`确定要删除目录 ${truename} ？`, '删除目录', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
           type: 'warning',
         }).then(() => {
-          const loading = _vue.$loading({
+          const loading = this.$loading({
             lock: true,
             text: '正在删除 ...',
             background: 'rgba(0, 0, 0, 0.7)',
           });
-          axios.delete('/admin/catalogs/'+truename).then(function(response) {
+          axios.delete(this.deleteUrl.replace('#truename#', truename)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success'
             loading.text = '已删除'

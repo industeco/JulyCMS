@@ -30,7 +30,7 @@
 <body>
   <div id="app">
     <el-dialog title="登录后台" width="400px" :visible="true" :show-close="false">
-      <el-form label-width="80px" method="POST" action="/admin/login" ref="form">
+      <el-form label-width="80px" method="POST" action="{{ short_route('admin.auth') }}" ref="form">
         @csrf
         <el-form-item label="用户名：" size="medium">
           {{-- <el-input name="truename" v-model="truename"></el-input> --}}

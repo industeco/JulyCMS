@@ -186,8 +186,8 @@
         });
 
         if (app.initial_data === JSON.stringify(app.catalogNodes)) {
-          window.location.href = "/admin/catalogs";
-          return
+          window.location.href = "{{ short_route('catalogs.index') }}";
+          return;
         }
 
         const data = {
@@ -196,13 +196,10 @@
           'catalog_nodes': toRecords(app.catalogNodes),
         };
 
-        // const method = mode == 'edit' ? 'put' : 'post';
-        // const action = '/admin/catalogs' + (mode == 'edit' ? '/'+app.catalog.truename : '')
-
-        axios.put('/admin/catalogs/{{ $truename }}/sort', data).then(function(response) {
+        axios.put("{{ short_route('catalogs.updateOrders', $truename) }}", data).then(function(response) {
           // console.log(response)
           // loading.close()
-          window.location.href = "/admin/catalogs";
+          window.location.href = "{{ short_route('catalogs.index') }}";
         }).catch(function(error) {
           app.$message.error(error);
           // console.error(error)

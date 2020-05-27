@@ -33,17 +33,17 @@ class DetectLangcode
     protected function getCurrentPageLangcode($uri)
     {
         $langcode = null;
-        if (preg_match('~^\/?(\w+)(\/|$)~', $uri, $matches)) {
-            $langcode = $matches[1];
-        }
-
-        if ($langcode == 'admin') {
+        $uri = trim(str_replace('\\', '/', $uri), '/');
+        if (strpos($uri, config('jc.admin.prefix') === 0)) {
             return config('jc.langcode.admin_page');
         }
 
-        $langs = \langcode('all');
-        if ($langcode && isset($langs[$langcode])) {
-            return $langcode;
+        $dirs = explode('/', $uri);
+        if ($langcode = $dirs[0] ?? null) {
+            $langs = \langcode('all');
+            if ($langcode && isset($langs[$langcode])) {
+                return $langcode;
+            }
         }
 
         return config('jc.langcode.site_page');

@@ -46,7 +46,7 @@ class CommandController extends Controller
      *
      * @return boolean
      */
-    public function rebuildIndex()
+    public function buildIndex()
     {
         return Index::rebuild();
     }
@@ -109,7 +109,7 @@ class CommandController extends Controller
     /**
      * 修改后台用户密码
      */
-    public function changeAdminPassword(Request $request)
+    public function updateAdminPassword(Request $request)
     {
         if (config('app.demo')) {
             return response('');
@@ -129,7 +129,7 @@ class CommandController extends Controller
         return response('');
     }
 
-    public function adminSearch(Request $request)
+    public function searchDatabase(Request $request)
     {
         $keywords = $request->input('keywords');
 

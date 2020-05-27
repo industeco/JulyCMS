@@ -18,16 +18,16 @@
   <div id="layout_left">
     <div class="md-scrollbar md-theme-default" id="app_sidebar">
       <div id="app_brand">
-        <a href="/admin">
+        <a href="{{ short_route('admin.home') }}">
           <svg class="jc-logo md-icon"><use xlink:href="#jcon_logo"></use></svg>
           <span>七月 cms</span>
         </a>
       </div>
       <ul class="md-list md-theme-default">
         @foreach (config('jc.sidebar_menu') as $item)
-        @if ($item['url'])
-        <li class="md-list-item{{ under_route(Request::getPathInfo(), $item['url'])?' is-active':'' }}">
-          <a href="{{ $item['url'] }}" class="md-list-item-link md-list-item-container md-button-clean">
+        @if ($item['route'])
+        <li class="md-list-item{{ under_route($item['route'], Request::getPathInfo())?' is-active':'' }}">
+          <a href="{{ short_route($item['route']) }}" class="md-list-item-link md-list-item-container md-button-clean">
             <div class="md-list-item-content">
               <i class="md-icon md-icon-font md-theme-default">{{ $item['icon'] }}</i>
               <span class="md-list-item-text">{{ $item['title'] }}</span>
@@ -45,8 +45,8 @@
             <div class="md-list-expand">
               <ul class="md-list md-theme-default">
                 @foreach ($item['children'] as $child)
-                <li class="md-list-item md-inset{{ under_route(Request::getPathInfo(), $child['url'])?' is-active':'' }}">
-                  <a href="{{ $child['url'] }}" class="md-list-item-link md-list-item-container md-button-clean">
+                <li class="md-list-item md-inset{{ under_route($child['route'], Request::getPathInfo())?' is-active':'' }}">
+                  <a href="{{ short_route($child['route']) }}" class="md-list-item-link md-list-item-container md-button-clean">
                     <div class="md-list-item-content">{{ $child['title'] }}</div>
                   </a>
                 </li>
@@ -92,7 +92,7 @@
             <div class="md-button-content">生成谷歌站点地图</div>
           </div>
         </button>
-        <a href="/admin/cmd/findinvalidlinks" target="_blank" class="md-button md-small md-primary md-theme-default">
+        <a href="{{ short_route('adminCommand.findInvalidLinks') }}" target="_blank" class="md-button md-small md-primary md-theme-default">
           <div class="md-ripple">
             <div class="md-button-content">查找无效链接</div>
           </div>
@@ -102,7 +102,7 @@
       <!-- 导航栏右侧菜单 -->
       <div id="navbar_right">
         <!-- 搜索栏框 -->
-        <form action="/admin/cmd/search" method="GET" id="navbar_search">
+        <form action="{{ short_route('adminCommand.search') }}" method="GET" id="navbar_search">
           <input type="text" name="keywords" placeholder="搜索">
           <i class="md-icon md-icon-font md-theme-default">search</i>
         </form>
@@ -115,7 +115,7 @@
         </a>
 
         <!-- 打开后台首页 -->
-        <a href="/admin" class="md-button md-icon-button md-theme-default" title="后台首页">
+        <a href="{{ short_route('admin.home') }}" class="md-button md-icon-button md-theme-default" title="后台首页">
           <div class="md-ripple">
             <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">dashboard</i></div>
           </div>
@@ -139,7 +139,7 @@
                   </a>
                 </li>
                 <li class="md-list-item md-menu-item md-theme-default">
-                  <a href="/admin/logout" class="md-list-item-link md-list-item-container md-button-clean">
+                  <a href="{{ short_route('admin.logout') }}" class="md-list-item-link md-list-item-container md-button-clean">
                     <div class="md-list-item-content">退出 </div>
                   </a>
                 </li>
@@ -308,7 +308,7 @@
           this.process({
             loadingText: '正在重建索引 ...',
             method: 'get',
-            action: '/admin/cmd/rebuildindex',
+            action: "{{ short_route('adminCommand.buildIndex') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -321,7 +321,7 @@
           this.process({
             loadingText: '正在清除缓存 ...',
             method: 'get',
-            action: '/admin/cmd/clearcache',
+            action: "{{ short_route('adminCommand.clearCache') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -334,7 +334,7 @@
           this.process({
             loadingText: '正在生成谷歌站点地图 ...',
             method: 'get',
-            action: '/admin/cmd/buildgooglesitemap',
+            action: "{{ short_route('adminCommand.buildGoogleSitemap') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -366,7 +366,7 @@
 
           const form = this.$refs.pwdForm;
           form.validate().then(() => {
-            axios.post('/admin/cmd/changepwd', clone(this.pwd.data)).then(response => {
+            axios.post("{{ short_route('adminCommand.updatePassword') }}", clone(this.pwd.data)).then(response => {
               loading.close();
               console.log(response)
               if (response.status === 200) {

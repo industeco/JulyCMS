@@ -1325,12 +1325,14 @@ h2.jc-form-info-item {
   color: var(--md-theme-default-disabled-on-background, rgba(0,0,0,0.26));
 }
 
-#contents_filter .jc-filterby {
+#contents_filter .el-select.jc-filterby {
+  width: 130px;
   margin-right: 10px;
 }
 
-#contents_filter .el-select {
-  width: 130px;
+#contents_filter .el-select,
+#contents_filter .el-input {
+  width: 180px;
 }
 
 .jc-form-item-group {

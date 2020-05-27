@@ -35,7 +35,8 @@
 
     methods: {
       editUrl(row) {
-        return '/admin/nodes/' + row.node_id + '/edit';
+        const route = "{{ short_route('nodes.edit', '#node_id#') }}";
+        return route.replace('#node_id#', row.node_id);
       },
     },
   });
