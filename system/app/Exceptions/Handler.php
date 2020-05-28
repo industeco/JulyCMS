@@ -57,12 +57,19 @@ class Handler extends ExceptionHandler
     {
         // 修改错误页面（如 404 页）获取方式，优先读取对应的 html 文件
         if ($exception instanceof HttpException) {
+
             $code = $exception->getStatusCode();
             $langcode = langcode('current_page');
+            $file = 'pages/'.$langcode.'/'.$code.'.html';
+            $disk = Storage::disk('storage');
+
+            if ($disk->exists($file)) {
+                return response($disk->get($file), $code);
+            }
 
             if ($node = Node::findByUrl('/'.$code.'.html', $langcode)) {
                 if ($html = $node->getHtml($langcode)) {
-                    return Router::toResponse($request, $html);
+                    return response($html, $code);
                 }
             }
         }

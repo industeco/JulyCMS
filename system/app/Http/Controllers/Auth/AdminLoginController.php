@@ -15,7 +15,7 @@ class AdminLoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/admin';
+    protected $redirectTo = 'admin.home';
 
     /**
      * Show the login page.
@@ -25,7 +25,7 @@ class AdminLoginController extends Controller
     public function showLoginForm()
     {
         if ($this->guard()->check()) {
-            return redirect($this->redirectTo);
+            return redirect(short_route($this->redirectTo));
         }
 
         return view('admin::login');
@@ -65,7 +65,7 @@ class AdminLoginController extends Controller
 
         $request->session()->invalidate();
 
-        return redirect($this->redirectTo);
+        return redirect(short_route($this->redirectTo));
     }
 
     /**
@@ -94,7 +94,7 @@ class AdminLoginController extends Controller
     {
         $request->session()->regenerate();
 
-        return redirect()->intended($this->redirectTo);
+        return redirect()->intended(short_route($this->redirectTo));
     }
 
     /**

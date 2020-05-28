@@ -273,6 +273,7 @@ class NodeController extends Controller
 
     protected function getTwigTemplates()
     {
-        return NodeField::find('template')->records()->pluck('template_value')->sort()->unique()->all();
+        $templates = NodeField::find('template')->records()->pluck('template_value');
+        return $templates->sort()->unique()->values()->all();
     }
 }
