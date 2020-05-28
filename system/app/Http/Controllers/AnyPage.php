@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Node;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -16,6 +17,10 @@ class AnyPage extends Controller
      */
     public function __invoke($url = '')
     {
+        if (preg_match('/[A-Z]/', $url)) {
+            return Redirect::to(strtolower($url));
+        }
+
         $langcode = langcode('current_page');
         if (!config('jc.multi_language') && $langcode !== langcode('site_page')) {
             abort(404);

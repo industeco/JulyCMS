@@ -16,7 +16,13 @@ class AdminAuthenticate
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::guard('admin')->guest() && !$request->is('admin/login', 'admin/logout')) {
+        $path = '/'.ltrim(strtolower($request->decodedPath()), '/');
+        $except = [
+            short_route('admin.login'),
+            short_route('admin.logout'),
+        ];
+
+        if (Auth::guard('admin')->guest() && !in_array($path, $except)) {
             return redirect()->guest(route('admin.login'));
         }
 
