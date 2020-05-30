@@ -96,4 +96,4 @@ Route::group([
 // 前台
 Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'userCommand.newmessage']);
 Route::get('search', ['uses' => 'CommandController@search', 'as' => 'userCommand.search']);
-Route::get('{any}', 'AnyPage')->where('any', '.*');
+Route::fallback('AnyPage');

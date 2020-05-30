@@ -214,21 +214,6 @@ if (! function_exists('available_languages')) {
     }
 }
 
-if (! function_exists('format_url')) {
-    function format_request_uri($url)
-    {
-        $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
-        if (config('jc.multi_langcode')) {
-            $langcode = langcode('page');
-            if (strpos($url, $langcode.'/') === 0) {
-                $url = substr($url, strlen($langcode.'/'));
-            }
-        }
-
-        return $url;
-    }
-}
-
 if (! function_exists('langname')) {
     function langname($langcode)
     {

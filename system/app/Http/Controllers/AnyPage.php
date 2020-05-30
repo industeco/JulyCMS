@@ -6,7 +6,7 @@ use App\Models\Node;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class AnyPage extends Controller
 {
@@ -15,41 +15,82 @@ class AnyPage extends Controller
      *
      * @return View
      */
-    public function __invoke($url = '')
+    public function __invoke(Request $request)
     {
+        $url = $request->getRequestUri();
         if (preg_match('/[A-Z]/', $url)) {
             return Redirect::to(strtolower($url));
         }
 
-        $langcode = langcode('current_page');
-        if (!config('jc.multi_language') && $langcode !== langcode('site_page')) {
-            abort(404);
+        $url = trim(str_replace('\\/', '/', $url), '/');
+
+        $langcode = langcode('page');
+        if (config('jc.multi_language')) {
+            if (!config('jc.langcode.permissions.'.$langcode.'.page')) {
+                abort(404);
+            }
+            if (strpos($url, $langcode.'/') === 0) {
+                $url = substr($url, strlen($langcode.'/'));
+            }
+        } else {
+            if (strpos($url, $langcode.'/') === 0 || $langcode !== langcode('page.default')) {
+                abort(404);
+            }
         }
 
-        if (!config('jc.langcode.permissions.'.$langcode.'.site_page')) {
-            abort(404);
+        if ($url === 'sitemap.xml') {
+            return $this->getGoogleSitemap($langcode);
         }
 
-        $url = format_request_uri($url);
-
+        $url = $this->completeUrl($url);
         if ($url === '404.html') {
             abort(404);
         }
 
-        if ($url === 'sitemap.xml') {
-            $disk = Storage::disk('storage');
-            $file = 'pages/'.$langcode.'/sitemap.xml';
-            if ($disk->exists($file)) {
-                $content = $disk->get($file);
-            } else {
-                $content = build_google_sitemap($langcode);
-                $disk->put($file, $content);
-            }
-            return $content;
+        if ($html = $this->getHtml($url, $langcode)) {
+            return $html;
         }
 
-        if (! Str::endsWith($url, '.html')) {
-            $url .= '/index.html';
+        abort(404);
+    }
+
+    protected function getGoogleSitemap($langcode)
+    {
+        $file = 'pages/'.$langcode.'/sitemap.xml';
+        $disk = Storage::disk('storage');
+        if ($disk->exists($file)) {
+            return $disk->get($file);
+        }
+
+        $content = build_google_sitemap($langcode);
+        $disk->put($file, $content);
+
+        return $content;
+    }
+
+    protected function completeUrl($url)
+    {
+        if ($url === '') {
+            return 'index.html';
+        }
+
+        if (substr($url, -4) === '.htm') {
+            return $url.'l';
+        }
+
+        if (substr($url, -5) !== '.html') {
+            return $url.'/index.html';
+        }
+
+        return $url;
+    }
+
+    protected function getHtml($url, $langcode)
+    {
+        $file = 'pages/'.$langcode.'/'.$url;
+        $disk = Storage::disk('storage');
+        if ($disk->exists($file)) {
+            return $disk->get($file);
         }
 
         if ($node = Node::findByUrl($url, $langcode)) {
@@ -58,6 +99,6 @@ class AnyPage extends Controller
             }
         }
 
-        abort(404);
+        return null;
     }
 }
