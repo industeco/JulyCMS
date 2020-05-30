@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models\Catalog;
+use Illuminate\Support\Facades\DB;
 
 class CatalogSeeder extends Seeder
 {
@@ -12,24 +13,40 @@ class CatalogSeeder extends Seeder
      */
     public function run()
     {
-        $catalogs = [
+        foreach ($this->getData() as $record) {
+            DB::table('catalogs')->insert($record);
+        }
+
+        foreach ($this->getConfigData() as $record) {
+            DB::table('configs')->insert($record);
+        }
+    }
+
+    protected function getData()
+    {
+        return [
             [
                 'truename' => 'main',
                 'is_preset' => true,
-                'config' => [
-                    'langcode' => [
-                        'interface_value' => 'zh',
-                        'content_value' => 'en',
-                    ],
-                    'name' => [
-                        'zh' => '默认目录',
-                    ],
-                ],
-            ],
+            ]
+        ];
+    }
+
+    protected function getConfigData()
+    {
+        $data = [
+            [
+                'keyname' => 'catalog.main',
+                'group' => null,
+                'name' => '默认目录',
+                'description' => null,
+                'data' => [],
+            ]
         ];
 
-        foreach ($catalogs as $catalog) {
-            Catalog::create($catalog);
-        }
+        return array_map(function($record) {
+            $record['data'] = json_encode($record['data'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            return $record;
+        }, $data);
     }
 }

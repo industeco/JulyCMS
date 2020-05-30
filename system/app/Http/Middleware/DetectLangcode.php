@@ -15,26 +15,22 @@ class DetectLangcode
      */
     public function handle($request, Closure $next)
     {
-        if ($clang = $request->input('content_value_langcode')) {
-            config(['request.langcode.content_value' => $clang]);
-        }
-
-        if ($ilang = $request->input('interface_value_langcode')) {
-            config(['request.langcode.interface_value' => $ilang]);
+        if ($clang = $request->input('content_langcode')) {
+            config(['request.langcode.content' => $clang]);
         }
 
         config([
-            'request.langcode.current_page' => $this->getCurrentPageLangcode($request->getRequestUri()),
+            'request.langcode.current_page' => $this->getPageLangcode($request->getRequestUri()),
         ]);
 
         return $next($request);
     }
 
-    protected function getCurrentPageLangcode($uri)
+    protected function getPageLangcode($uri)
     {
         $langcode = null;
         $uri = trim(str_replace('\\', '/', $uri), '/');
-        if (strpos($uri, config('jc.admin.prefix') === 0)) {
+        if (strpos($uri, config('jc.admin_prefix', 'admin') === 0)) {
             return config('jc.langcode.admin_page');
         }
 
@@ -46,6 +42,6 @@ class DetectLangcode
             }
         }
 
-        return config('jc.langcode.site_page');
+        return config('jc.langcode.page');
     }
 }

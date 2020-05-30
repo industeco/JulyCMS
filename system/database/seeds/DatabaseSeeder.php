@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\NodeField;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,11 +13,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(JulyConfigSeeder::class);
+        DB::beginTransaction();
+
+        $this->call(ConfigSeeder::class);
         $this->call(AdministratorsTableSeeder::class);
         $this->call(NodeFieldSeeder::class);
         $this->call(NodeTypeSeeder::class);
         $this->call(CatalogSeeder::class);
         $this->call(TagSeeder::class);
+
+        DB::commit();
+
+        foreach (NodeField::all() as $field) {
+            $field->tableUp();
+        }
     }
 }

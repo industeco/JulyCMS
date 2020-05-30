@@ -1,32 +1,19 @@
 <?php
 
 return [
-    'admin' => [
-        'prefix' => 'july/admin',
-    ],
-
+    'admin_prefix' => 'admin',
+    'multi_language' => false,
     'langcode' => [
         'permissions' => [
-            'zh' => [
-                'interface_value' => true,
-                'admin_page' => true,
-                'content_value' => false,
-                'site_page' => false,
-            ],
             'en' => [
-                'interface_value' => false,
-                'admin_page' => false,
-                'content_value' => true,
-                'site_page' => true,
+                'content' => true,
+                'page' => true,
             ],
         ],
-        'interface_value' => 'zh',
-        'admin_page' => 'zh',
-        'content_value' => 'en',
-        'site_page' => 'en',
+        'content' => 'en',
+        'page' => 'en',
+        'admin_page' => 'zh-Hans',
     ],
-
-    'multi_language' => false,
 
     'editor_config' => [
         'ckeditor' => [

@@ -13,77 +13,60 @@ class NodeTypeSeeder extends Seeder
      */
     public function run()
     {
-        $nodeTypes = [
+        foreach ($this->getData() as $record) {
+            DB::table('node_types')->insert($record);
+        }
+
+        foreach ($this->getConfigData() as $record) {
+            DB::table('configs')->insert($record);
+        }
+
+        foreach ($this->getPivotData() as $record) {
+            DB::table('node_field_node_type')->insert($record);
+        }
+    }
+
+    protected function getData()
+    {
+        return [
             [
-                'type' => [
-                    'truename' => 'basic',
-                    'config' => [
-                        'langcode' => [
-                            'interface_value' => 'zh',
-                            'content_value' => 'en',
-                        ],
-                        'name' => [
-                            'zh' => '基础页面',
-                        ],
-                        'description' => [
-                            'zh' => '如「关于我们页」，「联系我们页」等',
-                        ],
-                    ],
-                ],
-                'fields' => ['title','content','h1'],
+                'truename' => 'basic',
+                'is_preset' => false,
             ],
+        ];
+    }
+
+    protected function getConfigData()
+    {
+        $data = [
             [
-                'type' => [
-                    'truename' => 'article',
-                    'config' => [
-                        'langcode' => [
-                            'interface_value' => 'zh',
-                            'content_value' => 'en',
-                        ],
-                        'name' => [
-                            'zh' => '文章',
-                        ],
-                        'description' => [
-                            'zh' => '添加一篇文章',
-                        ],
-                    ],
-                ],
-                'fields' => ['title','content','h1','image_src','image_alt'],
-            ],
-            [
-                'type' => [
-                    'truename' => 'product',
-                    'config' => [
-                        'langcode' => [
-                            'interface_value' => 'zh',
-                            'content_value' => 'en',
-                        ],
-                        'name' => [
-                            'zh' => '产品',
-                        ],
-                        'description' => [
-                            'zh' => '添加产品信息',
-                        ],
-                    ],
-                ],
-                'fields' => ['title','content','h1','image_src','image_alt'],
+                'keyname' => 'node_type.basic',
+                'group' => null,
+                'name' => '基础页面',
+                'description' => '如「关于我们页」，「联系我们页」等',
+                'data' => [],
             ],
         ];
 
-        DB::transaction(function() use($nodeTypes) {
-            foreach ($nodeTypes as $nodeType) {
-                $type = $nodeType['type'];
-                $type['config'] = json_encode($type['config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-                DB::table('node_types')->insert($type);
+        return array_map(function($record) {
+            $record['data'] = json_encode($record['data'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            return $record;
+        }, $data);
+    }
 
-                foreach ($nodeType['fields'] as $index => $field) {
-                    DB::table('node_field_node_type')->insert([
-                        'node_type' => $type['truename'],
-                        'node_field' => $field,
-                        'delta' => $index,
-                    ]);
-                }
-            }
-        });
+    protected function getPivotData()
+    {
+        return [
+            [
+                'node_type' => 'basic',
+                'node_field' => 'title',
+                'delta' => 0,
+            ],
+            [
+                'node_type' => 'basic',
+                'node_field' => 'content',
+                'delta' => 1,
+            ],
+        ];
     }
 }

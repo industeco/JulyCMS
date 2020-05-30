@@ -27,49 +27,6 @@ if (! function_exists('auth')) {
     }
 }
 
-// if (! function_exists('config')) {
-//     /**
-//      * Get / set the specified configuration value.
-//      *
-//      * If an array is passed as the key, we will assume you want to set an array of values.
-//      *
-//      * @param  array|string|null  $key
-//      * @param  mixed  $default
-//      * @return mixed|\Illuminate\Config\Repository
-//      */
-//     function config($key = null, $default = null)
-//     {
-//         if (is_null($key)) {
-//             return app('config');
-//         }
-
-//         if (is_array($key)) {
-//             return app('config')->set($key);
-//         }
-
-//         if (is_string($key) && stripos($key, 'db.') === 0) {
-//             if (!is_null($value = Config::get(substr($key, 3)))) {
-//                 return $value;
-//             }
-//         }
-
-//         return app('config')->get($key, $default);
-//     }
-// }
-
-if (! function_exists('theme_path')) {
-    /**
-     * Get the path to the theme folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function theme_path($path = '')
-    {
-        return public_path('themes/'.ltrim($path, '\\/'));
-    }
-}
-
 if (! function_exists('admin_path')) {
     /**
      * Get the path to the theme folder.
@@ -162,10 +119,8 @@ if (! function_exists('langcode')) {
     {
         if (is_null($type)) {
             return [
-                'content_value' => langcode('content_value'),
-                'interface_value' => langcode('interface_value'),
-                'admin_page' => langcode('admin_page'),
-                'site_page' => langcode('site_page'),
+                'content' => langcode('content'),
+                'page' => langcode('page'),
             ];
         }
 
@@ -182,33 +137,25 @@ if (! function_exists('langcode')) {
                 }
                 return $langs;
 
-            // 界面语言
-            case 'interface_value':
-                return config('request.langcode.interface_value') ?: config('jc.langcode.interface_value');
-
-            // 默认界面语言
-            case 'interface_value.default':
-                return config('jc.langcode.interface_value');
-
             // 内容语言
-            case 'content_value':
-                return config('request.langcode.content_value') ?: config('jc.langcode.content_value');
+            case 'content':
+                return config('request.langcode.content') ?: config('jc.langcode.content');
 
             // 默认内容语言
-            case 'content_value.default':
-                return config('jc.langcode.content_value');
+            case 'content.default':
+                return config('jc.langcode.content');
+
+            // 站点页面语言
+            case 'page':
+                return config('request.langcode.current_page') ?: config('jc.langcode.page');
+
+            // 当前请求语言
+            case 'page.default':
+                return config('jc.langcode.page');
 
             // 后台页面语言
             case 'admin_page':
                 return config('jc.langcode.admin_page');
-
-            // 站点页面语言
-            case 'site_page':
-                return config('jc.langcode.site_page');
-
-            // 当前请求语言
-            case 'current_page':
-                return config('request.langcode.current_page');
 
             // 请求语言数组
             case 'request':
@@ -225,10 +172,10 @@ if (! function_exists('available_langcodes')) {
     /**
      * 获取可用语言列表
      *
-     * @param string $type: 'site_page', 'content_value', 'admin_page', 'interface_value'
+     * @param string $type: 'page', 'content'
      * @return array
      */
-    function available_langcodes($type = 'site_page')
+    function available_langcodes($type = 'page')
     {
         if (!$type) {
             return [];
@@ -249,13 +196,12 @@ if (! function_exists('available_languages')) {
     /**
      * 获取可用语言列表
      *
-     * @param string $type: 'site_page', 'content_value', 'admin_page', 'interface_value'
+     * @param string $type: 'page', 'content'
      * @return array
      */
-    function available_languages($type = 'site_page', $interface = null)
+    function available_languages($type = 'page')
     {
-        $interface = $interface ?: langcode('admin_page');
-        $list = language_list($interface);
+        $list = language_list();
 
         $languages = [];
         foreach (config('jc.langcode.permissions') as $key => $value) {
@@ -273,7 +219,7 @@ if (! function_exists('format_url')) {
     {
         $url = trim(strtolower(str_replace('\\', '/', $url)), '\\/');
         if (config('jc.multi_langcode')) {
-            $langcode = langcode('current_page');
+            $langcode = langcode('page');
             if (strpos($url, $langcode.'/') === 0) {
                 $url = substr($url, strlen($langcode.'/'));
             }
@@ -284,79 +230,10 @@ if (! function_exists('format_url')) {
 }
 
 if (! function_exists('langname')) {
-    function langname($langcode, $interface_lang = null)
+    function langname($langcode)
     {
-        $interface_lang = $interface_lang ?: langcode('admin_page');
-        $list = language_list($interface_lang);
+        $list = language_list();
         return $list[$langcode] ?? $langcode;
-    }
-}
-
-if (! function_exists('extract_config')) {
-    /**
-     * @param array $config
-     * @param array $structure
-     * @param array $langcode
-     */
-    function extract_config(array $config, array $structure, array $langcode = [])
-    {
-        $langcode = array_merge(langcode(), $langcode);
-        $original_langcode = $config['langcode'];
-        unset($config['langcode']);
-
-        $options = [];
-        foreach ($config as $key => $value) {
-            $meta = $structure[$key] ?? [];
-            $type = $meta['type'] ?? null;
-            if (($type === 'content_value' || $type === 'interface_value') && is_array($value)) {
-                $value = $value[$langcode[$type]] ?? $value[$original_langcode[$type]] ?? null;
-            }
-
-            $options[$key] = $value;
-        }
-
-        // 填充默认值
-        foreach ($structure as $key => $meta) {
-            if (isset($meta['default']) && is_null($options[$key] ?? null)) {
-                $options[$key] = $meta['default'];
-            }
-        }
-
-        return $options;
-    }
-}
-
-if (! function_exists('build_config')) {
-    /**
-     * @param array $data
-     * @param array $structure
-     */
-    function build_config(array $data, array $structure)
-    {
-        $langcode = langcode();
-        $config = [
-            'langcode' => [
-                'content_value' => $langcode['content_value'],
-                'interface_value' => $langcode['interface_value'],
-            ],
-        ];
-
-        foreach ($data as $key => $value) {
-            if ($meta = $structure[$key] ?? null) {
-                if ($cast = $meta['cast'] ?? null) {
-                    $value = cast_value($value, $cast);
-                }
-                $type = $meta['type'] ?? null;
-                if ($type === 'content_value' || $type === 'interface_value') {
-                    $value = [
-                        $langcode[$type] => $value,
-                    ];
-                }
-                $config[$key] = $value;
-            }
-        }
-
-        return $config;
     }
 }
 
@@ -388,29 +265,6 @@ if (! function_exists('cast_value')) {
     }
 }
 
-if (! function_exists('mix_config')) {
-    function mix_config($instances, array $langcode = [])
-    {
-        if ($instances instanceof JulyModel) {
-            return $instances->mixConfig($langcode);
-        }
-
-        if ($instances instanceof Collection) {
-            $results = [];
-            foreach ($instances as $instance) {
-                $results[] = mix_config($instance, $langcode);
-            }
-            return $results;
-        }
-
-        if ($instances instanceof Arrayable) {
-            return $instances->toArray();
-        }
-
-        return $instances;
-    }
-}
-
 if (! function_exists('short_route')) {
     /**
      * 生成一个短 url （不带域名）
@@ -422,20 +276,6 @@ if (! function_exists('short_route')) {
     function short_route($name, $parameters = [])
     {
         return route($name, $parameters, false);
-    }
-}
-
-if (! function_exists('short_url')) {
-    /**
-     * 生成一个短 url （不带域名）
-     *
-     * @param  array|string  $name
-     * @param  mixed  $parameters
-     * @return string
-     */
-    function short_url($path)
-    {
-        return '/'.ltrim($path, '/');
     }
 }
 
@@ -456,12 +296,8 @@ if (! function_exists('view_with_langcode')) {
             return $factory;
         }
 
-        $lang = langcode();
         $data = array_merge([
-            'content_value_langcode' => $lang['content_value'],
-            'interface_value_langcode' => $lang['interface_value'],
-            'admin_page_langcode' => $lang['admin_page'],
-            'site_page_langcode' => $lang['site_page'],
+            'content_langcode' => langcode('content'),
         ], $data);
 
         return $factory->make($view, $data, $mergeData);
@@ -469,9 +305,10 @@ if (! function_exists('view_with_langcode')) {
 }
 
 if (! function_exists('twig')) {
-    function twig($path = 'default/template', $debug = false)
+    function twig($path = null, $debug = false)
     {
-        $loader = new \Twig\Loader\FilesystemLoader($path, theme_path());
+        $path = $path ?: 'default/template';
+        $loader = new \Twig\Loader\FilesystemLoader($path, public_path('themes'));
         if ($debug) {
             $twig = new \Twig\Environment($loader, ['debug' => true]);
             $twig->addExtension(new \Twig\Extension\DebugExtension());
@@ -482,13 +319,6 @@ if (! function_exists('twig')) {
         $twig->addExtension(new \App\TwigExtensions\QueryInTwig());
 
         return $twig;
-    }
-}
-
-if (! function_exists('html_escape')) {
-    function html_escape($html)
-    {
-        return str_replace('`', '\\`', $html);
     }
 }
 
@@ -687,9 +517,9 @@ if (! function_exists('str_diff')) {
 }
 
 if (! function_exists('language_list')) {
-    function language_list($langcode = null)
+    function language_list()
     {
-        $langcode = $langcode ?: langcode('admin_page');
+        $langcode = langcode('admin_page');
 
         $list = config('language_list.'.$langcode, []);
         if ($list) {
