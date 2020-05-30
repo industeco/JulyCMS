@@ -52,9 +52,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     protected $fillable = [
         'truename',
         'is_preset',
-        // 'langcode',
-        'config',
-        // 'updated_at',
     ];
 
     /**
@@ -64,16 +61,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     protected $casts = [
         'is_preset' => 'boolean',
-        'config' => Json::class,
-    ];
-
-    /**
-     * 哪些字段可更新（白名单）
-     *
-     * @var array
-     */
-    protected $updateOnly = [
-        'config',
     ];
 
     /**

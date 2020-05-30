@@ -56,8 +56,7 @@ class NodeField extends JulyModel implements HasModelConfig
         'field_type',
         'is_preset',
         'is_searchable',
-        // 'langcode',
-        'config',
+        'is_global',
     ];
 
     /**

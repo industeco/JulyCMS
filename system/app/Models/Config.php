@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
+use App\Contracts\HasConfig;
 use App\Traits\CacheRetrieve;
 use Illuminate\Support\Arr;
 
-class JulyConfig extends Model
+class Config extends Model implements HasConfig
 {
     use CacheRetrieve;
 
@@ -23,7 +24,7 @@ class JulyConfig extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'name';
+    protected $primaryKey = 'keyname';
 
     /**
      * 主键“类型”。
@@ -45,7 +46,10 @@ class JulyConfig extends Model
      * @var array
      */
     protected $fillable = [
+        'keyname',
+        'group',
         'name',
+        'description',
         'data',
     ];
 
@@ -60,17 +64,26 @@ class JulyConfig extends Model
 
     public static function loadConfiguration()
     {
-        $configuration = [];
-        foreach (static::all() as $entry) {
-            $configuration['jc.'.$entry->name] = $entry->getValue();
+        $config = config();
+        $records = static::where('keyname', 'like', 'config.%')->get();
+        foreach ($records as $record) {
+            $key = 'jc.'. substr($record->keyname, 7);
+            $config->set($key, $record->getValue());
         }
-        app('config')->set($configuration);
-
-        return $configuration;
     }
 
     public static function get($key, $default = null)
     {
+        $item = static::find($key);
+        if ($item) {
+            return $item->getValue() ?? $default;
+        }
+        return $default;
+    }
+
+    public static function getGroup($group)
+    {
+        $records = static::where('group', $group)->get();
         $item = static::find($key);
         if ($item) {
             return $item->getValue() ?? $default;
@@ -102,7 +115,7 @@ class JulyConfig extends Model
     public static function getLanguageSettings($langcode = null)
     {
         $names = [
-            'langcode.permissions', 'langcode.content_value', 'langcode.site_page', 'multi_language',
+            'multi_language', 'langcode.permissions', 'langcode.content', 'langcode.page',
         ];
 
         return static::retrieveConfiguration($names, $langcode);
@@ -147,7 +160,7 @@ class JulyConfig extends Model
 
     protected static function mixConfig($entry, $langcode = null)
     {
-        $ilang = Arr::get($entry, 'langcode.interface_value') ?: langcode('interface_value');
+        $ilang = langcode('admin_page');
         $langcode = $langcode ?: $ilang;
 
         $data = $entry['data'];

@@ -51,9 +51,6 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
     protected $fillable = [
         'truename',
         'is_preset',
-        // 'langcode',
-        'config',
-        // 'updated_at',
     ];
 
     /**
@@ -63,22 +60,7 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
      */
     protected $casts = [
         'is_preset' => 'boolean',
-        'config' => Json::class,
     ];
-
-    /**
-     * 哪些字段可更新（白名单）
-     *
-     * @var array
-     */
-    protected $updateOnly = [
-        'config',
-    ];
-
-    public static function primaryKeyName()
-    {
-        return 'truename';
-    }
 
     public function nodes()
     {
@@ -105,20 +87,6 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         }
 
         return $types;
-    }
-
-    public function configStructure(): array
-    {
-        return [
-            'name' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-            'description' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-        ];
     }
 
     public function retrieveFields($langcode = null)

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewMessage;
 use App\Models\Catalog;
-use App\Models\Index;
+use App\Models\NodeIndex;
 use App\Models\Node;
 use App\Models\NodeField;
 use Illuminate\Http\Request;
@@ -75,7 +75,7 @@ class CommandController extends Controller
     {
         Node::fetchAll();
 
-        $results = Index::search($request->input('keywords'));
+        $results = NodeIndex::search($request->input('keywords'));
         foreach ($results['results'] as &$result) {
             $result['node'] = Node::fetch($result['node_id']);
         }
