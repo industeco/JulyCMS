@@ -24,7 +24,7 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'config.multi_language',
                 'group' => 'language',
-                'name' => '多语言',
+                'label' => '多语言',
                 'description' => '启用后可对内容进行翻译，可访问多语言页面。',
                 'data' => [
                     'value_type' => 'boolean',
@@ -32,19 +32,19 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.langcode.permissions',
+                'keyname' => 'config.langcode.list',
                 'group' => 'language',
-                'name' => '可用语言',
-                'description' => '内容翻译和访问多语言页面时可用的语言。',
+                'label' => '列表',
+                'description' => '可用语言列表',
                 'data' => [
                     'value_type' => 'array',
-                    'value' => config('jc.langcode.permissions'),
+                    'value' => config('jc.langcode.list'),
                 ],
             ],
             [
                 'keyname' => 'config.langcode.content',
                 'group' => 'language',
-                'name' => '内容默认语言',
+                'label' => '内容默认语言',
                 'description' => '添加内容时默认使用的语言。',
                 'data' => [
                     'value_type' => 'string',
@@ -54,8 +54,8 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'config.langcode.page',
                 'group' => 'language',
-                'name' => '页面默认语言',
-                'description' => '访问网站页面（非后台）时默认使用的语言。',
+                'label' => '页面默认语言',
+                'description' => '访问网站（非后台）页面时默认使用的语言。',
                 'data' => [
                     'value_type' => 'string',
                     'value' =>  config('jc.langcode.page'),
@@ -64,7 +64,7 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'config.url',
                 'group' => 'basic',
-                'name' => '首页网址',
+                'label' => '首页网址',
                 'description' => null,
                 'data' => [
                     'value_type' => 'string',
@@ -74,7 +74,7 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'config.email',
                 'group' => 'basic',
-                'name' => '默认邮箱',
+                'label' => '默认邮箱',
                 'description' => '联系表单的默认接收邮箱',
                 'data' => [
                     'value_type' => 'string',
@@ -84,7 +84,7 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'config.owner',
                 'group' => 'basic',
-                'name' => '网站所有者（公司名）',
+                'label' => '网站所有者（公司名）',
                 'description' => null,
                 'data' => [
                     'value_type' => 'string',
@@ -92,21 +92,15 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.collapse_global_fields',
-                'group' => 'background_interface',
-                'name' => '通用字段折叠设置',
+                'keyname' => 'config.expand_global_fields',
+                'group' => 'background',
+                'label' => '展开通用字段',
                 'description' => '设置内容编辑页右侧通用字段默认折叠或展开',
                 'data' => [
                     'value_type' => 'array',
                     'value' => [
-                        [
-                            'group' => '网址和模板',
-                            'collapsed' => true,
-                        ],
-                        [
-                            'group' => 'META 信息',
-                            'collapsed' => true,
-                        ],
+                        '网址和模板' => false,
+                        'META 信息' => false,
                     ],
                 ],
             ],

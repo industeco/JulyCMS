@@ -22,8 +22,8 @@ class CreateJulycmsTables extends Migration
             // 配置分组
             $table->string('group', 50)->nullable();
 
-            // 名称（用作字段标签）
-            $table->string('name', 50)->nullable();
+            // 标签
+            $table->string('label', 50);
 
             // 描述
             $table->string('description', 255)->nullable();
@@ -35,11 +35,23 @@ class CreateJulycmsTables extends Migration
         // 管理员账户表
         Schema::create('administrators', function (Blueprint $table) {
             $table->id();
-            $table->string('truename', 20)->unique();
-            $table->string('password');
+            $table->string('truename', 50)->unique();
             $table->string('name', 20);
+            $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+        });
+
+        // 字段参数表
+        Schema::create('field_parameters', function (Blueprint $table) {
+            // 字段，例：node_field.title 或 node_field.title.node_type.basic
+            $table->string('keyname', 100);
+
+            // 配置值
+            $table->binary('data');
+
+            // 语言
+            $table->string('langcode', 12);
         });
 
         // 内容字段
@@ -53,11 +65,23 @@ class CreateJulycmsTables extends Migration
             // 是否预设
             $table->boolean('is_preset')->default(0);
 
+            // 是否通用字段（会出现在表单右侧）
+            $table->boolean('is_global')->default(0);
+
             // 是否可检索
             $table->boolean('is_searchable')->default(1);
 
-            // 是否通用字段（会出现在表单右侧）
-            $table->boolean('is_global')->default(0);
+            // 搜索权重
+            $table->unsignedDecimal('weight')->default(1);
+
+            // 分组（分组标签）
+            $table->string('group', 50)->nullable();
+
+            // 标签
+            $table->string('label', 50);
+
+            // 描述
+            $table->string('description', 255)->nullable();
 
             // 时间戳
             $table->timestamps();
@@ -70,6 +94,12 @@ class CreateJulycmsTables extends Migration
 
             // 是否预设
             $table->boolean('is_preset')->default(0);
+
+            // 标签
+            $table->string('label', 50);
+
+            // 描述
+            $table->string('description', 255)->nullable();
 
             // 时间戳
             $table->timestamps();
@@ -87,6 +117,12 @@ class CreateJulycmsTables extends Migration
 
             // 序号
             $table->unsignedTinyInteger('delta')->default(0);
+
+            // 标签
+            $table->string('label', 50)->nullable();
+
+            // 描述
+            $table->string('description', 255)->nullable();
 
             // 同一个字段在同一个类型中最多出现一次
             $table->unique(['node_type', 'node_field']);
@@ -116,6 +152,12 @@ class CreateJulycmsTables extends Migration
 
             // 是否预设
             $table->boolean('is_preset')->default(0);
+
+            // 标签
+            $table->string('label', 50);
+
+            // 描述
+            $table->string('description', 255)->nullable();
 
             // 时间戳
             $table->timestamps();
@@ -214,6 +256,7 @@ class CreateJulycmsTables extends Migration
         }
 
         Schema::dropIfExists('node_fields');
+        Schema::dropIfExists('field_parameters');
         Schema::dropIfExists('administrators');
         Schema::dropIfExists('configs');
     }

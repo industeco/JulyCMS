@@ -5,11 +5,11 @@ namespace App\Contracts;
 interface HasConfig
 {
     /**
-     * 获取配置数据的属性描述
+     * 获取配置模式
      *
      * @return array
      */
-    public function getConfigMeta(): array;
+    public function getConfigSchema(): array;
 
     /**
      * 从多语言的配置数据中提取当前语言的配置值
