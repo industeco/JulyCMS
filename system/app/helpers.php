@@ -260,6 +260,10 @@ if (! function_exists('short_route')) {
      */
     function short_route($name, $parameters = [])
     {
+        if (is_array($name)) {
+            $parameters = $name[1] ?? [];
+            $name = $name[0] ?? null;
+        }
         return route($name, $parameters, false);
     }
 }

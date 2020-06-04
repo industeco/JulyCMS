@@ -4,14 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
-use App\Contracts\HasConfig;
-use App\Traits\CacheRetrieve;
 use Illuminate\Support\Arr;
 
-class Config extends Model implements HasConfig
+class Config extends Model
 {
-    use CacheRetrieve;
-
     /**
      * 与模型关联的表名
      *
@@ -48,7 +44,7 @@ class Config extends Model implements HasConfig
     protected $fillable = [
         'keyname',
         'group',
-        'name',
+        'label',
         'description',
         'data',
     ];
@@ -62,12 +58,11 @@ class Config extends Model implements HasConfig
         'data' => Json::class,
     ];
 
-    public static function loadConfiguration()
+    public static function loadConfigurations()
     {
         $config = config();
-        $records = static::where('keyname', 'like', 'config.%')->get();
-        foreach ($records as $record) {
-            $key = 'jc.'. substr($record->keyname, 7);
+        foreach (static::all() as $record) {
+            $key = 'jc.'.$record->keyname;
             $config->set($key, $record->getValue());
         }
     }
@@ -81,110 +76,43 @@ class Config extends Model implements HasConfig
         return $default;
     }
 
+    /**
+     * 分组获取
+     *
+     * @param string $group
+     * @return array
+     */
     public static function getGroup($group)
     {
-        $records = static::where('group', $group)->get();
-        $item = static::find($key);
-        if ($item) {
-            return $item->getValue() ?? $default;
-        }
-        return $default;
+        return static::where('group', $group)->get()->map(function($record) {
+            return $record->purify();
+        })->keyBy('keyname')->all();
     }
 
-    /**
-     * 获取网站基本设置
-     *
-     * @param string $langcode
-     * @return array
-     */
-    public static function getBasicSettings($langcode = null)
-    {
-        $names = [
-            'owner', 'url', 'email',
-        ];
-
-        return static::retrieveConfiguration($names, $langcode);
-    }
-
-    /**
-     * 获取语言设置
-     *
-     * @param string $langcode
-     * @return array
-     */
-    public static function getLanguageSettings($langcode = null)
-    {
-        $names = [
-            'multi_language', 'langcode.permissions', 'langcode.content', 'langcode.page',
-        ];
-
-        return static::retrieveConfiguration($names, $langcode);
-    }
-
-    /**
-     * 批量获取设置数据
-     *
-     * @param array $names 配置真名
-     * @param string $langcode
-     * @return array
-     */
-    public static function retrieveConfiguration(array $names, $langcode = null)
-    {
-        $configuration = [];
-        $fresh = [];
-        foreach ($names as $name) {
-            if ($entry = static::cacheGet($name)) {
-                $configuration[$name] = static::mixConfig($entry['value'], $langcode);
-            } else {
-                $configuration[$name] = null;
-                $fresh[] = $name;
-            }
-        }
-
-        if ($fresh) {
-            foreach (static::findMany($fresh) as $entry) {
-                $entry = $entry->toArray();
-                static::cachePut($entry['name'], $entry);
-                $configuration[$entry['name']] = static::mixConfig($entry, $langcode);
-            }
-        }
-
-        return $configuration;
-    }
-
-    public function getValue($langcode = null)
+    public function getValue()
     {
         $data = $this->data;
         return cast_value($data['value'], $data['value_type']);
     }
 
-    protected static function mixConfig($entry, $langcode = null)
+    public function purify()
     {
-        $ilang = langcode('admin_page');
-        $langcode = $langcode ?: $ilang;
-
-        $data = $entry['data'];
-        unset($entry['data']);
-        foreach (['label', 'description'] as $attribute) {
-            if ($value = $data[$attribute] ?? null) {
-                $entry[$attribute] = $value[$langcode] ?? $value[$ilang] ?? null;
-            } else {
-                $entry[$attribute] = null;
-            }
-        }
-        $entry['value'] = cast_value($data['value'], $data['value_type']);
-
-        return $entry;
+        return [
+            'keyname' => $this->attributes['keyname'],
+            'group' => $this->attributes['group'],
+            'label' => $this->attributes['label'],
+            'description' => $this->attributes['description'],
+            'value' => $this->getValue(),
+        ];
     }
 
-    public static function updateConfiguration(array $configuration)
+    public static function updateConfigurations(array $changed)
     {
-        foreach (static::findMany(array_keys($configuration)) as $entry) {
-            static::cacheClear($entry->name);
-            $entry->data = array_merge($entry->data, [
-                'value' => cast_value($configuration[$entry->name], $entry->data['value_type']),
-            ]);
-            $entry->save();
+        foreach (static::findMany(array_keys($changed)) as $config) {
+            $data = $config->data;
+            $data['value'] = cast_value($changed[$config->keyname] ?? null, $data['value_type']);
+            $config->data = $data;
+            $config->save();
         }
     }
 }

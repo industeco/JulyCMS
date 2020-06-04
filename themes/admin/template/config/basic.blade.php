@@ -4,21 +4,21 @@
 
 @section('main_content')
 <el-form id="main_form" ref="main_form"
-  :model="settings"
+  :model="configs"
   :rules="rules"
   label-position="top">
   <div id="main_form_left">
-    @foreach (['owner','url','email'] as $name)
-    <el-form-item prop="{{ $name }}" size="small"
-      class="{{ $settings[$name]['description']?'has-helptext':'' }}">
-      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('{{ $name }}')" placement="right">
-        <span>{{ $settings[$name]['label'] }}</span>
+    @foreach ($configs as $keyname => $config)
+    <el-form-item prop="{{ $keyname }}" size="small"
+      class="{{ $config['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('{{ $keyname }}')" placement="right">
+        <span>{{ $config['label'] }}</span>
       </el-tooltip>
       <el-input
-        v-model="settings.{{ $name }}"
+        v-model="configs.{{ $keyname }}"
         native-size="80"></el-input>
-        @if ($settings[$name]['description'])
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $settings[$name]['description'] }}</span>
+        @if ($config['description'])
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $config['description'] }}</span>
         @endif
     </el-form-item>
     @endforeach
@@ -40,19 +40,19 @@
     el: '#main_content',
     data() {
       return {
-        settings: {
-          @foreach ($settings as $item)
-          "{{ $item['name'] }}": "{{ $item['value'] }}",
+        configs: {
+          @foreach ($configs as $item)
+          "{{ $item['keyname'] }}": "{{ $item['value'] }}",
           @endforeach
         },
         rules: {
           url: [
-            {required:true, message:'不能为空', trigger:'change'},
-            {type:'url', message:'网址格式不正确', trigger:'blur'},
+            {required:true, message:'不能为空', trigger:'submit'},
+            {type:'url', message:'格式错误', trigger:'blur'},
           ],
           email: [
             {required:true, message:'不能为空', trigger:'submit'},
-            {type:'email', message:'邮箱格式不正确', trigger:'submit'},
+            {type:'email', message:'格式错误', trigger:'blur'},
           ],
           owner: [
             {required:true, message:'不能为空', trigger:'submit'},
@@ -62,14 +62,14 @@
     },
 
     created() {
-      this.initial_data = clone(this.settings);
+      this.initial_data = clone(this.configs);
     },
 
     methods: {
       getChanged() {
         const changed = [];
-        for (const key in this.settings) {
-          if (! isEqual(this.settings[key], this.initial_data[key])) {
+        for (const key in this.configs) {
+          if (! isEqual(this.configs[key], this.initial_data[key])) {
             changed.push(key);
           }
         }
@@ -99,12 +99,12 @@
             return;
           }
 
-          const settings = clone(this.settings);
-          settings._changed = changed;
+          const configs = clone(this.configs);
+          configs._changed = changed;
 
-          axios.post("{{ short_route('configs.basic.update') }}", settings).then(response => {
+          axios.post("{{ short_route('configs.update') }}", configs).then(response => {
             loading.close();
-            this.initial_data = clone(this.settings);
+            this.initial_data = clone(this.configs);
             // console.log(response);
             this.$message.success('设置已更新');
           }).catch(err => {

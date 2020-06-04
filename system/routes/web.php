@@ -34,10 +34,8 @@ Route::group([
     });
 
     // 配置
-    Route::get('configs/basic', 'JulyConfigController@editBasicSettings')->name('configs.basic.edit');
-    Route::post('configs/basic', 'JulyConfigController@updateBasicSettings')->name('configs.basic.update');
-    Route::get('configs/language', 'JulyConfigController@editLanguageSettings')->name('configs.language.edit');
-    Route::post('configs/language', 'JulyConfigController@updateLanguageSettings')->name('configs.language.update');
+    Route::get('configs/{group}', 'ConfigController@edit')->name('configs.edit');
+    Route::post('configs', 'ConfigController@update')->name('configs.update');
 
     // 字段
     Route::resource('node_fields', 'NodeFieldController')->parameters([

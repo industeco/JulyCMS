@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\JulyConfig;
+use App\Models\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     {
         try {
             // 加载数据库中的配置
-            JulyConfig::loadConfiguration();
+            Config::loadConfigurations();
         } catch (\Throwable $th) {
             //throw $th;
         }

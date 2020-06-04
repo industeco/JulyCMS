@@ -1,13 +1,24 @@
 <?php
 
 return [
+    /**
+     * 后台路由前缀
+     */
     'admin_prefix' => 'admin',
+
+    /**
+     * 多语言开关
+     */
     'multi_language' => false,
+
+    /**
+     * 语言设置
+     */
     'langcode' => [
-        'permissions' => [
+        'list' => [
             'en' => [
-                'content' => true,
-                'page' => true,
+                'accessible' => true,
+                'translatable' => true,
             ],
         ],
         'content' => 'en',
@@ -105,15 +116,21 @@ return [
             'route' => null,
             'children' => [
                 [
-                    'title' => '基本设置',
+                    'title' => '基础',
                     'icon' => null,
-                    'route' => 'configs.basic.edit',
+                    'route' => ['configs.edit', 'basic'],
                     'children' => [],
                 ],
                 [
                     'title' => '语言',
                     'icon' => null,
-                    'route' => 'configs.language.edit',
+                    'route' => ['configs.edit', 'language'],
+                    'children' => [],
+                ],
+                [
+                    'title' => '偏好',
+                    'icon' => null,
+                    'route' => ['configs.edit', 'preference'],
                     'children' => [],
                 ],
             ],

@@ -22,7 +22,7 @@ class ConfigSeeder extends Seeder
         $clang = config('jc.langcode.content');
         $data = [
             [
-                'keyname' => 'config.multi_language',
+                'keyname' => 'multi_language',
                 'group' => 'language',
                 'label' => '多语言',
                 'description' => '启用后可对内容进行翻译，可访问多语言页面。',
@@ -32,7 +32,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.langcode.list',
+                'keyname' => 'langcode.list',
                 'group' => 'language',
                 'label' => '列表',
                 'description' => '可用语言列表',
@@ -42,7 +42,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.langcode.content',
+                'keyname' => 'langcode.content',
                 'group' => 'language',
                 'label' => '内容默认语言',
                 'description' => '添加内容时默认使用的语言。',
@@ -52,7 +52,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.langcode.page',
+                'keyname' => 'langcode.page',
                 'group' => 'language',
                 'label' => '页面默认语言',
                 'description' => '访问网站（非后台）页面时默认使用的语言。',
@@ -62,7 +62,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.url',
+                'keyname' => 'url',
                 'group' => 'basic',
                 'label' => '首页网址',
                 'description' => null,
@@ -72,7 +72,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.email',
+                'keyname' => 'email',
                 'group' => 'basic',
                 'label' => '默认邮箱',
                 'description' => '联系表单的默认接收邮箱',
@@ -82,7 +82,7 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.owner',
+                'keyname' => 'owner',
                 'group' => 'basic',
                 'label' => '网站所有者（公司名）',
                 'description' => null,
@@ -92,10 +92,10 @@ class ConfigSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'config.expand_global_fields',
-                'group' => 'background',
-                'label' => '展开通用字段',
-                'description' => '设置内容编辑页右侧通用字段默认折叠或展开',
+                'keyname' => 'field_group_settings',
+                'group' => 'preference',
+                'label' => '通用字段',
+                'description' => '设置内容表单右侧字段默认折叠或展开',
                 'data' => [
                     'value_type' => 'array',
                     'value' => [
