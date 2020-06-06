@@ -11,10 +11,8 @@ use App\FieldTypes\FieldType;
 use App\ModelCollections\NodeCollection;
 use App\Traits\CastModelConfig;
 
-class NodeType extends JulyModel implements GetNodes, HasModelConfig
+class NodeType extends JulyModel implements GetNodes
 {
-    use CastModelConfig;
-
     /**
      * 与模型关联的表名
      *
@@ -51,6 +49,8 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
     protected $fillable = [
         'truename',
         'is_preset',
+        'label',
+        'description',
     ];
 
     /**
@@ -72,10 +72,13 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
         return $this->belongsToMany(NodeField::class, 'node_field_node_type', 'node_type', 'node_field')
                 ->using(NodeTypeNodeField::class)
                 ->orderBy('node_field_node_type.delta')
-                ->withPivot(
+                ->withPivot([
                     'delta',
-                    'config'
-                );
+                    'weight',
+                    'label',
+                    'description',
+                    'langcode',
+                ]);
     }
 
     public static function countByNodeField()
@@ -91,24 +94,15 @@ class NodeType extends JulyModel implements GetNodes, HasModelConfig
 
     public function retrieveFields($langcode = null)
     {
-        $langcode = $langcode ?? langcode('admin_page');
+        $langcode = $langcode ?? langcode('content');
 
         $cacheid = $this->truename.'/fields';
         if ($fields = static::cacheGet($cacheid, $langcode)) {
             $fields = $fields['value'];
         } else {
-            $fields = [];
-            foreach ($this->fields as $field) {
-                $config = extract_config(
-                    array_replace_recursive($field->config, $field->pivot['config']),
-                    $field->configStructure()
-                );
-                $field = array_merge($field->toArray(), $config);
-                $field['delta'] = $field['pivot']['delta'];
-                unset($field['pivot']);
-                unset($field['config']);
-                $fields[] = $field;
-            }
+            $fields = $this->fields->map(function($field) use($langcode) {
+                return $field->purify($langcode);
+            })->keyBy('truename')->all();
             static::cachePut($cacheid, $fields, $langcode);
         }
 

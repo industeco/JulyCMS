@@ -4,9 +4,9 @@ namespace App\FieldTypes;
 
 class FileField extends FieldTypeBase
 {
-    public static $title = 'File Name';
+    public static $label = '文件名';
 
-    public static $description = '适用于文件名，带文件浏览按钮';
+    public static $description = '带文件浏览按钮';
 
     public static $searchable = false;
 

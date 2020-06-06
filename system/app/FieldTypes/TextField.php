@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\View;
 
 class TextField extends FieldTypeBase
 {
-    public static $title = 'Text';
+    public static $title = '文字';
 
-    public static $description = '适用于无格式内容，如页面描述，图片 alt 等';
+    public static $description = '适用于无格式内容';
 
     public static function columns(array $config)
     {

@@ -16,8 +16,11 @@ class CreateJulycmsTables extends Migration
     {
         // 配置表
         Schema::create('configs', function (Blueprint $table) {
+            //
+            $table->id();
+
             // 配置键
-            $table->string('keyname', 100)->primary();
+            $table->string('keyname', 100);
 
             // 配置分组
             $table->string('group', 50)->nullable();
@@ -28,8 +31,14 @@ class CreateJulycmsTables extends Migration
             // 描述
             $table->string('description', 255)->nullable();
 
+            // 用户
+            $table->string('user', 50)->default('any');
+
             // 配置值
             $table->binary('data');
+
+            // 时间戳
+            $table->timestamps();
         });
 
         // 管理员账户表
@@ -83,6 +92,9 @@ class CreateJulycmsTables extends Migration
             // 描述
             $table->string('description', 255)->nullable();
 
+            // 语言
+            $table->string('langcode', 12);
+
             // 时间戳
             $table->timestamps();
         });
@@ -118,11 +130,17 @@ class CreateJulycmsTables extends Migration
             // 序号
             $table->unsignedTinyInteger('delta')->default(0);
 
+            // 搜索权重
+            $table->unsignedDecimal('weight')->nullable();
+
             // 标签
             $table->string('label', 50)->nullable();
 
             // 描述
             $table->string('description', 255)->nullable();
+
+            // 语言
+            $table->string('langcode', 12);
 
             // 同一个字段在同一个类型中最多出现一次
             $table->unique(['node_type', 'node_field']);

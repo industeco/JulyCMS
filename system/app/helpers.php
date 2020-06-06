@@ -131,7 +131,7 @@ if (! function_exists('langcode')) {
             case 'list':
                 $langs = [];
                 $list = language_list();
-                $langcodes = array_keys(config('jc.langcode.permissions'));
+                $langcodes = array_keys(config('jc.langcode.list'));
                 foreach ($langcodes as $code) {
                     $langs[$code] = $list[$code] ?? $code;
                 }
@@ -241,8 +241,7 @@ if (! function_exists('cast_value')) {
                 if (is_string($value)) {
                     $value = json_encode($value);
                 }
-                $value = (array) $value;
-                return array_filter($value);
+                return (array) $value;
 
             default:
                 return $value;

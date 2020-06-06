@@ -23,12 +23,12 @@ class FieldType
     public static function getTypes()
     {
         $types = [];
-        foreach (static::$types as $typeName => $fieldType) {
-            $types[$typeName] = [
-                'name' => $typeName,
-                'title' => $fieldType::$title,
-                'description' => $fieldType::$description,
-                'searchable' => $fieldType::$searchable,
+        foreach (static::$types as $alias => $type) {
+            $types[$alias] = [
+                'name' => $alias,
+                'label' => $type::$label,
+                'description' => $type::$description,
+                'searchable' => $type::$searchable,
             ];
         }
 
@@ -44,7 +44,7 @@ class FieldType
     public static function find($alias)
     {
         if (($type = static::$types[$alias] ?? null) && $type::$isPublic) {
-            return $type;
+            return new $type;
         }
         return null;
     }
@@ -57,128 +57,49 @@ class FieldType
      */
     public static function findOrFail($alias)
     {
-        if ($class = static::find($alias)) {
-            return $class;
+        if ($type = static::find($alias)) {
+            return new $type;
         }
         throw new Error('找不到 ['.$alias.'] 对应的字段类型。');
     }
 
-    public static function getColumns($type, array $config)
+    public static function getSchema($type)
+    {
+        $fieldType = static::findOrFail($type);
+        return $fieldType->getSchema();
+    }
+
+    public static function getColumns($type, $fieldName, array $parameters = [])
     {
         if ($fieldType = static::find($type)) {
-            return $fieldType::columns($config);
+            return $fieldType->getColumns($fieldName, $parameters);
         }
         return [];
     }
 
-    public static function getRecords($type, $value, array $columns)
-    {
-        $fieldType = static::findOrFail($type);
-        return $fieldType::records($value, $columns);
-    }
-
-    public static function getValue($type, array $records, array $columns, array $config)
-    {
-        $fieldType = static::findOrFail($type);
-        return $fieldType::value($records, $columns, $config);
-    }
-
-    public static function getConfigStructrue($type)
-    {
-        $fieldType = static::findOrFail($type);
-        return $fieldType::configStructure();
-    }
-
-    public static function buildConfig(array $data)
+    public static function extractParameters(array $data)
     {
         $fieldType = static::findOrFail($data['field_type'] ?? null);
-        return build_config($data, $fieldType::configStructure());
+        return $fieldType->extractParameters($data);
     }
 
-    // public static function getConfig(array $data)
-    // {
-    //     $fieldType = static::findOrFail($data['field_type'] ?? null);
-    //     return $fieldType::config($data);
-    // }
+    public static function toRecords($type, $value, array $columns)
+    {
+        $fieldType = static::findOrFail($type);
+        return $fieldType->toRecords($value, $columns);
+    }
+
+    public static function toValue($type, array $records, array $columns, array $config)
+    {
+        $fieldType = static::findOrFail($type);
+        return $fieldType->toValue($records, $columns, $config);
+    }
 
     public static function getJigsaws(array $data)
     {
         $fieldType = static::findOrFail($data['field_type'] ?? null);
-        $jigsaws = $fieldType::jigsaws($data);
+        $jigsaws = $fieldType->getJigsaws($data);
         $jigsaws['type'] = $data['field_type'];
         return $jigsaws;
     }
-
-    // /**
-    //  * 获取分组的类型列表
-    //  *
-    //  * @return array
-    //  */
-    // public static function getGroupedOptions()
-    // {
-    //     if ($options = Cache::get('field_type_options_grouped')) {
-    //         return $options;
-    //     }
-
-    //     $options = [];
-    //     $groupDescs = [];
-    //     foreach (static::$types as $key => $type) {
-    //         $type = new $type;
-    //         $group = $type->groupName;
-    //         if (! isset($groupDescs[$group])) {
-    //             $groupDescs[$group] = $type->groupDesc;
-    //         }
-    //         $options[$key] = [
-    //             'alias' => $key,
-    //             'title' => $type->title,
-    //             'group' => $group,
-    //         ];
-    //     }
-
-    //     $groupedOptions = collect($options)->groupBy('group', true)
-    //         ->map(function($types, $group) use ($groupDescs) {
-    //             return [
-    //                 'label' => $groupDescs[$group] ?? $group,
-    //                 'options' => $types->pluck('title', 'alias')->toArray(),
-    //             ];
-    //         })->toArray();
-
-    //     Cache::put('field_type_options_grouped', $groupedOptions);
-
-    //     return $groupedOptions;
-    // }
-
-    // /**
-    //  * 生成表单控件，节点创建/编辑表单，或节点表单的内嵌表单
-    //  *
-    //  * @param array $data
-    //  * @param \App\Models\Node $node 如果是节点编辑表单的控件，则需要传递当前节点
-    //  * @return array
-    //  */
-    // public static function makeFormField(array $data, Node $node = null)
-    // {
-    //     if (!isset($data['label'])) {
-    //         $data['label'] = $data['name'] ?? str_replace(['_', '-'], '', Str::title($data['real_name']));
-    //     }
-    //     if (isset($data['real_name'])) {
-    //         $data['name'] = $data['real_name'];
-    //     }
-    //     if ($node) {
-    //         $data['node_id'] = $node->id;
-    //     }
-
-    //     // if (!($data['invoke'] ?? null)) {
-    //     //     $data['invoke'] = $data['name'];
-    //     // }
-
-    //     $limit = intval($data['amount'] ?? 1);
-    //     if ($limit !== 1 && $data['type'] !== 'table') {
-    //         $data['amount'] = 1;
-    //         $data['columns'] = [$data];
-    //         $data['type'] = 'table';
-    //     }
-
-    //     $type = static::findTypeOrFail($data['type']);
-    //     return $type->makeFormField($data);
-    // }
 }

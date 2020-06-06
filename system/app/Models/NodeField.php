@@ -8,16 +8,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use App\Casts\Json;
-use App\Contracts\HasModelConfig;
 use App\FieldTypes\FieldType;
-use App\Traits\CastModelConfig;
 use Illuminate\Support\Arr;
 
-class NodeField extends JulyModel implements HasModelConfig
+class NodeField extends JulyModel
 {
-    use CastModelConfig;
-
     /**
      * 与模型关联的表名
      *
@@ -55,8 +50,13 @@ class NodeField extends JulyModel implements HasModelConfig
         'truename',
         'field_type',
         'is_preset',
-        'is_searchable',
         'is_global',
+        'is_searchable',
+        'weight',
+        'group',
+        'label',
+        'description',
+        'langcode',
     ];
 
     /**
@@ -66,29 +66,31 @@ class NodeField extends JulyModel implements HasModelConfig
      */
     protected $casts = [
         'is_preset' => 'boolean',
+        'is_global' => 'boolean',
         'is_searchable' => 'boolean',
-        'config' => Json::class,
+        'weight' => 'float',
     ];
-
-    public static function primaryKeyName()
-    {
-        return 'truename';
-    }
 
     public function types()
     {
         return $this->belongsToMany(NodeType::class, 'node_field_node_type', 'node_field', 'node_type')
                     ->using(NodeTypeNodeField::class)
                     ->orderBy('node_field_node_type.delta')
-                    ->withPivot(
+                    ->withPivot([
                         'delta',
-                        'config'
-                    );
+                        'weight',
+                        'label',
+                        'description',
+                        'langcode',
+                    ]);
     }
 
-    public function configStructure(): array
+    public function getParametersSchema(): array
     {
-        return FieldType::getConfigStructrue($this->field_type);
+        if ($type = FieldType::find($this->field_type)) {
+            $type->getSchema();
+        }
+        return [];
     }
 
     public static function globalFields()
@@ -218,7 +220,7 @@ class NodeField extends JulyModel implements HasModelConfig
      */
     public function deleteValue($node_id, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: langcode('content');
 
         // 清除字段值缓存
         static::cacheClear($this->truename.'/'.$node_id, $langcode);
@@ -240,13 +242,13 @@ class NodeField extends JulyModel implements HasModelConfig
     {
         // Log::info("Updating field '{$this->truename}'");
 
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: langcode('content');
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
         static::cacheClear($this->truename.'/'.$node_id, $langcode);
 
-        $records = FieldType::getRecords($this->field_type, $value, $this->tableColumns());
+        $records = FieldType::toRecords($this->field_type, $value, $this->tableColumns());
         if (is_null($records)) {
             $this->deleteValue($node_id, $langcode);
         } else {
@@ -301,7 +303,7 @@ class NodeField extends JulyModel implements HasModelConfig
                 if ($this->pivot) {
                     $config = array_replace_recursive($config, $this->pivot->config);
                 }
-                $value = FieldType::getValue($this->field_type, $records, $this->tableColumns(), $config);
+                $value = FieldType::toValue($this->field_type, $records, $this->tableColumns(), $config);
             }
 
             // 缓存字段值
@@ -372,13 +374,51 @@ class NodeField extends JulyModel implements HasModelConfig
         }
     }
 
-    public function label($langcode = null)
+    /**
+     * 采集字段所有相关信息并组成数组
+     *
+     * @param string|null $langcode
+     * @return array
+     */
+    public function gather($langcode = null)
     {
-        $label = $this->config['label'] ?? [];
+        $data = $this->getAttributes();
+        if ($this->pivot) {
+            $data['delta'] = $this->pivot['delta'];
+            $data['label'] = $this->pivot['label'] ?? $data['label'];
+            $data['description'] = $this->pivot['description'] ?? $data['description'];
+        }
+        $data['parameters'] = $this->parameters($langcode);
+        return $data;
+    }
 
-        $langcode = $langcode ?: langcode('admin_page');
-        $original_lang = $this->config['langcode']['interface_value'];
+    public function parameters($langcode = null)
+    {
+        $records = DB::table('field_parameters')
+                    ->where('keyname', 'like', 'node_field.'.$this->truename.'%')
+                    ->get()
+                    ->keyBy(function($record) {
+                        return $record->keyname.'.'.$record->langcode;
+                    })->map(function($record) {
+                        return json_decode($record->data, true);
+                    });
 
-        return $label[$langcode] ?? $label[$original_lang] ?? null;
+        $langcode = $langcode ?? langcode('content');
+        $keyname = 'node_field.'.$this->truename;
+        $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
+        if ($this->pivot) {
+            $keyname .= '.node_type.'.$this->pivot->node_type;
+            $parameters = array_merge(
+                    $parameters,
+                    $records[$keyname.'.'.$this->pivot->langcode] ?? []
+                );
+        }
+
+        return $parameters;
+    }
+
+    public function label()
+    {
+        return $this->attributes['label'];
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models\Catalog;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class CatalogSeeder extends Seeder
@@ -26,6 +27,8 @@ class CatalogSeeder extends Seeder
                 'is_preset' => true,
                 'label' => '默认目录',
                 'description' => null,
+                'updated_at' => Date::now(),
+                'created_at' => Date::now(),
             ]
         ];
     }

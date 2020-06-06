@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use App\Models\NodeField;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class NodeFieldSeeder extends Seeder
@@ -24,7 +25,7 @@ class NodeFieldSeeder extends Seeder
 
     protected function getData()
     {
-        return [
+        $data = [
             [
                 'truename' => 'title',
                 'field_type' => 'text',
@@ -125,12 +126,19 @@ class NodeFieldSeeder extends Seeder
                 'description' => null,
             ],
         ];
+
+        $langcode = config('jc.langcode.content');
+        return array_map(function($record) use($langcode) {
+            return array_merge($record, [
+                'langcode' => $langcode,
+                'updated_at' => Date::now(),
+                'created_at' => Date::now(),
+            ]);
+        }, $data);
     }
 
     protected function getParametersData()
     {
-        $langcode = langcode('content');
-
         $parameters = [
             [
                 'keyname' => 'node_field.title',
@@ -138,19 +146,16 @@ class NodeFieldSeeder extends Seeder
                     'required' => true,
                     'max' => 200,
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.summary',
                 'data' => [
                     'max' => 255,
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.content',
                 'data' => [],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.url',
@@ -159,7 +164,6 @@ class NodeFieldSeeder extends Seeder
                     'pattern' => 'url',
                     'placeholder' => '/index.html',
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.template',
@@ -168,40 +172,37 @@ class NodeFieldSeeder extends Seeder
                     'pattern' => 'twig',
                     'placeholder' => '/home.twig',
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.meta_title',
                 'data' => [
                     'max' => 255,
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.meta_description',
                 'data' => [
                     'max' => 255,
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.meta_keywords',
                 'data' => [
                     'max' => 255,
                 ],
-                'langcode' => $langcode,
             ],
             [
                 'keyname' => 'node_field.meta_canonical',
                 'data' => [
                     'max' => 255,
                 ],
-                'langcode' => $langcode,
             ],
         ];
 
-        return array_map(function($record) {
+        $langcode = config('jc.langcode.content');
+        return array_map(function($record) use($langcode) {
             $record['data'] = json_encode($record['data'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            $record['langcode'] = $langcode;
             return $record;
         }, $parameters);
     }

@@ -2,6 +2,7 @@
 
 use App\Models\Tag;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class TagSeeder extends Seeder
@@ -13,6 +14,13 @@ class TagSeeder extends Seeder
      */
     public function run()
     {
+        foreach ($this->getData() as $tag) {
+            DB::table('tags')->insert($tag);
+        }
+    }
+
+    protected function getData()
+    {
         $tags = [
             [
                 'tag' => '_recommend',
@@ -22,32 +30,19 @@ class TagSeeder extends Seeder
                 'langcode' => 'en',
             ],
             [
-                'tag' => '_推荐',
-                'is_preset' => true,
-                'is_show' => false,
-                'original_tag' => '_recommend',
-                'langcode' => 'zh',
-            ],
-            [
                 'tag' => '_hot',
                 'is_preset' => true,
                 'is_show' => false,
                 'original_tag' => '_hot',
                 'langcode' => 'en',
             ],
-            [
-                'tag' => '_热门',
-                'is_preset' => true,
-                'is_show' => false,
-                'original_tag' => '_hot',
-                'langcode' => 'zh',
-            ],
         ];
 
-        DB::transaction(function() use($tags) {
-            foreach ($tags as $tag) {
-                DB::table('tags')->insert($tag);
-            }
-        });
+        return array_map(function($record) {
+            return array_merge($record, [
+                'updated_at' => Date::now(),
+                'created_at' => Date::now(),
+            ]);
+        }, $tags);
     }
 }

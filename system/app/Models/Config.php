@@ -16,27 +16,6 @@ class Config extends Model
     protected $table = 'configs';
 
     /**
-     * 主键
-     *
-     * @var string
-     */
-    protected $primaryKey = 'keyname';
-
-    /**
-     * 主键“类型”。
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * 指示模型主键是否递增
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
      * 可批量赋值的属性。
      *
      * @var array
@@ -46,6 +25,7 @@ class Config extends Model
         'group',
         'label',
         'description',
+        'user',
         'data',
     ];
 
@@ -85,7 +65,7 @@ class Config extends Model
     public static function getGroup($group)
     {
         return static::where('group', $group)->get()->map(function($record) {
-            return $record->purify();
+            return $record->gather();
         })->keyBy('keyname')->all();
     }
 
@@ -95,7 +75,7 @@ class Config extends Model
         return cast_value($data['value'], $data['value_type']);
     }
 
-    public function purify()
+    public function gather()
     {
         return [
             'keyname' => $this->attributes['keyname'],

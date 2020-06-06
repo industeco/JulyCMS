@@ -15,28 +15,62 @@ abstract class FieldTypeBase
 {
     public static $isPublic = true;
 
-    public static $title = '';
+    public static $label = '';
 
     public static $description = '';
 
     public static $searchable = true;
 
     /**
-     * 当前类型字段生成字段数据表时的数据列信息，由多个 column 组成
+     * 字段数据存储表的列信息，结构为：
+     * [
+     *   [
+     *      type => string,
+     *      name => string,
+     *      parameters => array,
+     *   ],
+     *   ...
+     * ]
      *
-     * @param array $config
+     * @param string $fieldName
+     * @param array $parameters
      * @return array
      */
-    abstract public static function columns(array $config);
+    abstract public function getColumns($fieldName, array $parameters = []): array;
 
     /**
-     * 将待存储的字段值转换为二维数组，数组每一行代表一条记录
+     * 获取该类型字段参数的模式数据（属性，属性值类型，属性默认值）
+     *
+     * @return array
      */
-    public static function records($value, array $columns)
+    abstract public function getSchema(): array;
+
+    /**
+     * 从表单数据中提取字段参数
+     *
+     * @param array $raw 表单数据
+     * @return array
+     */
+    abstract public function extractParameters(array $raw): array;
+
+    /**
+     * 将记录转换为值
+     */
+    public function toValue(array $records, array $columns, array $parameters = [])
+    {
+        $column = $columns[0]['name'];
+        return trim($records[0][$column]);
+    }
+
+    /**
+     * 将值转换为记录
+     */
+    public function toRecords($value, array $columns)
     {
         if (!strlen($value)) {
             return null;
         }
+
         return [
             [
                 $columns[0]['name'] => $value,
@@ -45,32 +79,27 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 将记录转换为值
+     * 生成表单拼图（用来拼合表单的字段相关数据）
+     *
+     * @param array $data
+     * @return array
      */
-    public static function value(array $records, array $columns, array $config)
+    public function getJigsaws(array $fieldData)
     {
-        $column = $columns[0]['name'];
-        return trim($records[0][$column]);
+        return [
+            'truename' => $fieldData['truename'],
+            'value' => null,
+            'element' => $this->getElement($fieldData),
+            'rules' => $this->getRules($fieldData['parameters'] ?? []),
+        ];
     }
-
-    abstract public static function configStructure(): array;
 
     /**
-     *
+     * 获取字段的 HTML 片段（element-ui 组件）
      */
-    public static function parameters(array $data)
-    {
-        $config = $data['config'] ?? null;
-        if (is_array($config)) {
-            $data = array_merge($data, extract_config($config, static::configStructure()));
-        }
+    abstract public function getElement(array $fieldData);
 
-        return $data;
-    }
-
-    abstract public static function element(array $parameters);
-
-    public static function rules(array $parameters)
+    public function getRules(array $parameters)
     {
         $rules = [];
 
@@ -78,50 +107,11 @@ abstract class FieldTypeBase
             $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
         }
 
-        $length = $parameters['length'] ?? 0;
-        if ($length > 0) {
-            $rules[] = "{max:{$length}, message: '最多 {$length} 个字符', trigger: 'change'}";
+        $max = $parameters['max'] ?? 0;
+        if ($max > 0) {
+            $rules[] = "{max:{$max}, message: '最多 {$max} 个字符', trigger: 'change'}";
         }
 
         return $rules;
-    }
-
-    /**
-     * 生成表单构建材料
-     * @param array $data
-     * @return array
-     */
-    public static function jigsaws(array $data)
-    {
-        $parameters = static::parameters($data);
-        return [
-            'truename' => $data['truename'],
-            'value' => '',
-            'element' => static::element($parameters),
-            'rules' => static::rules($parameters),
-        ];
-    }
-
-    public static function cast($value, $type)
-    {
-        switch ($type) {
-            case 'string':
-                return trim($value);
-
-            case 'integer':
-            case 'int':
-                return intval($value);
-
-            case 'boolean':
-            case 'bool':
-                return boolval($value);
-
-            case 'array':
-                $value = (array) $value;
-                return array_filter($value);
-
-            default:
-                return $value;
-        }
     }
 }

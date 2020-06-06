@@ -94,8 +94,8 @@ class ConfigSeeder extends Seeder
             [
                 'keyname' => 'field_group_settings',
                 'group' => 'preference',
-                'label' => '通用字段',
-                'description' => '设置内容表单右侧字段默认折叠或展开',
+                'label' => '折叠/展开通用字段',
+                'description' => '设置内容表单右侧通用字段面板默认折叠或展开',
                 'data' => [
                     'value_type' => 'array',
                     'value' => [

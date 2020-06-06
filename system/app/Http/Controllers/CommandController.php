@@ -48,7 +48,7 @@ class CommandController extends Controller
      */
     public function buildIndex()
     {
-        return Index::rebuild();
+        return NodeIndex::rebuild();
     }
 
     /**

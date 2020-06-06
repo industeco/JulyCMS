@@ -30,15 +30,8 @@ class NodeTypeNodeField extends Pivot
         'node_type',
         'node_field',
         'delta',
-        'config',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'config' => Json::class,
+        'label',
+        'description',
+        'langcode',
     ];
 }

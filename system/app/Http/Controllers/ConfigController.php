@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Config;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ConfigController extends Controller
@@ -49,6 +50,7 @@ class ConfigController extends Controller
      */
     public function edit($group)
     {
+        // dd(Auth::guard('admin')->user());
         return view_with_langcode('admin::config.'.$group, [
             'configs' => Config::getGroup($group),
         ]);
