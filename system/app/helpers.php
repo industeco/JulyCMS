@@ -227,7 +227,7 @@ if (! function_exists('cast_value')) {
     {
         switch ($cast) {
             case 'string':
-                return trim($value);
+                return $value.'';
 
             case 'integer':
             case 'int':

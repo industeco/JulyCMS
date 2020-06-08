@@ -32,7 +32,7 @@ class CreateJulycmsTables extends Migration
             $table->string('description', 255)->nullable();
 
             // 用户
-            $table->string('user', 50)->default('any');
+            $table->string('user', 50)->nullable();
 
             // 配置值
             $table->binary('data');
@@ -41,13 +41,26 @@ class CreateJulycmsTables extends Migration
             $table->timestamps();
         });
 
-        // 管理员账户表
-        Schema::create('administrators', function (Blueprint $table) {
+        // 用户表
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('truename', 50)->unique();
-            $table->string('name', 20);
+
+            // 用户名
+            $table->string('name', 50)->unique();
+
+            // 密码
             $table->string('password');
+
+            // 角色：admin, operator, editor
+            $table->string('role', 20)->default('operator');
+
+            // 登录指纹，防止重复登录
+            $table->string('fingerprint')->nullable();
+
+            // remember_token
             $table->rememberToken();
+
+            // 时间戳
             $table->timestamps();
         });
 
@@ -275,7 +288,7 @@ class CreateJulycmsTables extends Migration
 
         Schema::dropIfExists('node_fields');
         Schema::dropIfExists('field_parameters');
-        Schema::dropIfExists('administrators');
+        Schema::dropIfExists('users');
         Schema::dropIfExists('configs');
     }
 }

@@ -14,12 +14,12 @@ class CatalogSeeder extends Seeder
      */
     public function run()
     {
-        foreach ($this->getData() as $record) {
+        foreach ($this->getCatalogData() as $record) {
             DB::table('catalogs')->insert($record);
         }
     }
 
-    protected function getData()
+    protected function getCatalogData()
     {
         return [
             [

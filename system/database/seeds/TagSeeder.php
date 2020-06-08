@@ -14,12 +14,12 @@ class TagSeeder extends Seeder
      */
     public function run()
     {
-        foreach ($this->getData() as $tag) {
+        foreach ($this->getTagData() as $tag) {
             DB::table('tags')->insert($tag);
         }
     }
 
-    protected function getData()
+    protected function getTagData()
     {
         $tags = [
             [

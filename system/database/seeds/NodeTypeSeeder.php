@@ -14,7 +14,7 @@ class NodeTypeSeeder extends Seeder
      */
     public function run()
     {
-        foreach ($this->getData() as $record) {
+        foreach ($this->getNodeTypeData() as $record) {
             DB::table('node_types')->insert($record);
         }
 
@@ -23,7 +23,7 @@ class NodeTypeSeeder extends Seeder
         }
     }
 
-    protected function getData()
+    protected function getNodeTypeData()
     {
         return [
             [

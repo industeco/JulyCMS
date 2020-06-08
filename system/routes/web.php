@@ -21,77 +21,78 @@ Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'inst
 // 后台
 Route::group([
     'prefix' => config('jc.admin_prefix', 'admin'),
-    'middleware' => ['web', 'admin'],
+    'middleware' => 'csrf',
 ], function() {
-    Route::get('/', 'Dashboard')->name('admin.home');
+    // 登录路由
+    Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');
+    Route::post('login', 'Auth\LoginController@login')->name('admin.auth');
+    Route::get('logout', 'Auth\LoginController@logout')->name('admin.logout');
 
-    /* @var \Illuminate\Routing\Router $router */
-    // 登录
-    Route::namespace('Auth')->group(function() {
-        Route::get('login', 'AdminLoginController@showLoginForm')->name('admin.login');
-        Route::post('login', 'AdminLoginController@login')->name('admin.auth');
-        Route::get('logout', 'AdminLoginController@logout')->name('admin.logout');
+    Route::middleware('auth')->group(function() {
+        // 后台首页
+        Route::get('/', 'Dashboard')->name('admin.home');
+
+        // 配置
+        Route::get('configs/{group}', 'ConfigController@edit')->name('configs.edit');
+        Route::post('configs', 'ConfigController@update')->name('configs.update');
+
+        // 字段
+        Route::resource('node_fields', 'NodeFieldController')->parameters([
+            'node_fields' => 'nodeField',
+        ])->names('node_fields');
+
+        // 内容类型
+        Route::resource('node_types', 'NodeTypeController')->parameters([
+            'node_types' => 'nodeType',
+        ])->names('node_types');
+
+        // 标签
+        Route::get('tags', 'TagController@index')->name('tags.index');
+        Route::post('tags', 'TagController@update')->name('tags.update');
+
+        // 目录
+        Route::get('catalogs/{catalog}/sort', 'CatalogController@sort')->name('catalogs.sort');
+        Route::put('catalogs/{catalog}/sort', 'CatalogController@updateOrders')->name('catalogs.updateOrders');
+        Route::resource('catalogs', 'CatalogController')->parameters([
+            'catalogs' => 'catalog',
+        ])->names('catalogs');
+
+        // 内容
+        Route::get('nodes/create/{nodeType}', 'NodeController@createWith')->name('nodes.create_with');
+        Route::get('nodes/{node}/translate', 'NodeController@translate')->name('nodes.translate');
+        Route::get('nodes/{node}/translate/{langcode}', 'NodeController@edit')->name('nodes.translate_to');
+        Route::post('nodes/render', 'NodeController@render')->name('nodes.render');
+        Route::resource('nodes', 'NodeController')->parameters([
+            'nodes' => 'node',
+        ])->names('nodes');
+
+        // 文件管理
+        Route::get('/media', 'MediaController@index')->name('media.index');
+        Route::get('/media/select', 'MediaController@select')->name('media.select');
+        Route::post('/media/under', 'MediaController@under')->name('media.under');
+        Route::post('/media/upload', 'MediaController@upload')->name('media.upload');
+        Route::post('/media/mkdir', 'MediaController@mkdir')->name('media.mkdir');
+        Route::post('/media/rename/{type}', 'MediaController@rename')->name('media.rename');
+        Route::post('/media/delete/{type}', 'MediaController@delete')->name('media.delete');
+
+        // 查重
+        Route::get('checkunique/node_fields/{truename}', 'NodeFieldController@unique')->name('checkunique.node_fields');
+        Route::get('checkunique/node_types/{truename}', 'NodeTypeController@unique')->name('checkunique.node_types');
+        Route::get('checkunique/catalogs/{truename}', 'CatalogController@unique')->name('checkunique.catalogs');
+        Route::post('checkunique/node__url', 'NodeFieldController@uniqueUrl')->name('checkunique.url');
+
+        // 执行命令
+        Route::get('search', 'CommandController@searchDatabase')->name('adminCommand.search');
+        Route::post('cmd/update/password', 'CommandController@updateAdminPassword')->name('adminCommand.updatePassword');
+        Route::get('cmd/clear/cache', 'CommandController@clearCache')->name('adminCommand.clearCache');
+        Route::get('cmd/build/index', 'CommandController@buildIndex')->name('adminCommand.buildIndex');
+        Route::get('cmd/build/google-sitemap', 'CommandController@buildGoogleSitemap')->name('adminCommand.buildGoogleSitemap');
+        Route::get('cmd/find/invalid-links', 'CommandController@findInvalidLinks')->name('adminCommand.findInvalidLinks');
     });
-
-    // 配置
-    Route::get('configs/{group}', 'ConfigController@edit')->name('configs.edit');
-    Route::post('configs', 'ConfigController@update')->name('configs.update');
-
-    // 字段
-    Route::resource('node_fields', 'NodeFieldController')->parameters([
-        'node_fields' => 'nodeField',
-    ])->names('node_fields');
-
-    // 内容类型
-    Route::resource('node_types', 'NodeTypeController')->parameters([
-        'node_types' => 'nodeType',
-    ])->names('node_types');
-
-    // 标签
-    Route::get('tags', 'TagController@index')->name('tags.index');
-    Route::post('tags', 'TagController@update')->name('tags.update');
-
-    // 目录
-    Route::get('catalogs/{catalog}/sort', 'CatalogController@sort')->name('catalogs.sort');
-    Route::put('catalogs/{catalog}/sort', 'CatalogController@updateOrders')->name('catalogs.updateOrders');
-    Route::resource('catalogs', 'CatalogController')->parameters([
-        'catalogs' => 'catalog',
-    ])->names('catalogs');
-
-    // 内容
-    Route::get('nodes/create/{nodeType}', 'NodeController@createWith')->name('nodes.create_with');
-    Route::get('nodes/{node}/translate', 'NodeController@translate')->name('nodes.translate');
-    Route::get('nodes/{node}/translate/{langcode}', 'NodeController@edit')->name('nodes.translate_to');
-    Route::post('nodes/render', 'NodeController@render')->name('nodes.render');
-    Route::resource('nodes', 'NodeController')->parameters([
-        'nodes' => 'node',
-    ])->names('nodes');
-
-    // 文件管理
-    Route::get('/media', 'MediaController@index')->name('media.index');
-    Route::get('/media/select', 'MediaController@select')->name('media.select');
-    Route::post('/media/under', 'MediaController@under')->name('media.under');
-    Route::post('/media/upload', 'MediaController@upload')->name('media.upload');
-    Route::post('/media/mkdir', 'MediaController@mkdir')->name('media.mkdir');
-    Route::post('/media/rename/{type}', 'MediaController@rename')->name('media.rename');
-    Route::post('/media/delete/{type}', 'MediaController@delete')->name('media.delete');
-
-    // 查重
-    Route::get('checkunique/node_fields/{truename}', 'NodeFieldController@unique')->name('checkunique.node_fields');
-    Route::get('checkunique/node_types/{truename}', 'NodeTypeController@unique')->name('checkunique.node_types');
-    Route::get('checkunique/catalogs/{truename}', 'CatalogController@unique')->name('checkunique.catalogs');
-    Route::post('checkunique/node__url', 'NodeFieldController@uniqueUrl')->name('checkunique.url');
-
-    // 执行命令
-    Route::get('search', 'CommandController@searchDatabase')->name('adminCommand.search');
-    Route::post('cmd/update/password', 'CommandController@updateAdminPassword')->name('adminCommand.updatePassword');
-    Route::get('cmd/clear/cache', 'CommandController@clearCache')->name('adminCommand.clearCache');
-    Route::get('cmd/build/index', 'CommandController@buildIndex')->name('adminCommand.buildIndex');
-    Route::get('cmd/build/google-sitemap', 'CommandController@buildGoogleSitemap')->name('adminCommand.buildGoogleSitemap');
-    Route::get('cmd/find/invalid-links', 'CommandController@findInvalidLinks')->name('adminCommand.findInvalidLinks');
 });
 
 // 前台
 Route::post('newmessage', ['uses' => 'CommandController@newMessage', 'as' => 'userCommand.newmessage']);
 Route::get('search', ['uses' => 'CommandController@search', 'as' => 'userCommand.search']);
+
 Route::fallback('AnyPage');

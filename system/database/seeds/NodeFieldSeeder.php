@@ -14,7 +14,7 @@ class NodeFieldSeeder extends Seeder
      */
     public function run()
     {
-        foreach ($this->getData() as $record) {
+        foreach ($this->getNodeFieldData() as $record) {
             DB::table('node_fields')->insert($record);
         }
 
@@ -23,7 +23,7 @@ class NodeFieldSeeder extends Seeder
         }
     }
 
-    protected function getData()
+    protected function getNodeFieldData()
     {
         $data = [
             [

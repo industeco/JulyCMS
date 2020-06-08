@@ -25,7 +25,6 @@ class Config extends Model
         'group',
         'label',
         'description',
-        'user',
         'data',
     ];
 
