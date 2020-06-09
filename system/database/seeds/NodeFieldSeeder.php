@@ -160,7 +160,7 @@ class NodeFieldSeeder extends Seeder
             [
                 'keyname' => 'node_field.url',
                 'data' => [
-                    'length' => 200,
+                    'max' => 200,
                     'pattern' => 'url',
                     'placeholder' => '/index.html',
                 ],

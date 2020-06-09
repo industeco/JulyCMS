@@ -51,7 +51,55 @@ abstract class FieldTypeBase
      * @param array $raw 表单数据
      * @return array
      */
-    abstract public function extractParameters(array $raw): array;
+    public function extractParameters(array $raw): array
+    {
+        $schema = $this->getSchema();
+        $parameters = [];
+        foreach ($schema as $key => $meta) {
+            $value = $raw[$key] ?? null;
+            if (!is_null($value)) {
+                $parameters[$key] = cast_value($value, $meta['type']);
+            }
+        }
+        return $parameters;
+    }
+
+    /**
+     * 获取字段的 HTML 片段（element-ui 组件）
+     */
+    abstract public function getElement(array $fieldData);
+
+    /**
+     * 生成表单拼图（表单字段的相关数据）
+     *
+     * @param array $data
+     * @return array
+     */
+    public function getJigsaws(array $fieldData)
+    {
+        return [
+            'truename' => $fieldData['truename'],
+            'value' => null,
+            'element' => $this->getElement($fieldData),
+            'rules' => $this->getRules($fieldData['parameters'] ?? []),
+        ];
+    }
+
+    public function getRules(array $parameters)
+    {
+        $rules = [];
+
+        if ($parameters['required'] ?? false) {
+            $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
+        }
+
+        $max = $parameters['max'] ?? 0;
+        if ($max > 0) {
+            $rules[] = "{max:{$max}, message: '最多 {$max} 个字符', trigger: 'change'}";
+        }
+
+        return $rules;
+    }
 
     /**
      * 将记录转换为值
@@ -76,42 +124,5 @@ abstract class FieldTypeBase
                 $columns[0]['name'] => $value,
             ],
         ];
-    }
-
-    /**
-     * 生成表单拼图（用来拼合表单的字段相关数据）
-     *
-     * @param array $data
-     * @return array
-     */
-    public function getJigsaws(array $fieldData)
-    {
-        return [
-            'truename' => $fieldData['truename'],
-            'value' => null,
-            'element' => $this->getElement($fieldData),
-            'rules' => $this->getRules($fieldData['parameters'] ?? []),
-        ];
-    }
-
-    /**
-     * 获取字段的 HTML 片段（element-ui 组件）
-     */
-    abstract public function getElement(array $fieldData);
-
-    public function getRules(array $parameters)
-    {
-        $rules = [];
-
-        if ($parameters['required'] ?? false) {
-            $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
-        }
-
-        $max = $parameters['max'] ?? 0;
-        if ($max > 0) {
-            $rules[] = "{max:{$max}, message: '最多 {$max} 个字符', trigger: 'change'}";
-        }
-
-        return $rules;
     }
 }

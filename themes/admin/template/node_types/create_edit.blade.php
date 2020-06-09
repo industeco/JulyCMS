@@ -346,34 +346,34 @@
       fieldTypeHelp() {
         let current_type = this.nodeField.field_type;
         if (current_type && this.fieldTypes[current_type]) {
-          return this.fieldTypes[current_type].description
+          return this.fieldTypes[current_type].description;
         }
-        return ''
+        return '';
       },
       fileTypeHelp() {
         let file_type = this.nodeField.file_type;
         if (file_type && this.fileTypes[file_type]) {
-          return '允许的扩展名：' + this.fileTypes[file_type].join(', ')
+          return '允许的扩展名：' + this.fileTypes[file_type].join(', ');
         }
-        return ''
+        return '';
       },
     },
 
     created: function() {
-      this.initial_data = JSON.stringify(this.nodeType)
+      this.initial_data = JSON.stringify(this.nodeType);
 
       function transformDatalist(field) {
         if (field.field_type == 'text') {
           if (field.datalist && field.datalist.length) {
-            field.datalist = field.datalist.map(item => {value:item})
+            field.datalist = field.datalist.map(item => {value:item});
           } else {
-            field.datalist = [{value:''}]
+            field.datalist = [{value:''}];
           }
         }
-        return field
+        return field;
       }
-      this.nodeType.fields = this.nodeType.fields.map(transformDatalist)
-      this.nodeFields = this.nodeFields.map(transformDatalist)
+      this.nodeType.fields = this.nodeType.fields.map(transformDatalist);
+      this.nodeFields = this.nodeFields.map(transformDatalist);
     },
 
     methods: {
@@ -381,8 +381,8 @@
         let fields = this.nodeType.fields;
         for (let i = 0, len = fields.length; i < len; i++) {
           if (fields[i].truename === field.truename) {
-            fields.splice(i, 1)
-            return
+            fields.splice(i, 1);
+            return;
           }
         }
       },
@@ -390,8 +390,8 @@
       editField(field) {
         this.currentField = field;
         // let data = Object.assign({}, field);
-        Vue.set(this.$data, 'editingField', clone(field))
-        this.fieldEditorVisible = true
+        Vue.set(this.$data, 'editingField', clone(field));
+        this.fieldEditorVisible = true;
       },
 
       syncTypeFieldsToSelected() {
@@ -405,8 +405,8 @@
         if (table) {
           // table.clearSelection()
           this.nodeFields.forEach(row => {
-            table.toggleRowSelection(row, selected.indexOf(row.truename) >= 0)
-          })
+            table.toggleRowSelection(row, selected.indexOf(row.truename) >= 0);
+          });
         }
       },
 
@@ -432,22 +432,22 @@
 
             axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
               // console.log(response)
-              app.nodeType.fields.push(clone(app.nodeField))
-              app.nodeFields.push(clone(app.nodeField))
-              form.resetFields()
-              loading.close()
-              app.fieldSelectorVisible = false
+              app.nodeType.fields.push(clone(app.nodeField));
+              app.nodeFields.push(clone(app.nodeField));
+              form.resetFields();
+              loading.close();
+              app.fieldSelectorVisible = false;
             }).catch(function(error) {
-              loading.close()
-              console.error(error)
+              loading.close();
+              console.error(error);
             })
           }).catch(function(error) {
             //...
           })
         } else {
-          this.$set(this.nodeType, 'fields', clone(this.selectedFields))
-          form.resetFields()
-          this.fieldSelectorVisible = false
+          this.$set(this.nodeType, 'fields', clone(this.selectedFields));
+          form.resetFields();
+          this.fieldSelectorVisible = false;
         }
       },
 
@@ -455,19 +455,19 @@
         let form = this.$refs.field_edit_form;
         form.validate((valid) => {
           if (valid) {
-            Object.assign(this.currentField, this.editingField)
-            this.fieldEditorVisible = false
+            Object.assign(this.currentField, this.editingField);
+            this.fieldEditorVisible = false;
           }
         })
       },
 
       addDatalist(index, field) {
-        this.$data[field].datalist.splice(index + 1, 0, {value:''})
+        this.$data[field].datalist.splice(index + 1, 0, {value:''});
       },
 
       removeDatalist(index, field) {
         if (this.$data[field].datalist.length > 1) {
-          this.$data[field].datalist.splice(index, 1)
+          this.$data[field].datalist.splice(index, 1);
         }
       },
 
@@ -491,11 +491,11 @@
               field.datalist = [];
               for (let i = 0, len = field.datalist.length; i < len; i++) {
                 if (datalist[i].value) {
-                  field.datalist.push(datalist[i].value)
+                  field.datalist.push(datalist[i].value);
                 }
               }
             }
-            return field
+            return field;
           });
 
           @if($truename)

@@ -6,45 +6,34 @@ use Illuminate\Support\Facades\View;
 
 class HtmlField extends FieldTypeBase
 {
-    public static $title = 'HTML';
+    public static $label = 'HTML';
 
     public static $description = '适用于 HTML 文档';
 
-    public static function columns(array $config)
+    public function getColumns($fieldName, array $parameters = []): array
     {
         $column = [
             'type' => 'text',
+            'name' => $fieldName.'_value',
         ];
         return [$column];
     }
 
-    public static function configStructure(): array
+    public function getSchema(): array
     {
         return [
             'required' => [
-                'cast' => 'boolean',
+                'type' => 'boolean',
+                'default' => false,
             ],
-            'index_weight' => [
-                'cast' => 'integer',
-            ],
-            'label' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-            'help' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-                'default' => '',
-            ],
-            'description' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
+            'helptext' => [
+                'type' => 'string',
             ],
         ];
     }
 
-    public static function element(array $parameters)
+    public function getElement(array $fieldData)
     {
-        return view('admin::components.html', $parameters)->render();
+        return view('admin::components.html', $fieldData)->render();
     }
 }

@@ -10,10 +10,11 @@ class FileField extends FieldTypeBase
 
     public static $searchable = false;
 
-    public static function columns(array $config)
+    public function getColumns($fieldName, array $parameters = []): array
     {
         $column = [
             'type' => 'string',
+            'name' => $fieldName.'_value',
             'parameters' => [
                 'length' => 200,
             ],
@@ -21,67 +22,58 @@ class FileField extends FieldTypeBase
         return [$column];
     }
 
-    public static function configStructure(): array
+    public function getSchema(): array
     {
         return [
             'required' => [
-                'cast' => 'boolean',
+                'type' => 'boolean',
+                'default' => false,
             ],
-            'file_type' => [
-                'cast' => 'string',
-            ],
-            'length' => [
-                'cast' => 'integer',
+            'max' => [
+                'type' => 'integer',
                 'default' => 200,
             ],
-            'validations' => [
-                'cast' => 'array',
+            'file_type' => [
+                'type' => 'string',
             ],
-            'label' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-            'help' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-                'default' => '',
-            ],
-            'description' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
+            'helptext' => [
+                'type' => 'string',
             ],
         ];
     }
 
-    public static function parameters(array $data)
+    public function extractParameters(array $raw): array
     {
-        $data = parent::parameters($data);
+        $parameters = parent::extractParameters($raw);
+        if ($parameters['helptext'] ?? null) {
+            return $parameters;
+        }
 
-        if ($fileType = $data['file_type'] ?? null) {
+        if ($fileType = $parameters['file_type'] ?? null) {
             if ($exts = config('jc.rules.file_type.'.$fileType)) {
-                $data['help'] = '允许的扩展名：'.join(', ', $exts);
+                $parameters['helptext'] = '允许的扩展名：'.join(', ', $exts);
             }
         }
 
-        return $data;
+        return $parameters;
     }
 
-    public static function rules(array $parameters)
+    public function getRules(array $parameters)
     {
-        $rules = parent::rules($parameters);
+        $rules = parent::getRules($parameters);
 
         if ($fileType = $parameters['file_type'] ?? null) {
             if ($exts = config('jc.rules.file_type.'.$fileType)) {
                 $exts = join('|', $exts);
-                $rules[] = "{pattern: /^(\\/[a-z0-9\\-_]+)+\\.($exts)$/, message:'文件名格式不正确', trigger:'submit'}";
+                $rules[] = "{pattern: /^(\\/[a-z0-9\\-_]+)+\\.($exts)$/, message:'文件格式不正确', trigger:'submit'}";
             }
         }
 
         return $rules;
     }
 
-    public static function element(array $parameters)
+    public function getElement(array $fieldData)
     {
-        return view('admin::components.file', $parameters)->render();
+        return view('admin::components.file', $fieldData)->render();
     }
 }

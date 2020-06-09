@@ -48,9 +48,9 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        if ($this->guard()->check()) {
-            return redirect(short_route('admin.home'));
-        }
+        // if ($this->guard()->check()) {
+        //     return redirect(short_route('admin.home'));
+        // }
 
         return view('admin::login');
     }

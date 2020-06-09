@@ -16,11 +16,8 @@ class CreateJulycmsTables extends Migration
     {
         // 配置表
         Schema::create('configs', function (Blueprint $table) {
-            //
-            $table->id();
-
             // 配置键
-            $table->string('keyname', 100);
+            $table->string('keyname', 100)->primary();
 
             // 配置分组
             $table->string('group', 50)->nullable();
@@ -31,14 +28,8 @@ class CreateJulycmsTables extends Migration
             // 描述
             $table->string('description', 255)->nullable();
 
-            // 用户
-            $table->string('user', 50)->nullable();
-
             // 配置值
             $table->binary('data');
-
-            // 时间戳
-            $table->timestamps();
         });
 
         // 用户表
@@ -51,17 +42,29 @@ class CreateJulycmsTables extends Migration
             // 密码
             $table->string('password');
 
-            // 角色：admin, operator, editor
-            $table->string('role', 20)->default('operator');
+            // 角色：supperadmin, admin, editor, user
+            $table->string('role', 20)->default('user');
 
-            // 登录指纹，防止重复登录
-            $table->string('fingerprint')->nullable();
+            // 登录令牌，防止重复登录
+            $table->string('login_token')->nullable();
 
             // remember_token
             $table->rememberToken();
 
             // 时间戳
             $table->timestamps();
+        });
+
+        // 偏好设置表
+        Schema::create('user_preferences', function (Blueprint $table) {
+            // 用户 id
+            $table->unsignedBigInteger('user_id');
+
+            // 配置键
+            $table->string('config_keyname', 100);
+
+            // 配置值
+            $table->binary('data');
         });
 
         // 字段参数表
@@ -132,8 +135,6 @@ class CreateJulycmsTables extends Migration
 
         // 内容字段与内容类型关联表
         Schema::create('node_field_node_type', function (Blueprint $table) {
-            $table->id();
-
             // 类型真名
             $table->string('node_type', 50);
 
@@ -288,6 +289,7 @@ class CreateJulycmsTables extends Migration
 
         Schema::dropIfExists('node_fields');
         Schema::dropIfExists('field_parameters');
+        Schema::dropIfExists('user_preferences');
         Schema::dropIfExists('users');
         Schema::dropIfExists('configs');
     }

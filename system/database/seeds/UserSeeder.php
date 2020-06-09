@@ -4,6 +4,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Request;
 
 class UserSeeder extends Seeder
 {
@@ -23,9 +24,9 @@ class UserSeeder extends Seeder
     {
         return [
             [
-                'name' => config('admin_name', 'admin'),
-                'password' => Hash::make(config('admin_password', 'admin666')),
-                'role'     => 'admin',
+                'name' => Request::input('admin_name', 'admin'),
+                'password' => Hash::make(Request::input('admin_password', 'admin666')),
+                'role' => 'supperadmin',
             ]
         ];
     }

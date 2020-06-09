@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         DB::beginTransaction();
 
         $this->call(ConfigSeeder::class);
-        $this->call(AdministratorsTableSeeder::class);
+        $this->call(UserSeeder::class);
         $this->call(NodeFieldSeeder::class);
         $this->call(NodeTypeSeeder::class);
         $this->call(CatalogSeeder::class);

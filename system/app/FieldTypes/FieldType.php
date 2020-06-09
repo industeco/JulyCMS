@@ -25,7 +25,7 @@ class FieldType
         $types = [];
         foreach (static::$types as $alias => $type) {
             $types[$alias] = [
-                'name' => $alias,
+                'alias' => $alias,
                 'label' => $type::$label,
                 'description' => $type::$description,
                 'searchable' => $type::$searchable,
@@ -58,7 +58,7 @@ class FieldType
     public static function findOrFail($alias)
     {
         if ($type = static::find($alias)) {
-            return new $type;
+            return $type;
         }
         throw new Error('找不到 ['.$alias.'] 对应的字段类型。');
     }

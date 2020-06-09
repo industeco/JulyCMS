@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class Config extends Model
 {
@@ -39,10 +40,9 @@ class Config extends Model
 
     public static function loadConfigurations()
     {
-        $config = config();
-        foreach (static::all() as $record) {
-            $key = 'jc.'.$record->keyname;
-            $config->set($key, $record->getValue());
+        $factory = config();
+        foreach (static::all() as $config) {
+            $factory->set('jc.'.$config->keyname, $config->getValue());
         }
     }
 
@@ -70,8 +70,17 @@ class Config extends Model
 
     public function getValue()
     {
-        $data = $this->data;
-        return cast_value($data['value'], $data['value_type']);
+        $value = null;
+        if ($this->group === 'preference') {
+            if (($user = Auth::user()) && ($user instanceof User)) {
+                $value = $user->getPreferenceValue($this->keyname);
+            }
+        }
+        if (is_null($value)) {
+            $data = $this->data;
+            $value = cast_value($data['value'], $data['value_type']);
+        }
+        return $value;
     }
 
     public function gather()
@@ -90,6 +99,14 @@ class Config extends Model
         foreach (static::findMany(array_keys($changed)) as $config) {
             $data = $config->data;
             $data['value'] = cast_value($changed[$config->keyname] ?? null, $data['value_type']);
+
+            if ($config->group === 'preference') {
+                if (($user = Auth::user()) && ($user instanceof User)) {
+                    $user->updatePreferences($config->keyname, $data);
+                    continue;
+                }
+            }
+
             $config->data = $data;
             $config->save();
         }

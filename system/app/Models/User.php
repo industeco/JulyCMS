@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -16,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'password', 'role', 'fingerprint'
+        'name', 'password', 'role'
     ];
 
     /**
@@ -25,15 +26,38 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'login_token'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public static function supperAdmin()
+    {
+        return static::where('role', 'supperadmin')->first();
+    }
+
+    public function preferences()
+    {
+        return UserPreference::where('user_id', $this->id)->get();
+    }
+
+    public function getPreferenceValue($keyname)
+    {
+        $preference = UserPreference::where([
+            'user_id' => $this->id,
+            'config_keyname' => $keyname,
+        ])->first();
+
+        if ($preference) {
+            return $preference->getValue();
+        }
+
+        return null;
+    }
+
+    public function updatePreferences($keyname, array $data)
+    {
+        return UserPreference::updateOrCreate([
+            'user_id' => $this->id,
+            'config_keyname' => $keyname,
+        ], $data);
+    }
 }

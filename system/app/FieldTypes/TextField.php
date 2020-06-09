@@ -7,73 +7,63 @@ use Illuminate\Support\Facades\View;
 
 class TextField extends FieldTypeBase
 {
-    public static $title = '文字';
+    public static $label = '文字';
 
     public static $description = '适用于无格式内容';
 
-    public static function columns(array $config)
+    public function getColumns($fieldName, array $parameters = []): array
     {
-        $length = $config['length'] ?? 0;
-        $parameters = $config['parameters'] ?? [];
-        if ($length > 0) {
+        $length = $parameters['max'] ?? 0;
+        if ($length > 0 && $length <= 255) {
             $column = [
                 'type' => 'string',
-                'parameters' => array_replace(['length' => $length], $parameters),
+                'name' => $fieldName.'_value',
+                'parameters' => ['length' => $length],
             ];
         } else {
-            unset($parameters['length']);
             $column = [
                 'type' => 'text',
-                'parameters' => $parameters,
+                'name' => $fieldName.'_value',
+                'parameters' => [],
             ];
         }
+
         return [$column];
     }
 
-    public static function configStructure(): array
+    public function getSchema(): array
     {
         return [
-            'length' => [
-                'cast' => 'integer',
+            'required' => [
+                'type' => 'boolean',
+                'default' => false,
+            ],
+            'max' => [
+                'type' => 'integer',
                 'default' => 255,
             ],
-            'required' => [
-                'cast' => 'boolean',
-            ],
-            'index_weight' => [
-                'cast' => 'integer',
-            ],
-            'label' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-            'help' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-                'default' => '',
-            ],
-            'description' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
+            'pattern' => [
+                'type' => 'string',
             ],
             'placeholder' => [
-                'type' => 'content_value',
-                'cast' => 'string',
+                'type' => 'string',
             ],
             'default' => [
-                'type' => 'content_value',
-                'cast' => 'string',
+                'type' => 'string',
             ],
             'datalist' => [
-                'type' => 'content_value',
-                'cast' => 'array',
+                'type' => 'array',
+                'default' => [],
+            ],
+            'helptext' => [
+                'type' => 'string',
             ],
         ];
     }
 
-    public static function rules(array $parameters)
+    public function getRules(array $parameters)
     {
-        $rules = parent::rules($parameters);
+        $rules = parent::getRules($parameters);
 
         if ($pattern = $parameters['pattern'] ?? null) {
             if ($pattern = config('jc.rules.pattern.'.$pattern)) {
@@ -84,8 +74,8 @@ class TextField extends FieldTypeBase
         return $rules;
     }
 
-    public static function element(array $parameters)
+    public function getElement(array $fieldData)
     {
-        return view('admin::components.text', $parameters)->render();
+        return view('admin::components.text', $fieldData)->render();
     }
 }

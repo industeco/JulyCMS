@@ -162,11 +162,8 @@ class NodeField extends JulyModel
 
     public function tableColumns()
     {
-        $columns = FieldType::getColumns($this->field_type, $this->config);
-        if (count($columns) === 1) {
-            $columns[0]['name'] = $columns[0]['name'] ?? $this->truename.'_value';
-        }
-        return $columns;
+        $type = FieldType::findOrFail($this->field_type);
+        return $type->getColumns($this->truename, $this->parameters());
     }
 
     /**
@@ -191,13 +188,13 @@ class NodeField extends JulyModel
             Schema::create($tableName, function (Blueprint $table) use ($columns) {
                 $table->id();
                 $table->unsignedBigInteger('node_id');
-                $table->string('langcode', 12);
-                $table->unsignedTinyInteger('delta')->default(0);
 
                 foreach($columns as $column) {
                     $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
                 }
 
+                $table->unsignedTinyInteger('delta')->default(0);
+                $table->string('langcode', 12);
                 $table->timestamps();
 
                 $table->unique(['node_id', 'langcode', 'delta']);

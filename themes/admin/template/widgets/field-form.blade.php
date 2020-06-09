@@ -7,9 +7,9 @@
     <el-select v-model="{{ $model }}.field_type" placeholder="--选择字段类型--">
       <el-option
         v-for="type in fieldTypes"
-        :key="type.name"
-        :label="type.title"
-        :value="type.name">
+        :key="type.alias"
+        :label="type.label"
+        :value="type.alias">
       </el-option>
     </el-select>
     <span class="jc-form-item-help">@{{ fieldTypeHelp }}</span>

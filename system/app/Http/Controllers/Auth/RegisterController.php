@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
-use App\User;
+use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,9 +51,9 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'name' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['nullable', 'string', 'in:admin,editor,user'],
         ]);
     }
 
@@ -66,8 +67,16 @@ class RegisterController extends Controller
     {
         return User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role' => $this->getRole($data),
         ]);
+    }
+
+    protected function getRole(array $data)
+    {
+        if (($role = $data['role'] ?? null) && in_array($role, ['admin', 'editor', 'user'])) {
+            return $role;
+        }
+        return 'user';
     }
 }

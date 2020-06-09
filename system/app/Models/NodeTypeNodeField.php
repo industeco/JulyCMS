@@ -15,6 +15,20 @@ class NodeTypeNodeField extends Pivot
     protected $table = 'node_field_node_type';
 
     /**
+     * 重定义主键
+     *
+     * @var string|null
+     */
+    protected $primaryKey = null;
+
+    /**
+     * 指示模型主键是否递增
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
      * 指示是否自动维护时间戳
      *
      * @var bool
