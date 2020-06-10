@@ -36,17 +36,22 @@ class NodeTypeController extends Controller
     public function create()
     {
         $requiredFiels = [
-            NodeField::find('title')->mixConfig(),
+            NodeField::find('title')->gather(),
         ];
 
-        $optionalFields = NodeField::where('is_preset', false)->get();
+        $optionalFields = NodeField::where([
+            'is_preset' => false,
+            'is_global' => false,
+        ])->get()->map(function($field) {
+            return $field->gather();
+        })->all();
 
         return view_with_langcode('admin::node_types.create_edit', [
             'truename' => '',
             'name' => '',
             'description' => '',
             'fields' => $requiredFiels,
-            'availableFields' => mix_config($optionalFields),
+            'availableFields' => $optionalFields,
         ]);
     }
 
@@ -83,11 +88,17 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $data = $nodeType->mixConfig();
+        $data = $nodeType->toArray();
         $data['fields'] = $nodeType->retrieveFields();
 
-        $optionalFields = NodeField::where('is_preset', false)->get();
-        $data['availableFields'] = mix_config($optionalFields);
+        $data['availableFields'] = NodeField::where([
+            'is_preset' => false,
+            'is_global' => false,
+        ])->get()->map(function($field) {
+            return $field->gather();
+        })->all();
+
+        dd($data);
 
         return view_with_langcode('admin::node_types.create_edit', $data);
     }
@@ -103,7 +114,7 @@ class NodeTypeController extends Controller
     {
         $nodeType->update($request->all());
         $nodeType->updateFields($request);
-        return Response::make();
+        return response('');
     }
 
     /**
@@ -116,7 +127,7 @@ class NodeTypeController extends Controller
     {
         $nodeType->fields()->detach();
         $nodeType->delete();
-        return Response::make();
+        return response('');
     }
 
     /**
@@ -127,7 +138,7 @@ class NodeTypeController extends Controller
      */
     public function unique($id)
     {
-        return Response::make([
+        return response([
             'exists' => !empty(NodeType::find($id)),
         ]);
     }

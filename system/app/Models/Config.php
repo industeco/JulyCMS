@@ -17,6 +17,27 @@ class Config extends Model
     protected $table = 'configs';
 
     /**
+     * 主键
+     *
+     * @var string
+     */
+    protected $primaryKey = 'truename';
+
+    /**
+     * 主键“类型”。
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * 指示模型主键是否递增
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
      * 可批量赋值的属性。
      *
      * @var array

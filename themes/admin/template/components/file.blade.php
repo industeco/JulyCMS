@@ -1,4 +1,4 @@
-<el-form-item prop="{{ $truename }}" size="small" class="{{ $help?'has-helptext':'' }}">
+<el-form-item prop="{{ $truename }}" size="small" class="{{ $helptext?'has-helptext':'' }}">
   <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="{{ $truename }}" placement="right">
     <span>{{ $label }}</span>
   </el-tooltip>
@@ -7,8 +7,8 @@
     native-size="200"
     maxlength="200"
     show-word-limit></el-input>
-  @if ($help)
-  <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $help }}</span>
+  @if ($helptext)
+  <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $helptext }}</span>
   @endif
   <button type="button" class="md-button md-raised md-small md-primary md-theme-default" @click="showMedias('{{ $truename }}')">
     <div class="md-ripple">

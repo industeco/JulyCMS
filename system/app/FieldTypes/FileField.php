@@ -42,9 +42,9 @@ class FileField extends FieldTypeBase
         ];
     }
 
-    public function extractParameters(array $raw): array
+    public function collectParameters(array $raw): array
     {
-        $parameters = parent::extractParameters($raw);
+        $parameters = parent::collectParameters($raw);
         if ($parameters['helptext'] ?? null) {
             return $parameters;
         }

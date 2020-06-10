@@ -26,11 +26,11 @@
               <a :href="getUrl('edit', scope.row.truename)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              @if (config('jc.multi_language'))
+              {{-- @if (config('jc.multi_language'))
               <a :href="getUrl('translate', scope.row.truename)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default" disabled>
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
-              @endif
+              @endif --}}
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click="deleteType(scope.row)" :disabled="scope.row.nodes>0">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
@@ -49,7 +49,7 @@
           </div>
         </a>
       </li>
-      @if (config('jc.multi_language'))
+      {{-- @if (config('jc.multi_language'))
       <li class="md-list-item">
         <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
           <div class="md-list-item-content">
@@ -58,7 +58,7 @@
           </div>
         </a>
       </li>
-      @endif
+      @endif --}}
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteType(contextmenu.target)">
           <div class="md-list-item-content md-ripple">
@@ -82,7 +82,7 @@
         contextmenu: {
           target: null,
           editUrl: null,
-          translateUrl: null,
+          // translateUrl: null,
           editable: true,
           translatable: false,
           deletable: false,
@@ -90,7 +90,7 @@
 
         editUrl: "{{ short_route('node_types.edit', '#truename#') }}",
         deleteUrl: "{{ short_route('node_types.destroy', '#truename#') }}",
-        translateUrl: "{{ short_route('node_types.translate', '#truename#') }}",
+        // {{-- translateUrl: "{{ short_route('node_types.translate', '#truename#') }}", --}}
       };
     },
 
@@ -113,8 +113,8 @@
         switch (route) {
           case 'edit':
             return this.editUrl.replace('#truename#', key)
-          case 'translate':
-            return this.translateUrl.replace('#truename#', key)
+          // case 'translate':
+          //   return this.translateUrl.replace('#truename#', key)
         }
       },
 

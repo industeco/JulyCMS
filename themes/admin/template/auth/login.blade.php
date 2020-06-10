@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>登录</title>
+  <title>登录后台</title>
   <link rel="stylesheet" href="/themes/admin/vendor/element-ui/theme-chalk/index.css">
   <style>
     .el-form-item {
@@ -35,8 +35,8 @@
         <el-form-item label="用户名：" size="medium">
           {{-- <el-input name="truename" v-model="truename"></el-input> --}}
           <div class="el-input el-input--medium">
-            <input autocomplete="off" name="truename" class="el-input__inner"
-              v-model="truename" @keyup.enter="focusPassword">
+            <input autocomplete="off" name="name" class="el-input__inner"
+              v-model="name" @keyup.enter="focusPassword">
           </div>
         </el-form-item>
         <el-form-item label="密码：" size="medium">
@@ -46,7 +46,7 @@
               ref="password" v-model="password" @keyup.enter="submit">
           </div>
         </el-form-item>
-        @error('login')
+        @error('name')
         <el-form-item size="medium" error="{{ $message }}"></el-form-item>
         @enderror
         <el-form-item size="medium">
@@ -66,7 +66,7 @@
       el: '#app',
       data() {
         return {
-          truename: "{{ old('truename') }}",
+          name: "{{ old('name') }}",
           password: "{{ old('password') }}",
           remember: false,
           loading: false,

@@ -95,25 +95,18 @@ class NodeField extends JulyModel
 
     public static function globalFields()
     {
-        return [
-            'template','url','meta_title','meta_keywords','meta_description','meta_canonical',
-        ];
+        return static::where('is_global', true)->get();
     }
 
     public static function retrieveGlobalFields($langcode = null)
     {
-        $langcode = $langcode ?? langcode('admin_page');
-        if (is_array($langcode)) {
-            $langcode = $langcode['content_value'] ?? langcode('admin_page');
-        }
-
+        $langcode = $langcode ?? langcode('content');
         $cacheKey = md5('globalFields/'.$langcode);
         $fields = Cache::get($cacheKey);
-
         if (! $fields) {
             $fields = [];
-            foreach (NodeField::findMany(NodeField::globalFields()) as $field) {
-                $fields[$field->truename] = $field->mixConfig();
+            foreach (static::globalFields() as $field) {
+                $fields[$field->truename] = $field->gather($langcode);
             }
             Cache::put($cacheKey, $fields);
         }
@@ -123,16 +116,11 @@ class NodeField extends JulyModel
 
     public static function retrieveGlobalFieldJigsaws($langcode = null, array $values = null)
     {
-        $langcode = $langcode ?? langcode('admin_page');
-        if (is_array($langcode)) {
-            $langcode = $langcode['content_value'] ?? langcode('admin_page');
-        }
-
-        $lastModified = last_modified(view_path('components/'));
-
+        $langcode = $langcode ?? langcode('content');
         $cacheKey = md5('globalFieldJigsaws/'.$langcode);
-        $jigsaws = Cache::get($cacheKey);
 
+        $jigsaws = Cache::get($cacheKey);
+        $lastModified = last_modified(view_path('components/'));
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach (static::retrieveGlobalFields($langcode) as $field) {
@@ -162,8 +150,7 @@ class NodeField extends JulyModel
 
     public function tableColumns()
     {
-        $type = FieldType::findOrFail($this->field_type);
-        return $type->getColumns($this->truename, $this->parameters());
+        return FieldType::findOrFail($this->field_type)->getColumns($this->truename, $this->parameters());
     }
 
     /**
@@ -245,7 +232,7 @@ class NodeField extends JulyModel
         // 清除字段值缓存
         static::cacheClear($this->truename.'/'.$node_id, $langcode);
 
-        $records = FieldType::toRecords($this->field_type, $value, $this->tableColumns());
+        $records = FieldType::findOrFail($this->field_type)->toRecords($value, $this->tableColumns());
         if (is_null($records)) {
             $this->deleteValue($node_id, $langcode);
         } else {
@@ -296,11 +283,7 @@ class NodeField extends JulyModel
                 })->all();
 
                 // 借助字段类型格式化数据库记录
-                $config = $this->config;
-                if ($this->pivot) {
-                    $config = array_replace_recursive($config, $this->pivot->config);
-                }
-                $value = FieldType::toValue($this->field_type, $records, $this->tableColumns(), $config);
+                $value = FieldType::findOrFail($this->field_type)->toValue($records, $this->tableColumns(), $this->parameters($langcode));
             }
 
             // 缓存字段值
@@ -372,27 +355,37 @@ class NodeField extends JulyModel
     }
 
     /**
-     * 采集字段所有相关信息并组成数组
+     * 收集字段所有相关信息并组成数组
      *
      * @param string|null $langcode
      * @return array
      */
-    public function gather($langcode = null)
+    public function flatten($langcode = null)
     {
         $data = $this->getAttributes();
-        if ($this->pivot) {
-            $data['delta'] = $this->pivot['delta'];
-            $data['label'] = $this->pivot['label'] ?? $data['label'];
-            $data['description'] = $this->pivot['description'] ?? $data['description'];
+        if ($pivot = $this->pivot) {
+            $data['label'] = $pivot->label ?? $data['label'];
+            $data['description'] = $pivot->description ?? $data['description'];
+            $data['delta'] = $pivot->delta;
         }
         $data['parameters'] = $this->parameters($langcode);
+
         return $data;
     }
 
+    /**
+     * 获取字段参数
+     *
+     * @param string|null $langcode
+     * @return array
+     */
     public function parameters($langcode = null)
     {
+        $langcode = $langcode ?? langcode('content');
+        $keyname = implode('.', ['node_field', $this->truename]);
         $records = DB::table('field_parameters')
-                    ->where('keyname', 'like', 'node_field.'.$this->truename.'%')
+                    ->where('keyname', $keyname)
+                    ->orWhere('keyname', 'like', $keyname.'.%')
                     ->get()
                     ->keyBy(function($record) {
                         return $record->keyname.'.'.$record->langcode;
@@ -400,14 +393,12 @@ class NodeField extends JulyModel
                         return json_decode($record->data, true);
                     });
 
-        $langcode = $langcode ?? langcode('content');
-        $keyname = 'node_field.'.$this->truename;
         $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
-        if ($this->pivot) {
-            $keyname .= '.node_type.'.$this->pivot->node_type;
+        if ($pivot = $this->pivot) {
+            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type, $pivot->langcode]);
             $parameters = array_merge(
                     $parameters,
-                    $records[$keyname.'.'.$this->pivot->langcode] ?? []
+                    $records[$keyname] ?? []
                 );
         }
 

@@ -46,19 +46,19 @@ abstract class FieldTypeBase
     abstract public function getSchema(): array;
 
     /**
-     * 从表单数据中提取字段参数
+     * 从表单数据中采集字段参数
      *
      * @param array $raw 表单数据
      * @return array
      */
-    public function extractParameters(array $raw): array
+    public function collectParameters(array $raw): array
     {
         $schema = $this->getSchema();
         $parameters = [];
         foreach ($schema as $key => $meta) {
-            $value = $raw[$key] ?? null;
+            $value = $raw[$key] ?? $raw['parameters__'.$key] ?? null;
             if (!is_null($value)) {
-                $parameters[$key] = cast_value($value, $meta['type']);
+                $parameters[$key] = cast_value($value, $meta['type'] ?? 'string');
             }
         }
         return $parameters;
@@ -79,9 +79,10 @@ abstract class FieldTypeBase
     {
         return [
             'truename' => $fieldData['truename'],
+            'field_type' => $fieldData['field_type'],
             'value' => null,
             'element' => $this->getElement($fieldData),
-            'rules' => $this->getRules($fieldData['parameters'] ?? []),
+            'rules' => $this->getRules($fieldData),
         ];
     }
 

@@ -25,20 +25,13 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = RouteServiceProvider::HOME;
-
-    /**
      * Create a new controller instance.
      *
      * @return void
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('admin.logout');
+        $this->middleware('guest')->except('logout');
     }
 
     /**
@@ -52,7 +45,7 @@ class LoginController extends Controller
         //     return redirect(short_route('admin.home'));
         // }
 
-        return view('admin::login');
+        return view('admin::auth.login');
     }
 
     /**
@@ -63,6 +56,16 @@ class LoginController extends Controller
     public function username()
     {
         return 'name';
+    }
+
+    /**
+     * Where to redirect users after login.
+     *
+     * @return string
+     */
+    protected function redirectTo()
+    {
+        return short_route('admin.home');
     }
 
     /**

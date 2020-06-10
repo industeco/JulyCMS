@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($interface_value_langcode) }} ]</span>
+  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($content_langcode) }} ]</span>
 @endsection
 
 @section('main_content')
@@ -11,19 +11,19 @@
     label-position="top">
     <div id="main_form_left">
       @include('admin::widgets.truename', ['readOnly' => $truename, 'scope' => 'nodeType'])
-      <el-form-item label="名称" prop="name" size="small">
+      <el-form-item label="名称" prop="label" size="small">
         <el-input
-          v-model="nodeType.name"
+          v-model="nodeType.label"
           native-size="60"
-          maxlength="32"
+          maxlength="50"
           show-word-limit></el-input>
       </el-form-item>
       <el-form-item label="描述" prop="description" size="small">
         <el-input
+          v-model="nodeType.description"
           type="textarea"
           rows="5"
-          v-model="nodeType.description"
-          maxlength="200"
+          maxlength="255"
           show-word-limit></el-input>
       </el-form-item>
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
@@ -206,7 +206,7 @@
     truename: 'title',
     field_type: 'text',
     is_preset: true,
-    langcode: 'zh',
+    langcode: '{{ $content_langcode }}',
     label: '标题',
     description: '内容类型预设字段，不可删除，不可排序',
   };
@@ -257,10 +257,9 @@
 
       return {
         nodeType: {
-          interface_value_langcode: '{{ $interface_value_langcode }}',
-          content_value_langcode: '{{ $content_value_langcode }}',
+          content_langcode: '{{ $content_langcode }}',
           truename: '{{ $truename }}',
-          name: '{{ $name }}',
+          label: '{{ $label }}',
           description: '{{ $description }}',
           field__title: titleField,
           fields: currentFields,
@@ -270,17 +269,17 @@
           @if (!$truename)
           truename: [
             { required: true, message: '『真名』不能为空', trigger: 'submit' },
-            { max: 32, message: '最多 32 个字符', trigger: 'change' },
+            { max: 50, message: '最多 50 个字符', trigger: 'change' },
             { pattern: /^[a-z0-9_]+$/, message: '真名只能包含小写字母、数字和下划线', trigger: 'change' },
             { validator: isUniqueType, trigger: 'blur' }
           ],
           @endif
-          name: [
+          label: [
             { required: true, message: '『名称』不能为空', trigger: 'submit' },
-            { max: 32, message: '最多 32 个字符（或 16 个汉字）', trigger: 'change' }
+            { max: 50, message: '最多 50 个字符（或 25 个汉字）', trigger: 'change' }
           ],
           description: [
-            { max: 200, message: '最多 200 个字符（或 100 个汉字）', trigger: 'change' }
+            { max: 255, message: '最多 255 个字符（或 127 个汉字）', trigger: 'change' }
           ],
         },
 
@@ -296,20 +295,19 @@
         selectedFields: [],
 
         nodeField: {
-          content_value_langcode: '{{ $content_value_langcode }}',
-          interface_value_langcode: '{{ $interface_value_langcode }}',
-          field_type: null,
+          // content_langcode: '{{ $content_langcode }}',
           truename: '',
-          length: 100,
-          required: false,
-          is_searchable: true,
-          index_weight: 1,
-          file_type: null,
-          label: '',
-          description: '',
-          help: '',
-          default: null,
-          datalist: [{value:''}],
+          field_type: null,
+          label: null,
+          description: null,
+          parameters__required: false,
+          parameters__max: 200,
+          parameters__is_searchable: true,
+          parameters__weight: 1,
+          parameters__file_type: null,
+          parameters__helptext: null,
+          parameters__default: null,
+          parameters__datalist: [{value:''}],
         },
 
         nodeFieldRules: {
@@ -318,14 +316,14 @@
           ],
           truename: [
             { required: true, message: '『真名』不能为空', trigger: 'submit' },
-            { max: 32, message: '最多 32 个字符', trigger: 'change' },
+            { max: 50, message: '最多 50 个字符', trigger: 'change' },
             { pattern: /^[a-z0-9_]+$/, message: '真名只能包含小写字母、数字和下划线', trigger: 'change' },
             { validator: isUniqueField, trigger: 'blur' },
           ],
           label: [
             { required: true, message: '『标签』不能为空', trigger: 'submit' },
           ],
-          file_type: [
+          parameters__file_type: [
             { required: true, message: '『文件类型』不能为空', trigger: 'submit' },
           ],
         },

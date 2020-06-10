@@ -21,7 +21,7 @@ Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'inst
 // 后台
 Route::group([
     'prefix' => config('jc.admin_prefix', 'admin'),
-    'middleware' => 'csrf',
+    'middleware' => ['web','csrf'],
 ], function() {
     // 登录路由
     Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');
@@ -42,6 +42,8 @@ Route::group([
         ])->names('node_fields');
 
         // 内容类型
+        // Route::get('node_types/{nodeType}/translate', 'NodeTypeController@translate')->name('node_types.translate');
+        // Route::get('node_types/{nodeType}/translate/{langcode}', 'NodeTypeController@edit')->name('node_types.translate_to');
         Route::resource('node_types', 'NodeTypeController')->parameters([
             'node_types' => 'nodeType',
         ])->names('node_types');

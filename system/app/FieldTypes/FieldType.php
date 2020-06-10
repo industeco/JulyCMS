@@ -65,41 +65,31 @@ class FieldType
 
     public static function getSchema($type)
     {
-        $fieldType = static::findOrFail($type);
-        return $fieldType->getSchema();
+        return static::findOrFail($type)->getSchema();
     }
 
     public static function getColumns($type, $fieldName, array $parameters = [])
     {
-        if ($fieldType = static::find($type)) {
-            return $fieldType->getColumns($fieldName, $parameters);
-        }
-        return [];
+        return static::findOrFail($type)->getColumns($fieldName, $parameters);
     }
 
-    public static function extractParameters(array $data)
+    public static function collectParameters(array $data)
     {
-        $fieldType = static::findOrFail($data['field_type'] ?? null);
-        return $fieldType->extractParameters($data);
-    }
-
-    public static function toRecords($type, $value, array $columns)
-    {
-        $fieldType = static::findOrFail($type);
-        return $fieldType->toRecords($value, $columns);
-    }
-
-    public static function toValue($type, array $records, array $columns, array $config)
-    {
-        $fieldType = static::findOrFail($type);
-        return $fieldType->toValue($records, $columns, $config);
+        return static::findOrFail($data['field_type'] ?? null)->collectParameters($data);
     }
 
     public static function getJigsaws(array $data)
     {
-        $fieldType = static::findOrFail($data['field_type'] ?? null);
-        $jigsaws = $fieldType->getJigsaws($data);
-        $jigsaws['type'] = $data['field_type'];
-        return $jigsaws;
+        return static::findOrFail($data['field_type'] ?? null)->getJigsaws($data);
+    }
+
+    public static function toRecords($type, $value, array $columns)
+    {
+        return static::findOrFail($type)->toRecords($value, $columns);
+    }
+
+    public static function toValue($type, array $records, array $columns, array $parameters = [])
+    {
+        return static::findOrFail($type)->toValue($records, $columns, $parameters);
     }
 }

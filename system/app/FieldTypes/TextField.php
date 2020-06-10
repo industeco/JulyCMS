@@ -67,7 +67,7 @@ class TextField extends FieldTypeBase
 
         if ($pattern = $parameters['pattern'] ?? null) {
             if ($pattern = config('jc.rules.pattern.'.$pattern)) {
-                $rules[] = "{pattern: $pattern, message:'格式不正确', trigger:'submit'}";
+                $rules[] = "{pattern:$pattern, message:'格式不正确', trigger:'submit'}";
             }
         }
 
