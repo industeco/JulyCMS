@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
-use Illuminate\Support\Arr;
+use App\Support\Arr;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class Config extends Model
@@ -21,7 +21,7 @@ class Config extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'truename';
+    protected $primaryKey = 'keyname';
 
     /**
      * 主键“类型”。
@@ -123,7 +123,7 @@ class Config extends Model
 
             if ($config->group === 'preference') {
                 if (($user = Auth::user()) && ($user instanceof User)) {
-                    $user->updatePreferences($config->keyname, $data);
+                    $user->updatePreference($config->keyname, $data);
                     continue;
                 }
             }

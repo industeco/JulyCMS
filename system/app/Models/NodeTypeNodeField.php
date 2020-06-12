@@ -44,8 +44,8 @@ class NodeTypeNodeField extends Pivot
         'node_type',
         'node_field',
         'delta',
+        'weight',
         'label',
         'description',
-        'langcode',
     ];
 }

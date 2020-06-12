@@ -153,9 +153,6 @@ class CreateJulycmsTables extends Migration
             // 描述
             $table->string('description', 255)->nullable();
 
-            // 语言
-            $table->string('langcode', 12);
-
             // 同一个字段在同一个类型中最多出现一次
             $table->unique(['node_type', 'node_field']);
         });

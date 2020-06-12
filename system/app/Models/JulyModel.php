@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
-use App\Contracts\HasModelConfig;
+use APP\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Date;
-use App\Traits\CacheRetrieve;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 abstract class JulyModel extends Model
 {
-    use CacheRetrieve;
-
     /**
      * 哪些字段可更新（白名单）
      *
@@ -27,50 +24,14 @@ abstract class JulyModel extends Model
      */
     protected $updateExcept = [];
 
-    /**
-     * Update the model in the database.
-     *
-     * @param  array  $attributes
-     * @param  array  $options
-     * @return bool
-     */
-    public function update(array $attributes = [], array $options = [])
-    {
-        if (! $this->exists) {
-            return false;
-        }
-
-        if ($this instanceof HasModelConfig) {
-            $attributes['config'] = $this->buildConfig($attributes);
-        }
-
-        if ($this->updateOnly) {
-            $attributes = array_intersect_key($attributes, array_flip($this->updateOnly));
-        } elseif ($this->updateExcept) {
-            $attributes = array_diff_key($attributes, array_flip($this->updateExcept));
-        }
-
-        return $this->fill($attributes)->save($options);
-    }
-
     public static function make(array $attributes = [])
     {
-        $instance = new static($attributes);
-        if ($instance instanceof HasModelConfig) {
-            $instance->config = $instance->buildConfig($attributes);
-        }
-
-        return $instance;
+        return new static($attributes);
     }
 
     public static function primaryKeyName()
     {
-        return 'id';
-    }
-
-    public function primary()
-    {
-        return $this->attributes[$this->primaryKey] ?? null;
+        return (new static)->getKeyName();
     }
 
     public static function fetch($id)
@@ -128,7 +89,7 @@ abstract class JulyModel extends Model
 
         if ($freshids) {
             foreach (static::findMany($freshids) as $instance) {
-                $app->instance($aliasPrefix.$instance->primary(), $instance);
+                $app->instance($aliasPrefix.$instance->getKey(), $instance);
                 $instances[] = $instance;
             }
         }
@@ -143,7 +104,7 @@ abstract class JulyModel extends Model
 
         $instances = static::all();
         foreach ($instances as $instance) {
-            $alias = $aliasPrefix.$instance->primary();
+            $alias = $aliasPrefix.$instance->getKey();
             if (! $app->has($alias)) {
                 $app->instance($alias, $instance);
             }
@@ -152,56 +113,119 @@ abstract class JulyModel extends Model
         return collect($instances->all());
     }
 
-    public function forceUpdate()
+    /**
+     * Update the model in the database.
+     *
+     * @param  array  $attributes
+     * @param  array  $options
+     * @return bool
+     */
+    public function update(array $attributes = [], array $options = [])
     {
-        if ($this->timestamps) {
-            $this->attributes[static::UPDATED_AT] = Date::now();
-            $this->save();
+        if (! $this->exists) {
+            return false;
         }
-    }
 
-    public function mixConfig(array $langcode = [])
-    {
-        $data = $this->toArray();
-        if ($this instanceof HasModelConfig) {
-            $data = array_merge($data, $this->getConfigOptions($langcode));
-            unset($data['config']);
+        if ($this->updateOnly) {
+            $attributes = Arr::only($attributes, $this->updateOnly);
+        } elseif ($this->updateExcept) {
+            $attributes = Arr::except($attributes, $this->updateExcept);
         }
-        return $data;
+
+        return $this->fill($attributes)->save($options);
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * 排除指定属性
+     *
+     * @param array $columns
+     * @return array
      */
-    public static function columns($columns = null, $keyName = null, $except = false)
+    public function except(array $columns = [])
     {
-        $columns = (array) $columns;
-        if ($columns) {
-            $columns = array_flip($columns);
-        }
-
-        $models = [];
-        foreach (static::all() as $model) {
-            $model = $model->mixConfig();
-            $key = $model[$keyName] ?? null;
-            if ($columns) {
-                $model = $except ? array_diff_key($model, $columns) : array_intersect_key($model, $columns);
-            }
-            if ($key) {
-                $models[$key] = $model;
-            } else {
-                $models[] = $model;
-            }
-        }
-
-        return collect($models);
+        return Arr::except($this->attributesToArray(), $columns);
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * 准备用于生成 cacheKey 的数组
+     *
+     * @param static|null $model
+     * @param string $name
+     * @param array $conditions
+     * @return array
      */
-    public static function columnsExcept(array $columns = [], $keyName = null)
+    public static function prepareCacheKey($model, $name, array $conditions = [])
     {
-        return static::columns($columns, $keyName, true);
+        if ($model && ($model instanceof static)) {
+            $conditions['key'] = $model->getKey();
+        }
+        return [
+            'type' => static::class,
+            'name' => $name,
+            'conditions' => $conditions,
+        ];
+    }
+
+    /**
+     * 生成 cacheKey
+     *
+     * @param array|string $key
+     * @return string
+     */
+    public static function cacheKey($key)
+    {
+        if (is_array($key)) {
+            $key = [
+                'type' => $key['type'] ?? static::class,
+                'name' => $key['name'] ?? null,
+                'conditions' => ksort($key['conditions'] ?? Arr::except($key, ['type','name'])),
+            ];
+            // Log::info($key);
+            return md5(json_encode($key));
+        }
+        // Log::info('md5: '.$key);
+        return (string) $key;
+    }
+
+    /**
+     * 存储值到缓存中
+     *
+     * @param array|string $key
+     * @param mixed $value
+     * @return boolean
+     */
+    public static function cachePut($key, $value)
+    {
+        // Log::info('CacheValue Put:');
+        return Cache::put(static::cacheKey($key), $value);
+    }
+
+    /**
+     * 从缓存中获取值
+     *
+     * @param array|string $key
+     * @return array|null
+     */
+    public static function cacheGet($key)
+    {
+        // Log::info('CacheValue Get:');
+        $uid = uniqid();
+        $value = Cache::get(static::cacheKey($key), $uid);
+        if ($value === $uid) {
+            return null;
+        }
+        return ['value' => $value];
+    }
+
+    /**
+     * 清除目标缓存
+     *
+     * @param array|string $key
+     * @return boolean
+     */
+    public static function cacheClear($key)
+    {
+        // Log::info('CacheValue Clear:');
+        return Cache::forget(static::cacheKey($key));
     }
 }

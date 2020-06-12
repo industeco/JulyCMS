@@ -11,6 +11,7 @@ use App\Models\NodeField;
 use App\Models\NodeType;
 use App\FieldTypes\FieldType;
 use App\Models\Tag;
+use App\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,20 +24,18 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $nodes = [];
-        foreach (Node::all() as $node) {
-            $data = $node->getData();
+        $nodes = Node::all()->map(function($node) {
+            $data = Arr::only($node->gather(), ['id','node_type','updated_at','created_at','title','url','tags']);
             $data['templates'] = $node->suggestedTemplates();
-            unset($data['content']);
-            $nodes[$node->id] = $data;
-        }
+            return $data;
+        })->keyBy('id')->all();
 
         return view_with_langcode('admin::nodes.index', [
             'nodes' => $nodes,
-            'nodeTypes' => NodeType::columns(['name','truename'])->pluck('name', 'truename')->all(),
-            'catalogs' => Catalog::columns(['name','truename'])->pluck('name', 'truename')->all(),
+            'nodeTypes' => NodeType::pluck('label', 'truename')->all(),
+            'catalogs' => Catalog::pluck('label', 'truename')->all(),
             'all_tags' => Tag::allTags(),
-            'languages' => available_languages('content_value'),
+            'languages' => available_languages('translatable'),
         ]);
     }
 
@@ -48,7 +47,7 @@ class NodeController extends Controller
     public function create()
     {
         return view_with_langcode('admin::nodes.choose_node_type', [
-            'nodeTypes' => NodeType::columns()->all(),
+            'nodeTypes' => NodeType::all()->all(),
         ]);
     }
 
@@ -60,25 +59,22 @@ class NodeController extends Controller
      */
     public function createWith(NodeType $nodeType)
     {
-        $interface_lang = langcode('admin_page');
-        $content_lang = langcode('content_value');
-
         return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
             'node_type' => $nodeType->truename,
-            'fields' => $nodeType->retrieveFieldJigsaws($interface_lang),
-            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang),
+            'fields' => $nodeType->cacheGetFieldJigsaws(),
+            'fields_aside' => NodeField::cacheGetGlobalFieldJigsaws(),
             'tags' => [],
             'positions' => [],
-            'all_tags' => Tag::allTags($content_lang),
-            'all_nodes' => $this->simpleNodes($content_lang),
+            'all_tags' => Tag::allTags(),
+            'all_nodes' => $this->simpleNodes(),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'create',
         ]);
     }
 
-    protected function simpleNodes($langcode)
+    protected function simpleNodes($langcode = null)
     {
         $nodes = [];
         foreach (Node::allNodes($langcode) as $node) {
@@ -134,31 +130,32 @@ class NodeController extends Controller
      * 展示编辑或翻译界面
      *
      * @param  \App\Models\Node  $node
-     * @param  string  $translateTo
+     * @param  string  $langcode
      * @return \Illuminate\Http\Response
      */
-    public function edit(Node $node, $translateTo = null)
+    public function edit(Node $node, $langcode = null)
     {
-        $interface_lang = langcode('admin_page');
-        $content_lang = $translateTo ?? langcode('content_value');
+        if ($langcode) {
+            config()->set('request.langcode.content', $langcode);
+        }
 
-        $values = $node->getData($content_lang);
+        $values = $node->gather($langcode);
         $data = [
             'id' => $node->id,
             'node_type' => $node->node_type,
-            'fields' => $node->nodeType->retrieveFieldJigsaws($interface_lang, $values),
-            'fields_aside' => NodeField::retrieveGlobalFieldJigsaws($interface_lang, $values),
+            'fields' => $node->nodeType->cacheGetFieldJigsaws($langcode, $values),
+            'fields_aside' => NodeField::cacheGetGlobalFieldJigsaws($langcode, $values),
             'tags' => $values['tags'],
             'positions' => $node->positions(),
-            'all_tags' => Tag::allTags($content_lang),
-            'all_nodes' => $this->simpleNodes($content_lang),
+            'all_tags' => Tag::allTags($langcode),
+            'all_nodes' => $this->simpleNodes($langcode),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
             'mode' => 'edit',
         ];
 
-        if ($translateTo) {
-            $data['content_value_langcode'] = $translateTo;
+        if ($langcode) {
+            $data['content_langcode'] = $langcode;
             $data['mode'] = 'translate';
         }
 
@@ -182,7 +179,7 @@ class NodeController extends Controller
         if (!empty($changed)) {
             // Log::info($changed);
             // $node->update($node->prepareUpdate($request));
-            $node->forceUpdate();
+            $node->touch();
             $node->saveValues($request->all(), true);
 
             if (in_array('tags', $changed)) {
@@ -223,8 +220,9 @@ class NodeController extends Controller
 
         return view_with_langcode('admin::translate', [
             'original_langcode' => $node->langcode,
-            'langs' => langcode('all'),
-            'base_url' => '/admin/nodes/'.$node->id,
+            'languages' => available_languages('translatable'),
+            'entityKey' => $node->id,
+            'routePrefix' => 'nodes',
         ]);
     }
 
@@ -242,18 +240,14 @@ class NodeController extends Controller
             $nodes = Node::fetchMany($ids);
         }
 
-        $twig = twig('default/template', true);
+        $twig = twig('template', true);
 
         // 多语言生成
         if (config('jc.multi_language')) {
-            $langs = $request->input('langcode') ?: array_keys(langcode('all'));
-            if (is_string($langs)) {
-                $langs = [$langs];
-            }
+            $langs = $request->input('langcode') ?: available_langcodes('accessible');
         } else {
-            $langs = [langcode('site_page')];
+            $langs = [langcode('page')];
         }
-
 
         $success = [];
         foreach ($nodes as $node) {
@@ -268,12 +262,12 @@ class NodeController extends Controller
             $success[$node->id] = $result;
         }
 
-        return Response::make($success);
+        return response($success);
     }
 
     protected function getTwigTemplates()
     {
         $templates = NodeField::find('template')->records()->pluck('template_value');
-        return $templates->sort()->unique()->values()->all();
+        return $templates->sort()->unique()->all();
     }
 }

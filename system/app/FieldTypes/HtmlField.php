@@ -6,9 +6,29 @@ use Illuminate\Support\Facades\View;
 
 class HtmlField extends FieldTypeBase
 {
-    public static $label = 'HTML';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getAlias(): string
+    {
+        return 'html';
+    }
 
-    public static $description = '适用于 HTML 文档';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel(): string
+    {
+        return 'HTML';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getDescription(): string
+    {
+        return '适用于 HTML 文档';
+    }
 
     public function getColumns($fieldName, array $parameters = []): array
     {

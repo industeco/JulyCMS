@@ -3,6 +3,7 @@
 namespace App\FieldTypes;
 
 use Illuminate\Support\Facades\Log;
+use App\Models\NodeField;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -11,51 +12,78 @@ use Illuminate\Support\Facades\Log;
  *  2. 构建字段数据表列
  *  3. 构建字段表单控件
  */
-abstract class FieldTypeBase
+abstract class FieldTypeBase implements FieldTypeInterface
 {
-    public static $isPublic = true;
-
-    public static $label = '';
-
-    public static $description = '';
-
-    public static $searchable = true;
-
     /**
-     * 字段数据存储表的列信息，结构为：
-     * [
-     *   [
-     *      type => string,
-     *      name => string,
-     *      parameters => array,
-     *   ],
-     *   ...
-     * ]
+     * 字段对象
      *
-     * @param string $fieldName
-     * @param array $parameters
-     * @return array
+     * @var \App\Models\NodeField
      */
-    abstract public function getColumns($fieldName, array $parameters = []): array;
+    protected $field = null;
 
     /**
-     * 获取该类型字段参数的模式数据（属性，属性值类型，属性默认值）
+     * 字段名
      *
-     * @return array
+     * @var string|null
      */
-    abstract public function getSchema(): array;
+    protected $fieldName = null;
 
     /**
-     * 从表单数据中采集字段参数
+     * 字段本征属性
      *
-     * @param array $raw 表单数据
-     * @return array
+     * @var array
+     */
+    protected $attributes = [];
+
+    /**
+     * 字段参数
+     *
+     * @var array
+     */
+    protected $parameters = [];
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getDescription(): string
+    {
+        return '';
+    }
+
+    public function __construct(NodeField $field = null, $langcode = null)
+    {
+        if ($field) {
+            $this->field = $field;
+            $this->fieldName = $field->getKey();
+            $this->attributes = $field->attributesToArray();
+            $this->parameters = $field->parameters($langcode);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchema(): array
+    {
+        return [
+            'type' => [
+                'type' => 'string',
+                'default' => 'string',
+            ],
+            'required' => [
+                'type' => 'boolean',
+                'default' => false,
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function collectParameters(array $raw): array
     {
-        $schema = $this->getSchema();
         $parameters = [];
-        foreach ($schema as $key => $meta) {
+        foreach ($this->getSchema() as $key => $meta) {
             $value = $raw[$key] ?? $raw['parameters__'.$key] ?? null;
             if (!is_null($value)) {
                 $parameters[$key] = cast_value($value, $meta['type'] ?? 'string');
@@ -65,29 +93,53 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取字段的 HTML 片段（element-ui 组件）
+     * {@inheritdoc}
      */
-    abstract public function getElement(array $fieldData);
+    public function setParameters(array $parameters)
+    {
+        $this->parameters = $parameters;
+        return $this;
+    }
 
     /**
-     * 生成表单拼图（表单字段的相关数据）
-     *
-     * @param array $data
-     * @return array
+     * {@inheritdoc}
      */
-    public function getJigsaws(array $fieldData)
+    public function getColumns(array $parameters = null, $fieldName = null): array
     {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getJigsaws(array $parameters = null, array $attributes = null): array
+    {
+        $parameters = $parameters ?: $this->parameters;
+        $attributes = $attributes ?: $this->attributes;
         return [
-            'truename' => $fieldData['truename'],
-            'field_type' => $fieldData['field_type'],
+            'truename' => $attributes['truename'] ?? $this->fieldName,
+            'field_type' => $attributes['field_type'] ?? $this->getAlias(),
             'value' => null,
-            'element' => $this->getElement($fieldData),
-            'rules' => $this->getRules($fieldData),
+            'element' => $this->getElement($parameters, $attributes),
+            'rules' => $this->getRules($parameters),
         ];
     }
 
-    public function getRules(array $parameters)
+    /**
+     * {@inheritdoc}
+     */
+    public function getElement(?array $parameters = null, ?array $attributes = null): string
     {
+        return '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRules(array $parameters = null): array
+    {
+        $parameters = $parameters ?: $this->parameters;
+
         $rules = [];
 
         if ($parameters['required'] ?? false) {
@@ -103,19 +155,30 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 将记录转换为值
+     * {@inheritdoc}
      */
-    public function toValue(array $records, array $columns, array $parameters = [])
+    public function getValidator(?array $parameters = null): array
     {
-        $column = $columns[0]['name'];
-        return trim($records[0][$column]);
+        return [];
     }
 
     /**
-     * 将值转换为记录
+     * {@inheritdoc}
      */
-    public function toRecords($value, array $columns)
+    public function toValue(array $records, array $columns = null, array $parameters = null)
     {
+        $columns = $columns ?? $this->getColumns();
+        $columnName = $columns[0]['name'];
+        return trim($records[0][$columnName]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toRecords($value, array $columns = null, array $parameters = null): array
+    {
+        $columns = $columns ?? $this->getColumns();
+
         if (!strlen($value)) {
             return null;
         }

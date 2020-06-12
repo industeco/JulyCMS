@@ -4,11 +4,29 @@ namespace App\FieldTypes;
 
 class FileField extends FieldTypeBase
 {
-    public static $label = '文件名';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getAlias(): string
+    {
+        return 'file';
+    }
 
-    public static $description = '带文件浏览按钮';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel(): string
+    {
+        return '文件名';
+    }
 
-    public static $searchable = false;
+    /**
+     * {@inheritdoc}
+     */
+    public static function getDescription(): string
+    {
+        return '带文件浏览按钮';
+    }
 
     public function getColumns($fieldName, array $parameters = []): array
     {

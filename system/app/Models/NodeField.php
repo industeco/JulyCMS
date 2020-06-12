@@ -2,44 +2,27 @@
 
 namespace App\Models;
 
+use App\FieldTypes\FieldType;
+use App\Support\Arr;
+use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use App\FieldTypes\FieldType;
-use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 
 class NodeField extends JulyModel
 {
+    use TruenameAsPrimaryKey;
+
     /**
      * 与模型关联的表名
      *
      * @var string
      */
     protected $table = 'node_fields';
-
-    /**
-     * 主键
-     *
-     * @var string
-     */
-    protected $primaryKey = 'truename';
-
-    /**
-     * 主键“类型”。
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * 指示模型主键是否递增
-     *
-     * @var bool
-     */
-    public $incrementing = false;
 
     /**
      * 可批量赋值的属性。
@@ -74,23 +57,58 @@ class NodeField extends JulyModel
     public function types()
     {
         return $this->belongsToMany(NodeType::class, 'node_field_node_type', 'node_field', 'node_type')
-                    ->using(NodeTypeNodeField::class)
                     ->orderBy('node_field_node_type.delta')
                     ->withPivot([
                         'delta',
                         'weight',
                         'label',
                         'description',
-                        'langcode',
                     ]);
     }
 
-    public function getParametersSchema(): array
+    /**
+     * @return \App\FieldTypes\FieldTypeBase
+     */
+    public function fieldType()
     {
-        if ($type = FieldType::find($this->field_type)) {
-            $type->getSchema();
+        return FieldType::findOrFail($this->field_type);
+    }
+
+    public function parametersSchema(): array
+    {
+        return $this->fieldType()->getSchema();
+    }
+
+    /**
+     * 获取字段参数
+     *
+     * @param string|null $langcode
+     * @return array
+     */
+    public function parameters($langcode = null)
+    {
+        $langcode = $langcode ?? langcode('content');
+        $keyname = implode('.', ['node_field', $this->truename]);
+        $records = DB::table('field_parameters')
+                    ->where('keyname', $keyname)
+                    ->orWhere('keyname', 'like', $keyname.'.%')
+                    ->get()
+                    ->keyBy(function($record) {
+                        return $record->keyname.'.'.$record->langcode;
+                    })->map(function($record) {
+                        return json_decode($record->data, true);
+                    });
+
+        $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
+        if ($pivot = $this->pivot) {
+            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type, $pivot->langcode]);
+            $parameters = array_merge(
+                    $parameters,
+                    $records[$keyname] ?? []
+                );
         }
-        return [];
+
+        return $parameters;
     }
 
     public static function globalFields()
@@ -98,39 +116,39 @@ class NodeField extends JulyModel
         return static::where('is_global', true)->get();
     }
 
-    public static function retrieveGlobalFields($langcode = null)
+    public static function cacheGetGlobalFields($langcode = null)
     {
         $langcode = $langcode ?? langcode('content');
-        $cacheKey = md5('globalFields/'.$langcode);
-        $fields = Cache::get($cacheKey);
+        $cacheKey = static::cacheKey(static::prepareCacheKey(null, 'globalFields', compact('langcode')));
+
+        $fields = static::cacheGet($cacheKey);
         if (! $fields) {
-            $fields = [];
-            foreach (static::globalFields() as $field) {
-                $fields[$field->truename] = $field->gather($langcode);
-            }
-            Cache::put($cacheKey, $fields);
+            $fields = static::globalFields()->map(function($field) use($langcode) {
+                return $field->gather($langcode);
+            })->keyBy('truename')->all();
+            static::cachePut($cacheKey, $fields);
         }
 
         return $fields;
     }
 
-    public static function retrieveGlobalFieldJigsaws($langcode = null, array $values = null)
+    public static function cacheGetGlobalFieldJigsaws($langcode = null, array $values = [])
     {
         $langcode = $langcode ?? langcode('content');
-        $cacheKey = md5('globalFieldJigsaws/'.$langcode);
+        $cacheKey = static::cacheKey(static::prepareCacheKey(null, 'globalFieldJigsaws', compact('langcode')));
 
-        $jigsaws = Cache::get($cacheKey);
-        $lastModified = last_modified(view_path('components/'));
+        $jigsaws = static::cacheGet($cacheKey);
+        $lastModified = last_modified(background_path('template/components/'));
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
-            foreach (static::retrieveGlobalFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = FieldType::getJigsaws($field);
+            foreach (static::cacheGetGlobalFields($langcode) as $field) {
+                $jigsaws[$field['truename']] = FieldType::findOrFail($field['field_type'])->getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),
                 'jigsaws' => $jigsaws,
             ];
-            Cache::put($cacheKey, $jigsaws);
+            static::cachePut($cacheKey, $jigsaws);
         }
 
         $jigsaws = $jigsaws['jigsaws'];
@@ -150,7 +168,7 @@ class NodeField extends JulyModel
 
     public function tableColumns()
     {
-        return FieldType::findOrFail($this->field_type)->getColumns($this->truename, $this->parameters());
+        return $this->fieldType()->getColumns($this->truename, $this->parameters());
     }
 
     /**
@@ -243,16 +261,11 @@ class NodeField extends JulyModel
             }
             unset($record);
 
-            // Log::info("Records:");
-            // Log::info($records);
-
             $table = $this->tableName();
             // Log::info("table: '{$table}'");
 
             DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
             DB::table($table)->insert($records);
-
-            // Log::info("Field '{$this->truename}' updated.");
         }
     }
 
@@ -360,9 +373,9 @@ class NodeField extends JulyModel
      * @param string|null $langcode
      * @return array
      */
-    public function flatten($langcode = null)
+    public function gather($langcode = null)
     {
-        $data = $this->getAttributes();
+        $data = $this->attributesToArray();
         if ($pivot = $this->pivot) {
             $data['label'] = $pivot->label ?? $data['label'];
             $data['description'] = $pivot->description ?? $data['description'];
@@ -371,38 +384,6 @@ class NodeField extends JulyModel
         $data['parameters'] = $this->parameters($langcode);
 
         return $data;
-    }
-
-    /**
-     * 获取字段参数
-     *
-     * @param string|null $langcode
-     * @return array
-     */
-    public function parameters($langcode = null)
-    {
-        $langcode = $langcode ?? langcode('content');
-        $keyname = implode('.', ['node_field', $this->truename]);
-        $records = DB::table('field_parameters')
-                    ->where('keyname', $keyname)
-                    ->orWhere('keyname', 'like', $keyname.'.%')
-                    ->get()
-                    ->keyBy(function($record) {
-                        return $record->keyname.'.'.$record->langcode;
-                    })->map(function($record) {
-                        return json_decode($record->data, true);
-                    });
-
-        $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
-        if ($pivot = $this->pivot) {
-            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type, $pivot->langcode]);
-            $parameters = array_merge(
-                    $parameters,
-                    $records[$keyname] ?? []
-                );
-        }
-
-        return $parameters;
     }
 
     public function label()

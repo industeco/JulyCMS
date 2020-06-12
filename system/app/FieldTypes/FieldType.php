@@ -2,6 +2,7 @@
 
 namespace App\FieldTypes;
 
+use App\Support\Arr;
 use Error;
 
 class FieldType
@@ -43,6 +44,7 @@ class FieldType
      */
     public static function find($alias)
     {
+        $alias = static::getTypeAlias($alias);
         if (($type = static::$types[$alias] ?? null) && $type::$isPublic) {
             return new $type;
         }
@@ -75,12 +77,12 @@ class FieldType
 
     public static function collectParameters(array $data)
     {
-        return static::findOrFail($data['field_type'] ?? null)->collectParameters($data);
+        return static::findOrFail($data)->collectParameters($data);
     }
 
     public static function getJigsaws(array $data)
     {
-        return static::findOrFail($data['field_type'] ?? null)->getJigsaws($data);
+        return static::findOrFail($data)->getJigsaws($data);
     }
 
     public static function toRecords($type, $value, array $columns)
@@ -91,5 +93,14 @@ class FieldType
     public static function toValue($type, array $records, array $columns, array $parameters = [])
     {
         return static::findOrFail($type)->toValue($records, $columns, $parameters);
+    }
+
+    public static function getTypeAlias($data)
+    {
+        if (is_string($data) || is_null($data)) {
+            return $data;
+        }
+        $data = Arr::of($data);
+        return $data['field_type'] ?? null;
     }
 }

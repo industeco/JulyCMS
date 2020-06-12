@@ -5,16 +5,14 @@ namespace App\Models;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Node;
-use App\Casts\Json;
 use App\ModelIsomers\CatalogTree;
 use App\Contracts\GetNodes;
-use App\Contracts\HasModelConfig;
 use App\ModelCollections\NodeCollection;
-use App\Traits\CastModelConfig;
+use App\Traits\TruenameAsPrimaryKey;
 
-class Catalog extends JulyModel implements GetNodes, HasModelConfig
+class Catalog extends JulyModel implements GetNodes
 {
-    use CastModelConfig;
+    use TruenameAsPrimaryKey;
 
     /**
      * 与模型关联的表名
@@ -22,27 +20,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      * @var string
      */
     protected $table = 'catalogs';
-
-    /**
-     * 主键
-     *
-     * @var string
-     */
-    protected $primaryKey = 'truename';
-
-    /**
-     * 主键“类型”。
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * 指示模型主键是否递增
-     *
-     * @var bool
-     */
-    public $incrementing = false;
 
     /**
      * 可批量赋值的属性。
@@ -70,11 +47,6 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
      */
     protected $catalogTree = null;
 
-    public static function primaryKeyName()
-    {
-        return 'truename';
-    }
-
     public static function default()
     {
         return static::fetch('main');
@@ -95,7 +67,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
     {
         $nodes = [];
         foreach ($this->nodes as $node) {
-            $values = $node->getData();
+            $values = $node->gather();
             $values['parent_id'] = $node->pivot->parent_id;
             $values['prev_id'] = $node->pivot->prev_id;
             $values['path'] = $node->pivot->path;
@@ -148,7 +120,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             ['path', 'like', '%/'.$position['node_id'].'/%'],
         ])->delete();
 
-        $this->forceUpdate();
+        $this->touch();
     }
 
     public function insertPosition(array $position)
@@ -183,7 +155,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
 
         CatalogNode::create($position);
 
-        $this->forceUpdate();
+        $this->touch();
     }
 
     public function updatePositions(array $positions)
@@ -207,7 +179,7 @@ class Catalog extends JulyModel implements GetNodes, HasModelConfig
             }
         });
 
-        $this->forceUpdate();
+        $this->touch();
     }
 
     public function retrieveCatalogNodes()

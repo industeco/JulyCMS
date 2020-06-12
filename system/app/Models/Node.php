@@ -43,8 +43,7 @@ class Node extends JulyModel
 
     public function fields()
     {
-        $globalFields = NodeField::findMany(NodeField::globalFields());
-        return $this->nodeType->fields->merge($globalFields);
+        return $this->nodeType->fields->merge(NodeField::globalFields());
     }
 
     public function catalogs()
@@ -77,7 +76,7 @@ class Node extends JulyModel
         $nodeType = NodeType::findOrFail($attributes['node_type'] ?? null);
         return new static([
             'node_type' => $nodeType->truename,
-            'langcode' => langcode('content_value'),
+            'langcode' => langcode('content'),
         ]);
     }
 
@@ -96,15 +95,15 @@ class Node extends JulyModel
     {
         $nodes = [];
         foreach (Node::all() as $node) {
-            $nodes[$node->id] = $node->getData($langcode);
+            $nodes[$node->id] = $node->gather($langcode);
         }
         return $nodes;
     }
 
-    public function getData($langcode = null)
+    public function gather($langcode = null)
     {
         return array_merge(
-            $this->getAttributes(),
+            $this->attributesToArray(),
             $this->retrieveValues($langcode),
             ['tags' => $this->retrieveTags($langcode)]
         );
@@ -113,11 +112,11 @@ class Node extends JulyModel
     public function searchableFields()
     {
         $fields = [];
-        foreach ($this->nodeType->retrieveFields() as $field) {
+        foreach ($this->nodeType->cacheGetFields() as $field) {
             if ($field['is_searchable']) {
                 $fields[$field['truename']] = [
                     'field_type' => $field['field_type'],
-                    'weight' => $field['weight'] ?? $field['index_weight'] ?? 1,
+                    'weight' => $field['weight'] ?? 1,
                 ];
             }
         }
@@ -266,13 +265,13 @@ class Node extends JulyModel
      */
     public function render(Twig $twig = null, $langcode = null)
     {
-        $twig = $twig ?? $twig = twig('default/template', true);
+        $twig = $twig ?? $twig = twig('template', true);
         $langcode = $langcode ?: $this->langcode;
 
         config()->set('current_render_langcode', $langcode);
 
         // 获取节点值
-        $node = $this->getData($langcode);
+        $node = $this->gather($langcode);
 
         if ($tpl = $this->template($langcode)) {
 
@@ -308,7 +307,7 @@ class Node extends JulyModel
     public function template($langcode = null)
     {
         foreach ($this->suggestedTemplates($langcode) as $tpl) {
-            if (is_file(twig_path($tpl))) {
+            if (is_file(foreground_path('template/'.$tpl))) {
                 return $tpl;
             }
         }
@@ -317,7 +316,7 @@ class Node extends JulyModel
 
     public function suggestedTemplates($langcode = null)
     {
-        $node = $this->getData($langcode);
+        $node = $this->gather($langcode);
         if (!$node['url']) return [];
 
         $templates = [];

@@ -1,68 +1,35 @@
 <?php
 
 use App\Models\Catalog;
-use App\Models\JulyModel;
-use App\Models\Node;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
-use Illuminate\Contracts\Support\Arrayable;
+use App\Support\Arr;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-if (! function_exists('auth')) {
+if (! function_exists('background_path')) {
     /**
-     * Get the available auth instance.
-     *
-     * @param  string|null  $guard
-     * @return \Illuminate\Contracts\Auth\Factory|\Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard
-     */
-    function auth($guard = null)
-    {
-        if (is_null($guard)) {
-            $guard = 'admin';
-        }
-
-        return app(AuthFactory::class)->guard($guard);
-    }
-}
-
-if (! function_exists('admin_path')) {
-    /**
-     * Get the path to the theme folder.
+     * 后台主题路径
      *
      * @param  string  $path
      * @return string
      */
-    function admin_path($path = '')
+    function background_path($path = '')
     {
-        return public_path('themes/admin/'.ltrim($path, '\\/'));
+        return public_path('themes/'.config('jc.theme.background').'/'.ltrim($path, '\\/'));
     }
 }
 
-if (! function_exists('view_path')) {
+if (! function_exists('foreground_path')) {
     /**
-     * Get the path to the theme folder.
+     * 前端主题路径
      *
      * @param  string  $path
      * @return string
      */
-    function view_path($path = '')
+    function foreground_path($path = '')
     {
-        return public_path('themes/admin/template/'.ltrim($path, '\\/'));
-    }
-}
-
-if (! function_exists('twig_path')) {
-    /**
-     * Get the path to the theme folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function twig_path($path = '')
-    {
-        return public_path('themes/default/template/'.ltrim($path, '\\/'));
+        return public_path('themes/'.config('jc.theme.foreground').'/'.ltrim($path, '\\/'));
     }
 }
 
@@ -88,21 +55,6 @@ if (! function_exists('base64_decode_array')) {
             }
         }
         return $data;
-    }
-}
-
-if (! function_exists('real_env')) {
-    /**
-     * Get the path to the application folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function real_env()
-    {
-        $pregDevUrl = '/^(127\.0\.0\.1|localhost)$|\.(test|dev)$/i';
-
-        return preg_match($pregDevUrl, $_SERVER['HTTP_HOST'] ?? '') ? 'local' : 'production';
     }
 }
 
@@ -172,18 +124,18 @@ if (! function_exists('available_langcodes')) {
     /**
      * 获取可用语言列表
      *
-     * @param string $type: 'page', 'content'
+     * @param string $permission: 'accessible', 'translatable'
      * @return array
      */
-    function available_langcodes($type = 'page')
+    function available_langcodes($permission = 'accessible')
     {
-        if (!$type) {
+        if (!$permission) {
             return [];
         }
 
         $langcodes = [];
-        foreach (config('jc.langcode.permissions') as $key => $value) {
-            if ($value[$type] ?? false) {
+        foreach (config('jc.langcode.list') as $key => $value) {
+            if ($value[$permission] ?? false) {
                 $langcodes[] = $key;
             }
         }
@@ -196,16 +148,16 @@ if (! function_exists('available_languages')) {
     /**
      * 获取可用语言列表
      *
-     * @param string $type: 'page', 'content'
+     * @param string $permission: 'accessible', 'translatable'
      * @return array
      */
-    function available_languages($type = 'page')
+    function available_languages($permission = 'accessible')
     {
         $list = language_list();
 
         $languages = [];
-        foreach (config('jc.langcode.permissions') as $key => $value) {
-            if (!$type || ($value[$type] ?? false)) {
+        foreach (config('jc.langcode.list') as $key => $value) {
+            if (!$permission || ($value[$permission] ?? false)) {
                 $languages[$key] = $list[$key] ?? $key;
             }
         }
@@ -219,6 +171,24 @@ if (! function_exists('langname')) {
     {
         $list = language_list();
         return $list[$langcode] ?? $langcode;
+    }
+}
+
+if (! function_exists('language_list')) {
+    function language_list()
+    {
+        $langcode = langcode('admin_page');
+        if ($list = config('language_list.'.$langcode, [])) {
+            return $list;
+        }
+
+        $file = base_path('language/'.$langcode.'.php');
+        if (is_file($file)) {
+            $list = require $file;
+            app('config')->set('language_list.'.$langcode, $list);
+        }
+
+        return $list;
     }
 }
 
@@ -295,8 +265,7 @@ if (! function_exists('view_with_langcode')) {
 if (! function_exists('twig')) {
     function twig($path = null, $debug = false)
     {
-        $path = $path ?: 'default/template';
-        $loader = new \Twig\Loader\FilesystemLoader($path, public_path('themes'));
+        $loader = new \Twig\Loader\FilesystemLoader($path ?: 'template', foreground_path());
         if ($debug) {
             $twig = new \Twig\Environment($loader, ['debug' => true]);
             $twig->addExtension(new \Twig\Extension\DebugExtension());
@@ -316,11 +285,13 @@ if (! function_exists('last_modified')) {
         if (is_file($path)) {
             return app('files')->lastModified($path);
         } elseif (is_dir($path)) {
+            $fs = app('files');
             $lastModified = 0;
-            foreach (app('files')->files($path) as $file) {
-                $mTime = last_modified($file->getRealPath());
-                if ($lastModified < $mTime) {
-                    $lastModified = $mTime;
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+            foreach ($files as $file) {
+                $modified = $fs->lastModified($file->getRealPath());
+                if ($modified > $lastModified) {
+                    $lastModified = $modified;
                 }
             }
             return $lastModified;
@@ -501,26 +472,6 @@ if (! function_exists('str_diff')) {
     {
         $str2 = str_replace(str_split($str1), '', $str2);
         return strlen($str2);
-    }
-}
-
-if (! function_exists('language_list')) {
-    function language_list()
-    {
-        $langcode = langcode('admin_page');
-
-        $list = config('language_list.'.$langcode, []);
-        if ($list) {
-            return $list;
-        }
-
-        $file = base_path('language/'.$langcode.'.php');
-        if (is_file($file)) {
-            $list = require $file;
-            app('config')->set('language_list.'.$langcode, $list);
-        }
-
-        return $list;
     }
 }
 

@@ -53,11 +53,11 @@ class User extends Authenticatable
         return null;
     }
 
-    public function updatePreferences($keyname, array $data)
+    public function updatePreference($keyname, array $data)
     {
         return UserPreference::updateOrCreate([
             'user_id' => $this->id,
             'config_keyname' => $keyname,
-        ], $data);
+        ], ['data' => $data]);
     }
 }

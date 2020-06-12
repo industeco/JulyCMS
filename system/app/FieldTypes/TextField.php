@@ -7,9 +7,29 @@ use Illuminate\Support\Facades\View;
 
 class TextField extends FieldTypeBase
 {
-    public static $label = '文字';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getAlias(): string
+    {
+        return 'text';
+    }
 
-    public static $description = '适用于无格式内容';
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel(): string
+    {
+        return '文字';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getDescription(): string
+    {
+        return '适用于无格式内容';
+    }
 
     public function getColumns($fieldName, array $parameters = []): array
     {

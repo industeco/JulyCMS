@@ -3,7 +3,7 @@
 namespace App\ModelCollections;
 
 use App\Models\Catalog;
-use Illuminate\Support\Arr;
+use App\Support\Arr;
 use Illuminate\Support\Collection;
 
 class CatalogCollection extends ModelCollection

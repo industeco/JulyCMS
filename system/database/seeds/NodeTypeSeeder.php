@@ -39,25 +39,21 @@ class NodeTypeSeeder extends Seeder
 
     protected function getPivotData()
     {
-        $langcode = config('jc.langcode.content');
         return [
             [
                 'node_type' => 'basic',
                 'node_field' => 'title',
                 'delta' => 0,
-                'langcode' => $langcode,
             ],
             [
                 'node_type' => 'basic',
                 'node_field' => 'summary',
                 'delta' => 1,
-                'langcode' => $langcode,
             ],
             [
                 'node_type' => 'basic',
                 'node_field' => 'content',
                 'delta' => 2,
-                'langcode' => $langcode,
             ],
         ];
     }

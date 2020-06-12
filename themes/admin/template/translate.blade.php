@@ -20,23 +20,23 @@
       <tbody>
         <tr>
           <td>{{ $original_langcode }}</td>
-          <td>{{ $langs[$original_langcode] }} (源语言)</td>
+          <td>{{ $languages[$original_langcode] }} (源语言)</td>
           <td>
             <div class="jc-operaters">
-              <a href="{{ $base_url }}/edit" title="编辑" class="md-button md-fab md-mini md-light-primary md-theme-default">
+              <a href="{{ short_route($routePrefix.'.edit') }}" title="编辑" class="md-button md-fab md-mini md-light-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
             </div>
           </td>
         </tr>
-        @foreach ($langs as $langcode => $lang)
+        @foreach ($languages as $langcode => $langname)
         @if ($langcode !== $original_langcode)
         <tr>
-          <td>{{ $lang }}</td>
           <td>{{ $langcode }}</td>
+          <td>{{ $langname }}</td>
           <td>
             <div class="jc-operaters">
-              <a href="{{ $base_url }}/translate/{{ $langcode }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
+              <a href="{{ short_route([$routePrefix.'.translate_to', [$entityKey, $langcode]]) }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
             </div>

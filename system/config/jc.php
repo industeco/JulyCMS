@@ -1,19 +1,13 @@
 <?php
 
 return [
-    /**
-     * 后台路由前缀
-     */
+    // 后台路由前缀
     'admin_prefix' => 'admin',
 
-    /**
-     * 多语言开关
-     */
+    // 多语言开关
     'multi_language' => false,
 
-    /**
-     * 语言设置
-     */
+    // 语言设置
     'langcode' => [
         'list' => [
             'en' => [
@@ -26,6 +20,13 @@ return [
         'admin_page' => 'zh-Hans',
     ],
 
+    // 默认主题
+    'theme' => [
+        'background' => 'admin',
+        'foreground' => 'default',
+    ],
+
+    // 编辑器配置
     'editor_config' => [
         'ckeditor' => [
             'fillEmptyBlocks' => false,
@@ -55,6 +56,7 @@ return [
         ],
     ],
 
+    // 表单验证规则
     'rules' => [
         'file_type' => [
             'image' => [
@@ -72,11 +74,12 @@ return [
         ],
     ],
 
+    // 侧边栏
     'sidebar_menu' => [
         [
             'title' => '内容',
             'icon' => 'create',
-            'route' => 'nodes.index',
+            'route' => 'nodes.index',   // 路由名，下同
             'children' => [],
         ],
         [

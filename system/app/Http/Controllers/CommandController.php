@@ -84,7 +84,7 @@ class CommandController extends Controller
         $results['meta_keywords'] = 'Search';
         $results['meta_description'] = 'Search Result';
 
-        $twig = twig('default/template', true);
+        $twig = twig('template', true);
         return $twig->render('search.twig', $results);
     }
 

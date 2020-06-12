@@ -89,7 +89,7 @@ class NodeTypeController extends Controller
     public function edit(NodeType $nodeType)
     {
         $data = $nodeType->toArray();
-        $data['fields'] = $nodeType->retrieveFields();
+        $data['fields'] = $nodeType->cacheGetFields();
 
         $data['availableFields'] = NodeField::where([
             'is_preset' => false,
@@ -97,8 +97,6 @@ class NodeTypeController extends Controller
         ])->get()->map(function($field) {
             return $field->gather();
         })->all();
-
-        dd($data);
 
         return view_with_langcode('admin::node_types.create_edit', $data);
     }
