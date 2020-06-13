@@ -76,20 +76,6 @@ class Catalog extends JulyModel implements GetNodes
         return $nodes;
     }
 
-    public function configStructure(): array
-    {
-        return [
-            'name' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-            'description' => [
-                'type' => 'interface_value',
-                'cast' => 'string',
-            ],
-        ];
-    }
-
     public static function allPositions()
     {
         $positions = CatalogNode::all()->groupBy('catalog')->toArray();
@@ -108,8 +94,8 @@ class Catalog extends JulyModel implements GetNodes
 
     public function removePosition(array $position)
     {
-        static::cacheClear($this->id.'/catalogNodes');
-        static::cacheClear($this->id.'/treeNodes');
+        $this->cacheClear(['name'=>'catalogNodes']);
+        $this->cacheClear(['name'=>'treeNodes']);
 
         // DB::delete("DELETE from catalog_node where `catalog`=? and (`node_id`=? or `path` like '%/$node_id/%' )");
         CatalogNode::where([
@@ -125,11 +111,11 @@ class Catalog extends JulyModel implements GetNodes
 
     public function insertPosition(array $position)
     {
-        static::cacheClear($this->id.'/catalogNodes');
-        static::cacheClear($this->id.'/treeNodes');
+        $this->cacheClear(['name'=>'catalogNodes']);
+        $this->cacheClear(['name'=>'treeNodes']);
 
         // $position['catalog'] = $this->truename;
-        $position['langcode'] = langcode('content_value');
+        $position['langcode'] = langcode('content');
 
         $parent = $position['parent_id'];
         if ($parent) {
@@ -160,12 +146,12 @@ class Catalog extends JulyModel implements GetNodes
 
     public function updatePositions(array $positions)
     {
-        static::cacheClear($this->id.'/catalogNodes');
-        static::cacheClear($this->id.'/treeNodes');
+        $this->cacheClear(['name'=>'catalogNodes']);
+        $this->cacheClear(['name'=>'treeNodes']);
 
         $supplement = [
             'catalog' => $this->truename,
-            'langcode' => langcode('content_value'),
+            'langcode' => langcode('content'),
         ];
         foreach ($positions as &$position) {
             $position = array_merge($position, $supplement);
@@ -184,14 +170,14 @@ class Catalog extends JulyModel implements GetNodes
 
     public function retrieveCatalogNodes()
     {
-        $cacheid = $this->id.'/catalogNodes';
-        if ($nodes = static::cacheGet($cacheid)) {
+        $cachekey = $this->cacheKey('catalogNodes', []);
+        if ($nodes = $this->cacheGet($cachekey)) {
             $nodes = $nodes['value'];
         } else {
             $nodes = CatalogNode::where('catalog', $this->truename)
                 ->get(['node_id','parent_id','prev_id','path'])->toArray();
 
-            static::cachePut($cacheid, $nodes);
+            $this->cachePut($cachekey, $nodes);
         }
 
         return $nodes;

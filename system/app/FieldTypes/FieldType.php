@@ -3,104 +3,121 @@
 namespace App\FieldTypes;
 
 use App\Support\Arr;
-use Error;
+use App\Exceptions\FieldTypeNotFound;
+use App\Models\NodeField;
 
 class FieldType
 {
     /**
-     * 模型字段类型与定义类对应表
+     * 可用字段类型
      */
     protected static $types = [
-        // 纯文字
-        'text' => TextField::class,
-
-        // HTML
-        'html' => HtmlField::class,
-
-        // 文件名
-        'file' => FileField::class,
+        TextField::class, // 文本
+        HtmlField::class, // HTML
+        FileField::class, // 文件名
     ];
 
-    public static function getTypes()
+    /**
+     * 获取字段类型列表
+     *
+     * @return array
+     */
+    public static function all()
     {
-        $types = [];
-        foreach (static::$types as $alias => $type) {
-            $types[$alias] = [
-                'alias' => $alias,
-                'label' => $type::$label,
-                'description' => $type::$description,
-                'searchable' => $type::$searchable,
-            ];
-        }
-
-        return $types;
+        return config('jc.field_types') ?? static::findFieldTypes();
     }
 
     /**
      * 获取定义类实例
      *
-     * @param string $alias 定义类别名
-     * @return \App\FieldTypes\FieldTypeBase|null
+     * @param mixed $alias 字段类型别名
+     * @return string|null
      */
     public static function find($alias)
     {
-        $alias = static::getTypeAlias($alias);
-        if (($type = static::$types[$alias] ?? null) && $type::$isPublic) {
-            return new $type;
-        }
-        return null;
+        $alias = static::normalizeAlias($alias);
+        return Arr::get(static::all(), $alias.'.class');
     }
 
     /**
      * 获取定义类实例，失败则抛出错误
      *
-     * @param string $alias 定义类别名
-     * @return \App\FieldTypes\FieldTypeBase
+     * @param mixed $alias 字段类型别名
+     * @param \App\Models\NodeField|null $field
+     * @param string $langcode
+     * @return \App\FieldTypes\FieldTypeInterface
+     *
+     * @throws \App\Exceptions\FieldTypeNotFound
      */
-    public static function findOrFail($alias)
+    public static function make($alias, ?NodeField $field = null, $langcode = null)
     {
         if ($type = static::find($alias)) {
-            return $type;
+            return new $type($field, $langcode);
         }
-        throw new Error('找不到 ['.$alias.'] 对应的字段类型。');
+        throw new FieldTypeNotFound('找不到 ['.$alias.'] 对应的字段类型。');
+    }
+
+    /**
+     * 获取字段类型列表
+     *
+     * @return array
+     */
+    protected static function findFieldTypes()
+    {
+        $field_types = [];
+        foreach (static::$types as $type) {
+            $alias = $type::getAlias();
+            $field_types[$alias] = [
+                'alias' => $alias,
+                'class' => $type,
+                'label' => $type::getLabel(),
+                'description' => $type::getDescription(),
+            ];
+        }
+        config(['jc.field_types' => $field_types]);
+
+        return $field_types;
+    }
+
+    protected static function normalizeAlias($alias)
+    {
+        if (is_string($alias)) {
+            return trim($alias);
+        }
+        if (is_null($alias)) {
+            return null;
+        }
+        $alias = Arr::of($alias);
+        return $alias['field_type'] ?? null;
     }
 
     public static function getSchema($type)
     {
-        return static::findOrFail($type)->getSchema();
+        return static::make($type)->getSchema();
     }
 
     public static function getColumns($type, $fieldName, array $parameters = [])
     {
-        return static::findOrFail($type)->getColumns($fieldName, $parameters);
+        return static::make($type)->getColumns($fieldName, $parameters);
     }
 
-    public static function collectParameters(array $data)
+    public static function extractParameters(array $data)
     {
-        return static::findOrFail($data)->collectParameters($data);
+        return static::make($data)->extractParameters($data);
     }
 
     public static function getJigsaws(array $data)
     {
-        return static::findOrFail($data)->getJigsaws($data);
+        return static::make($data)->getJigsaws($data);
     }
 
     public static function toRecords($type, $value, array $columns)
     {
-        return static::findOrFail($type)->toRecords($value, $columns);
+        return static::make($type)->toRecords($value, $columns);
     }
 
     public static function toValue($type, array $records, array $columns, array $parameters = [])
     {
-        return static::findOrFail($type)->toValue($records, $columns, $parameters);
-    }
-
-    public static function getTypeAlias($data)
-    {
-        if (is_string($data) || is_null($data)) {
-            return $data;
-        }
-        $data = Arr::of($data);
-        return $data['field_type'] ?? null;
+        return static::make($type)->toValue($records, $columns, $parameters);
     }
 }

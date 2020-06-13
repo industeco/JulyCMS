@@ -69,14 +69,11 @@ class CreateJulycmsTables extends Migration
 
         // 字段参数表
         Schema::create('field_parameters', function (Blueprint $table) {
-            // 字段，例：node_field.title 或 node_field.title.node_type.basic
-            $table->string('keyname', 100);
+            // 字段，例：node_field.title.en 或 node_field.title.node_type.basic.en
+            $table->string('keyname', 100)->primary();
 
             // 配置值
             $table->binary('data');
-
-            // 语言
-            $table->string('langcode', 12);
         });
 
         // 内容字段

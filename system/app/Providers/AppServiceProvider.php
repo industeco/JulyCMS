@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,8 +24,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         try {
+            // 查找字段类型
+            // \App\FieldTypes\FieldType::findFieldTypes();
+
             // 加载数据库中的配置
-            Config::loadConfigurations();
+            \App\Models\Config::loadConfigurations();
         } catch (\Throwable $th) {
             //throw $th;
         }

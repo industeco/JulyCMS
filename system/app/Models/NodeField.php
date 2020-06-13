@@ -67,16 +67,14 @@ class NodeField extends JulyModel
     }
 
     /**
-     * @return \App\FieldTypes\FieldTypeBase
+     * 获取字段类型对象
+     *
+     * @param string|null $langcode
+     * @return \App\FieldTypes\FieldTypeInterface
      */
-    public function fieldType()
+    public function fieldType($langcode = null)
     {
-        return FieldType::findOrFail($this->field_type);
-    }
-
-    public function parametersSchema(): array
-    {
-        return $this->fieldType()->getSchema();
+        return FieldType::make($this->getAttribute('field_type'), $this, $langcode);
     }
 
     /**
@@ -89,76 +87,22 @@ class NodeField extends JulyModel
     {
         $langcode = $langcode ?? langcode('content');
         $keyname = implode('.', ['node_field', $this->truename]);
-        $records = DB::table('field_parameters')
-                    ->where('keyname', $keyname)
-                    ->orWhere('keyname', 'like', $keyname.'.%')
-                    ->get()
-                    ->keyBy(function($record) {
-                        return $record->keyname.'.'.$record->langcode;
-                    })->map(function($record) {
-                        return json_decode($record->data, true);
+        $records = FieldParameters::where('keyname', 'like', $keyname.'.%')->get()
+                    ->keyBy('keyname')
+                    ->map(function($record) {
+                        return $record->getAttribute('data');
                     });
 
         $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
         if ($pivot = $this->pivot) {
-            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type, $pivot->langcode]);
+            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type]);
             $parameters = array_merge(
                     $parameters,
-                    $records[$keyname] ?? []
+                    $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode] ?? []
                 );
         }
 
         return $parameters;
-    }
-
-    public static function globalFields()
-    {
-        return static::where('is_global', true)->get();
-    }
-
-    public static function cacheGetGlobalFields($langcode = null)
-    {
-        $langcode = $langcode ?? langcode('content');
-        $cacheKey = static::cacheKey(static::prepareCacheKey(null, 'globalFields', compact('langcode')));
-
-        $fields = static::cacheGet($cacheKey);
-        if (! $fields) {
-            $fields = static::globalFields()->map(function($field) use($langcode) {
-                return $field->gather($langcode);
-            })->keyBy('truename')->all();
-            static::cachePut($cacheKey, $fields);
-        }
-
-        return $fields;
-    }
-
-    public static function cacheGetGlobalFieldJigsaws($langcode = null, array $values = [])
-    {
-        $langcode = $langcode ?? langcode('content');
-        $cacheKey = static::cacheKey(static::prepareCacheKey(null, 'globalFieldJigsaws', compact('langcode')));
-
-        $jigsaws = static::cacheGet($cacheKey);
-        $lastModified = last_modified(background_path('template/components/'));
-        if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
-            $jigsaws = [];
-            foreach (static::cacheGetGlobalFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = FieldType::findOrFail($field['field_type'])->getJigsaws($field);
-            }
-            $jigsaws = [
-                'created_at' => time(),
-                'jigsaws' => $jigsaws,
-            ];
-            static::cachePut($cacheKey, $jigsaws);
-        }
-
-        $jigsaws = $jigsaws['jigsaws'];
-        if ($values) {
-            foreach ($jigsaws as $fieldName => &$jigsaw) {
-                $jigsaw['value'] = $values[$fieldName] ?? null;
-            }
-        }
-
-        return $jigsaws;
     }
 
     public function tableName()
@@ -168,7 +112,7 @@ class NodeField extends JulyModel
 
     public function tableColumns()
     {
-        return $this->fieldType()->getColumns($this->truename, $this->parameters());
+        return $this->fieldType()->getColumns();
     }
 
     /**
@@ -225,7 +169,7 @@ class NodeField extends JulyModel
         $langcode = $langcode ?: langcode('content');
 
         // 清除字段值缓存
-        static::cacheClear($this->truename.'/'.$node_id, $langcode);
+        $this->cacheClear($this->cacheKey('values', compact('node_id', 'langcode')));
 
         $table = $this->tableName();
         DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
@@ -248,9 +192,9 @@ class NodeField extends JulyModel
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
-        static::cacheClear($this->truename.'/'.$node_id, $langcode);
+        $this->cacheClear($this->cacheKey('values', compact('node_id', 'langcode')));
 
-        $records = FieldType::findOrFail($this->field_type)->toRecords($value, $this->tableColumns());
+        $records = $this->fieldType()->toRecords($value);
         if (is_null($records)) {
             $this->deleteValue($node_id, $langcode);
         } else {
@@ -264,8 +208,12 @@ class NodeField extends JulyModel
             $table = $this->tableName();
             // Log::info("table: '{$table}'");
 
+            DB::beginTransaction();
             DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
-            DB::table($table)->insert($records);
+            foreach ($records as $record) {
+                DB::table($table)->insert($record);
+            }
+            DB::commit();
         }
     }
 
@@ -278,10 +226,14 @@ class NodeField extends JulyModel
      */
     public function getValue(Node $node, $langcode = null)
     {
-        $langcode = $langcode ?: $node->langcode;
+        $langcode = $langcode ?: $node->getAttribute('langcode');
 
-        $cacheid = $this->truename.'/'.$node->id;
-        if ($value = static::cacheGet($cacheid, $langcode)) {
+        $cacheKey = $this->cacheKey('values', [
+            'node_id' => $node->id,
+            'langcode' => $langcode,
+        ]);
+
+        if ($value = $this->cacheGet($cacheKey)) {
             $value = $value['value'];
         } else {
             $value = null;
@@ -296,14 +248,68 @@ class NodeField extends JulyModel
                 })->all();
 
                 // 借助字段类型格式化数据库记录
-                $value = FieldType::findOrFail($this->field_type)->toValue($records, $this->tableColumns(), $this->parameters($langcode));
+                $value = $this->fieldType()->toValue($records);
             }
 
             // 缓存字段值
-            static::cachePut($cacheid, $value, $langcode);
+            $this->cachePut($cacheKey, $value);
         }
 
         return $value;
+    }
+
+    public static function globalFields()
+    {
+        return static::where('is_global', true)->get();
+    }
+
+    public static function cacheGetGlobalFields($langcode = null)
+    {
+        $langcode = $langcode ?? langcode('content');
+
+        $model = new static;
+        $cacheKey = $model->cacheKey('globalFields', compact('langcode'));
+
+        $fields = $model->cacheGet($cacheKey);
+        if (! $fields) {
+            $fields = static::globalFields()->map(function($field) use($langcode) {
+                return $field->gather($langcode);
+            })->keyBy('truename')->all();
+            $model->cachePut($cacheKey, $fields);
+        }
+
+        return $fields;
+    }
+
+    public static function cacheGetGlobalFieldJigsaws($langcode = null, array $values = [])
+    {
+        $langcode = $langcode ?? langcode('content');
+
+        $model = new static;
+        $cacheKey = $model->cacheKey('globalFieldJigsaws', compact('langcode'));
+
+        $jigsaws = $model->cacheGet($cacheKey);
+        $lastModified = last_modified(background_path('template/components/'));
+        if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
+            $jigsaws = [];
+            foreach (static::cacheGetGlobalFields($langcode) as $field) {
+                $jigsaws[$field['truename']] = FieldType::make($field['field_type'])->getJigsaws($field);
+            }
+            $jigsaws = [
+                'created_at' => time(),
+                'jigsaws' => $jigsaws,
+            ];
+            $model->cachePut($cacheKey, $jigsaws);
+        }
+
+        $jigsaws = $jigsaws['jigsaws'];
+        if ($values) {
+            foreach ($jigsaws as $fieldName => &$jigsaw) {
+                $jigsaw['value'] = $values[$fieldName] ?? null;
+            }
+        }
+
+        return $jigsaws;
     }
 
     public static function boot()

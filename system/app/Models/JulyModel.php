@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\InvalidCacheKeyArguments;
 use APP\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
@@ -147,70 +148,67 @@ abstract class JulyModel extends Model
     }
 
     /**
-     * 准备用于生成 cacheKey 的数组
-     *
-     * @param static|null $model
-     * @param string $name
-     * @param array $conditions
-     * @return array
-     */
-    public static function prepareCacheKey($model, $name, array $conditions = [])
-    {
-        if ($model && ($model instanceof static)) {
-            $conditions['key'] = $model->getKey();
-        }
-        return [
-            'type' => static::class,
-            'name' => $name,
-            'conditions' => $conditions,
-        ];
-    }
-
-    /**
      * 生成 cacheKey
      *
      * @param array|string $key
+     * @param array|null $conditions
      * @return string
+     *
+     * @throws \App\Exceptions\InvalidCacheKeyArguments
      */
-    public static function cacheKey($key)
+    public function cacheKey($key, array $conditions = null)
     {
-        if (is_array($key)) {
-            $key = [
-                'type' => $key['type'] ?? static::class,
-                'name' => $key['name'] ?? null,
-                'conditions' => ksort($key['conditions'] ?? Arr::except($key, ['type','name'])),
-            ];
-            // Log::info($key);
-            return md5(json_encode($key));
+        if (is_string($key) && is_null($conditions)) {
+            return $key;
         }
-        // Log::info('md5: '.$key);
-        return (string) $key;
+
+        if (is_string($key) && is_array($conditions)) {
+            $conditions['key'] = $this->getKey();
+            return md5(json_encode([
+                'type' => static::class,
+                'name' => $key,
+                'conditions' => ksort($conditions),
+            ]));
+        }
+
+        if (is_array($key)) {
+            if (!isset($key['name'])) {
+                throw new InvalidCacheKeyArguments;
+            }
+            return md5(json_encode([
+                'type' => $key['type'] ?? static::class,
+                'name' => $key['name'],
+                'conditions' => ksort($key['conditions'] ?? Arr::except($key, ['type','name'])),
+            ]));
+        }
+
+        throw new InvalidCacheKeyArguments;
     }
 
     /**
      * 存储值到缓存中
      *
-     * @param array|string $key
+     * @param string|array $key
      * @param mixed $value
      * @return boolean
      */
-    public static function cachePut($key, $value)
+    public function cachePut($key, $value)
     {
         // Log::info('CacheValue Put:');
-        return Cache::put(static::cacheKey($key), $value);
+        return Cache::put($this->cacheKey($key), $value);
     }
 
     /**
      * 从缓存中获取值
      *
-     * @param array|string $key
+     * @param string|array $key
      * @return array|null
      */
-    public static function cacheGet($key)
+    public function cacheGet($key)
     {
         // Log::info('CacheValue Get:');
         $uid = uniqid();
-        $value = Cache::get(static::cacheKey($key), $uid);
+        $value = Cache::get($this->cacheKey($key), $uid);
         if ($value === $uid) {
             return null;
         }
@@ -220,12 +218,12 @@ abstract class JulyModel extends Model
     /**
      * 清除目标缓存
      *
-     * @param array|string $key
+     * @param string|array $key
      * @return boolean
      */
-    public static function cacheClear($key)
+    public function cacheClear($key)
     {
         // Log::info('CacheValue Clear:');
-        return Cache::forget(static::cacheKey($key));
+        return Cache::forget($this->cacheKey($key));
     }
 }

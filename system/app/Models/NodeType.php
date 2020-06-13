@@ -84,15 +84,15 @@ class NodeType extends JulyModel implements GetNodes
     public function cacheGetFields($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
-        $cacheKey = static::cacheKey(static::prepareCacheKey($this, 'fields', compact('langcode')));
+        $cacheKey = $this->cacheKey('fields', compact('langcode'));
 
-        if ($fields = static::cacheGet($cacheKey)) {
+        if ($fields = $this->cacheGet($cacheKey)) {
             $fields = $fields['value'];
         } else {
             $fields = $this->fields->map(function($field) use($langcode) {
                 return $field->gather($langcode);
             })->keyBy('truename')->all();
-            static::cachePut($cacheKey, $fields);
+            $this->cachePut($cacheKey, $fields);
         }
 
         return $fields;
@@ -108,9 +108,9 @@ class NodeType extends JulyModel implements GetNodes
     public function cacheGetFieldJigsaws($langcode = null, array $values = [])
     {
         $langcode = $langcode ?: langcode('content');
-        $cacheKey = static::cacheKey(static::prepareCacheKey($this, 'fieldJigsaws', compact('langcode')));
+        $cacheKey = $this->cacheKey('fieldJigsaws', compact('langcode'));
 
-        if ($jigsaws = static::cacheGet($cacheKey)) {
+        if ($jigsaws = $this->cacheGet($cacheKey)) {
             $jigsaws = $jigsaws['value'];
         }
 
@@ -124,7 +124,7 @@ class NodeType extends JulyModel implements GetNodes
                 'created_at' => time(),
                 'jigsaws' => $jigsaws,
             ];
-            static::cachePut($cacheKey, $jigsaws);
+            $this->cachePut($cacheKey, $jigsaws);
         }
 
         $jigsaws = $jigsaws['jigsaws'];
@@ -148,8 +148,8 @@ class NodeType extends JulyModel implements GetNodes
         $langcode = langcode('content');
 
         // 清除碎片缓存
-        static::cacheClear(static::prepareCacheKey($this, 'fields', compact('langcode')));
-        static::cacheClear(static::prepareCacheKey($this, 'fieldJigsaws', compact('langcode')));
+        $this->cacheClear($this->cacheKey('fields', compact('langcode')));
+        $this->cacheClear($this->cacheKey('fieldJigsaws', compact('langcode')));
 
         DB::beginTransaction();
 
@@ -164,9 +164,8 @@ class NodeType extends JulyModel implements GetNodes
             ];
 
             FieldParameters::updateOrCreate([
-                'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->truename]),
-                'langcode' => $langcode,
-            ], ['data' => FieldType::collectParameters($field)]);
+                'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->truename, $langcode]),
+            ], ['data' => FieldType::extractParameters($field)]);
         }
 
         $this->fields()->sync($fields);

@@ -139,70 +139,69 @@ class NodeFieldSeeder extends Seeder
 
     protected function getParametersData()
     {
+        $langcode = config('jc.langcode.content');
         $parameters = [
             [
-                'keyname' => 'node_field.title',
+                'keyname' => 'node_field.title.'.$langcode,
                 'data' => [
                     'required' => true,
-                    'max' => 200,
+                    'maxlength' => 200,
                 ],
             ],
             [
-                'keyname' => 'node_field.summary',
+                'keyname' => 'node_field.summary.'.$langcode,
                 'data' => [
-                    'max' => 255,
+                    'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.content',
+                'keyname' => 'node_field.content.'.$langcode,
                 'data' => [],
             ],
             [
-                'keyname' => 'node_field.url',
+                'keyname' => 'node_field.url.'.$langcode,
                 'data' => [
-                    'max' => 200,
+                    'maxlength' => 200,
                     'pattern' => 'url',
                     'placeholder' => '/index.html',
                 ],
             ],
             [
-                'keyname' => 'node_field.template',
+                'keyname' => 'node_field.template.'.$langcode,
                 'data' => [
-                    'max' => 200,
+                    'maxlength' => 200,
                     'pattern' => 'twig',
                     'placeholder' => '/home.twig',
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_title',
+                'keyname' => 'node_field.meta_title.'.$langcode,
                 'data' => [
-                    'max' => 255,
+                    'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_description',
+                'keyname' => 'node_field.meta_description.'.$langcode,
                 'data' => [
-                    'max' => 255,
+                    'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_keywords',
+                'keyname' => 'node_field.meta_keywords.'.$langcode,
                 'data' => [
-                    'max' => 255,
+                    'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_canonical',
+                'keyname' => 'node_field.meta_canonical.'.$langcode,
                 'data' => [
-                    'max' => 255,
+                    'maxlength' => 255,
                 ],
             ],
         ];
 
-        $langcode = config('jc.langcode.content');
-        return array_map(function($record) use($langcode) {
+        return array_map(function($record) {
             $record['data'] = json_encode($record['data'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-            $record['langcode'] = $langcode;
             return $record;
         }, $parameters);
     }

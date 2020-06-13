@@ -204,7 +204,7 @@
           title: null,
           node_type: null,
           url: true,
-          langcode: "{{ langcode('content_value') }}",
+          langcode: "{{ langcode('content') }}",
           tags: [],
         },
 

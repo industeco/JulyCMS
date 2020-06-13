@@ -22,6 +22,8 @@ class Arr extends SupportArr
     {
         if (is_array($item)) {
             return $item;
+        } elseif (is_json($item)) {
+            return json_decode($item, true);
         } elseif ($item instanceof Model) {
             return $item->attributesToArray();
         }  elseif ($item instanceof Enumerable) {

@@ -68,7 +68,7 @@ class Tag extends JulyModel implements GetNodes
 
     public static function createIfNotExist(array $tags, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: langcode('content');
 
         $records = [];
         $freshTags = collect($tags)->diff(Tag::allTags());

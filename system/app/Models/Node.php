@@ -3,14 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\ModelCollections\CatalogCollection;
 use App\ModelCollections\TagCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Twig\Environment as Twig;
 
 class Node extends JulyModel
@@ -75,7 +72,7 @@ class Node extends JulyModel
     {
         $nodeType = NodeType::findOrFail($attributes['node_type'] ?? null);
         return new static([
-            'node_type' => $nodeType->truename,
+            'node_type' => $nodeType->getKey(),
             'langcode' => langcode('content'),
         ]);
     }
@@ -125,17 +122,17 @@ class Node extends JulyModel
 
     public function retrieveValues($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
+        $langcode = $langcode ?: langcode('content');
+        $cachekey = $this->cacheKey('values', compact('langcode'));
 
-        $cacheid = $this->attributes['id'].'/values';
-        if ($values = static::cacheGet($cacheid, $langcode)) {
+        if ($values = $this->cacheGet($cachekey)) {
             $values = $values['value'];
         } else {
             $values = [];
             foreach ($this->fields() as $field) {
-                $values[$field->truename] = $field->getValue($this, $langcode);
+                $values[$field->getKey()] = $field->getValue($this, $langcode);
             }
-            static::cachePut($cacheid, $values, $langcode);
+            $this->cachePut($cachekey, $values);
         }
 
         return $values;
@@ -149,43 +146,20 @@ class Node extends JulyModel
      */
     public function retrieveTags($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
-        $cacheid = $this->id.'/tags';
-        if ($tags = static::cacheGet($cacheid, $langcode)) {
+        $langcode = $langcode ?: langcode('content');
+        $cachekey = $this->cacheKey('tags', compact('langcode'));
+
+        if ($tags = $this->cacheGet($cachekey, $langcode)) {
             $tags = $tags['value'];
         } else {
             $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
             if (empty($tags)) {
                 $tags = [];
-                foreach ($this->tags($this->langcode)->get() as $tag) {
+                foreach ($this->tags($this->getAttribute('langcode'))->get() as $tag) {
                     $tags[] = $tag->getRightTag($langcode);
                 }
             }
-            static::cachePut($cacheid, $tags, $langcode);
-        }
-
-        return $tags;
-    }
-
-    /**
-     * 获取内容标签
-     *
-     * @param string|null $langcode
-     * @return array
-     */
-    public static function retrieveUrls($langcode = null)
-    {
-        $langcode = $langcode ?: langcode('content_value');
-        $cacheid = 'node/urls';
-        if ($tags = static::cacheGet($cacheid, $langcode)) {
-            $urls = $tags['value'];
-        } else {
-            $urls = [];
-            $records = DB::table('node__url')->where('langcode', $langcode)->get(['node_id', 'url_value']);
-            if ($records) {
-                //
-            }
-            static::cachePut($cacheid, $tags, $langcode);
+            $this->cachePut($cachekey, $tags);
         }
 
         return $tags;
@@ -196,9 +170,9 @@ class Node extends JulyModel
      */
     public function saveValues(array $values, $deleteNull = false)
     {
-        $langcode = langcode('content_value');
-        static::cacheClear($this->id.'/values', $langcode);
-        // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content_value')));
+        $langcode = langcode('content');
+        $this->cacheClear(['name' => 'values', 'langcode' => $langcode]);
+        // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
         $changed = $values['changed_values'];
 
@@ -222,8 +196,10 @@ class Node extends JulyModel
 
     public function saveTags(array $tags, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content_value');
-        static::cacheClear($this->id.'/tags', $langcode);
+        $langcode = $langcode ?: langcode('content');
+
+        $this->cacheClear(['name'=>'tags', 'langcode'=>$langcode]);
+
         Tag::createIfNotExist($tags, $langcode);
 
         $tags = array_fill_keys($tags, ['langcode' => $langcode]);

@@ -5,7 +5,7 @@ namespace App\FieldTypes;
 class FileField extends FieldTypeBase
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getAlias(): string
     {
@@ -13,7 +13,7 @@ class FileField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getLabel(): string
     {
@@ -21,33 +21,22 @@ class FileField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getDescription(): string
     {
         return '带文件浏览按钮';
     }
 
-    public function getColumns($fieldName, array $parameters = []): array
-    {
-        $column = [
-            'type' => 'string',
-            'name' => $fieldName.'_value',
-            'parameters' => [
-                'length' => 200,
-            ],
-        ];
-        return [$column];
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getSchema(): array
     {
-        return [
-            'required' => [
-                'type' => 'boolean',
-                'default' => false,
-            ],
-            'max' => [
+        $schema = parent::getSchema();
+
+        return array_merge($schema, [
+            'maxlength' => [
                 'type' => 'integer',
                 'default' => 200,
             ],
@@ -57,12 +46,16 @@ class FileField extends FieldTypeBase
             'helptext' => [
                 'type' => 'string',
             ],
-        ];
+        ]);
     }
 
-    public function collectParameters(array $raw): array
+    /**
+     * {@inheritDoc}
+     */
+    public function extractParameters(array $raw): array
     {
-        $parameters = parent::collectParameters($raw);
+        $parameters = parent::extractParameters($raw);
+
         if ($parameters['helptext'] ?? null) {
             return $parameters;
         }
@@ -76,8 +69,30 @@ class FileField extends FieldTypeBase
         return $parameters;
     }
 
-    public function getRules(array $parameters)
+    /**
+     * {@inheritDoc}
+     */
+    public function getColumns($fieldName = null, ?array $parameters = null): array
     {
+        $fieldName = $fieldName ?? $this->field->getKey();
+        $column = [
+            'type' => 'string',
+            'name' => $fieldName.'_value',
+            'parameters' => [
+                'length' => 200,
+            ],
+        ];
+
+        return [$column];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRules(?array $parameters = null): array
+    {
+        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+
         $rules = parent::getRules($parameters);
 
         if ($fileType = $parameters['file_type'] ?? null) {
@@ -88,10 +103,5 @@ class FileField extends FieldTypeBase
         }
 
         return $rules;
-    }
-
-    public function getElement(array $fieldData)
-    {
-        return view('admin::components.file', $fieldData)->render();
     }
 }

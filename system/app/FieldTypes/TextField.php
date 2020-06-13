@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\View;
 class TextField extends FieldTypeBase
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getAlias(): string
     {
@@ -16,7 +16,7 @@ class TextField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getLabel(): string
     {
@@ -24,43 +24,24 @@ class TextField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public static function getDescription(): string
+    public static function getDescription(): ?string
     {
         return '适用于无格式内容';
     }
 
-    public function getColumns($fieldName, array $parameters = []): array
-    {
-        $length = $parameters['max'] ?? 0;
-        if ($length > 0 && $length <= 255) {
-            $column = [
-                'type' => 'string',
-                'name' => $fieldName.'_value',
-                'parameters' => ['length' => $length],
-            ];
-        } else {
-            $column = [
-                'type' => 'text',
-                'name' => $fieldName.'_value',
-                'parameters' => [],
-            ];
-        }
-
-        return [$column];
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getSchema(): array
     {
-        return [
-            'required' => [
-                'type' => 'boolean',
-                'default' => false,
-            ],
-            'max' => [
+        $schema = parent::getSchema();
+
+        return array_merge($schema, [
+            'maxlength' => [
                 'type' => 'integer',
-                'default' => 255,
+                'default' => 200,
             ],
             'pattern' => [
                 'type' => 'string',
@@ -78,11 +59,39 @@ class TextField extends FieldTypeBase
             'helptext' => [
                 'type' => 'string',
             ],
-        ];
+        ]);
     }
 
-    public function getRules(array $parameters)
+    /**
+     * {@inheritDoc}
+     */
+    public function getColumns($fieldName = null, array $parameters = null): array
     {
+        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+        $length = $parameters['maxlength'] ?? 0;
+        if ($length > 0 && $length <= 255) {
+            $column = [
+                'type' => 'string',
+                'parameters' => ['length' => $length],
+            ];
+        } else {
+            $column = [
+                'type' => 'text',
+                'parameters' => [],
+            ];
+        }
+        $column['name'] = ($fieldName ?: $this->field->getKey()).'_value';
+
+        return [$column];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRules(array $parameters = null): array
+    {
+        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+
         $rules = parent::getRules($parameters);
 
         if ($pattern = $parameters['pattern'] ?? null) {
@@ -92,10 +101,5 @@ class TextField extends FieldTypeBase
         }
 
         return $rules;
-    }
-
-    public function getElement(array $fieldData)
-    {
-        return view('admin::components.text', $fieldData)->render();
     }
 }

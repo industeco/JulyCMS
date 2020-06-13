@@ -2,6 +2,8 @@
 
 namespace App\FieldTypes;
 
+use App\Models\NodeField;
+
 interface FieldTypeInterface
 {
     /**
@@ -23,7 +25,23 @@ interface FieldTypeInterface
      *
      * @return string
      */
-    public static function getDescription(): string;
+    public static function getDescription(): ?string;
+
+    /**
+     * 设置字段对象
+     *
+     * @param array $field
+     * @return static
+     */
+    public function setField(NodeField $field);
+
+    /**
+     * 设置字段参数读取语言
+     *
+     * @param array $langcode
+     * @return static
+     */
+    public function setLangcode($langcode);
 
     /**
      * 获取该类型字段参数的模式（属性，属性值类型，默认值等）
@@ -33,20 +51,12 @@ interface FieldTypeInterface
     public function getSchema(): array;
 
     /**
-     * 从表单数据中采集字段参数
+     * 从表单数据中提取字段参数
      *
      * @param array $raw 表单数据
      * @return array
      */
-    public function collectParameters(array $raw): array;
-
-    /**
-     * 设置字段参数
-     *
-     * @param array $parameters
-     * @return static
-     */
-    public function setParameters(array $parameters);
+    public function extractParameters(array $raw): array;
 
     /**
      * 字段数据存储表的列信息，结构：
@@ -56,29 +66,27 @@ interface FieldTypeInterface
      *     parameters => array,
      *   ], ...]
      *
-     * @param string|null $fieldName
      * @param array|null $parameters
+     * @param string|null $fieldName
      * @return array
      */
-    public function getColumns(array $parameters = null, $fieldName = null): array;
+    public function getColumns($fieldName = null, array $parameters = null): array;
 
     /**
      * 生成表单拼图，包括 HTML 片段和前端验证规则
      *
-     * @param array|null $parameters 字段参数
-     * @param array|null $attributes 字段属性
+     * @param array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
      * @return array
      */
-    public function getJigsaws(array $parameters = null, array $attributes = null): array;
+    public function getJigsaws(array $data = null): array;
 
     /**
      * 获取字段的 HTML 片段（element-ui 组件）
      *
-     * @param array|null $parameters 字段参数
-     * @param array|null $attributes 字段属性
+     * @param array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
      * @return string
      */
-    public function getElement(array $parameters = null, array $attributes = null): string;
+    public function getElement(array $data = null): ?string;
 
     /**
      * 获取前端验证规则
@@ -100,8 +108,8 @@ interface FieldTypeInterface
      * 将记录转换为值
      *
      * @param array $records 表记录
-     * @param array|null $columns 字段值表列
-     * @param array|null $parameters 字段参数
+     * @param array $columns|null 字段值表列
+     * @param array $parameters|null 字段参数
      * @return mixed
      */
     public function toValue(array $records, array $columns = null, array $parameters = null);
@@ -110,9 +118,9 @@ interface FieldTypeInterface
      * 将值转换为记录
      *
      * @param mixed $value 字段值
-     * @param array|null $columns 字段值表列
-     * @param array|null $parameters 字段参数
-     * @return array
+     * @param array $columns|null 字段值表列
+     * @param array $parameters|null 字段参数
+     * @return array|null
      */
-    public function toRecords($value, array $columns = null, array $parameters = null): array;
+    public function toRecords($value, array $columns = null, array $parameters = null): ?array;
 }

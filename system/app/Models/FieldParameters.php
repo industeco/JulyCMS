@@ -19,7 +19,7 @@ class FieldParameters extends Model
      *
      * @var string|null
      */
-    protected $primaryKey = null;
+    protected $primaryKey = 'keyname';
 
     /**
      * 指示模型主键是否递增
@@ -43,7 +43,6 @@ class FieldParameters extends Model
     protected $fillable = [
         'keyname',
         'data',
-        'langcode',
     ];
 
     /**

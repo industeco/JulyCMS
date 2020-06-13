@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\View;
 class HtmlField extends FieldTypeBase
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getAlias(): string
     {
@@ -15,7 +15,7 @@ class HtmlField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getLabel(): string
     {
@@ -23,37 +23,39 @@ class HtmlField extends FieldTypeBase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public static function getDescription(): string
+    public static function getDescription(): ?string
     {
         return '适用于 HTML 文档';
     }
 
-    public function getColumns($fieldName, array $parameters = []): array
-    {
-        $column = [
-            'type' => 'text',
-            'name' => $fieldName.'_value',
-        ];
-        return [$column];
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getSchema(): array
     {
-        return [
-            'required' => [
-                'type' => 'boolean',
-                'default' => false,
-            ],
+        $schema = parent::getSchema();
+
+        return array_merge($schema, [
             'helptext' => [
                 'type' => 'string',
             ],
-        ];
+        ]);
     }
 
-    public function getElement(array $fieldData)
+    /**
+     * {@inheritDoc}
+     */
+    public function getColumns($fieldName = null, ?array $parameters = []): array
     {
-        return view('admin::components.html', $fieldData)->render();
+        $fieldName = $fieldName ?? $this->field->getKey();
+        $column = [
+            'type' => 'text',
+            'name' => $fieldName.'_value',
+            'parameters' => [],
+        ];
+
+        return [$column];
     }
 }

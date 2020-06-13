@@ -279,6 +279,19 @@ if (! function_exists('twig')) {
     }
 }
 
+if (! function_exists('is_json')) {
+    function is_json($value)
+    {
+        if (! is_scalar($value) && ! method_exists($value, '__toString')) {
+            return false;
+        }
+
+        json_decode($value);
+
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+}
+
 if (! function_exists('last_modified')) {
     function last_modified($path)
     {
