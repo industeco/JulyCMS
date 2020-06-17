@@ -27,10 +27,18 @@ class NodeTypeSeeder extends Seeder
     {
         return [
             [
+                'truename' => 'default',
+                'is_preset' => true,
+                'label' => '默认类型',
+                'description' => '批量导入数据时用作默认类型，该类型的内容支持类型转换。预设类型，不可编辑，不可删除。',
+                'updated_at' => Date::now(),
+                'created_at' => Date::now(),
+            ],
+            [
                 'truename' => 'basic',
                 'is_preset' => false,
-                'label' => '基础页面',
-                'description' => '如「关于我们页」，「联系我们页」等',
+                'label' => '基础类型',
+                'description' => '可用于静态页面，如「关于我们」页',
                 'updated_at' => Date::now(),
                 'created_at' => Date::now(),
             ],
@@ -40,6 +48,11 @@ class NodeTypeSeeder extends Seeder
     protected function getPivotData()
     {
         return [
+            [
+                'node_type' => 'default',
+                'node_field' => 'title',
+                'delta' => 0,
+            ],
             [
                 'node_type' => 'basic',
                 'node_field' => 'title',

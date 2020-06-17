@@ -17,11 +17,14 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        $nodeCount = Node::countByNodeType();
-        $nodeTypes = NodeType::columns()->all();
+        $nodeCount = NodeType::usedByNodes();
+        $nodeTypes = NodeType::all()->map(function($nodeType) {
+            return $nodeType->attributesToArray();
+        })->all();
         foreach ($nodeTypes as &$nodeType) {
             $nodeType['nodes'] = $nodeCount[$nodeType['truename']] ?? 0;
         }
+        unset($nodeType);
 
         return view_with_langcode('admin::node_types.index', [
             'nodeTypes' => $nodeTypes,
@@ -65,8 +68,8 @@ class NodeTypeController extends Controller
     {
         $nodeType = NodeType::make($request->all());
         $nodeType->save();
-        $nodeType->updateFields($request);
-        return Response::make($nodeType);
+        $nodeType->updateFields($request->input('fields', []));
+        return response('');
     }
 
     /**
@@ -88,7 +91,10 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $data = $nodeType->toArray();
+        if ('default' === $nodeType->getKey()) {
+            abort(404);
+        }
+        $data = $nodeType->gather();
         $data['fields'] = $nodeType->cacheGetFields();
 
         $data['availableFields'] = NodeField::where([
@@ -111,7 +117,7 @@ class NodeTypeController extends Controller
     public function update(Request $request, NodeType $nodeType)
     {
         $nodeType->update($request->all());
-        $nodeType->updateFields($request);
+        $nodeType->updateFields($request->input('fields', []));
         return response('');
     }
 

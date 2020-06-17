@@ -24,46 +24,11 @@ class FieldType
      */
     public static function all()
     {
-        return config('jc.field_types') ?? static::findFieldTypes();
-    }
-
-    /**
-     * 获取定义类实例
-     *
-     * @param mixed $alias 字段类型别名
-     * @return string|null
-     */
-    public static function find($alias)
-    {
-        $alias = static::normalizeAlias($alias);
-        return Arr::get(static::all(), $alias.'.class');
-    }
-
-    /**
-     * 获取定义类实例，失败则抛出错误
-     *
-     * @param mixed $alias 字段类型别名
-     * @param \App\Models\NodeField|null $field
-     * @param string $langcode
-     * @return \App\FieldTypes\FieldTypeInterface
-     *
-     * @throws \App\Exceptions\FieldTypeNotFound
-     */
-    public static function make($alias, ?NodeField $field = null, $langcode = null)
-    {
-        if ($type = static::find($alias)) {
-            return new $type($field, $langcode);
+        $field_types = config('jc.field_types');
+        if ($field_types) {
+            return $field_types;
         }
-        throw new FieldTypeNotFound('找不到 ['.$alias.'] 对应的字段类型。');
-    }
 
-    /**
-     * 获取字段类型列表
-     *
-     * @return array
-     */
-    protected static function findFieldTypes()
-    {
         $field_types = [];
         foreach (static::$types as $type) {
             $alias = $type::getAlias();
@@ -79,7 +44,37 @@ class FieldType
         return $field_types;
     }
 
-    protected static function normalizeAlias($alias)
+    /**
+     * 获取定义类实例
+     *
+     * @param mixed $alias 字段类型别名
+     * @return string|null
+     */
+    public static function find($alias)
+    {
+        $alias = static::resolveAlias($alias);
+        return Arr::get(static::all(), $alias.'.class');
+    }
+
+    /**
+     * 获取定义类实例，失败则抛出错误
+     *
+     * @param mixed $alias 字段类型别名
+     * @param \App\Models\NodeField|null $field
+     * @param string|null $langcode
+     * @return \App\FieldTypes\FieldTypeInterface
+     *
+     * @throws \App\Exceptions\FieldTypeNotFound
+     */
+    public static function make($alias, ?NodeField $field = null, $langcode = null)
+    {
+        if ($type = static::find($alias)) {
+            return new $type($field, $langcode);
+        }
+        throw new FieldTypeNotFound('找不到 ['.$alias.'] 对应的字段类型。');
+    }
+
+    protected static function resolveAlias($alias)
     {
         if (is_string($alias)) {
             return trim($alias);

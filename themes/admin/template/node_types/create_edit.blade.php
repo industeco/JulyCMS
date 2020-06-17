@@ -26,6 +26,7 @@
           maxlength="255"
           show-word-limit></el-input>
       </el-form-item>
+      @if ($truename !== 'default')
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
         <div class="el-form-item__content">
           <div class="jc-embeded-field__header">
@@ -118,6 +119,7 @@
           <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择、排序字段</span>
         </div>
       </div>
+      @endif
       <div id="main_form_bottom" class="is-button-item">
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="submitMainForm">
           <div class="md-button-content">保存</div>
@@ -128,6 +130,7 @@
       <h2 class="jc-form-info-item">通用非必填项</h2>
     </div>
   </el-form>
+  @if ($truename !== 'default')
   <el-dialog
     id="field_selector"
     top="-5vh"
@@ -148,15 +151,15 @@
             width="50">
           </el-table-column>
           <el-table-column
-            prop="label"
-            label="标签"
-            width="160"
-            sortable>
-          </el-table-column>
-          <el-table-column
             prop="truename"
             label="真名"
             width="180"
+            sortable>
+          </el-table-column>
+          <el-table-column
+            prop="label"
+            label="标签"
+            width="160"
             sortable>
           </el-table-column>
           <el-table-column
@@ -172,7 +175,7 @@
         </el-table>
       </el-tab-pane>
       <el-tab-pane label="新建字段" name="create" class="md-scrollbar md-theme-default">
-        @include('admin::widgets.field-form', ['mode' => 'create', 'model' => 'nodeField'])
+        @include('admin::widgets.field-form', ['mode' => 'create', 'formData' => 'nodeField'])
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -185,12 +188,13 @@
     title="编辑字段"
     top="-5vh"
     :visible.sync="fieldEditorVisible">
-    @include('admin::widgets.field-form', ['mode' => 'edit', 'model' => 'editingField'])
+    @include('admin::widgets.field-form', ['mode' => 'edit', 'formData' => 'editingField'])
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="fieldEditorVisible = false">取 消</el-button>
       <el-button size="small" type="primary" @click="handleFieldEditorConfirm">确 定</el-button>
     </span>
   </el-dialog>
+  @endif
 @endsection
 
 @section('script')
@@ -208,7 +212,7 @@
     is_preset: true,
     langcode: '{{ $content_langcode }}',
     label: '标题',
-    description: '内容类型预设字段，不可删除，不可排序',
+    description: '类型预设字段，不可删除，不可排序',
   };
   for (let i = 0, len = currentFields.length; i < len; i++) {
     if (currentFields[i].truename == 'title') {
@@ -284,7 +288,7 @@
         },
 
         currentField: null,
-        editingField: {},
+        editingField: clone(titleField),
 
         editingFieldRules: {
           label: [
@@ -295,19 +299,21 @@
         selectedFields: [],
 
         nodeField: {
-          // content_langcode: '{{ $content_langcode }}',
+          langcode: '{{ $content_langcode }}',
           truename: '',
           field_type: null,
           label: null,
           description: null,
-          parameters__required: false,
-          parameters__max: 200,
-          parameters__is_searchable: true,
-          parameters__weight: 1,
-          parameters__file_type: null,
-          parameters__helptext: null,
-          parameters__default: null,
-          parameters__datalist: [{value:''}],
+          parameters: {
+            required: false,
+            is_searchable: true,
+            weight: 1,
+            maxlength: 200,
+            file_type: null,
+            helptext: null,
+            default: null,
+            datalist: [{value:''}],
+          },
         },
 
         nodeFieldRules: {
@@ -323,7 +329,7 @@
           label: [
             { required: true, message: '『标签』不能为空', trigger: 'submit' },
           ],
-          parameters__file_type: [
+          'parameters.file_type': [
             { required: true, message: '『文件类型』不能为空', trigger: 'submit' },
           ],
         },
@@ -334,7 +340,7 @@
         fieldEditorVisible: false,
         currentTab: 'select',
 
-        fieldTypes: @json(\App\FieldTypes\FieldType::find(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        fieldTypes: @json(\App\FieldTypes\FieldType::all(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         fileTypes: @json(config('jc.rules.file_type'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       }
@@ -422,11 +428,11 @@
             const loading = app.$loading({
               lock: true,
               text: '正在新建字段 ...',
-              background: 'rgba(0, 0, 0, 0.7)',
+              background: 'rgba(255, 255, 255, 0.7)',
             });
 
             let field = clone(app.nodeField);
-            field.datalist = field.datalist.map(item => item.value);
+            field.parameters.datalist = field.parameters.datalist.map(item => item.value);
 
             axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
               // console.log(response)
@@ -440,7 +446,7 @@
               console.error(error);
             })
           }).catch(function(error) {
-            //...
+            console.error(error);
           })
         } else {
           this.$set(this.nodeType, 'fields', clone(this.selectedFields));
@@ -460,12 +466,12 @@
       },
 
       addDatalist(index, field) {
-        this.$data[field].datalist.splice(index + 1, 0, {value:''});
+        this.$data[field].parameters.datalist.splice(index + 1, 0, {value:''});
       },
 
       removeDatalist(index, field) {
-        if (this.$data[field].datalist.length > 1) {
-          this.$data[field].datalist.splice(index, 1);
+        if (this.$data[field].parameters.datalist.length > 1) {
+          this.$data[field].parameters.datalist.splice(index, 1);
         }
       },
 

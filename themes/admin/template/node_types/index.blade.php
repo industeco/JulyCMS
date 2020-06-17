@@ -18,12 +18,13 @@
         @row-contextmenu="handleContextmenu">
         <el-table-column type="index" label="行号" width="80"></el-table-column>
         <el-table-column label="真名" prop="truename" width="200" sortable></el-table-column>
-        <el-table-column label="名称" prop="name" width="200" sortable></el-table-column>
+        <el-table-column label="名称" prop="label" width="200" sortable></el-table-column>
         <el-table-column label="描述" prop="description" width="auto"></el-table-column>
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="getUrl('edit', scope.row.truename)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('edit', scope.row.truename)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default"
+                :disabled="scope.row.truename === 'default'">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
               {{-- @if (config('jc.multi_language'))
@@ -32,7 +33,7 @@
               </a>
               @endif --}}
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click="deleteType(scope.row)" :disabled="scope.row.nodes>0">
+                @click="deleteType(scope.row)" :disabled="scope.row.nodes>0 || scope.row.is_preset">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
             </div>
@@ -42,12 +43,18 @@
     </div>
     <jc-contextmenu ref="contextmenu">
       <li class="md-list-item">
-        <a :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
+        <a v-if="contextmenu.editable" :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
           <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
             <span class="md-list-item-text">编辑</span>
           </div>
         </a>
+        <div v-else class="md-list-item-container md-button-clean" disabled>
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-accent md-theme-default">edit</i>
+            <span class="md-list-item-text">编辑</span>
+          </div>
+        </div>
       </li>
       {{-- @if (config('jc.multi_language'))
       <li class="md-list-item">
@@ -61,7 +68,7 @@
       @endif --}}
       <li class="md-list-item">
         <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteType(contextmenu.target)">
-          <div class="md-list-item-content md-ripple">
+          <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
             <span class="md-list-item-text">删除</span>
           </div>
@@ -83,7 +90,7 @@
           target: null,
           editUrl: null,
           // translateUrl: null,
-          editable: true,
+          editable: false,
           translatable: false,
           deletable: false,
         },
@@ -103,7 +110,8 @@
         const _tar = this.contextmenu;
         _tar.target = row;
         _tar.editUrl = this.editUrl.replace('#truename#', row.truename);
-        _tar.deletable = row.nodes <= 0;
+        _tar.editable = row.truename !== 'default';
+        _tar.deletable = row.nodes <= 0 && !row.is_preset;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
@@ -119,7 +127,7 @@
       },
 
       deleteType(nodeType) {
-        if (nodeType.nodes > 0) {
+        if (!this.contextmenu.deletable) {
           return;
         }
         const truename = nodeType.truename;

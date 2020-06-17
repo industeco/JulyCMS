@@ -77,6 +77,17 @@ class NodeField extends JulyModel
         return FieldType::make($this->getAttribute('field_type'), $this, $langcode);
     }
 
+    public static function usedByNodeTypes()
+    {
+        $types = [];
+        $records = DB::select('SELECT `node_field`, count(`node_field`) as `total` FROM `node_field_node_type` GROUP BY `node_field`');
+        foreach ($records as $record) {
+            $types[$record->node_field] = $record->total;
+        }
+
+        return $types;
+    }
+
     /**
      * 获取字段参数
      *

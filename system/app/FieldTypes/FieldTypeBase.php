@@ -86,11 +86,11 @@ abstract class FieldTypeBase implements FieldTypeInterface
      */
     public function extractParameters(array $raw): array
     {
+        $raw = $raw['parameters'] ?? $raw;
         $parameters = [];
         foreach ($this->getSchema() as $key => $meta) {
-            $value = $raw['parameters__'.$key] ?? null;
-            if (!is_null($value)) {
-                $parameters[$key] = cast_value($value, $meta['value_type']);
+            if (isset($raw[$key])) {
+                $parameters[$key] = cast_value($raw[$key], $meta['value_type']);
             } elseif (isset($meta['default'])) {
                 $parameters[$key] = $meta['default'];
             }

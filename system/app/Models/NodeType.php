@@ -64,15 +64,15 @@ class NodeType extends JulyModel implements GetNodes
             ]);
     }
 
-    public static function countByNodeField()
+    public static function usedByNodes()
     {
-        $types = [];
-        $records = DB::select('SELECT `node_field`, count(`node_field`) as `total` FROM `node_field_node_type` GROUP BY `node_field`');
+        $nodetypeUsed = [];
+        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
         foreach ($records as $record) {
-            $types[$record->node_type] = $record->total;
+            $nodetypeUsed[$record->node_type] = $record->total;
         }
 
-        return $types;
+        return $nodetypeUsed;
     }
 
     /**
@@ -143,7 +143,7 @@ class NodeType extends JulyModel implements GetNodes
      * @param \Illuminate\Http\Request $request
      * @return void
      */
-    public function updateFields(Request $request)
+    public function updateFields(array $fields)
     {
         $langcode = langcode('content');
 
@@ -154,17 +154,16 @@ class NodeType extends JulyModel implements GetNodes
         DB::beginTransaction();
 
         $fields = [];
-        foreach ($request->input('fields', []) as $index => $field) {
+        foreach ($fields as $index => $field) {
             $fields[$field['truename']] = [
                 'delta' => $index,
                 'weight' => $field['weight'] ?? 1,
                 'label' => $field['label'] ?? null,
                 'description' => $field['description'] ?? null,
-                'langcode' => $langcode,
             ];
 
             FieldParameters::updateOrCreate([
-                'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->truename, $langcode]),
+                'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->getKey(), $langcode]),
             ], ['data' => FieldType::extractParameters($field)]);
         }
 

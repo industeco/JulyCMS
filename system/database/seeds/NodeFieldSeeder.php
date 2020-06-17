@@ -38,28 +38,6 @@ class NodeFieldSeeder extends Seeder
                 'description' => '内容标题，通常用作链接文字。',
             ],
             [
-                'truename' => 'summary',
-                'field_type' => 'html',
-                'is_preset' => true,
-                'is_global' => false,
-                'is_searchable' => false,
-                'weight' => 1,
-                'group' => null,
-                'label' => '内容摘要',
-                'description' => null,
-            ],
-            [
-                'truename' => 'content',
-                'field_type' => 'html',
-                'is_preset' => true,
-                'is_global' => false,
-                'is_searchable' => true,
-                'weight' => 1,
-                'group' => null,
-                'label' => '内容',
-                'description' => null,
-            ],
-            [
                 'truename' => 'url',
                 'field_type' => 'text',
                 'is_preset' => true,
@@ -125,6 +103,28 @@ class NodeFieldSeeder extends Seeder
                 'label' => 'META 权威页面',
                 'description' => null,
             ],
+            [
+                'truename' => 'summary',
+                'field_type' => 'html',
+                'is_preset' => false,
+                'is_global' => false,
+                'is_searchable' => false,
+                'weight' => 1,
+                'group' => null,
+                'label' => '内容摘要',
+                'description' => null,
+            ],
+            [
+                'truename' => 'content',
+                'field_type' => 'html',
+                'is_preset' => false,
+                'is_global' => false,
+                'is_searchable' => true,
+                'weight' => 1,
+                'group' => null,
+                'label' => '内容',
+                'description' => null,
+            ],
         ];
 
         $langcode = config('jc.langcode.content');
@@ -139,7 +139,7 @@ class NodeFieldSeeder extends Seeder
 
     protected function getParametersData()
     {
-        $langcode = config('jc.langcode.content');
+        $langcode = langcode('content.default');
         $parameters = [
             [
                 'keyname' => 'node_field.title.'.$langcode,

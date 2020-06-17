@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NodeField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 class NodeFieldController extends Controller
@@ -16,7 +17,10 @@ class NodeFieldController extends Controller
      */
     public function index()
     {
-        return Response::make(mix_config(NodeField::all()));
+        $fields = NodeField::all()->map(function($field) {
+            return $field->gather();
+        })->all();
+        return response($fields);
     }
 
     /**

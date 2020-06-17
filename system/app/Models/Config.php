@@ -4,10 +4,9 @@ namespace App\Models;
 
 use App\Casts\Json;
 use App\Support\Arr;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class Config extends Model
+class Config extends JulyModel
 {
     /**
      * 与模型关联的表名
@@ -106,13 +105,9 @@ class Config extends Model
 
     public function gather()
     {
-        return [
-            'keyname' => $this->attributes['keyname'],
-            'group' => $this->attributes['group'],
-            'label' => $this->attributes['label'],
-            'description' => $this->attributes['description'],
-            'value' => $this->getValue(),
-        ];
+        $attribues = $this->except(['data']);
+        $attribues['value'] = $this->getValue();
+        return $attribues;
     }
 
     public static function updateConfigurations(array $changed)

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidCacheKeyArguments;
-use APP\Support\Arr;
+use App\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -148,6 +148,17 @@ abstract class JulyModel extends Model
     }
 
     /**
+     * 获取常用属性
+     *
+     * @param string|null $langcode
+     * @return array
+     */
+    public function gather($langcode = null)
+    {
+        return $this->attributesToArray();
+    }
+
+    /**
      * 生成 cacheKey
      *
      * @param array|string $key
@@ -158,28 +169,26 @@ abstract class JulyModel extends Model
      */
     public function cacheKey($key, array $conditions = null)
     {
-        if (is_string($key) && is_null($conditions)) {
-            return $key;
-        }
-
-        if (is_string($key) && is_array($conditions)) {
-            $conditions['key'] = $this->getKey();
-            return md5(json_encode([
-                'type' => static::class,
-                'name' => $key,
-                'conditions' => ksort($conditions),
-            ]));
-        }
-
-        if (is_array($key)) {
-            if (!isset($key['name'])) {
+        if (is_string($key)) {
+            if (is_null($conditions)) {
+                return $key;
+            } else {
+                $conditions['id'] = $this->getKey();
+                ksort($conditions);
+                $key = [
+                    'class' => static::class,
+                    'key' => $key,
+                    'conditions' => $conditions,
+                ];
+                // Log::info('CacheKey:');
+                // Log::info($key);
+                return md5(json_encode($key));
+            }
+        } elseif (is_array($key)) {
+            if (!isset($key['key'])) {
                 throw new InvalidCacheKeyArguments;
             }
-            return md5(json_encode([
-                'type' => $key['type'] ?? static::class,
-                'name' => $key['name'],
-                'conditions' => ksort($key['conditions'] ?? Arr::except($key, ['type','name'])),
-            ]));
+            return $this->cacheKey($key['key'], $key['conditions'] ?? Arr::except($key, ['class','key']));
         }
 
         throw new InvalidCacheKeyArguments;
