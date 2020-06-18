@@ -40,24 +40,24 @@ class TextField extends FieldTypeBase
 
         return array_merge($schema, [
             'maxlength' => [
-                'type' => 'integer',
+                'value_type' => 'integer',
                 'default' => 200,
             ],
             'pattern' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
             'placeholder' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
             'default' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
             'datalist' => [
-                'type' => 'array',
+                'value_type' => 'array',
                 'default' => [],
             ],
             'helptext' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
         ]);
     }

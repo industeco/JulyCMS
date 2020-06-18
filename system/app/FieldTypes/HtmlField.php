@@ -39,7 +39,7 @@ class HtmlField extends FieldTypeBase
 
         return array_merge($schema, [
             'helptext' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
         ]);
     }

@@ -68,15 +68,6 @@ class Node extends JulyModel
         return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog')->toArray();
     }
 
-    public static function make(array $attributes = [])
-    {
-        $nodeType = NodeType::findOrFail($attributes['node_type'] ?? null);
-        return new static([
-            'node_type' => $nodeType->getKey(),
-            'langcode' => langcode('content'),
-        ]);
-    }
-
     public static function countByNodeType()
     {
         $nodes = [];

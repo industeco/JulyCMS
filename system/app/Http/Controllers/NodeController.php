@@ -111,7 +111,7 @@ class NodeController extends Controller
         }
 
         return Response::make([
-            'node_id' => $node->id,
+            'node_id' => $node->getKey(),
         ]);
     }
 
@@ -140,11 +140,24 @@ class NodeController extends Controller
         }
 
         $values = $node->gather($langcode);
+
+        $fields = $node->nodeType->cacheGetFieldJigsaws($langcode);
+        foreach ($fields as $fieldName => &$field) {
+            $field['value'] = $values[$fieldName] ?? null;
+        }
+        unset($field);
+
+        $fieldsAside = NodeField::cacheGetGlobalFieldJigsaws($langcode);
+        foreach ($fieldsAside as $fieldName => &$field) {
+            $field['value'] = $values[$fieldName] ?? null;
+        }
+        unset($field);
+
         $data = [
             'id' => $node->id,
             'node_type' => $node->node_type,
-            'fields' => $node->nodeType->cacheGetFieldJigsaws($langcode, $values),
-            'fields_aside' => NodeField::cacheGetGlobalFieldJigsaws($langcode, $values),
+            'fields' => $fields,
+            'fields_aside' => $fieldsAside,
             'tags' => $values['tags'],
             'positions' => $node->positions(),
             'all_tags' => Tag::allTags($langcode),
@@ -155,7 +168,6 @@ class NodeController extends Controller
         ];
 
         if ($langcode) {
-            $data['content_langcode'] = $langcode;
             $data['mode'] = 'translate';
         }
 

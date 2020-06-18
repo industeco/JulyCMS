@@ -99,7 +99,7 @@ if (! function_exists('langcode')) {
 
             // 站点页面语言
             case 'page':
-                return config('request.langcode.current_page') ?: config('jc.langcode.page');
+                return config('request.langcode.page') ?: config('jc.langcode.page');
 
             // 当前请求语言
             case 'page.default':
@@ -255,7 +255,7 @@ if (! function_exists('view_with_langcode')) {
         }
 
         $data = array_merge([
-            'content_langcode' => langcode('content'),
+            'langcode' => langcode('content'),
         ], $data);
 
         return $factory->make($view, $data, $mergeData);

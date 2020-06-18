@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($content_langcode) }} ]</span>
+  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($langcode) }} ]</span>
 @endsection
 
 @section('main_content')
@@ -60,20 +60,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr v-for="field in nodeType.preset_fields" :key="field.truename">
                   <td></td>
-                  <td><span>@{{ nodeType.field__title.truename }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':nodeType.field__title.required}">@{{ nodeType.field__title.label }}</span></td>
-                  <td><span>@{{ nodeType.field__title.description }}</span></td>
-                  <td><span>@{{ nodeType.field__title.field_type }}</span></td>
+                  <td><span>@{{ field.truename }}</span></td>
+                  <td><span :class="{'jc-label':true,'is-required':field.required}">@{{ field.label }}</span></td>
+                  <td><span>@{{ field.description }}</span></td>
+                  <td><span>@{{ field.field_type }}</span></td>
                   <td>
                     <div class="jc-operators">
                       <button type="button" title="编辑" class="md-button md-icon-button md-primary md-theme-default"
-                        @click="editField(nodeType.field__title)">
+                        @click="editField(field)">
                         <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
                         {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
                       </button>
-                      <button type="button" title="删除" disabled class="md-button md-icon-button md-accent md-theme-default">
+                      <button type="button" title="删除" class="md-button md-icon-button md-accent md-theme-default" disabled>
                         <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
                       </button>
                     </div>
@@ -141,7 +141,7 @@
       <el-tab-pane label="选择字段" name="select" class="md-scrollbar md-theme-default">
         <el-table
           ref="fields_table"
-          :data="nodeFields"
+          :data="selectableFields"
           style="width: 100%;"
           class="jc-table jc-dense"
           @selection-change="handleSelectionChange"
@@ -205,23 +205,6 @@
 
   let mode = "{{ $truename ? 'edit' : 'create' }}";
 
-  let currentFields = @json(array_values($fields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-  let titleField = {
-    truename: 'title',
-    field_type: 'text',
-    is_preset: true,
-    langcode: '{{ $content_langcode }}',
-    label: '标题',
-    description: '类型预设字段，不可删除，不可排序',
-  };
-  for (let i = 0, len = currentFields.length; i < len; i++) {
-    if (currentFields[i].truename == 'title') {
-      titleField = currentFields[i];
-      currentFields.splice(i, 1);
-      break;
-    }
-  }
-
   let app = new Vue({
     el: '#main_content',
     data() {
@@ -261,12 +244,12 @@
 
       return {
         nodeType: {
-          content_langcode: '{{ $content_langcode }}',
+          langcode: '{{ $langcode }}',
           truename: '{{ $truename }}',
           label: '{{ $label }}',
           description: '{{ $description }}',
-          field__title: titleField,
-          fields: currentFields,
+          preset_fields: [],
+          fields: [],
         },
 
         nodeTypeRules: {
@@ -288,7 +271,7 @@
         },
 
         currentField: null,
-        editingField: clone(titleField),
+        editingField: null,
 
         editingFieldRules: {
           label: [
@@ -299,7 +282,7 @@
         selectedFields: [],
 
         nodeField: {
-          langcode: '{{ $content_langcode }}',
+          langcode: '{{ $langcode }}',
           truename: '',
           field_type: null,
           label: null,
@@ -334,14 +317,13 @@
           ],
         },
 
-        nodeFields: @json(array_values($availableFields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-
         fieldSelectorVisible: false,
         fieldEditorVisible: false,
         currentTab: 'select',
 
+        selectableFields: [],
+        allFields: @json($allFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         fieldTypes: @json(\App\FieldTypes\FieldType::all(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-
         fileTypes: @json(config('jc.rules.file_type'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       }
     },
@@ -364,20 +346,31 @@
     },
 
     created: function() {
-      this.initial_data = JSON.stringify(this.nodeType);
-
-      function transformDatalist(field) {
-        if (field.field_type == 'text') {
-          if (field.datalist && field.datalist.length) {
-            field.datalist = field.datalist.map(item => {value:item});
-          } else {
-            field.datalist = [{value:''}];
-          }
+      for (const key in this.allFields) {
+        const field = this.allFields[key];
+        if (field.field_type == 'text' && field.datalist instanceof Array) {
+          field.datalist = field.datalist.map(item => {value:item});
+        } else {
+          field.datalist = [{value:''}];
         }
-        return field;
       }
-      this.nodeType.fields = this.nodeType.fields.map(transformDatalist);
-      this.nodeFields = this.nodeFields.map(transformDatalist);
+
+      @foreach($fields as $name => $field)
+      @if($field['is_preset'])
+      this.nodeType.preset_fields.push(this.allFields['{{ $name }}']);
+      this.editingField = this.allFields['{{ $name }}'];
+      @else
+      this.nodeType.fields.push(this.allFields['{{ $name }}']);
+      @endif
+      @endforeach
+
+      @foreach($allFields as $name => $field)
+      @if(! $field['is_preset'])
+      this.selectableFields.push(this.allFields['{{ $name }}']);
+      @endif
+      @endforeach
+
+      this.initial_data = JSON.stringify(this.nodeType);
     },
 
     methods: {
@@ -408,7 +401,7 @@
         let table = this.$refs.fields_table;
         if (table) {
           // table.clearSelection()
-          this.nodeFields.forEach(row => {
+          this.selectableFields.forEach(row => {
             table.toggleRowSelection(row, selected.indexOf(row.truename) >= 0);
           });
         }
@@ -436,8 +429,9 @@
 
             axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
               // console.log(response)
-              app.nodeType.fields.push(clone(app.nodeField));
-              app.nodeFields.push(clone(app.nodeField));
+              app.allFields[field.truename] = field;
+              app.nodeType.fields.push(field);
+              app.selectableFields.push(field);
               form.resetFields();
               loading.close();
               app.fieldSelectorVisible = false;
@@ -487,8 +481,8 @@
         form.validate().then(function() {
 
           let nodeType = clone(app.nodeType);
-          nodeType.fields.unshift(nodeType.field__title);
-          delete nodeType.field__title;
+          nodeType.fields = nodeType.preset_fields.concat(nodeType.fields);
+          delete nodeType.preset_fields;
           nodeType.fields = nodeType.fields.map(function(field) {
             if (field.field_type == 'text' && field.datalist) {
               const datalist = field.datalist;
@@ -516,7 +510,6 @@
           @endif
 
           axios.{{ $truename ? 'put' : 'post' }}(action, nodeType).then(function(response) {
-            loading.close();
             window.location.href = "{{ short_route('node_types.index') }}";
           }).catch(function(error) {
             loading.close();

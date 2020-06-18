@@ -25,7 +25,7 @@ abstract class JulyModel extends Model
      */
     protected $updateExcept = [];
 
-    public static function make(array $attributes = [])
+    public static function make(array $attributes)
     {
         return new static($attributes);
     }

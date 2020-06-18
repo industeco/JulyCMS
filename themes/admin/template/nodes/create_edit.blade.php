@@ -193,7 +193,7 @@
         } else {
           const action = "{{ short_route('checkunique.url') }}";
           axios.post(action, {
-            content_value_langcode: '{{ $content_value_langcode }}',
+            langcode: '{{ $langcode }}',
             url: value,
             id: {{ $id }},
           }).then(function(response) {
@@ -210,8 +210,7 @@
 
       return {
         node: {
-          content_value_langcode: '{{ $content_value_langcode }}',
-          interface_value_langcode: '{{ $interface_value_langcode }}',
+          langcode: '{{ $langcode }}',
           id: {{ $id }},
           node_type: '{{ $node_type }}',
           @foreach (array_merge($fields, $fields_aside) as $field)

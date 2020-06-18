@@ -96,20 +96,18 @@ class NodeField extends JulyModel
      */
     public function parameters($langcode = null)
     {
-        $langcode = $langcode ?? langcode('content');
-        $keyname = implode('.', ['node_field', $this->truename]);
-        $records = FieldParameters::where('keyname', 'like', $keyname.'.%')->get()
-                    ->keyBy('keyname')
-                    ->map(function($record) {
-                        return $record->getAttribute('data');
-                    });
+        $original_lang = $this->getAttribute('langcode');
+        $langcode = $langcode ?? $original_lang;
 
-        $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode];
+        $keyname = implode('.', ['node_field', $this->getKey()]);
+        $records = FieldParameters::where('keyname', 'like', $keyname.'.%')->get()->pluck('data', 'keyname');
+
+        $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$original_lang];
         if ($pivot = $this->pivot) {
             $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type]);
             $parameters = array_merge(
                     $parameters,
-                    $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$this->langcode] ?? []
+                    $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$original_lang] ?? []
                 );
         }
 
@@ -292,7 +290,7 @@ class NodeField extends JulyModel
         return $fields;
     }
 
-    public static function cacheGetGlobalFieldJigsaws($langcode = null, array $values = [])
+    public static function cacheGetGlobalFieldJigsaws($langcode = null)
     {
         $langcode = $langcode ?? langcode('content');
 
@@ -313,14 +311,7 @@ class NodeField extends JulyModel
             $model->cachePut($cacheKey, $jigsaws);
         }
 
-        $jigsaws = $jigsaws['jigsaws'];
-        if ($values) {
-            foreach ($jigsaws as $fieldName => &$jigsaw) {
-                $jigsaw['value'] = $values[$fieldName] ?? null;
-            }
-        }
-
-        return $jigsaws;
+        return $jigsaws['jigsaws'];
     }
 
     public static function boot()

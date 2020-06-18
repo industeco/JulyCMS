@@ -37,14 +37,14 @@ class FileField extends FieldTypeBase
 
         return array_merge($schema, [
             'maxlength' => [
-                'type' => 'integer',
+                'value_type' => 'integer',
                 'default' => 200,
             ],
             'file_type' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
             'helptext' => [
-                'type' => 'string',
+                'value_type' => 'string',
             ],
         ]);
     }

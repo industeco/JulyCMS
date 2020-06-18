@@ -7,6 +7,7 @@ use App\Models\NodeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Models\NodeField;
+use Illuminate\Support\Facades\Log;
 
 class NodeTypeController extends Controller
 {
@@ -38,23 +39,25 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $requiredFiels = [
-            NodeField::find('title')->gather(),
-        ];
-
-        $optionalFields = NodeField::where([
-            'is_preset' => false,
+        $presetFields = NodeField::where([
+            'is_preset' => true,
             'is_global' => false,
         ])->get()->map(function($field) {
             return $field->gather();
-        })->all();
+        })->keyBy('truename')->all();;
+
+        $allFields = NodeField::where([
+            'is_global' => false,
+        ])->get()->map(function($field) {
+            return $field->gather();
+        })->keyBy('truename')->all();
 
         return view_with_langcode('admin::node_types.create_edit', [
-            'truename' => '',
-            'name' => '',
-            'description' => '',
-            'fields' => $requiredFiels,
-            'availableFields' => $optionalFields,
+            'truename' => null,
+            'label' => null,
+            'description' => null,
+            'fields' => $presetFields,
+            'allFields' => $allFields,
         ]);
     }
 
@@ -95,14 +98,15 @@ class NodeTypeController extends Controller
             abort(404);
         }
         $data = $nodeType->gather();
-        $data['fields'] = $nodeType->cacheGetFields();
 
-        $data['availableFields'] = NodeField::where([
-            'is_preset' => false,
+        $fields = collect($nodeType->cacheGetFields())->keyBy('truename');
+        $data['fields'] = $fields;
+
+        $data['allFields'] = NodeField::where([
             'is_global' => false,
         ])->get()->map(function($field) {
             return $field->gather();
-        })->all();
+        })->keyBy('truename')->merge($fields)->all();
 
         return view_with_langcode('admin::node_types.create_edit', $data);
     }

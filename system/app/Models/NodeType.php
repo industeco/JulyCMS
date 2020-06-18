@@ -14,6 +14,7 @@ use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class NodeType extends JulyModel implements GetNodes
 {
@@ -105,7 +106,7 @@ class NodeType extends JulyModel implements GetNodes
      * @param array $values
      * @return array
      */
-    public function cacheGetFieldJigsaws($langcode = null, array $values = [])
+    public function cacheGetFieldJigsaws($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
         $cacheKey = $this->cacheKey('fieldJigsaws', compact('langcode'));
@@ -127,14 +128,7 @@ class NodeType extends JulyModel implements GetNodes
             $this->cachePut($cacheKey, $jigsaws);
         }
 
-        $jigsaws = $jigsaws['jigsaws'];
-        if ($values) {
-            foreach ($jigsaws as $fieldName => &$jigsaw) {
-                $jigsaw['value'] = $values[$fieldName] ?? null;
-            }
-        }
-
-        return $jigsaws;
+        return $jigsaws['jigsaws'];
     }
 
     /**
@@ -143,8 +137,9 @@ class NodeType extends JulyModel implements GetNodes
      * @param \Illuminate\Http\Request $request
      * @return void
      */
-    public function updateFields(array $fields)
+    public function updateFields(array $newFields)
     {
+        // Log::info($fields);
         $langcode = langcode('content');
 
         // 清除碎片缓存
@@ -154,7 +149,7 @@ class NodeType extends JulyModel implements GetNodes
         DB::beginTransaction();
 
         $fields = [];
-        foreach ($fields as $index => $field) {
+        foreach ($newFields as $index => $field) {
             $fields[$field['truename']] = [
                 'delta' => $index,
                 'weight' => $field['weight'] ?? 1,
@@ -166,7 +161,6 @@ class NodeType extends JulyModel implements GetNodes
                 'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->getKey(), $langcode]),
             ], ['data' => FieldType::extractParameters($field)]);
         }
-
         $this->fields()->sync($fields);
 
         DB::commit();

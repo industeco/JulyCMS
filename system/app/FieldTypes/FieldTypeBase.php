@@ -71,11 +71,11 @@ abstract class FieldTypeBase implements FieldTypeInterface
     {
         return [
             'value_type' => [
-                'type' => 'string',
+                'value_type' => 'string',
                 'default' => 'string',
             ],
             'required' => [
-                'type' => 'boolean',
+                'value_type' => 'boolean',
                 'default' => false,
             ],
         ];

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Casts\Json;
+use App\FieldTypes\FieldType;
 
-class FieldParameters extends Model
+class FieldParameters extends JulyModel
 {
     /**
      * 与模型关联的表名

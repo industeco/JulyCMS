@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\FieldTypes\FieldType;
+use App\Models\FieldParameters;
 use App\Models\NodeField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,8 +44,19 @@ class NodeFieldController extends Controller
     public function store(Request $request)
     {
         $field = NodeField::make($request->all());
+        $parameters = FieldParameters::make([
+            'keyname' => implode('.', ['node_field', $field->getKey(), langcode('content')]),
+            'data' => FieldType::extractParameters($request->all()),
+        ]);
+
+        DB::beginTransaction();
+
+        $parameters->save();
         $field->save();
-        return Response::make($field);
+
+        DB::commit();
+
+        return response('');
     }
 
     /**
