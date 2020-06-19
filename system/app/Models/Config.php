@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\Json;
 use App\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Config extends JulyModel
 {
@@ -60,9 +61,10 @@ class Config extends JulyModel
 
     public static function loadConfigurations()
     {
-        $factory = config();
+        // Log::info('loadConfigurations');
+        $config = config();
         foreach (static::all() as $config) {
-            $factory->set('jc.'.$config->keyname, $config->getValue());
+            $config->set('jc.'.$config->keyname, $config->getValue());
         }
     }
 
@@ -103,7 +105,7 @@ class Config extends JulyModel
         return $value;
     }
 
-    public function gather()
+    public function gather($langcode = null)
     {
         $attribues = $this->except(['data']);
         $attribues['value'] = $this->getValue();

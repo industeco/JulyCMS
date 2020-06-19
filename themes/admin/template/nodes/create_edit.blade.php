@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($content_value_langcode) }} ]</span>
+  {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($langcode) }} ]</span>
 @endsection
 
 @section('main_content')
@@ -124,7 +124,7 @@
 
 {{-- 通过 script:template 保存 html 内容 --}}
 @foreach (array_merge($fields, $fields_aside) as $field)
-  @if ($field['type']=='html')
+  @if ($field['field_type']=='html')
   <script type="text/tmplate" id="field_value__{{ $field['truename'] }}">
     {!! $field["value"] !!}
   </script>
@@ -214,7 +214,7 @@
           id: {{ $id }},
           node_type: '{{ $node_type }}',
           @foreach (array_merge($fields, $fields_aside) as $field)
-          @if ($field['type']=='html')
+          @if ($field['field_type']=='html')
           {{ $field['truename'] }}: getHtmlFieldValue("{{ $field['truename'] }}"),
           @else
           {{ $field['truename'] }}: `{!! $field["value"] !!}`,

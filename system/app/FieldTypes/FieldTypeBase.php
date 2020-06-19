@@ -127,6 +127,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
     public function getElement(array $data = null): ?string
     {
         $data = $data ?? $this->field->gather($this->langcode);
+        $data['parameters']['helptext'] = $data['parameters']['helptext'] ?? $data['description'] ?? null;
         return view('admin::components.'.$this->getAlias(), $data)->render();
     }
 

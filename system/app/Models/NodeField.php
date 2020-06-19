@@ -89,6 +89,62 @@ class NodeField extends JulyModel
     }
 
     /**
+     * 获取所有全局字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function globalFields()
+    {
+        return static::where('is_global', true)->get();
+    }
+
+    /**
+     * 从缓存获取所有全局字段
+     *
+     * @return array
+     */
+    public static function cacheGetGlobalFields($langcode = null)
+    {
+        $langcode = $langcode ?? langcode('content');
+
+        $model = new static;
+        $cacheKey = $model->cacheKey('globalFields', compact('langcode'));
+
+        $fields = $model->cacheGet($cacheKey);
+        if (! $fields) {
+            $fields = static::globalFields()->map(function($field) use($langcode) {
+                return $field->gather($langcode);
+            })->keyBy('truename')->all();
+            $model->cachePut($cacheKey, $fields);
+        }
+
+        return $fields;
+    }
+
+    /**
+     * 获取所有非全局字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function optionalFields()
+    {
+        return static::where('is_global', false)->get();
+    }
+
+    /**
+     * 获取所有非全局预设字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function optionalPresetFields()
+    {
+        return static::where([
+            'is_preset' => true,
+            'is_global' => false,
+        ])->get();
+    }
+
+    /**
      * 获取字段参数
      *
      * @param string|null $langcode
@@ -267,29 +323,6 @@ class NodeField extends JulyModel
         return $value;
     }
 
-    public static function globalFields()
-    {
-        return static::where('is_global', true)->get();
-    }
-
-    public static function cacheGetGlobalFields($langcode = null)
-    {
-        $langcode = $langcode ?? langcode('content');
-
-        $model = new static;
-        $cacheKey = $model->cacheKey('globalFields', compact('langcode'));
-
-        $fields = $model->cacheGet($cacheKey);
-        if (! $fields) {
-            $fields = static::globalFields()->map(function($field) use($langcode) {
-                return $field->gather($langcode);
-            })->keyBy('truename')->all();
-            $model->cachePut($cacheKey, $fields);
-        }
-
-        return $fields;
-    }
-
     public static function cacheGetGlobalFieldJigsaws($langcode = null)
     {
         $langcode = $langcode ?? langcode('content');
@@ -297,7 +330,10 @@ class NodeField extends JulyModel
         $model = new static;
         $cacheKey = $model->cacheKey('globalFieldJigsaws', compact('langcode'));
 
-        $jigsaws = $model->cacheGet($cacheKey);
+        if ($jigsaws = $model->cacheGet($cacheKey)) {
+            $jigsaws = $jigsaws['value'];
+        }
+
         $lastModified = last_modified(background_path('template/components/'));
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];

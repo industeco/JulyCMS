@@ -205,6 +205,33 @@
 
   let mode = "{{ $truename ? 'edit' : 'create' }}";
 
+  const availableFields = @json($availableFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  for (const key in availableFields) {
+    const field = availableFields[key];
+    if (field.field_type == 'text' && field.datalist instanceof Array) {
+      field.datalist = field.datalist.map(item => {value:item});
+    } else {
+      field.datalist = [{value:''}];
+    }
+  }
+
+  const presetFields = [];
+  const currentFields = [];
+  @foreach($fields as $name)
+  @if($availableFields[$name]['is_preset'])
+  presetFields.push(availableFields['{{ $name }}']);
+  @else
+  currentFields.push(availableFields['{{ $name }}']);
+  @endif
+  @endforeach
+
+  const selectableFields = [];
+  @foreach($availableFields as $name => $field)
+  @if(! $field['is_preset'])
+  selectableFields.push(availableFields['{{ $name }}']);
+  @endif
+  @endforeach
+
   let app = new Vue({
     el: '#main_content',
     data() {
@@ -248,8 +275,8 @@
           truename: '{{ $truename }}',
           label: '{{ $label }}',
           description: '{{ $description }}',
-          preset_fields: [],
-          fields: [],
+          preset_fields: presetFields,
+          fields: currentFields,
         },
 
         nodeTypeRules: {
@@ -270,27 +297,28 @@
           ],
         },
 
-        currentField: null,
-        editingField: null,
+        // currentField: null,
+        editingField: availableFields['title'],
 
         editingFieldRules: {
+          truename: [
+            { required: true, message: '『真名』不能为空', trigger: 'submit' },
+          ],
           label: [
             { required: true, message: '『标签』不能为空', trigger: 'submit' },
           ],
         },
 
-        selectedFields: [],
-
         nodeField: {
-          langcode: '{{ $langcode }}',
-          truename: '',
+          truename: null,
           field_type: null,
+          is_searchable: true,
+          weight: 1,
           label: null,
           description: null,
+          langcode: '{{ $langcode }}',
           parameters: {
             required: false,
-            is_searchable: true,
-            weight: 1,
             maxlength: 200,
             file_type: null,
             helptext: null,
@@ -321,8 +349,9 @@
         fieldEditorVisible: false,
         currentTab: 'select',
 
-        selectableFields: [],
-        allFields: @json($allFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        selectedFields: [],
+        selectableFields: selectableFields,
+
         fieldTypes: @json(\App\FieldTypes\FieldType::all(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         fileTypes: @json(config('jc.rules.file_type'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       }
@@ -336,6 +365,7 @@
         }
         return '';
       },
+
       fileTypeHelp() {
         let file_type = this.nodeField.file_type;
         if (file_type && this.fileTypes[file_type]) {
@@ -346,30 +376,6 @@
     },
 
     created: function() {
-      for (const key in this.allFields) {
-        const field = this.allFields[key];
-        if (field.field_type == 'text' && field.datalist instanceof Array) {
-          field.datalist = field.datalist.map(item => {value:item});
-        } else {
-          field.datalist = [{value:''}];
-        }
-      }
-
-      @foreach($fields as $name => $field)
-      @if($field['is_preset'])
-      this.nodeType.preset_fields.push(this.allFields['{{ $name }}']);
-      this.editingField = this.allFields['{{ $name }}'];
-      @else
-      this.nodeType.fields.push(this.allFields['{{ $name }}']);
-      @endif
-      @endforeach
-
-      @foreach($allFields as $name => $field)
-      @if(! $field['is_preset'])
-      this.selectableFields.push(this.allFields['{{ $name }}']);
-      @endif
-      @endforeach
-
       this.initial_data = JSON.stringify(this.nodeType);
     },
 
@@ -385,9 +391,9 @@
       },
 
       editField(field) {
-        this.currentField = field;
+        // this.currentField = field;
         // let data = Object.assign({}, field);
-        Vue.set(this.$data, 'editingField', clone(field));
+        Vue.set(this.$data, 'editingField', field);
         this.fieldEditorVisible = true;
       },
 
@@ -429,7 +435,7 @@
 
             axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
               // console.log(response)
-              app.allFields[field.truename] = field;
+              availableFields[field.truename] = field;
               app.nodeType.fields.push(field);
               app.selectableFields.push(field);
               form.resetFields();
@@ -443,7 +449,7 @@
             console.error(error);
           })
         } else {
-          this.$set(this.nodeType, 'fields', clone(this.selectedFields));
+          this.$set(this.nodeType, 'fields', this.selectedFields.slice());
           form.resetFields();
           this.fieldSelectorVisible = false;
         }
@@ -453,7 +459,7 @@
         let form = this.$refs.field_edit_form;
         form.validate((valid) => {
           if (valid) {
-            Object.assign(this.currentField, this.editingField);
+            // this.currentField = this.editingField;
             this.fieldEditorVisible = false;
           }
         })
@@ -474,7 +480,7 @@
 
         const loading = app.$loading({
           lock: true,
-          text: mode=='create'?'正在新建类型 ...':'正在保存修改 ...',
+          text: '{{ $truename ? "正在新建类型 ..." : "正在保存修改 ..." }}',
           background: 'rgba(255, 255, 255, 0.7)',
         });
 

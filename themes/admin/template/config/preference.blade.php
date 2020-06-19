@@ -10,7 +10,9 @@
     <div class="el-form-item el-form-item--small jc-embeded-field {{ $configs['field_group_settings']['description']?'has-helptext':'' }}">
       <div class="el-form-item__content">
         <div class="jc-embeded-field__header">
-          <label class="el-form-item__label">{{ $configs['field_group_settings']['label'] }}</label>
+          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('field_group_settings')" placement="right">
+            <label class="el-form-item__label">{{ $configs['field_group_settings']['label'] }}</label>
+          </el-tooltip>
         </div>
         <div class="jc-table-wrapper">
           <table class="jc-table jc-dense is-draggable with-operators">
@@ -74,6 +76,10 @@
           }
         }
         return changed;
+      },
+
+      useInTwig(name) {
+        return `@{{ config('jc.${name}') }}`;
       },
 
       submit() {

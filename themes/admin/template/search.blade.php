@@ -37,7 +37,7 @@
           const url = "{{ short_route('nodes.edit', '#id#') }}";
           return url.replace('#id#', row.node_id);
         } else {
-          const url = "{{ short_route('nodes.translate_to', ['#id#','#langcode#']) }}";
+          const url = "{{ short_route('nodes.translate', ['#id#','#langcode#']) }}";
           return url.replace('#id#', row.node_id).replace('#langcode#', row.langcode);
         }
         return url;

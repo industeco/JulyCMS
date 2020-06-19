@@ -60,11 +60,12 @@ Route::group([
         ])->names('catalogs');
 
         // 内容
-        Route::get('nodes/create/{nodeType}', 'NodeController@createWith')->name('nodes.create_with');
-        Route::get('nodes/{node}/translate', 'NodeController@translate')->name('nodes.translate');
-        Route::get('nodes/{node}/translate/{langcode}', 'NodeController@edit')->name('nodes.translate_to');
+        Route::get('nodes/create/{nodeType}', 'NodeController@create')->name('nodes.create');
+        Route::get('nodes/nodetypes', 'NodeController@chooseNodetype')->name('nodes.nodetypes');
+        Route::get('nodes/{node}/languages', 'NodeController@chooseLanguage')->name('nodes.languages');
+        Route::get('nodes/{node}/translate/{langcode}', 'NodeController@edit')->name('nodes.translate');
         Route::post('nodes/render', 'NodeController@render')->name('nodes.render');
-        Route::resource('nodes', 'NodeController')->parameters([
+        Route::resource('nodes', 'NodeController')->except(['create'])->parameters([
             'nodes' => 'node',
         ])->names('nodes');
 

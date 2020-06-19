@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
             // 加载数据库中的配置
             \App\Models\Config::loadConfigurations();
         } catch (\Throwable $th) {
-            //throw $th;
+            throw $th;
         }
 
         // 添加视图命名空间

@@ -32,6 +32,21 @@
       show-word-limit></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 在列表或表单中显示</span>
   </el-form-item>
+  <el-form-item label="可搜索" size="small">
+    <el-switch v-model="{{ $formData }}.is_searchable"></el-switch>
+  </el-form-item>
+  <el-form-item label="搜索权重" size="small" class="has-helptext"
+    v-if="{{ $formData }}.is_searchable">
+    <el-input-number
+      v-model="{{ $formData }}.weight"
+      size="small"
+      controls-position="right"
+      :min="1" :step="1" :precision="0"></el-input-number>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 用于对搜索结果排序；权重越高，搜索结果越容易靠前</span>
+  </el-form-item>
+  <el-form-item label="必填" size="small">
+    <el-switch v-model="{{ $formData }}.parameters.required"></el-switch>
+  </el-form-item>
   <el-form-item label="帮助文本" prop="parameters.helptext" size="small" class="has-helptext">
     <el-input
       v-model="{{ $formData }}.parameters.helptext"
@@ -40,21 +55,6 @@
       maxlength="255"
       show-word-limit></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 在表单中显示，如果为空，则显示『描述』</span>
-  </el-form-item>
-  <el-form-item label="必填" prop="required" size="small">
-    <el-switch v-model="{{ $formData }}.required"></el-switch>
-  </el-form-item>
-  <el-form-item label="可搜索" size="small">
-    <el-switch v-model="{{ $formData }}.parameters.is_searchable"></el-switch>
-  </el-form-item>
-  <el-form-item label="搜索权重" size="small" class="has-helptext"
-    v-if="{{ $formData }}.parameters.is_searchable">
-    <el-input-number
-      v-model="{{ $formData }}.parameters.weight"
-      size="small"
-      controls-position="right"
-      :min="1" :step="1" :precision="0"></el-input-number>
-    <span class="jc-form-item-help"><i class="el-icon-info"></i> 『搜索权重』用于对搜索结果排序；权重越高，搜索结果越容易靠前</span>
   </el-form-item>
   @if ($mode == 'create')
   <el-form-item label="最大字数" prop="parameters.maxlength" size="small" class="has-helptext"

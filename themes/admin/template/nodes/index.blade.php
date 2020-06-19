@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_route('nodes.create') }}" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_route('nodes.nodetypes') }}" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建内容</div></div>
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
@@ -213,7 +213,7 @@
 
         editUrl: "{{ short_route('nodes.edit', '#id#') }}",
         deleteUrl: "{{ short_route('nodes.destroy', '#id#') }}",
-        translateUrl: "{{ short_route('nodes.translate', '#id#') }}",
+        translateUrl: "{{ short_route('nodes.languages', '#id#') }}",
       };
     },
 

@@ -39,25 +39,19 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $presetFields = NodeField::where([
-            'is_preset' => true,
-            'is_global' => false,
-        ])->get()->map(function($field) {
-            return $field->gather();
-        })->keyBy('truename')->all();;
-
-        $allFields = NodeField::where([
-            'is_global' => false,
-        ])->get()->map(function($field) {
-            return $field->gather();
-        })->keyBy('truename')->all();
+        $optionalFields = NodeField::optionalFields()
+                            ->map(function($field) {
+                                return $field->gather();
+                            })
+                            ->keyBy('truename')
+                            ->all();
 
         return view_with_langcode('admin::node_types.create_edit', [
             'truename' => null,
             'label' => null,
             'description' => null,
-            'fields' => $presetFields,
-            'allFields' => $allFields,
+            'fields' => NodeField::optionalPresetFields()->pluck('truename')->all(),
+            'availableFields' => $optionalFields,
         ]);
     }
 
@@ -97,16 +91,17 @@ class NodeTypeController extends Controller
         if ('default' === $nodeType->getKey()) {
             abort(404);
         }
-        $data = $nodeType->gather();
-
         $fields = collect($nodeType->cacheGetFields())->keyBy('truename');
-        $data['fields'] = $fields;
 
-        $data['allFields'] = NodeField::where([
-            'is_global' => false,
-        ])->get()->map(function($field) {
-            return $field->gather();
-        })->keyBy('truename')->merge($fields)->all();
+        $data = $nodeType->gather();
+        $data['fields'] = $fields->keys()->all();
+        $data['availableFields'] = NodeField::optionalFields()
+                                    ->map(function($field) {
+                                        return $field->gather();
+                                    })
+                                    ->keyBy('truename')
+                                    ->replace($fields)
+                                    ->all();
 
         return view_with_langcode('admin::node_types.create_edit', $data);
     }

@@ -36,7 +36,7 @@
           <td>{{ $langname }}</td>
           <td>
             <div class="jc-operaters">
-              <a href="{{ short_route([$routePrefix.'.translate_to', [$entityKey, $langcode]]) }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
+              <a href="{{ short_route([$routePrefix.'.translate', [$entityKey, $langcode]]) }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
             </div>

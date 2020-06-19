@@ -9,10 +9,9 @@ use App\Models\Node;
 use App\Models\Catalog;
 use App\Models\NodeField;
 use App\Models\NodeType;
-use App\FieldTypes\FieldType;
 use App\Models\Tag;
 use App\Support\Arr;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class NodeController extends Controller
@@ -40,25 +39,26 @@ class NodeController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * 选择类型
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function chooseNodetype()
     {
-        return view_with_langcode('admin::nodes.choose_node_type', [
+        return view_with_langcode('admin::nodes.nodetypes', [
             'nodeTypes' => NodeType::all()->all(),
         ]);
     }
 
     /**
-     * 创建类型化内容
+     * Show the form for creating a new resource.
      *
      * @param \App\Models\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
-    public function createWith(NodeType $nodeType)
+    public function create(NodeType $nodeType)
     {
+        dd(Auth::user());
         return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
             'node_type' => $nodeType->truename,
@@ -224,16 +224,16 @@ class NodeController extends Controller
      * @param  \App\Models\Node  $node
      * @return \Illuminate\Http\Response
      */
-    public function translate(Node $node)
+    public function chooseLanguage(Node $node)
     {
         if (!config('jc.multi_language')) {
             abort(404);
         }
 
-        return view_with_langcode('admin::translate', [
-            'original_langcode' => $node->langcode,
+        return view_with_langcode('admin::languages', [
+            'original_langcode' => $node->getAttribute('langcode'),
             'languages' => available_languages('translatable'),
-            'entityKey' => $node->id,
+            'entityKey' => $node->getKey(),
             'routePrefix' => 'nodes',
         ]);
     }
