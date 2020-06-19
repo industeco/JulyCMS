@@ -38,7 +38,7 @@ class NodeIndex extends Model
                 'node_id' => $node->id,
             ];
             foreach ($langcodes as $langcode) {
-                $values = $node->retrieveValues($langcode);
+                $values = $node->cacheGetValues($langcode);
                 foreach ($values as $key => $value) {
                     if (($meta = $fields[$key] ?? null) && !empty($value)) {
                         $records[] = array_merge($record, [

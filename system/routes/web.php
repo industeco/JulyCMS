@@ -21,7 +21,7 @@ Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'inst
 // 后台
 Route::group([
     'prefix' => config('jc.admin_prefix', 'admin'),
-    'middleware' => ['web','csrf'],
+    'middleware' => ['web','admin'],
 ], function() {
     // 登录路由
     Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');

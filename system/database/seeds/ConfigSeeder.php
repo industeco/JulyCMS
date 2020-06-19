@@ -99,6 +99,7 @@ class ConfigSeeder extends Seeder
                 'data' => [
                     'value_type' => 'array',
                     'value' => [
+                        '标签' => false,
                         '网址和模板' => false,
                         'META 信息' => false,
                     ],

@@ -92,8 +92,8 @@ class Node extends JulyModel
     {
         return array_merge(
             $this->attributesToArray(),
-            $this->retrieveValues($langcode),
-            ['tags' => $this->retrieveTags($langcode)]
+            $this->cacheGetValues($langcode),
+            ['tags' => $this->cacheGetTags($langcode)]
         );
     }
 
@@ -111,7 +111,7 @@ class Node extends JulyModel
         return $fields;
     }
 
-    public function retrieveValues($langcode = null)
+    public function cacheGetValues($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
         $cachekey = $this->cacheKey('values', compact('langcode'));
@@ -135,7 +135,7 @@ class Node extends JulyModel
      * @param string|null $langcode
      * @return array
      */
-    public function retrieveTags($langcode = null)
+    public function cacheGetTags($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
         $cachekey = $this->cacheKey('tags', compact('langcode'));
@@ -161,8 +161,7 @@ class Node extends JulyModel
      */
     public function saveValues(array $values, $deleteNull = false)
     {
-        $langcode = langcode('content');
-        $this->cacheClear(['name' => 'values', 'langcode' => $langcode]);
+        $this->cacheClear(['key' => 'values', 'langcode' => langcode('content')]);
         // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
         $changed = $values['changed_values'];
@@ -176,20 +175,20 @@ class Node extends JulyModel
             // Log::info("'{$field->truename}' is changed. The new value is '{$value}'");
             if (! is_null($value)) {
                 // Log::info("Prepare to update field '{$field->truename}'");
-                $field->setValue($value, $this->id);
+                $field->setValue($value, $this->getKey());
             } elseif ($deleteNull) {
-                $field->deleteValue($this->id);
+                $field->deleteValue($this->getKey());
             }
         }
 
-        // Log::info($this->retrieveValues());
+        // Log::info($this->cacheGetValues());
     }
 
     public function saveTags(array $tags, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
 
-        $this->cacheClear(['name'=>'tags', 'langcode'=>$langcode]);
+        $this->cacheClear(['key'=>'tags', 'langcode'=>$langcode]);
 
         Tag::createIfNotExist($tags, $langcode);
 
@@ -332,7 +331,7 @@ class Node extends JulyModel
     {
         $langcode = $langcode ?: $this->langcode;
 
-        $values = $this->retrieveValues($langcode);
+        $values = $this->cacheGetValues($langcode);
         if ($url = $values['url'] ?? null) {
             $file = 'pages/'.$langcode.$url;
             $disk = Storage::disk('storage');
@@ -438,7 +437,7 @@ class Node extends JulyModel
             return $this->getRelationshipFromMethod($key);
         }
 
-        $values = $this->retrieveValues();
+        $values = $this->cacheGetValues();
         if (array_key_exists($key, $values)) {
             return $values[$key];
         }

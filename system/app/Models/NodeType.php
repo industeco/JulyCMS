@@ -88,13 +88,13 @@ class NodeType extends JulyModel implements GetNodes
         $cacheKey = $this->cacheKey('fields', compact('langcode'));
 
         if ($fields = $this->cacheGet($cacheKey)) {
-            $fields = $fields['value'];
-        } else {
-            $fields = $this->fields->map(function($field) use($langcode) {
-                return $field->gather($langcode);
-            })->keyBy('truename')->all();
-            $this->cachePut($cacheKey, $fields);
+            return $fields['value'];
         }
+
+        $fields = $this->fields->map(function($field) use($langcode) {
+            return $field->gather($langcode);
+        })->keyBy('truename')->all();
+        $this->cachePut($cacheKey, $fields);
 
         return $fields;
     }

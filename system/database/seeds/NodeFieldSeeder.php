@@ -105,7 +105,7 @@ class NodeFieldSeeder extends Seeder
             ],
             [
                 'truename' => 'summary',
-                'field_type' => 'html',
+                'field_type' => 'text',
                 'is_preset' => false,
                 'is_global' => false,
                 'is_searchable' => false,

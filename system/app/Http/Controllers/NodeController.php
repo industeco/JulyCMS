@@ -58,19 +58,19 @@ class NodeController extends Controller
      */
     public function create(NodeType $nodeType)
     {
-        dd(Auth::user());
         return view_with_langcode('admin::nodes.create_edit', [
             'id' => 0,
-            'node_type' => $nodeType->truename,
+            'node_type' => $nodeType->getKey(),
+            'nodeTypeLabel' => $nodeType->getAttribute('label'),
             'fields' => $nodeType->cacheGetFieldJigsaws(),
-            'fields_aside' => NodeField::cacheGetGlobalFieldJigsaws(),
+            'globalFields' => NodeField::cacheGetGlobalFieldJigsaws(),
             'tags' => [],
             'positions' => [],
             'all_tags' => Tag::allTags(),
             'all_nodes' => $this->simpleNodes(),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
-            'mode' => 'create',
+            'editMode' => '新建',
         ]);
     }
 
@@ -139,36 +139,37 @@ class NodeController extends Controller
             config()->set('request.langcode.content', $langcode);
         }
 
-        $values = $node->gather($langcode);
+        $attributes = $node->gather($langcode);
 
         $fields = $node->nodeType->cacheGetFieldJigsaws($langcode);
         foreach ($fields as $fieldName => &$field) {
-            $field['value'] = $values[$fieldName] ?? null;
+            $field['value'] = $attributes[$fieldName] ?? null;
         }
         unset($field);
 
-        $fieldsAside = NodeField::cacheGetGlobalFieldJigsaws($langcode);
-        foreach ($fieldsAside as $fieldName => &$field) {
-            $field['value'] = $values[$fieldName] ?? null;
+        $globalFields = NodeField::cacheGetGlobalFieldJigsaws($langcode);
+        foreach ($globalFields as $fieldName => &$field) {
+            $field['value'] = $attributes[$fieldName] ?? null;
         }
         unset($field);
 
         $data = [
             'id' => $node->id,
-            'node_type' => $node->node_type,
+            'node_type' => $attributes['node_type'],
+            'nodeTypeLabel' => $node->nodeType->getAttribute('label'),
             'fields' => $fields,
-            'fields_aside' => $fieldsAside,
-            'tags' => $values['tags'],
+            'globalFields' => $globalFields,
+            'tags' => $attributes['tags'],
             'positions' => $node->positions(),
             'all_tags' => Tag::allTags($langcode),
             'all_nodes' => $this->simpleNodes($langcode),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
-            'mode' => 'edit',
+            'editMode' => '编辑',
         ];
 
         if ($langcode) {
-            $data['mode'] = 'translate';
+            $data['editMode'] = '翻译';
         }
 
         return view_with_langcode('admin::nodes.create_edit', $data);

@@ -6,12 +6,9 @@ use App\FieldTypes\FieldType;
 use App\Support\Arr;
 use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rule;
 
 class NodeField extends JulyModel
 {
@@ -110,13 +107,15 @@ class NodeField extends JulyModel
         $model = new static;
         $cacheKey = $model->cacheKey('globalFields', compact('langcode'));
 
-        $fields = $model->cacheGet($cacheKey);
-        if (! $fields) {
-            $fields = static::globalFields()->map(function($field) use($langcode) {
-                return $field->gather($langcode);
-            })->keyBy('truename')->all();
-            $model->cachePut($cacheKey, $fields);
+        if ($fields = $model->cacheGet($cacheKey)) {
+            return $fields['value'];
         }
+
+        $fields = static::globalFields()->map(function($field) use($langcode) {
+            return $field->gather($langcode);
+        })->keyBy('truename')->all();
+
+        $model->cachePut($cacheKey, $fields);
 
         return $fields;
     }
@@ -294,31 +293,31 @@ class NodeField extends JulyModel
         $langcode = $langcode ?: $node->getAttribute('langcode');
 
         $cacheKey = $this->cacheKey('values', [
-            'node_id' => $node->id,
+            'node_id' => $node->getKey(),
             'langcode' => $langcode,
         ]);
 
         if ($value = $this->cacheGet($cacheKey)) {
-            $value = $value['value'];
-        } else {
-            $value = null;
-            $records = DB::table($this->tableName())->where([
-                ['node_id', $node->id],
-                ['langcode', $langcode],
-            ])->orderBy('delta')->get();
-
-            if ($records->count()) {
-                $records = $records->map(function($record) {
-                    return (array) $record;
-                })->all();
-
-                // 借助字段类型格式化数据库记录
-                $value = $this->fieldType()->toValue($records);
-            }
-
-            // 缓存字段值
-            $this->cachePut($cacheKey, $value);
+            return $value['value'];
         }
+
+        $value = null;
+        $records = DB::table($this->tableName())->where([
+            ['node_id', $node->getKey()],
+            ['langcode', $langcode],
+        ])->orderBy('delta')->get();
+
+        if ($records->count()) {
+            $records = $records->map(function($record) {
+                return (array) $record;
+            })->all();
+
+            // 借助字段类型格式化数据库记录
+            $value = $this->fieldType()->toValue($records);
+        }
+
+        // 缓存字段值
+        $this->cachePut($cacheKey, $value);
 
         return $value;
     }

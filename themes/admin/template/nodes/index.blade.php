@@ -18,12 +18,13 @@
       <div class="jc-option" id="contents_filter">
         <label>筛选：</label>
         <el-select v-model="filterBy" size="small" class="jc-filterby" @change="handleFilterByChange">
-          <el-option label="标题" value="title"></el-option>
-          <el-option label="内容类型" value="node_type"></el-option>
-          <el-option label="网址" value="url"></el-option>
-          <el-option label="标签" value="tags"></el-option>
+          <el-option label="-- 不筛选 --" value=""></el-option>
+          <el-option label="按标题" value="title"></el-option>
+          <el-option label="按内容类型" value="node_type"></el-option>
+          <el-option label="按网址" value="url"></el-option>
+          <el-option label="按标签" value="tags"></el-option>
           @if (config('jc.multi_language'))
-          <el-option label="语言版本" value="langcode"></el-option>
+          <el-option label="按语言" value="langcode"></el-option>
           @endif
         </el-select>
         <el-input
@@ -199,7 +200,7 @@
           translateUrl: null,
         },
 
-        filterBy: 'title',
+        filterBy: '',
         filterValues: {
           title: null,
           node_type: null,
@@ -248,7 +249,7 @@
             text: '正在删除 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
-          axios.delete(this.deleteUrl.replace('_id', node.id)).then(function(response) {
+          axios.delete(this.deleteUrl.replace('#id#', node.id)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success'
             loading.text = '已删除'
@@ -279,6 +280,11 @@
       },
 
       handleFilterByChange(value) {
+        if (! value) {
+          this.$set(this.$data, 'nodes', this.initial_data);
+          return;
+        }
+
         switch (value) {
           case 'title':
           case 'node_type':

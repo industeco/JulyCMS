@@ -21,19 +21,19 @@ class CatalogTree
     {
         $this->catalog = $catalog;
 
-        $cacheid = $catalog->id.'/treeNodes';
-        if ($treeNodes = Catalog::cacheGet($cacheid)) {
+        $cachekey = $catalog->cacheKey('treeNodes');
+        if ($treeNodes = $catalog->cacheGet($cachekey)) {
             $treeNodes = $treeNodes['value'];
         }else {
             $treeNodes = $this->getTreeNodes();
-            Catalog::cachePut($cacheid, $treeNodes);
+            $catalog->cachePut($cachekey, $treeNodes);
         }
         $this->nodes = collect($treeNodes);
     }
 
     protected function getTreeNodes()
     {
-        $nodes = $this->catalog->retrieveCatalogNodes();
+        $nodes = $this->catalog->cacheGetCatalogNodes();
 
         $treeNodes = [
             0 => [

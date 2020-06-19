@@ -94,8 +94,8 @@ class Catalog extends JulyModel implements GetNodes
 
     public function removePosition(array $position)
     {
-        $this->cacheClear(['name'=>'catalogNodes']);
-        $this->cacheClear(['name'=>'treeNodes']);
+        $this->cacheClear(['key'=>'catalogNodes']);
+        $this->cacheClear(['key'=>'treeNodes']);
 
         // DB::delete("DELETE from catalog_node where `catalog`=? and (`node_id`=? or `path` like '%/$node_id/%' )");
         CatalogNode::where([
@@ -111,8 +111,8 @@ class Catalog extends JulyModel implements GetNodes
 
     public function insertPosition(array $position)
     {
-        $this->cacheClear(['name'=>'catalogNodes']);
-        $this->cacheClear(['name'=>'treeNodes']);
+        $this->cacheClear(['key'=>'catalogNodes']);
+        $this->cacheClear(['key'=>'treeNodes']);
 
         // $position['catalog'] = $this->truename;
         $position['langcode'] = langcode('content');
@@ -146,11 +146,11 @@ class Catalog extends JulyModel implements GetNodes
 
     public function updatePositions(array $positions)
     {
-        $this->cacheClear(['name'=>'catalogNodes']);
-        $this->cacheClear(['name'=>'treeNodes']);
+        $this->cacheClear(['key'=>'catalogNodes']);
+        $this->cacheClear(['key'=>'treeNodes']);
 
         $supplement = [
-            'catalog' => $this->truename,
+            'catalog' => $this->getKey(),
             'langcode' => langcode('content'),
         ];
         foreach ($positions as &$position) {
@@ -158,7 +158,7 @@ class Catalog extends JulyModel implements GetNodes
         }
         unset($position);
 
-        DB::table('catalog_node')->where('catalog', $this->truename)->delete();
+        DB::table('catalog_node')->where('catalog', $this->getKey())->delete();
         DB::transaction(function() use ($positions) {
             foreach ($positions as $position) {
                 DB::table('catalog_node')->insert($position);
@@ -168,13 +168,13 @@ class Catalog extends JulyModel implements GetNodes
         $this->touch();
     }
 
-    public function retrieveCatalogNodes()
+    public function cacheGetCatalogNodes()
     {
         $cachekey = $this->cacheKey('catalogNodes', []);
         if ($nodes = $this->cacheGet($cachekey)) {
             $nodes = $nodes['value'];
         } else {
-            $nodes = CatalogNode::where('catalog', $this->truename)
+            $nodes = CatalogNode::where('catalog', $this->getKey())
                 ->get(['node_id','parent_id','prev_id','path'])->toArray();
 
             $this->cachePut($cachekey, $nodes);

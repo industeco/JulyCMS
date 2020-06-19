@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\QueryException;
+use App\Models\Config as ConfigModel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,10 +29,12 @@ class AppServiceProvider extends ServiceProvider
             // 查找字段类型
             // \App\FieldTypes\FieldType::findFieldTypes();
 
-            // 加载数据库中的配置
-            \App\Models\Config::loadConfigurations();
+            // 加载数据库中的常规配置
+            ConfigModel::loadConfigurations();
         } catch (\Throwable $th) {
-            throw $th;
+            if (!($th instanceof QueryException)) {
+                throw $th;
+            }
         }
 
         // 添加视图命名空间

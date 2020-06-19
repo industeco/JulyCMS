@@ -59,12 +59,27 @@ class Config extends JulyModel
         'data' => Json::class,
     ];
 
+    /**
+     * 加载数据库中的常规设置
+     */
     public static function loadConfigurations()
     {
         // Log::info('loadConfigurations');
         $config = config();
-        foreach (static::all() as $config) {
-            $config->set('jc.'.$config->keyname, $config->getValue());
+        foreach (static::where('group', '!=', 'preference')->get() as $configuration) {
+            $config->set('jc.'.$configuration->getKey(), $configuration->getValue());
+        }
+    }
+
+    /**
+     * 加载数据库中的偏好设置
+     */
+    public static function loadPreferences()
+    {
+        // Log::info('loadPreferences');
+        $config = config();
+        foreach (static::where('group', 'preference')->get() as $configuration) {
+            $config->set('jc.'.$configuration->getKey(), $configuration->getValue());
         }
     }
 
@@ -93,9 +108,9 @@ class Config extends JulyModel
     public function getValue()
     {
         $value = null;
-        if ($this->group === 'preference') {
+        if ($this->getAttribute('group') === 'preference') {
             if (($user = Auth::user()) && ($user instanceof User)) {
-                $value = $user->getPreferenceValue($this->keyname);
+                $value = $user->getPreferenceValue($this->getKey());
             }
         }
         if (is_null($value)) {

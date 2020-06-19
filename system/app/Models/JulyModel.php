@@ -169,22 +169,23 @@ abstract class JulyModel extends Model
      */
     public function cacheKey($key, array $conditions = null)
     {
-        if (is_string($key)) {
-            if (is_null($conditions)) {
-                return $key;
-            } else {
-                $conditions['id'] = $this->getKey();
-                ksort($conditions);
-                $key = [
-                    'class' => static::class,
-                    'key' => $key,
-                    'conditions' => $conditions,
-                ];
-                // Log::info('CacheKey:');
-                // Log::info($key);
-                return md5(json_encode($key));
-            }
-        } elseif (is_array($key)) {
+        if (is_string($key) && is_null($conditions)) {
+            return $key;
+        }
+
+        if (is_string($key) && is_array($conditions)) {
+            $conditions['id'] = $this->getKey();
+            ksort($conditions);
+            $key = [
+                'class' => static::class,
+                'key' => $key,
+                'conditions' => $conditions,
+            ];
+
+            return md5(json_encode($key));
+        }
+
+        if (is_array($key)) {
             if (!isset($key['key'])) {
                 throw new InvalidCacheKeyArguments;
             }

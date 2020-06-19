@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $mode=='translate'?'翻译':($mode=='edit'?'编辑':'新建') }}内容 <span id="content_locale">[ {{ langname($langcode) }} ]</span>
+  {{ $editMode }}内容 <span id="content_locale">[ {{ $nodeTypeLabel }}|{{ $node_type }}, {{ langname($langcode) }}|{{ $langcode }} ]</span>
 @endsection
 
 @section('main_content')
@@ -21,7 +21,7 @@
     </div>
     <div id="main_form_right">
       <h2 class="jc-form-info-item">通用非必填项</h2>
-      @if ($mode !== 'translate')
+      @if ($editMode !== '翻译')
       <div class="jc-form-info-item">
         <button type="button" id="addto_catalogs_btn" class="md-button md-raised md-dense md-primary md-theme-default" @click="addtoCatalogsDialogVisible = true">
           <div class="md-button-content">添加到目录</div>
@@ -30,7 +30,7 @@
       </div>
       @endif
       <el-collapse :value="expanded" @change="handleCollapseChange">
-        <el-collapse-item title="标签" name="tags" id="node_tags_selector">
+        <el-collapse-item title="标签" name="标签" id="node_tags_selector">
           <el-form-item size="small" class="has-helptext">
             <el-select v-model="node.tags" placeholder="选择标签"
               multiple
@@ -46,8 +46,8 @@
             <span class="jc-form-item-help"><i class="el-icon-info"></i> 新增时请留意当前语言版本</span>
           </el-form-item>
         </el-collapse-item>
-        <el-collapse-item title="网址和模板" name="url">
-          {!! $fields_aside['url']['element'] !!}
+        <el-collapse-item title="网址和模板" name="网址和模板">
+          {!! $globalFields['url']['element'] !!}
           <el-form-item prop="template" size="small" class="has-helptext">
             <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="template" placement="right">
               <span>模板</span>
@@ -62,11 +62,11 @@
               <span class="jc-form-item-help"><i class="el-icon-info"></i> twig 模板，用于生成页面</span>
           </el-form-item>
         </el-collapse-item>
-        <el-collapse-item title="META 信息" name="meta">
-          {!! $fields_aside['meta_title']['element'] !!}
-          {!! $fields_aside['meta_keywords']['element'] !!}
-          {!! $fields_aside['meta_description']['element'] !!}
-          {!! $fields_aside['meta_canonical']['element'] !!}
+        <el-collapse-item title="META 信息" name="META 信息">
+          {!! $globalFields['meta_title']['element'] !!}
+          {!! $globalFields['meta_keywords']['element'] !!}
+          {!! $globalFields['meta_description']['element'] !!}
+          {!! $globalFields['meta_canonical']['element'] !!}
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -123,7 +123,7 @@
 @section('script')
 
 {{-- 通过 script:template 保存 html 内容 --}}
-@foreach (array_merge($fields, $fields_aside) as $field)
+@foreach (array_merge($fields, $globalFields) as $field)
   @if ($field['field_type']=='html')
   <script type="text/tmplate" id="field_value__{{ $field['truename'] }}">
     {!! $field["value"] !!}
@@ -213,7 +213,7 @@
           langcode: '{{ $langcode }}',
           id: {{ $id }},
           node_type: '{{ $node_type }}',
-          @foreach (array_merge($fields, $fields_aside) as $field)
+          @foreach (array_merge($fields, $globalFields) as $field)
           @if ($field['field_type']=='html')
           {{ $field['truename'] }}: getHtmlFieldValue("{{ $field['truename'] }}"),
           @else
@@ -226,7 +226,7 @@
         node_positions: clone(initial_positions),
 
         rules: {
-          @foreach (array_merge($fields, $fields_aside) as $field)
+          @foreach (array_merge($fields, $globalFields) as $field)
           @if($field['rules'])
           {{ $field['truename'] }}: [
             @foreach ($field['rules'] as $rule)
@@ -252,7 +252,7 @@
           catalog_nodes: catalog_nodes,
         },
 
-        expanded: ['url', 'meta'],
+        expanded: [],
 
         addtoCatalogsDialogVisible: false,
 
@@ -273,11 +273,18 @@
         templates.push({value: element});
       });
       this.db.templates = templates;
+
+      @foreach(config('jc.field_group_settings') as $group => $expand)
+      @if ($expand)
+      this.expanded.push('{{ $group }}');
+      @endif
+      @endforeach
     },
 
     methods: {
       onEditorReady() {
-        if (! this.editorInited) {
+        // if (! this.editorInited) {
+
           // 不清除空的 i 标签和 span 标签
           CKEDITOR.dtd.$removeEmpty.i = 0;
           CKEDITOR.dtd.$removeEmpty.span = 0;
@@ -288,8 +295,8 @@
           CKEDITOR.dtd['a']['ul'] = 1;
           CKEDITOR.dtd['a']['ol'] = 1;
 
-          this.editorInited = true;
-        }
+          // this.editorInited = true;
+        // }
       },
 
       showTemplates(queryString, cb) {
