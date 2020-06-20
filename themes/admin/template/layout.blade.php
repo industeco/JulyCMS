@@ -199,6 +199,7 @@
   </div>
 
   <script src="/themes/admin/vendor/moment/moment.min.js"></script>
+  <script src="/themes/admin/vendor/ckeditor/ckeditor.js"></script>
   <script src="/themes/admin/js/app.js"></script>
   <script src="/themes/admin/vendor/element-ui/index.js"></script>
   <script src="/themes/admin/js/utils.js"></script>

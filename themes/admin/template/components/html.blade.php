@@ -6,8 +6,7 @@
     ref="ckeditor_{{ $truename }}"
     v-model="node.{{ $truename }}"
     tag-name="textarea"
-    :config="ckeditorConfig"
-    @ready="onEditorReady"></ckeditor>
+    :config="ckeditorConfig"></ckeditor>
   @if ($help)
   <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $help }}</span>
   @endif

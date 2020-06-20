@@ -4,7 +4,7 @@
   </el-tooltip>
   <el-input
     v-model="node.{{ $truename }}"
-    native-size="200"
+    native-size="100"
     maxlength="200"
     show-word-limit></el-input>
   @if ($help)
