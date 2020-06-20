@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\App;
 use App\Models\Node;
 use App\Models\Catalog;
+use App\Models\Config;
 use App\Models\NodeField;
 use App\Models\NodeType;
 use App\Models\Tag;
@@ -70,6 +71,7 @@ class NodeController extends Controller
             'all_nodes' => $this->simpleNodes(),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
+            'editorConfig' => Config::getEditorConfig(),
             'editMode' => '新建',
         ]);
     }
@@ -141,12 +143,14 @@ class NodeController extends Controller
 
         $attributes = $node->gather($langcode);
 
+        //
         $fields = $node->nodeType->cacheGetFieldJigsaws($langcode);
         foreach ($fields as $fieldName => &$field) {
             $field['value'] = $attributes[$fieldName] ?? null;
         }
         unset($field);
 
+        // 全局字段
         $globalFields = NodeField::cacheGetGlobalFieldJigsaws($langcode);
         foreach ($globalFields as $fieldName => &$field) {
             $field['value'] = $attributes[$fieldName] ?? null;
@@ -165,6 +169,7 @@ class NodeController extends Controller
             'all_nodes' => $this->simpleNodes($langcode),
             'all_templates' => $this->getTwigTemplates(),
             'catalog_nodes' => Catalog::allPositions(),
+            'editorConfig' => Config::getEditorConfig(),
             'editMode' => '编辑',
         ];
 

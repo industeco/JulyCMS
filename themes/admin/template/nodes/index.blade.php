@@ -280,23 +280,32 @@
       },
 
       handleFilterByChange(value) {
-        if (! value) {
-          this.$set(this.$data, 'nodes', this.initial_data);
-          return;
-        }
-
-        switch (value) {
-          case 'title':
-          case 'node_type':
+        if (value === 'url') {
+          this.filterValues.url = true;
+          this.$set(this.$data, 'nodes', this.filterByUrl(true));
+        } else {
+          if (value) {
             this.filterValues[value] = null;
-            this.$set(this.$data, 'nodes', this.initial_data);
-            break;
-
-          case 'url':
-            this.filterValues.url = true;
-            this.$set(this.$data, 'nodes', this.filterByUrl(true));
-            break;
+          }
+          this.$set(this.$data, 'nodes', clone(this.initial_data));
         }
+        // if (! value) {
+        //   this.$set(this.$data, 'nodes', clone(this.initial_data));
+        //   return;
+        // }
+
+        // switch (value) {
+        //   case 'title':
+        //   case 'node_type':
+        //     this.filterValues[value] = null;
+        //     this.$set(this.$data, 'nodes', clone(this.initial_data));
+        //   break;
+
+        //   case 'url':
+        //     this.filterValues.url = true;
+        //     this.$set(this.$data, 'nodes', this.filterByUrl(true));
+        //   break;
+        // }
       },
 
       filterContents(value) {
@@ -304,19 +313,19 @@
         switch (this.filterBy) {
           case 'title':
             nodes = this.filterByTitle(value);
-            break;
+          break;
           case 'node_type':
             nodes = this.filterByNodeType(value);
-            break;
+          break;
           case 'url':
             nodes = this.filterByUrl(value);
-            break;
+          break;
           case 'tags':
             nodes = this.filterByTags(value);
-            break;
+          break;
           case 'langcode':
             nodes = this.filterByLangcode(value);
-            break;
+          break;
         }
         this.$set(this.$data, 'nodes', nodes || clone(this.initial_data));
       },

@@ -31,6 +31,5 @@ class CatalogNode extends Pivot
         'parent_id',
         'prev_id',
         'path',
-        'langcode',
     ];
 }

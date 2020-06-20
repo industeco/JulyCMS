@@ -1,6 +1,6 @@
 @extends('admin::layout')
 
-@section('h1', '排序 '.$truename .' 目录')
+@section('h1', '排序 '.$label.'['.$truename.'] 目录')
 
 @section('main_content')
   <div id="main_tools">
@@ -23,9 +23,9 @@
       node-key="node_id">
       <div class="jc-tree-node-inner" slot-scope="{ node, data }">
         <svg class="jc-svg-icon jc-drag-handle"><use xlink:href="#jcon_drag"></use></svg>
-        <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ nodeInfo(data.node_id, 'title') }}</span>
-        <span class="jc-tree-nodeinfo">类型：@{{ nodeInfo(data.node_id, 'node_type') }}</span>
-        <span class="jc-tree-nodeinfo">上次修改：@{{ nodeInfo(data.node_id, 'updated_at') }}</span>
+        <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ getNodeInfo(data.node_id, 'title') }}</span>
+        <span class="jc-tree-nodeinfo">类型：@{{ getNodeInfo(data.node_id, 'node_type') }}</span>
+        <span class="jc-tree-nodeinfo">上次修改：@{{ getNodeInfo(data.node_id, 'updated_at') }}</span>
         <button
           type="button" title="从当前目录移除" class="md-button md-fab md-mini md-accent md-theme-default jc-theme-light"
           @click="remove(node)">
@@ -119,19 +119,20 @@
 
     methods: {
       chooseSelectableNode() {
-        Vue.set(this.$data, 'selectableNodes', []);
+        const nodes = [];
         for (const id in this.nodes) {
           if (! this.nodesInCatalog[id]) {
-            this.selectableNodes.push(this.nodes[id])
+            nodes.push(this.nodes[id])
           }
         }
+        this.$set(this.$data, 'selectableNodes', nodes);
       },
 
-      nodeInfo(node_id, attr) {
+      getNodeInfo(node_id, attr) {
         const node = this.nodes[node_id];
         if (node && (attr == 'updated_at' || attr == 'created_at')) {
           const info = moment(node[attr]).fromNow();
-          return info.replace('minutes', 'mins').replace('seconds', 'secs');
+          return info.replace('minutes', 'm').replace('seconds', 's');
         }
         return node && node[attr] || '(已删除)';
       },
@@ -191,8 +192,7 @@
         }
 
         const data = {
-          'content_value_langcode': '{{ $content_value_langcode }}',
-          'interface_value_langcode': '{{ $interface_value_langcode }}',
+          'content_value_langcode': '{{ $langcode }}',
           'catalog_nodes': toRecords(app.catalogNodes),
         };
 

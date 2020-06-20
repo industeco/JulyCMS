@@ -39,7 +39,7 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $optionalFields = NodeField::optionalFields()
+        $optionalFields = NodeField::localFields()
                             ->map(function($field) {
                                 return $field->gather();
                             })
@@ -50,7 +50,7 @@ class NodeTypeController extends Controller
             'truename' => null,
             'label' => null,
             'description' => null,
-            'fields' => NodeField::optionalPresetFields()->pluck('truename')->all(),
+            'fields' => NodeField::presetLocalFields()->pluck('truename')->all(),
             'availableFields' => $optionalFields,
         ]);
     }
@@ -95,7 +95,7 @@ class NodeTypeController extends Controller
 
         $data = $nodeType->gather();
         $data['fields'] = $fields->keys()->all();
-        $data['availableFields'] = NodeField::optionalFields()
+        $data['availableFields'] = NodeField::localFields()
                                     ->map(function($field) {
                                         return $field->gather();
                                     })

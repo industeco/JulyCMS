@@ -61,35 +61,28 @@ class Tag extends JulyModel implements GetNodes
         'is_show' => 'boolean',
     ];
 
-    public static function primaryKeyName()
-    {
-        return 'tag';
-    }
-
     public static function createIfNotExist(array $tags, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
+        $currentTags = Tag::all()->keyBy('tag');
+        $count = 0;
 
-        $records = [];
-        $freshTags = collect($tags)->diff(Tag::allTags());
-        $supplement = [
-            'is_preset' => false,
-            'is_show' => true,
-            'langcode' => $langcode,
-            'created_at' => Date::now(),
-            'updated_at' => Date::now(),
-        ];
-        foreach ($freshTags as $tag) {
-            $records[] = array_merge([
-                'tag' => $tag,
-                'original_tag' => $tag,
-            ], $supplement);
-        }
-        if ($records) {
-            DB::table('tags')->insert($records);
+        DB::beginTransaction();
+
+        foreach ($tags as $tag) {
+            if (! $currentTags->has($tag)) {
+                static::create([
+                    'tag' => $tag,
+                    'original_tag' => $tag,
+                    'langcode' => $langcode,
+                ]);
+                $count++;
+            }
         }
 
-        return count($records);
+        DB::commit();
+
+        return $count;
     }
 
     public function nodes($langcode = null)
@@ -105,9 +98,9 @@ class Tag extends JulyModel implements GetNodes
     public static function allTags($langcode = null)
     {
         if ($langcode) {
-            return static::where('langcode', $langcode)->get()->pluck('tag')->toArray();
+            return static::where('langcode', $langcode)->get()->pluck('tag')->all();
         }
-        return static::all()->pluck('tag')->toArray();
+        return static::all()->pluck('tag')->all();
     }
 
     public function getRightTag($langcode = null)

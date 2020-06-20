@@ -69,7 +69,7 @@ class CreateJulycmsTables extends Migration
 
         // 字段参数表
         Schema::create('field_parameters', function (Blueprint $table) {
-            // 字段，例：node_field.title.en 或 node_field.title.node_type.basic.en
+            // 参数键名，例：node_field.title.en 或 node_field.title.node_type.basic.en
             $table->string('keyname', 100)->primary();
 
             // 配置值
@@ -87,7 +87,7 @@ class CreateJulycmsTables extends Migration
             // 是否预设
             $table->boolean('is_preset')->default(0);
 
-            // 是否通用字段（会出现在表单右侧）
+            // 是否全局字段（全局字段是所有类型通用的，但不出现在具体类型中）
             $table->boolean('is_global')->default(0);
 
             // 是否可检索

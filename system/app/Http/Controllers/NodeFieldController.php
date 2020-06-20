@@ -105,20 +105,23 @@ class NodeFieldController extends Controller
     }
 
     /**
-     * 检查 truename 是否已存在
+     * 检查字段真名是否存在
      *
      * @param  string  $truename
      * @return \Illuminate\Http\Response
      */
     public function unique($truename)
     {
+        // 保留的名字
         $reserved = [
-            'id', 'is_preset', 'is_searchable', 'node_type', 'langcode',
-            'node_id', 'delta', 'updated_at', 'created_at',
-            'truename', 'title', 'tags', 'catalogs',
-            'url', 'template', 'meta_title', 'meta_description', 'meta_keywords',
+            // 属性名
+            'id', 'is_preset', 'node_type', 'langcode', 'updated_at', 'created_at',
+
+            // 关联属性名
+            'tags', 'catalogs',
         ];
-        return Response::make([
+
+        return response([
             'exists' => in_array($truename, $reserved) || !empty(NodeField::find($truename)),
         ]);
     }
@@ -131,19 +134,18 @@ class NodeFieldController extends Controller
      */
     public function uniqueUrl(Request $request)
     {
-        $langcode = $request->input('content_value_langcode');
         $url = $request->input('url');
 
         $condition = [
             ['url_value', '=', $url],
-            ['langcode', '=', $langcode],
+            ['langcode', '=', langcode('content')],
         ];
         if ($id = (int) $request->input('id')) {
             $condition[] = ['node_id', '!=', $id];
         }
 
         $result = DB::table('node__url')->where($condition)->first();
-        return Response::make([
+        return response([
             'exists' => !empty($result),
         ]);
     }

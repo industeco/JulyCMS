@@ -105,6 +105,33 @@ class Config extends JulyModel
         })->keyBy('keyname')->all();
     }
 
+    /**
+     * 获取编辑器配置
+     *
+     * @return array
+     */
+    public static function getEditorConfig()
+    {
+        return static::getCkeditorConfig();
+    }
+
+    /**
+     * 获取 CKEditor 配置
+     *
+     * @return array
+     */
+    public static function getCkeditorConfig()
+    {
+        $config = config('jc.ckeditor');
+        // if (isset($config['customConfig'])) {
+        //     $config['customConfig'] = background_path($config['customConfig']);
+        // }
+        if (isset($config['filebrowserImageBrowseUrl'])) {
+            $config['filebrowserImageBrowseUrl'] = short_route($config['filebrowserImageBrowseUrl']);
+        }
+        return $config;
+    }
+
     public function getValue()
     {
         $value = null;

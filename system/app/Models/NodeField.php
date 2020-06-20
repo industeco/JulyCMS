@@ -96,6 +96,46 @@ class NodeField extends JulyModel
     }
 
     /**
+     * 获取所有非全局字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function localFields()
+    {
+        return static::where('is_global', false)->get();
+    }
+
+    /**
+     * 获取所有预设字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function presetFields()
+    {
+        return static::where('is_preset', true)->get();
+    }
+
+    /**
+     * 获取所有非全局预设字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function presetLocalFields()
+    {
+        return static::where('is_preset', true)->where('is_global', false)->get();
+    }
+
+    /**
+     * 获取所有普通（非预设）字段
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function commonFields()
+    {
+        return static::where('is_preset', false)->get();
+    }
+
+    /**
      * 从缓存获取所有全局字段
      *
      * @return array
@@ -118,29 +158,6 @@ class NodeField extends JulyModel
         $model->cachePut($cacheKey, $fields);
 
         return $fields;
-    }
-
-    /**
-     * 获取所有非全局字段
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public static function optionalFields()
-    {
-        return static::where('is_global', false)->get();
-    }
-
-    /**
-     * 获取所有非全局预设字段
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public static function optionalPresetFields()
-    {
-        return static::where([
-            'is_preset' => true,
-            'is_global' => false,
-        ])->get();
     }
 
     /**

@@ -27,33 +27,31 @@ return [
     ],
 
     // 编辑器配置
-    'editor_config' => [
-        'ckeditor' => [
-            'fillEmptyBlocks' => false,
-            'allowedContent' => true,
-            'coreStyles_bold' => [
-                'element' => 'b',
-                'overrides' => 'strong',
-            ],
-            'toolbarGroups' => [
-                [ 'name' => 'document', 'groups' => [ 'mode', 'document', 'doctools' ] ],
-                [ 'name' => 'clipboard', 'groups' => [ 'clipboard', 'undo' ] ],
-                [ 'name' => 'styles', 'groups' => [ 'styles' ] ],
-                [ 'name' => 'basicstyles', 'groups' => [ 'basicstyles', 'cleanup' ] ],
-                [ 'name' => 'links', 'groups' => [ 'links' ] ],
-                [ 'name' => 'paragraph', 'groups' => [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] ],
-                [ 'name' => 'insert', 'groups' => [ 'insert' ] ],
-                [ 'name' => 'forms', 'groups' => [ 'forms' ] ],
-                [ 'name' => 'tools', 'groups' => [ 'tools' ] ],
-                // [ 'name' => 'others', 'groups' => [ 'others' ] ],
-                // [ 'name' => 'editing', 'groups' => [ 'find', 'selection', 'spellchecker', 'editing' ] ],
-                // [ 'name' => 'colors', 'groups' => [ 'colors' ] ],
-                // [ 'name' => 'about', 'groups' => [ 'about' ] ],
-            ],
-            'removeButtons' => 'Underline,Styles,Strike,Italic,Indent,Outdent,Blockquote,About,SpecialChar,HorizontalRule,Scayt,Cut,Copy,Paste,PasteText,PasteFromWord',
-            'filebrowserImageBrowseUrl' => '/july/admin/medias/select',
-            'image_previewText' => ' ',
-        ],
+    'ckeditor' => [
+        // 'fillEmptyBlocks' => false,
+        // 'allowedContent' => true,
+        // 'image_previewText' => ' ',
+        'filebrowserImageBrowseUrl' => ['media.select'],
+        // 'coreStyles_bold' => [
+        //     'element' => 'b',
+        //     'overrides' => 'strong',
+        // ],
+        // 'toolbarGroups' => [
+        //     [ 'name' => 'document', 'groups' => [ 'mode', 'document', 'doctools' ] ],
+        //     [ 'name' => 'clipboard', 'groups' => [ 'clipboard', 'undo' ] ],
+        //     [ 'name' => 'styles', 'groups' => [ 'styles' ] ],
+        //     [ 'name' => 'basicstyles', 'groups' => [ 'basicstyles', 'cleanup' ] ],
+        //     [ 'name' => 'links', 'groups' => [ 'links' ] ],
+        //     [ 'name' => 'paragraph', 'groups' => [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] ],
+        //     [ 'name' => 'insert', 'groups' => [ 'insert' ] ],
+        //     [ 'name' => 'forms', 'groups' => [ 'forms' ] ],
+        //     [ 'name' => 'tools', 'groups' => [ 'tools' ] ],
+        //     // [ 'name' => 'others', 'groups' => [ 'others' ] ],
+        //     // [ 'name' => 'editing', 'groups' => [ 'find', 'selection', 'spellchecker', 'editing' ] ],
+        //     // [ 'name' => 'colors', 'groups' => [ 'colors' ] ],
+        //     // [ 'name' => 'about', 'groups' => [ 'about' ] ],
+        // ],
+        // 'removeButtons' => 'Underline,Styles,Strike,Italic,Indent,Outdent,Blockquote,About,SpecialChar,HorizontalRule,Scayt,Cut,Copy,Paste,PasteText,PasteFromWord',
     ],
 
     // 表单验证规则

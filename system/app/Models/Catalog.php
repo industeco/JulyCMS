@@ -29,6 +29,8 @@ class Catalog extends JulyModel implements GetNodes
     protected $fillable = [
         'truename',
         'is_preset',
+        'label',
+        'description',
     ];
 
     /**
@@ -59,7 +61,6 @@ class Catalog extends JulyModel implements GetNodes
                     'parent_id',
                     'prev_id',
                     'path',
-                    'langcode',
                 ]);
     }
 
@@ -80,8 +81,9 @@ class Catalog extends JulyModel implements GetNodes
     {
         $positions = CatalogNode::all()->groupBy('catalog')->toArray();
         foreach (Catalog::all() as $catalog) {
-            if (! isset($positions[$catalog->truename])) {
-                $positions[$catalog->truename] = [];
+            $truename = $catalog->getKey();
+            if (! isset($positions[$truename])) {
+                $positions[$truename] = [];
             }
         }
         return $positions;
@@ -89,7 +91,22 @@ class Catalog extends JulyModel implements GetNodes
 
     public function positions()
     {
-        return CatalogNode::where('catalog', $this->truename)->get()->toArray();
+        return CatalogNode::where('catalog', $this->getKey())->get()->toArray();
+    }
+
+    public function cacheGetCatalogNodes()
+    {
+        $cachekey = $this->cacheKey('catalogNodes', []);
+        if ($nodes = $this->cacheGet($cachekey)) {
+            $nodes = $nodes['value'];
+        } else {
+            $nodes = CatalogNode::where('catalog', $this->getKey())
+                ->get(['node_id','parent_id','prev_id','path'])->toArray();
+
+            $this->cachePut($cachekey, $nodes);
+        }
+
+        return $nodes;
     }
 
     public function removePosition(array $position)
@@ -98,11 +115,12 @@ class Catalog extends JulyModel implements GetNodes
         $this->cacheClear(['key'=>'treeNodes']);
 
         // DB::delete("DELETE from catalog_node where `catalog`=? and (`node_id`=? or `path` like '%/$node_id/%' )");
+        $truename = $this->getKey();
         CatalogNode::where([
-            'catalog' => $this->truename,
+            'catalog' => $truename,
             'node_id' => $position['node_id'],
         ])->orWhere([
-            ['catalog', '=', $this->truename],
+            ['catalog', '=', $truename],
             ['path', 'like', '%/'.$position['node_id'].'/%'],
         ])->delete();
 
@@ -149,38 +167,27 @@ class Catalog extends JulyModel implements GetNodes
         $this->cacheClear(['key'=>'catalogNodes']);
         $this->cacheClear(['key'=>'treeNodes']);
 
-        $supplement = [
-            'catalog' => $this->getKey(),
-            'langcode' => langcode('content'),
-        ];
-        foreach ($positions as &$position) {
-            $position = array_merge($position, $supplement);
-        }
-        unset($position);
+        $truename = $this->getKey();
+        // $supplement = [
+        //     'catalog' => $truename,
+        //     'langcode' => langcode('content'),
+        // ];
+        // foreach ($positions as &$position) {
+        //    $position = array_merge($position, $supplement);
+        // }
+        // unset($position);
 
-        DB::table('catalog_node')->where('catalog', $this->getKey())->delete();
-        DB::transaction(function() use ($positions) {
-            foreach ($positions as $position) {
-                DB::table('catalog_node')->insert($position);
-            }
-        });
+        DB::beginTransaction();
+
+        DB::table('catalog_node')->where('catalog', $truename)->delete();
+        foreach ($positions as $position) {
+            $position['catalog'] = $truename;
+            DB::table('catalog_node')->insert($position);
+        }
+
+        DB::commit();
 
         $this->touch();
-    }
-
-    public function cacheGetCatalogNodes()
-    {
-        $cachekey = $this->cacheKey('catalogNodes', []);
-        if ($nodes = $this->cacheGet($cachekey)) {
-            $nodes = $nodes['value'];
-        } else {
-            $nodes = CatalogNode::where('catalog', $this->getKey())
-                ->get(['node_id','parent_id','prev_id','path'])->toArray();
-
-            $this->cachePut($cachekey, $nodes);
-        }
-
-        return $nodes;
     }
 
     /**

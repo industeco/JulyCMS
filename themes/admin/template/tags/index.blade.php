@@ -281,7 +281,7 @@
               is_show: true,
               original_tag: newTag,
               updated_at: Date.now(),
-              langcode: '{{ $content_value_langcode }}',
+              langcode: '{{ $langcode }}',
             };
           }
           this.$set(this.$data, 'tags', this.getTags());

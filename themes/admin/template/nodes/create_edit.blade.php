@@ -57,7 +57,7 @@
               native-size="100"
               placeholder="/home.twig"
               maxlength="200"
-              :fetch-suggestions="showTemplates"
+              :fetch-suggestions="getTemplates"
               show-word-limit></el-autocomplete>
               <span class="jc-form-item-help"><i class="el-icon-info"></i> twig 模板，用于生成页面</span>
           </el-form-item>
@@ -243,7 +243,7 @@
           ],
         },
 
-        ckeditorConfig: @json(config('jc.editor_config.ckeditor'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        editorConfig: @json($editorConfig, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         db: {
           nodes: @json($all_nodes, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
@@ -282,24 +282,8 @@
     },
 
     methods: {
-      onEditorReady() {
-        // if (! this.editorInited) {
 
-          // 不清除空的 i 标签和 span 标签
-          CKEDITOR.dtd.$removeEmpty.i = 0;
-          CKEDITOR.dtd.$removeEmpty.span = 0;
-          CKEDITOR.dtd.$removeEmpty.a = 0;
-
-          CKEDITOR.dtd['a']['div'] = 1;
-          CKEDITOR.dtd['a']['p'] = 1;
-          CKEDITOR.dtd['a']['ul'] = 1;
-          CKEDITOR.dtd['a']['ol'] = 1;
-
-          // this.editorInited = true;
-        // }
-      },
-
-      showTemplates(queryString, cb) {
+      getTemplates(queryString, cb) {
         cb(this.db.templates);
       },
 

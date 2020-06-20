@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Catalog;
 use App\Models\Node;
+use App\Models\NodeField;
+use App\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
@@ -16,8 +18,12 @@ class CatalogController extends Controller
      */
     public function index()
     {
+        $catalogs = Catalog::all()->map(function($catalog) {
+            return $catalog->gather();
+        })->all();
+
         return view_with_langcode('admin::catalogs.index', [
-            'catalogs' => mix_config(Catalog::all()),
+            'catalogs' => $catalogs,
         ]);
     }
 
@@ -65,7 +71,7 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view_with_langcode('admin::catalogs.create_edit', $catalog->mixConfig());
+        return view_with_langcode('admin::catalogs.create_edit', $catalog->gather());
     }
 
     /**
@@ -78,7 +84,7 @@ class CatalogController extends Controller
     public function update(Request $request, Catalog $catalog)
     {
         $catalog->update($request->all());
-        return Response::make();
+        return response('');
     }
 
     /**
@@ -91,23 +97,30 @@ class CatalogController extends Controller
     {
         $catalog->nodes()->detach();
         $catalog->delete();
-        return Response::make();
+        return response('');
     }
 
     public function sort(Catalog $catalog)
     {
-        return view_with_langcode('admin::catalogs.sort', [
-            'truename' => $catalog->truename,
-            'catalog_nodes' => $catalog->positions(),
-            'all_nodes' => Node::allNodes(),
-        ]);
+        $data = $catalog->gather();
+
+        $data['catalog_nodes'] = $catalog->positions();
+
+        // 非预设字段
+        $exceptAttributes = NodeField::commonFields()->pluck('truename')->all();
+
+        // 获取所有节点信息，排除信息中的非预设字段
+        $data['all_nodes'] = Node::all()->map(function($node) use($exceptAttributes) {
+            return Arr::except($node->gather(), $exceptAttributes);
+        })->keyBy('id')->all();
+
+        return view_with_langcode('admin::catalogs.sort', $data);
     }
 
     public function updateOrders(Request $request, Catalog $catalog)
     {
-        // return Response::make($request->input('catalog_nodes'));
         $catalog->updatePositions($request->input('catalog_nodes'));
-        return Response::make();
+        return response('');
     }
 
     /**
@@ -118,7 +131,7 @@ class CatalogController extends Controller
      */
     public function unique($id)
     {
-        return Response::make([
+        return response([
             'exists' => !empty(Catalog::find($id)),
         ]);
     }

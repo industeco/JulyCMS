@@ -1,6 +1,6 @@
 @extends('admin::layout')
 
-@section('h1', '目录')
+@section('h1', '所有目录')
 
 @section('main_content')
   <div id="main_tools">
@@ -17,7 +17,7 @@
         @row-contextmenu="handleContextmenu">
         <el-table-column type="index" label="行号" width="80"></el-table-column>
         <el-table-column label="真名" prop="truename" width="200" sortable></el-table-column>
-        <el-table-column label="名称" prop="name" width="200" sortable></el-table-column>
+        <el-table-column label="名称" prop="label" width="200" sortable></el-table-column>
         <el-table-column label="描述" prop="description" width="auto"></el-table-column>
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
