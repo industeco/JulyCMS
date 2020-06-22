@@ -17,27 +17,20 @@ CKEDITOR.editorConfig = function( config ) {
   config.fillEmptyBlocks = false;
   config.allowedContent = true;
   config.image_previewText = ' ';
-  // config.filebrowserImageBrowseUrl = 'media.select';
   config.coreStyles_bold = {
       element: 'b',
       overrides: 'strong',
   };
 
   config.toolbarGroups = [
-    { name: 'document', groups: [ 'doctools', 'mode', 'document' ] },
-    { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
-    { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
-    { name: 'forms', groups: [ 'forms' ] },
-    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
     { name: 'styles', groups: [ 'styles' ] },
+    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
     { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
     { name: 'links', groups: [ 'links' ] },
     { name: 'insert', groups: [ 'insert' ] },
     { name: 'tools', groups: [ 'tools' ] },
-    { name: 'colors', groups: [ 'colors' ] },
-    { name: 'others', groups: [ 'others' ] },
-    { name: 'about', groups: [ 'about' ] }
+    { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
   ];
 
-  config.removeButtons = 'Cut,Copy,Paste,Underline,Strike,Undo,Redo,Templates';
+  config.removeButtons = 'Underline,Strike,Outdent,Indent';
 };
