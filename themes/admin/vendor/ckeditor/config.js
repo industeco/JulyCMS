@@ -24,27 +24,20 @@ CKEDITOR.editorConfig = function( config ) {
   };
 
   config.toolbarGroups = [
-		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
-		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
-		{ name: 'forms', groups: [ 'forms' ] },
-		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-		{ name: 'styles', groups: [ 'styles' ] },
-		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
-		{ name: 'links', groups: [ 'links' ] },
-		{ name: 'insert', groups: [ 'insert' ] },
-		{ name: 'document', groups: [ 'doctools', 'mode', 'document' ] },
-		{ name: 'tools', groups: [ 'tools' ] },
-		{ name: 'colors', groups: [ 'colors' ] },
-		{ name: 'others', groups: [ 'others' ] },
-		{ name: 'about', groups: [ 'about' ] }
-	];
+    { name: 'document', groups: [ 'doctools', 'mode', 'document' ] },
+    { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
+    { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
+    { name: 'forms', groups: [ 'forms' ] },
+    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+    { name: 'styles', groups: [ 'styles' ] },
+    { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+    { name: 'links', groups: [ 'links' ] },
+    { name: 'insert', groups: [ 'insert' ] },
+    { name: 'tools', groups: [ 'tools' ] },
+    { name: 'colors', groups: [ 'colors' ] },
+    { name: 'others', groups: [ 'others' ] },
+    { name: 'about', groups: [ 'about' ] }
+  ];
 
-	config.removeButtons = 'Cut,Copy,Paste,Underline,Strike,Undo,Redo,searchCode,CommentSelectedRange,UncommentSelectedRange';
-
-  config.extraPlugins = 'codemirror';
-
-  config.codemirror = {
-    // Set this to the theme you wish to use (codemirror themes)
-    theme: 'material',
-  };
+  config.removeButtons = 'Cut,Copy,Paste,Underline,Strike,Undo,Redo,Templates';
 };
