@@ -206,3 +206,53 @@ a > img {
 	max-height: 1080px;
 	margin:0 auto;
 }
+
+
+body.cke_editable h1,
+body.cke_editable h2,
+body.cke_editable h3,
+body.cke_editable h4,
+body.cke_editable h5,
+body.cke_editable h6 {
+	position: relative;
+}
+
+body.cke_editable h1::before,
+body.cke_editable h2::before,
+body.cke_editable h3::before,
+body.cke_editable h4::before,
+body.cke_editable h5::before,
+body.cke_editable h6::before {
+    display: block;
+    width: 20px;
+    height: 18px;
+    border-radius: 2px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 12px;
+    color: white;
+    text-transform: uppercase;
+    background-color: #ff5252;
+    position: absolute;
+    left: -20px;
+    top: -5px;
+}
+
+body.cke_editable  h1::before {
+	content: 'H1';
+}
+body.cke_editable  h2::before {
+	content: 'H2';
+}
+body.cke_editable  h3::before {
+	content: 'H3';
+}
+body.cke_editable  h4::before {
+	content: 'H4';
+}
+body.cke_editable  h5::before {
+	content: 'H5';
+}
+body.cke_editable  h6::before {
+	content: 'H6';
+}
