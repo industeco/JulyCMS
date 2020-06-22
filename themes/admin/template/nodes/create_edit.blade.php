@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $editMode }}内容 <span id="content_locale">[ {{ $nodeTypeLabel }}|{{ $node_type }}, {{ langname($langcode) }}|{{ $langcode }} ]</span>
+  {{ $editMode }}内容 <span id="content_locale">[ {{ $nodeTypeLabel }}({{ $node_type }}), {{ langname($langcode) }}({{ $langcode }}) ]</span>
 @endsection
 
 @section('main_content')
