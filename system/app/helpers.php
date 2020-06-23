@@ -394,15 +394,17 @@ if (! function_exists('build_google_sitemap')) {
         // pdf 信息
         $pdfList = [];
 
+        $eol = "\n";
+
         // xml 文件
         $xml = '<'.'?xml version="1.0" encoding="UTF-8" ?'.'>';
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
         $xml .= ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
         $xml .= ' xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9';
         $xml .= ' http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"';
-        $xml .= ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+        $xml .= ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'.$eol;
 
-        $xml .= '<url><loc>'.$home.'/'.'</loc></url>';
+        $xml .= '<url><loc>'.$home.'/'.'</loc></url>'.$eol;
 
         $urls = DB::table('node__url')
                 ->where('langcode', $langcode)
@@ -422,16 +424,17 @@ if (! function_exists('build_google_sitemap')) {
             $xml .= '<url><loc>'.$home.$url.'</loc>';
 
             foreach (extract_image_links($html) as $src) {
-                $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>";
+                $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>".$eol;
             }
-            $xml .= '</url>';
+            $xml .= '</url>'.$eol;
 
             $pdfList = array_merge($pdfList, extract_pdf_links($html));
         }
 
         foreach(array_unique($pdfList) as $pdf) {
-            $xml .= '<url><loc>'.$home.$pdf.'</loc></url>';
+            $xml .= '<url><loc>'.$home.$pdf.'</loc></url>'.$eol;
         }
+
         $xml .= '</urlset>';
 
         return $xml;
