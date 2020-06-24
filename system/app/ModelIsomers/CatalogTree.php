@@ -15,7 +15,7 @@ class CatalogTree
     /**
      * @var \Illuminate\Support\Collection
      */
-    protected $nodes = null;
+    protected $contents = null;
 
     function __construct(Catalog $catalog)
     {
@@ -28,81 +28,81 @@ class CatalogTree
             $treeNodes = $this->getTreeNodes();
             $catalog->cachePut($cachekey, $treeNodes);
         }
-        $this->nodes = collect($treeNodes);
+        $this->contents = collect($treeNodes);
     }
 
     protected function getTreeNodes()
     {
-        $nodes = $this->catalog->cacheGetCatalogNodes();
+        $contents = $this->catalog->cacheGetCatalogContents();
 
         $treeNodes = [
             0 => [
-                'node_id' => 0,
+                'content_id' => 0,
                 'parent_id' => null,
                 'prev_id' => null,
                 'path' => [],
             ],
         ];
 
-        if (empty($nodes)) {
+        if (empty($contents)) {
             return $treeNodes;
         }
 
-        if (count($nodes) === 1) {
-            $node = reset($nodes);
-            $node['path'] = array_values(array_filter(explode('/', $node['path'])));
-            $treeNodes[$node['node_id']] = $node;
+        if (count($contents) === 1) {
+            $content = reset($contents);
+            $content['path'] = array_values(array_filter(explode('/', $content['path'])));
+            $treeNodes[$content['content_id']] = $content;
 
             return $treeNodes;
         }
 
-        // $nodes = $this->sortNodes($nodes);
-        foreach ($this->sortNodes($nodes) as $id => $node) {
-            $node['parent_id'] = $node['parent_id'] ?? 0;
-            $treeNodes[$id] = $node;
+        // $contents = $this->sortNodes($contents);
+        foreach ($this->sortNodes($contents) as $id => $content) {
+            $content['parent_id'] = $content['parent_id'] ?? 0;
+            $treeNodes[$id] = $content;
         }
 
         return $treeNodes;
     }
 
-    protected function sortNodes(array $nodes)
+    protected function sortNodes(array $contents)
     {
-        $nodes = collect($nodes)->map(function($node) {
-            $path = array_values(array_filter(explode('/', $node['path'])));
+        $contents = collect($contents)->map(function($content) {
+            $path = array_values(array_filter(explode('/', $content['path'])));
             return [
-                'node_id' => (int) $node['node_id'],
-                'parent_id' => (int) $node['parent_id'],
-                'prev_id' => (int) $node['prev_id'],
+                'content_id' => (int) $content['content_id'],
+                'parent_id' => (int) $content['parent_id'],
+                'prev_id' => (int) $content['prev_id'],
                 'path' => array_map('intval', $path),
             ];
-        })->keyBy('node_id')->toArray();
+        })->keyBy('content_id')->toArray();
 
         $first = null;
-        foreach ($nodes as $id => $node) {
-            if ($node['prev_id']) {
-                $nodes[$node['prev_id']]['next_id'] = $id;
-            } elseif ($node['parent_id']) {
-                $nodes[$node['parent_id']]['child_id'] = $id;
+        foreach ($contents as $id => $content) {
+            if ($content['prev_id']) {
+                $contents[$content['prev_id']]['next_id'] = $id;
+            } elseif ($content['parent_id']) {
+                $contents[$content['parent_id']]['child_id'] = $id;
             } elseif (!$first) {
                 $first = $id;
             }
         }
 
         $sortedNodes = [];
-        $node = $nodes[$first];
+        $content = $contents[$first];
         while (true) {
-            if (! isset($sortedNodes[$node['node_id']])) {
-                $sortedNodes[$node['node_id']] = $node;
-                if ($node['child_id'] ?? null) {
-                    $node = $nodes[$node['child_id']];
+            if (! isset($sortedNodes[$content['content_id']])) {
+                $sortedNodes[$content['content_id']] = $content;
+                if ($content['child_id'] ?? null) {
+                    $content = $contents[$content['child_id']];
                     continue;
                 }
             }
 
-            if ($node['next_id'] ?? null) {
-                $node = $nodes[$node['next_id']];
-            } elseif ($node['parent_id']) {
-                $node = $nodes[$node['parent_id']];
+            if ($content['next_id'] ?? null) {
+                $content = $contents[$content['next_id']];
+            } elseif ($content['parent_id']) {
+                $content = $contents[$content['parent_id']];
             } else {
                 break;
             }
@@ -117,12 +117,12 @@ class CatalogTree
      * @param array $ids
      * @return
      */
-    public function nodes(array $ids = null)
+    public function contents(array $ids = null)
     {
         if ($ids) {
-            return $this->nodes->only($ids)->keys()->filter()->all();
+            return $this->contents->only($ids)->keys()->filter()->all();
         }
-        return $this->nodes->keys()->filter()->all();
+        return $this->contents->keys()->filter()->all();
     }
 
     /**
@@ -133,9 +133,9 @@ class CatalogTree
      */
     public function parent($id)
     {
-        if ($node = $this->nodes->get($id)) {
-            if ($node['parent_id']) {
-                return [$node['parent_id']];
+        if ($content = $this->contents->get($id)) {
+            if ($content['parent_id']) {
+                return [$content['parent_id']];
             }
         }
         return [];
@@ -149,8 +149,8 @@ class CatalogTree
      */
     public function ancestors($id)
     {
-        if ($node = $this->nodes->get($id)) {
-            return $node['path'];
+        if ($content = $this->contents->get($id)) {
+            return $content['path'];
         }
         return [];
     }
@@ -164,10 +164,10 @@ class CatalogTree
     public function children($id)
     {
         $children = [];
-        if ($this->nodes->has($id)) {
-            foreach ($this->nodes as $node_id => $node) {
-                if ($node_id && $node['parent_id'] == $id) {
-                    $children[] = $node_id;
+        if ($this->contents->has($id)) {
+            foreach ($this->contents as $content_id => $content) {
+                if ($content_id && $content['parent_id'] == $id) {
+                    $children[] = $content_id;
                 }
             }
         }
@@ -183,22 +183,22 @@ class CatalogTree
     public function descendants($id)
     {
         if ($id == 0) {
-            return $this->nodes->keys()->filter()->all();
+            return $this->contents->keys()->filter()->all();
         }
 
         $descendants = [];
-        if ($this->nodes->has($id)) {
+        if ($this->contents->has($id)) {
             $end = false;
-            foreach ($this->nodes as $node_id => $node) {
+            foreach ($this->contents as $content_id => $content) {
                 if ($end) {
-                    if ($node_id == $end) {
+                    if ($content_id == $end) {
                         break;
                     } else {
-                        $descendants[] = $node_id;
+                        $descendants[] = $content_id;
                     }
                 }
-                if ($node_id == $id) {
-                    $end = $node['next_id'] ?? -1;
+                if ($content_id == $id) {
+                    $end = $content['next_id'] ?? -1;
                     continue;
                 }
             }
@@ -216,11 +216,11 @@ class CatalogTree
     public function siblings($id)
     {
         $siblings = [];
-        if ($id > 0 && ($node = $this->nodes->get($id))) {
-            $parent_id = $node['parent_id'];
-            foreach ($this->nodes as $node_id => $node) {
-                if ($node['parent_id'] == $parent_id && $node_id != $id) {
-                    $siblings[] = $node_id;
+        if ($id > 0 && ($content = $this->contents->get($id))) {
+            $parent_id = $content['parent_id'];
+            foreach ($this->contents as $content_id => $content) {
+                if ($content['parent_id'] == $parent_id && $content_id != $id) {
+                    $siblings[] = $content_id;
                 }
             }
         }
@@ -236,8 +236,8 @@ class CatalogTree
      */
     public function prev($id)
     {
-        if ($node = $this->nodes->get($id)) {
-            return $node['prev_id'] ?? null;
+        if ($content = $this->contents->get($id)) {
+            return $content['prev_id'] ?? null;
         }
         return null;
     }
@@ -250,8 +250,8 @@ class CatalogTree
      */
     public function next($id)
     {
-        if ($node = $this->nodes->get($id)) {
-            return $node['next_id'] ?? null;
+        if ($content = $this->contents->get($id)) {
+            return $content['next_id'] ?? null;
         }
         return null;
     }
@@ -264,14 +264,14 @@ class CatalogTree
     //  */
     // public function parents(array $ids)
     // {
-    //     // $anchors = $this->nodes->only($ids);
-    //     // return $this->nodes->only($anchors->pluck('parent_id')->filter());
+    //     // $anchors = $this->contents->only($ids);
+    //     // return $this->contents->only($anchors->pluck('parent_id')->filter());
 
     //     $parents = [];
     //     foreach ($ids as $id) {
-    //         if ($node = $this->nodes->get($id)) {
-    //             if ($parent = $this->nodes->get($node['parent_id'])) {
-    //                 $parents[$parent['node_id']] = $parent;
+    //         if ($content = $this->contents->get($id)) {
+    //             if ($parent = $this->contents->get($content['parent_id'])) {
+    //                 $parents[$parent['content_id']] = $parent;
     //             }
     //         }
     //     }
@@ -287,13 +287,13 @@ class CatalogTree
     //  */
     // public function ancestors(array $ids)
     // {
-    //     // $anchors = $this->nodes->only($ids);
-    //     // return $this->nodes->only($anchors->pluck('path')->flatten());
+    //     // $anchors = $this->contents->only($ids);
+    //     // return $this->contents->only($anchors->pluck('path')->flatten());
 
     //     $ancestors = collect();
     //     foreach ($ids as $id) {
-    //         if ($node = $this->nodes->get($id)) {
-    //             $ancestors = $ancestors->merge($this->nodes->only($node['path']));
+    //         if ($content = $this->contents->get($id)) {
+    //             $ancestors = $ancestors->merge($this->contents->only($content['path']));
     //         }
     //     }
     //     return $ancestors;
@@ -307,15 +307,15 @@ class CatalogTree
     //  */
     // public function children(array $ids)
     // {
-    //     // return $this->nodes->filter(function($node) use ($ids) {
-    //     //     return $node['parent_id'] && in_array($node['parent_id'], $ids);
+    //     // return $this->contents->filter(function($content) use ($ids) {
+    //     //     return $content['parent_id'] && in_array($content['parent_id'], $ids);
     //     // });
 
     //     $children = [];
     //     foreach ($ids as $id) {
-    //         foreach ($this->nodes as $node_id => $node) {
-    //             if ($node_id && $node['parent_id'] == $id) {
-    //                 $children[$node['node_id']] = $node;
+    //         foreach ($this->contents as $content_id => $content) {
+    //             if ($content_id && $content['parent_id'] == $id) {
+    //                 $children[$content['content_id']] = $content;
     //             }
     //         }
     //     }
@@ -332,12 +332,12 @@ class CatalogTree
     // public function descendants(array $ids)
     // {
     //     // $parents = collect($ids);
-    //     // return $this->nodes->filter(function($node) use ($parents) {
-    //     //     return ! $parents->intersect($node->parents)->isEmpty();
+    //     // return $this->contents->filter(function($content) use ($parents) {
+    //     //     return ! $parents->intersect($content->parents)->isEmpty();
     //     // });
 
     //     if (in_array(0, $ids)) {
-    //         return $this->nodes;
+    //         return $this->contents;
     //     }
 
     //     $descendants = [];
@@ -346,16 +346,16 @@ class CatalogTree
     //             continue;
     //         }
     //         $end = false;
-    //         foreach ($this->nodes as $node_id => $node) {
+    //         foreach ($this->contents as $content_id => $content) {
     //             if ($end) {
-    //                 if ($node_id == $end) {
+    //                 if ($content_id == $end) {
     //                     break;
     //                 } else {
-    //                     $descendants[$node_id] = $node;
+    //                     $descendants[$content_id] = $content;
     //                 }
     //             }
-    //             if ($node_id == $id) {
-    //                 $end = $node['next_id'] ?? -1;
+    //             if ($content_id == $id) {
+    //                 $end = $content['next_id'] ?? -1;
     //                 continue;
     //             }
     //         }
@@ -372,14 +372,14 @@ class CatalogTree
     //  */
     // public function siblings(array $ids)
     // {
-    //     $anchors = $this->nodes->only($ids);
+    //     $anchors = $this->contents->only($ids);
     //     $siblings = collect();
     //     foreach ($anchors as $anchor) {
-    //         if ($parent = $this->nodes->get($anchor['parent'])) {
+    //         if ($parent = $this->contents->get($anchor['parent'])) {
     //             $siblings = $siblings->merge($parent['children']);
     //         }
     //     }
-    //     return $this->nodes->only($siblings->diff($ids));
+    //     return $this->contents->only($siblings->diff($ids));
     // }
 
     // /**
@@ -390,7 +390,7 @@ class CatalogTree
     //  */
     // public function path(array $ids)
     // {
-    //     $parents = $this->nodes->only($ids)->pluck('parents')->flatten()->filter();
+    //     $parents = $this->contents->only($ids)->pluck('parents')->flatten()->filter();
     //     return TreePath::make($parents->merge($ids)->all());
     // }
 }

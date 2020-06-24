@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\Models\NodeField;
+use App\Models\ContentField;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
-class NodeFieldSeeder extends Seeder
+class ContentFieldSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,8 +14,8 @@ class NodeFieldSeeder extends Seeder
      */
     public function run()
     {
-        foreach ($this->getNodeFieldData() as $record) {
-            DB::table('node_fields')->insert($record);
+        foreach ($this->getContentFieldData() as $record) {
+            DB::table('content_fields')->insert($record);
         }
 
         foreach ($this->getParametersData() as $record) {
@@ -23,7 +23,7 @@ class NodeFieldSeeder extends Seeder
         }
     }
 
-    protected function getNodeFieldData()
+    protected function getContentFieldData()
     {
         $data = [
             [
@@ -142,24 +142,24 @@ class NodeFieldSeeder extends Seeder
         $langcode = langcode('content.default');
         $parameters = [
             [
-                'keyname' => 'node_field.title.'.$langcode,
+                'keyname' => 'content_field.title.'.$langcode,
                 'data' => [
                     'required' => true,
                     'maxlength' => 200,
                 ],
             ],
             [
-                'keyname' => 'node_field.summary.'.$langcode,
+                'keyname' => 'content_field.summary.'.$langcode,
                 'data' => [
                     'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.content.'.$langcode,
+                'keyname' => 'content_field.content.'.$langcode,
                 'data' => [],
             ],
             [
-                'keyname' => 'node_field.url.'.$langcode,
+                'keyname' => 'content_field.url.'.$langcode,
                 'data' => [
                     'maxlength' => 200,
                     'pattern' => 'url',
@@ -167,7 +167,7 @@ class NodeFieldSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'node_field.template.'.$langcode,
+                'keyname' => 'content_field.template.'.$langcode,
                 'data' => [
                     'maxlength' => 200,
                     'pattern' => 'twig',
@@ -175,25 +175,25 @@ class NodeFieldSeeder extends Seeder
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_title.'.$langcode,
+                'keyname' => 'content_field.meta_title.'.$langcode,
                 'data' => [
                     'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_description.'.$langcode,
+                'keyname' => 'content_field.meta_description.'.$langcode,
                 'data' => [
                     'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_keywords.'.$langcode,
+                'keyname' => 'content_field.meta_keywords.'.$langcode,
                 'data' => [
                     'maxlength' => 255,
                 ],
             ],
             [
-                'keyname' => 'node_field.meta_canonical.'.$langcode,
+                'keyname' => 'content_field.meta_canonical.'.$langcode,
                 'data' => [
                     'maxlength' => 255,
                 ],

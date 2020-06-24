@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\NodeField;
+use App\Models\ContentField;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -17,14 +17,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ConfigSeeder::class);
         $this->call(UserSeeder::class);
-        $this->call(NodeFieldSeeder::class);
-        $this->call(NodeTypeSeeder::class);
+        $this->call(ContentFieldSeeder::class);
+        $this->call(ContentTypeSeeder::class);
         $this->call(CatalogSeeder::class);
         $this->call(TagSeeder::class);
 
         DB::commit();
 
-        foreach (NodeField::all() as $field) {
+        foreach (ContentField::all() as $field) {
             $field->tableUp();
         }
     }

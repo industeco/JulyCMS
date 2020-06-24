@@ -2,21 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Casts\Json;
-use App\Contracts\GetNodes;
-use App\Contracts\HasModelConfig;
+use App\Contracts\GetContents;
 use App\FieldTypes\FieldType;
-use App\ModelCollections\NodeCollection;
-use App\Traits\CastModelConfig;
+use App\ModelCollections\ContentCollection;
 use App\Traits\TruenameAsPrimaryKey;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class NodeType extends JulyModel implements GetNodes
+class ContentType extends JulyModel implements GetContents
 {
     use TruenameAsPrimaryKey;
 
@@ -25,7 +18,7 @@ class NodeType extends JulyModel implements GetNodes
      *
      * @var string
      */
-    protected $table = 'node_types';
+    protected $table = 'content_types';
 
     /**
      * 可批量赋值的属性。
@@ -48,15 +41,15 @@ class NodeType extends JulyModel implements GetNodes
         'is_preset' => 'boolean',
     ];
 
-    public function nodes()
+    public function contents()
     {
-        return $this->hasMany(Node::class, 'node_type');
+        return $this->hasMany(Content::class, 'content_type');
     }
 
     public function fields()
     {
-        return $this->belongsToMany(NodeField::class, 'node_field_node_type', 'node_type', 'node_field')
-            ->orderBy('node_field_node_type.delta')
+        return $this->belongsToMany(ContentField::class, 'content_field_content_type', 'content_type', 'content_field')
+            ->orderBy('content_field_content_type.delta')
             ->withPivot([
                 'delta',
                 'weight',
@@ -67,13 +60,13 @@ class NodeType extends JulyModel implements GetNodes
 
     public static function usedByNodes()
     {
-        $nodetypeUsed = [];
-        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
+        $contenttypeUsed = [];
+        $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
         foreach ($records as $record) {
-            $nodetypeUsed[$record->node_type] = $record->total;
+            $contenttypeUsed[$record->content_type] = $record->total;
         }
 
-        return $nodetypeUsed;
+        return $contenttypeUsed;
     }
 
     /**
@@ -158,7 +151,7 @@ class NodeType extends JulyModel implements GetNodes
             ];
 
             FieldParameters::updateOrCreate([
-                'keyname' => implode('.', ['node_field', $field['truename'], 'node_type', $this->getKey(), $langcode]),
+                'keyname' => implode('.', ['content_field', $field['truename'], 'content_type', $this->getKey(), $langcode]),
             ], ['data' => FieldType::extractParameters($field)]);
         }
         $this->fields()->sync($fields);
@@ -166,8 +159,8 @@ class NodeType extends JulyModel implements GetNodes
         DB::commit();
     }
 
-    public function get_nodes(): NodeCollection
+    public function get_contents(): ContentCollection
     {
-        return NodeCollection::make($this->nodes->keyBy('id')->all());
+        return ContentCollection::make($this->contents->keyBy('id')->all());
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\FieldTypes;
 
-use App\Models\NodeField;
+use App\Models\ContentField;
 
 interface FieldTypeInterface
 {
@@ -33,7 +33,7 @@ interface FieldTypeInterface
      * @param array $field
      * @return static
      */
-    public function setField(NodeField $field);
+    public function setField(ContentField $field);
 
     /**
      * 设置字段参数读取语言

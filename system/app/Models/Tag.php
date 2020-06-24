@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use App\Contracts\GetNodes;
-use App\ModelCollections\NodeCollection;
+use App\Contracts\GetContents;
+use App\ModelCollections\ContentCollection;
 
-class Tag extends JulyModel implements GetNodes
+class Tag extends JulyModel implements GetContents
 {
     /**
      * 与模型关联的表名
@@ -85,13 +85,13 @@ class Tag extends JulyModel implements GetNodes
         return $count;
     }
 
-    public function nodes($langcode = null)
+    public function contents($langcode = null)
     {
         if ($langcode) {
-            return $this->belongsToMany(Node::class, 'node_tag', 'tag', 'node_id')
+            return $this->belongsToMany(Content::class, 'content_tag', 'tag', 'content_id')
                 ->wherePivot('langcode', $langcode);
         }
-        return $this->belongsToMany(Node::class, 'node_tag', 'tag', 'node_id')
+        return $this->belongsToMany(Content::class, 'content_tag', 'tag', 'content_id')
             ->withPivot('langcode');
     }
 
@@ -158,7 +158,7 @@ class Tag extends JulyModel implements GetNodes
 
         if ($prepareDelete) {
             DB::table('tags')->whereIn('tag', $prepareDelete)->delete();
-            DB::table('node_tag')->whereIn('tag', $prepareDelete)->delete();
+            DB::table('content_tag')->whereIn('tag', $prepareDelete)->delete();
         }
 
         if ($prepareCreate) {
@@ -166,9 +166,9 @@ class Tag extends JulyModel implements GetNodes
         }
     }
 
-    public function get_nodes(): NodeCollection
+    public function get_contents(): ContentCollection
     {
-        $ids = $this->nodes()->pluck('id')->unique()->all();
-        return NodeCollection::find($ids);
+        $ids = $this->contents()->pluck('id')->unique()->all();
+        return ContentCollection::find($ids);
     }
 }

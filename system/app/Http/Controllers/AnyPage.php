@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Node;
+use App\Models\Content;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
@@ -93,8 +93,8 @@ class AnyPage extends Controller
             return $disk->get($file);
         }
 
-        if ($node = Node::findByUrl($url, $langcode)) {
-            if ($html = $node->getHtml($langcode)) {
+        if ($content = Content::findByUrl($url, $langcode)) {
+            if ($html = $content->getHtml($langcode)) {
                 return $html;
             }
         }

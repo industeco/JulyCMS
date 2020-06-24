@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Catalog;
-use App\Models\Node;
-use App\Models\NodeField;
+use App\Models\Content;
+use App\Models\ContentField;
 use App\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -95,7 +95,7 @@ class CatalogController extends Controller
      */
     public function destroy(Catalog $catalog)
     {
-        $catalog->nodes()->detach();
+        $catalog->contents()->detach();
         $catalog->delete();
         return response('');
     }
@@ -104,14 +104,14 @@ class CatalogController extends Controller
     {
         $data = $catalog->gather();
 
-        $data['catalog_nodes'] = $catalog->positions();
+        $data['catalog_contents'] = $catalog->positions();
 
         // 非预设字段
-        $exceptAttributes = NodeField::commonFields()->pluck('truename')->all();
+        $exceptAttributes = ContentField::commonFields()->pluck('truename')->all();
 
         // 获取所有节点信息，排除信息中的非预设字段
-        $data['all_nodes'] = Node::all()->map(function($node) use($exceptAttributes) {
-            return Arr::except($node->gather(), $exceptAttributes);
+        $data['all_contents'] = Content::all()->map(function($content) use($exceptAttributes) {
+            return Arr::except($content->gather(), $exceptAttributes);
         })->keyBy('id')->all();
 
         return view_with_langcode('admin::catalogs.sort', $data);
@@ -119,7 +119,7 @@ class CatalogController extends Controller
 
     public function updateOrders(Request $request, Catalog $catalog)
     {
-        $catalog->updatePositions($request->input('catalog_nodes'));
+        $catalog->updatePositions($request->input('catalog_contents'));
         return response('');
     }
 

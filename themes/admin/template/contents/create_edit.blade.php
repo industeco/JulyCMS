@@ -455,7 +455,7 @@
           const changed_positions = app.getChangedPositions();
           @if ($id)
             if (!changed_values.length && !changed_positions.length) {
-              window.location.href = "{{ short_route('nodes.index') }}";
+              window.location.href = "{{ short_route('contents.index') }}";
               return;
             }
           @endif
@@ -467,16 +467,16 @@
 
           // console.log(node)
           @if ($id)
-          const action = "{{ short_route('nodes.update', $id) }}";
+          const action = "{{ short_route('contents.update', $id) }}";
           @else
-          const action = "{{ short_route('nodes.store') }}";
+          const action = "{{ short_route('contents.store') }}";
           @endif
 
           axios.{{ $id ? 'put' : 'post' }}(action, node)
             .then(function(response) {
               // console.log(response)
               // loading.close()
-              window.location.href = "{{ short_route('nodes.index') }}";
+              window.location.href = "{{ short_route('contents.index') }}";
             })
             .catch(function(error) {
               loading.close()

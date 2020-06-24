@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class CatalogNode extends Pivot
+class CatalogContent extends Pivot
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'catalog_node';
+    protected $table = 'catalog_content';
 
      /**
      * 指示是否自动维护时间戳
@@ -27,7 +27,7 @@ class CatalogNode extends Pivot
      */
     protected $fillable = [
         'catalog',
-        'node_id',
+        'content_id',
         'parent_id',
         'prev_id',
         'path',

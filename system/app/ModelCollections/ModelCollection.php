@@ -3,10 +3,10 @@
 namespace App\ModelCollections;
 
 use Illuminate\Support\Collection;
-use App\Contracts\GetNodes;
-use App\Models\Node;
+use App\Contracts\GetContents;
+use App\Models\Content;
 
-abstract class ModelCollection extends Collection implements GetNodes
+abstract class ModelCollection extends Collection implements GetContents
 {
     protected static $model;
     protected static $primaryKey;
@@ -61,16 +61,16 @@ abstract class ModelCollection extends Collection implements GetNodes
     /**
      * 进一步获取节点集
      */
-    public function get_nodes():NodeCollection
+    public function get_contents():ContentCollection
     {
-        $nodes = [];
+        $contents = [];
         foreach ($this->items as $item) {
-            if ($item instanceof Node) {
-                $nodes[$item->id] = $item;
-            } elseif ($item instanceof GetNodes) {
-                $nodes = array_merge($nodes, $item->get_nodes()->all());
+            if ($item instanceof Content) {
+                $contents[$item->id] = $item;
+            } elseif ($item instanceof GetContents) {
+                $contents = array_merge($contents, $item->get_contents()->all());
             }
         }
-        return NodeCollection::make($nodes);
+        return ContentCollection::make($contents);
     }
 }

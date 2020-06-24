@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\Node;
+use App\Models\Content;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Log;
@@ -67,8 +67,8 @@ class Handler extends ExceptionHandler
                 return response($disk->get($file), $code);
             }
 
-            if ($node = Node::findByUrl('/'.$code.'.html', $langcode)) {
-                if ($html = $node->getHtml($langcode)) {
+            if ($content = Content::findByUrl('/'.$code.'.html', $langcode)) {
+                if ($html = $content->getHtml($langcode)) {
                     return response($html, $code);
                 }
             }

@@ -27,7 +27,7 @@ class CatalogCollection extends ModelCollection
      * 获取指定节点的直接子节点
      *
      * @param array $args 用于指定节点的参数
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_children(...$args)
     {
@@ -43,7 +43,7 @@ class CatalogCollection extends ModelCollection
      * 获取指定节点的所有子节点
      *
      * @param array $args 用于指定节点的参数
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_descendants(...$args)
     {
@@ -60,7 +60,7 @@ class CatalogCollection extends ModelCollection
      * 获取指定节点的所有上级节点
      *
      * @param array $args 用于指定节点的参数
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_parent(...$args)
     {
@@ -76,7 +76,7 @@ class CatalogCollection extends ModelCollection
      * 获取指定节点的所有上级节点
      *
      * @param array $args 用于指定节点的参数
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_ancestors(...$args)
     {
@@ -92,7 +92,7 @@ class CatalogCollection extends ModelCollection
      * 获取指定节点的相邻节点
      *
      * @param Tree|TreeCollection|null $tree
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_siblings(...$args)
     {
@@ -119,7 +119,7 @@ class CatalogCollection extends ModelCollection
      * 在指定的树中，获取当前节点的前一个节点
      *
      * @param int $id
-     * @return \App\Models\Node
+     * @return \App\Models\Content
      */
     public function get_prev($id)
     {
@@ -130,7 +130,7 @@ class CatalogCollection extends ModelCollection
      * 在指定的树中，获取当前节点的后一个节点
      *
      * @param int $id
-     * @return \App\Models\Node
+     * @return \App\Models\Content
      */
     public function get_next($id)
     {

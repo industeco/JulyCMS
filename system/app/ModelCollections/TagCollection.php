@@ -45,17 +45,17 @@ class TagCollection extends ModelCollection
         return $this;
     }
 
-    public function get_nodes(): NodeCollection
+    public function get_contents(): ContentCollection
     {
         $tags = $this->pluck('tag')->all();
-        $nodes = DB::table('node_tag')
-            ->select(DB::raw('node_id, count(node_id) as node_count'))
+        $contents = DB::table('content_tag')
+            ->select(DB::raw('content_id, count(content_id) as content_count'))
             ->whereIn('tag', $tags)
-            ->groupBy('node_id')
-            ->having('node_count', '>=', $this->matches)
+            ->groupBy('content_id')
+            ->having('content_count', '>=', $this->matches)
             ->get()
-            ->pluck('node_id')->all();
+            ->pluck('content_id')->all();
 
-        return NodeCollection::find($nodes);
+        return ContentCollection::find($contents);
     }
 }

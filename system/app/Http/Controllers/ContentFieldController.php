@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\FieldTypes\FieldType;
 use App\Models\FieldParameters;
-use App\Models\NodeField;
+use App\Models\ContentField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
-class NodeFieldController extends Controller
+class ContentFieldController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -19,7 +19,7 @@ class NodeFieldController extends Controller
      */
     public function index()
     {
-        $fields = NodeField::all()->map(function($field) {
+        $fields = ContentField::all()->map(function($field) {
             return $field->gather();
         })->all();
         return response($fields);
@@ -43,9 +43,9 @@ class NodeFieldController extends Controller
      */
     public function store(Request $request)
     {
-        $field = NodeField::make($request->all());
+        $field = ContentField::make($request->all());
         $parameters = FieldParameters::make([
-            'keyname' => implode('.', ['node_field', $field->getKey(), langcode('content')]),
+            'keyname' => implode('.', ['content_field', $field->getKey(), langcode('content')]),
             'data' => FieldType::extractParameters($request->all()),
         ]);
 
@@ -62,10 +62,10 @@ class NodeFieldController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\NodeField  $nodeField
+     * @param  \App\Models\ContentField  $contentField
      * @return \Illuminate\Http\Response
      */
-    public function show(NodeField $nodeField)
+    public function show(ContentField $contentField)
     {
         //
     }
@@ -73,10 +73,10 @@ class NodeFieldController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\NodeField  $nodeField
+     * @param  \App\Models\ContentField  $contentField
      * @return \Illuminate\Http\Response
      */
-    public function edit(NodeField $nodeField)
+    public function edit(ContentField $contentField)
     {
         //
     }
@@ -85,10 +85,10 @@ class NodeFieldController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\NodeField  $nodeField
+     * @param  \App\Models\ContentField  $contentField
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, NodeField $nodeField)
+    public function update(Request $request, ContentField $contentField)
     {
         //
     }
@@ -96,10 +96,10 @@ class NodeFieldController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\NodeField  $nodeField
+     * @param  \App\Models\ContentField  $contentField
      * @return \Illuminate\Http\Response
      */
-    public function destroy(NodeField $nodeField)
+    public function destroy(ContentField $contentField)
     {
         //
     }
@@ -115,14 +115,14 @@ class NodeFieldController extends Controller
         // 保留的名字
         $reserved = [
             // 属性名
-            'id', 'is_preset', 'node_type', 'langcode', 'updated_at', 'created_at',
+            'id', 'is_preset', 'content_type', 'langcode', 'updated_at', 'created_at',
 
             // 关联属性名
             'tags', 'catalogs',
         ];
 
         return response([
-            'exists' => in_array($truename, $reserved) || !empty(NodeField::find($truename)),
+            'exists' => in_array($truename, $reserved) || !empty(ContentField::find($truename)),
         ]);
     }
 
@@ -141,10 +141,10 @@ class NodeFieldController extends Controller
             ['langcode', '=', langcode('content')],
         ];
         if ($id = (int) $request->input('id')) {
-            $condition[] = ['node_id', '!=', $id];
+            $condition[] = ['content_id', '!=', $id];
         }
 
-        $result = DB::table('node__url')->where($condition)->first();
+        $result = DB::table('content__url')->where($condition)->first();
         return response([
             'exists' => !empty($result),
         ]);

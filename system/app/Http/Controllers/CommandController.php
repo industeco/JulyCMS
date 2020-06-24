@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewMessage;
 use App\Models\Catalog;
-use App\Models\NodeIndex;
-use App\Models\Node;
-use App\Models\NodeField;
+use App\Models\ContentIndex;
+use App\Models\Content;
+use App\Models\ContentField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +48,7 @@ class CommandController extends Controller
      */
     public function buildIndex()
     {
-        return NodeIndex::rebuild();
+        return ContentIndex::rebuild();
     }
 
     /**
@@ -73,11 +73,11 @@ class CommandController extends Controller
      */
     public function search(Request $request)
     {
-        Node::fetchAll();
+        Content::fetchAll();
 
-        $results = NodeIndex::search($request->input('keywords'));
+        $results = ContentIndex::search($request->input('keywords'));
         foreach ($results['results'] as &$result) {
-            $result['node'] = Node::fetch($result['node_id']);
+            $result['content'] = Content::fetch($result['content_id']);
         }
         $results['title'] = 'Search';
         $results['meta_title'] = 'Search Result';
@@ -134,21 +134,21 @@ class CommandController extends Controller
         $keywords = $request->input('keywords');
 
         $results = [];
-        foreach (NodeField::fetchAll() as $field) {
+        foreach (ContentField::fetchAll() as $field) {
             $results = array_merge($results, $field->search($keywords));
         }
 
         $titles = [];
-        foreach (NodeField::fetch('title')->records() as $record) {
-            $key = $record->node_id.'/'.$record->langcode;
+        foreach (ContentField::fetch('title')->records() as $record) {
+            $key = $record->content_id.'/'.$record->langcode;
             $titles[$key] = $record->title_value;
         }
 
-        $nodes = Node::fetchAll()->keyBy('id');
+        $contents = Content::fetchAll()->keyBy('id');
         foreach ($results as &$result) {
-            $key = $result['node_id'].'/'.$result['langcode'];
-            $result['node_title'] = $titles[$key] ?? null;
-            $result['original_langcode'] = $nodes->get($result['node_id'])->langcode;
+            $key = $result['content_id'].'/'.$result['langcode'];
+            $result['content_title'] = $titles[$key] ?? null;
+            $result['original_langcode'] = $contents->get($result['content_id'])->langcode;
         }
 
         return view_with_langcode('admin::search', [
@@ -165,9 +165,9 @@ class CommandController extends Controller
             $langcodes = [langcode('site_page')];
         }
         $invalidLinks = [];
-        foreach (Node::fetchAll() as $node) {
+        foreach (Content::fetchAll() as $content) {
             foreach ($langcodes as $langcode) {
-                $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks($langcode));
+                $invalidLinks = array_merge($invalidLinks, $content->findInvalidLinks($langcode));
             }
         }
 

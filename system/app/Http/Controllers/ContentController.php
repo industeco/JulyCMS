@@ -5,17 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\App;
-use App\Models\Node;
+use App\Models\Content;
 use App\Models\Catalog;
 use App\Models\Config;
-use App\Models\NodeField;
-use App\Models\NodeType;
+use App\Models\ContentField;
+use App\Models\ContentType;
 use App\Models\Tag;
 use App\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class NodeController extends Controller
+class ContentController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -24,15 +24,15 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $nodes = Node::all()->map(function($node) {
-            $data = Arr::only($node->gather(), ['id','node_type','updated_at','created_at','title','url','tags']);
-            $data['templates'] = $node->suggestedTemplates();
+        $contents = Content::all()->map(function($content) {
+            $data = Arr::only($content->gather(), ['id','content_type','updated_at','created_at','title','url','tags']);
+            $data['templates'] = $content->suggestedTemplates();
             return $data;
         })->keyBy('id')->all();
 
-        return view_with_langcode('admin::nodes.index', [
-            'nodes' => $nodes,
-            'nodeTypes' => NodeType::pluck('label', 'truename')->all(),
+        return view_with_langcode('admin::contents.index', [
+            'contents' => $contents,
+            'contentTypes' => ContentType::pluck('label', 'truename')->all(),
             'catalogs' => Catalog::pluck('label', 'truename')->all(),
             'all_tags' => Tag::allTags(),
             'languages' => available_languages('translatable'),
@@ -46,31 +46,31 @@ class NodeController extends Controller
      */
     public function chooseNodetype()
     {
-        return view_with_langcode('admin::nodes.nodetypes', [
-            'nodeTypes' => NodeType::all()->all(),
+        return view_with_langcode('admin::contents.contenttypes', [
+            'contentTypes' => ContentType::all()->all(),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @param \App\Models\NodeType  $nodeType
+     * @param \App\Models\ContentType  $contentType
      * @return \Illuminate\Http\Response
      */
-    public function create(NodeType $nodeType)
+    public function create(ContentType $contentType)
     {
-        return view_with_langcode('admin::nodes.create_edit', [
+        return view_with_langcode('admin::contents.create_edit', [
             'id' => 0,
-            'node_type' => $nodeType->getKey(),
-            'nodeTypeLabel' => $nodeType->getAttribute('label'),
-            'fields' => $nodeType->cacheGetFieldJigsaws(),
-            'globalFields' => NodeField::cacheGetGlobalFieldJigsaws(),
+            'content_type' => $contentType->getKey(),
+            'contentTypeLabel' => $contentType->getAttribute('label'),
+            'fields' => $contentType->cacheGetFieldJigsaws(),
+            'globalFields' => ContentField::cacheGetGlobalFieldJigsaws(),
             'tags' => [],
             'positions' => [],
             'all_tags' => Tag::allTags(),
-            'all_nodes' => $this->simpleNodes(),
+            'all_contents' => $this->simpleNodes(),
             'all_templates' => $this->getTwigTemplates(),
-            'catalog_nodes' => Catalog::allPositions(),
+            'catalog_contents' => Catalog::allPositions(),
             'editorConfig' => Config::getEditorConfig(),
             'editMode' => '新建',
         ]);
@@ -78,14 +78,14 @@ class NodeController extends Controller
 
     protected function simpleNodes($langcode = null)
     {
-        $nodes = [];
-        foreach (Node::allNodes($langcode) as $node) {
-            $nodes[$node['id']] = [
-                'id' => $node['id'],
-                'title' => $node['title'],
+        $contents = [];
+        foreach (Content::allNodes($langcode) as $content) {
+            $contents[$content['id']] = [
+                'id' => $content['id'],
+                'title' => $content['title'],
             ];
         }
-        return $nodes;
+        return $contents;
     }
 
     /**
@@ -98,32 +98,32 @@ class NodeController extends Controller
     {
         $data = $request->all();
 
-        $node = Node::make($data);
-        $node->save();
+        $content = Content::make($data);
+        $content->save();
 
-        $node->saveValues($data);
+        $content->saveValues($data);
 
         if ($tags = $request->input('tags')) {
-            $node->saveTags($tags);
+            $content->saveTags($tags);
         }
 
         $positions = (array) $request->input('changed_positions');
         if ($positions) {
-            $node->savePositions($positions);
+            $content->savePositions($positions);
         }
 
         return Response::make([
-            'node_id' => $node->getKey(),
+            'content_id' => $content->getKey(),
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Node  $node
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
-    public function show(Node $node)
+    public function show(Content $content)
     {
         //
     }
@@ -131,44 +131,44 @@ class NodeController extends Controller
     /**
      * 展示编辑或翻译界面
      *
-     * @param  \App\Models\Node  $node
+     * @param  \App\Models\Content  $content
      * @param  string  $langcode
      * @return \Illuminate\Http\Response
      */
-    public function edit(Node $node, $langcode = null)
+    public function edit(Content $content, $langcode = null)
     {
         if ($langcode) {
             config()->set('request.langcode.content', $langcode);
         }
 
-        $attributes = $node->gather($langcode);
+        $attributes = $content->gather($langcode);
 
         //
-        $fields = $node->nodeType->cacheGetFieldJigsaws($langcode);
+        $fields = $content->contentType->cacheGetFieldJigsaws($langcode);
         foreach ($fields as $fieldName => &$field) {
             $field['value'] = $attributes[$fieldName] ?? null;
         }
         unset($field);
 
         // 全局字段
-        $globalFields = NodeField::cacheGetGlobalFieldJigsaws($langcode);
+        $globalFields = ContentField::cacheGetGlobalFieldJigsaws($langcode);
         foreach ($globalFields as $fieldName => &$field) {
             $field['value'] = $attributes[$fieldName] ?? null;
         }
         unset($field);
 
         $data = [
-            'id' => $node->id,
-            'node_type' => $attributes['node_type'],
-            'nodeTypeLabel' => $node->nodeType->getAttribute('label'),
+            'id' => $content->id,
+            'content_type' => $attributes['content_type'],
+            'contentTypeLabel' => $content->contentType->getAttribute('label'),
             'fields' => $fields,
             'globalFields' => $globalFields,
             'tags' => $attributes['tags'],
-            'positions' => $node->positions(),
+            'positions' => $content->positions(),
             'all_tags' => Tag::allTags($langcode),
-            'all_nodes' => $this->simpleNodes($langcode),
+            'all_contents' => $this->simpleNodes($langcode),
             'all_templates' => $this->getTwigTemplates(),
-            'catalog_nodes' => Catalog::allPositions(),
+            'catalog_contents' => Catalog::allPositions(),
             'editorConfig' => Config::getEditorConfig(),
             'editMode' => '编辑',
         ];
@@ -177,17 +177,17 @@ class NodeController extends Controller
             $data['editMode'] = '翻译';
         }
 
-        return view_with_langcode('admin::nodes.create_edit', $data);
+        return view_with_langcode('admin::contents.create_edit', $data);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Node  $node
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Node $node)
+    public function update(Request $request, Content $content)
     {
         // Log::info('Recieved update data:');
         // Log::info($request->all());
@@ -196,18 +196,18 @@ class NodeController extends Controller
 
         if (!empty($changed)) {
             // Log::info($changed);
-            // $node->update($node->prepareUpdate($request));
-            $node->touch();
-            $node->saveValues($request->all(), true);
+            // $content->update($content->prepareUpdate($request));
+            $content->touch();
+            $content->saveValues($request->all(), true);
 
             if (in_array('tags', $changed)) {
-                $node->saveTags($request->input('tags'));
+                $content->saveTags($request->input('tags'));
             }
         }
 
         $positions = (array) $request->input('changed_positions');
         if ($positions) {
-            $node->savePositions($positions, true);
+            $content->savePositions($positions, true);
         }
 
         return Response::make();
@@ -216,31 +216,31 @@ class NodeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Node  $node
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Node $node)
+    public function destroy(Content $content)
     {
-        $node->delete();
+        $content->delete();
     }
 
     /**
      * 选择语言
      *
-     * @param  \App\Models\Node  $node
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
-    public function chooseLanguage(Node $node)
+    public function chooseLanguage(Content $content)
     {
         if (!config('jc.multi_language')) {
             abort(404);
         }
 
         return view_with_langcode('admin::languages', [
-            'original_langcode' => $node->getAttribute('langcode'),
+            'original_langcode' => $content->getAttribute('langcode'),
             'languages' => available_languages('translatable'),
-            'entityKey' => $node->getKey(),
-            'routePrefix' => 'nodes',
+            'entityKey' => $content->getKey(),
+            'routePrefix' => 'contents',
         ]);
     }
 
@@ -252,10 +252,10 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        $nodes = Node::fetchAll();
-        $ids = $request->input('nodes');
+        $contents = Content::fetchAll();
+        $ids = $request->input('contents');
         if (! empty($ids)) {
-            $nodes = Node::fetchMany($ids);
+            $contents = Content::fetchMany($ids);
         }
 
         $twig = twig('template', true);
@@ -268,16 +268,16 @@ class NodeController extends Controller
         }
 
         $success = [];
-        foreach ($nodes as $node) {
+        foreach ($contents as $content) {
             $result = [];
             foreach ($langs as $langcode) {
-                if ($node->render($twig, $langcode)) {
+                if ($content->render($twig, $langcode)) {
                     $result[$langcode] = true;
                 } else {
                     $result[$langcode] = false;
                 }
             }
-            $success[$node->id] = $result;
+            $success[$content->id] = $result;
         }
 
         return response($success);
@@ -285,7 +285,7 @@ class NodeController extends Controller
 
     protected function getTwigTemplates()
     {
-        $templates = NodeField::find('template')->records()->pluck('template_value');
+        $templates = ContentField::find('template')->records()->pluck('template_value');
         return $templates->sort()->unique()->all();
     }
 }

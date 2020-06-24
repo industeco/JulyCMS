@@ -429,7 +429,7 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        axios.post("{{ short_route('nodes.render') }}", {nodes: nodes}).then((response) => {
+        axios.post("{{ short_route('contents.render') }}", {nodes: nodes}).then((response) => {
           // console.log(response)
           loading.close();
           this.$message.success('生成完成');

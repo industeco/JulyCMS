@@ -21,7 +21,7 @@
         <tbody>
           @foreach ($nodeTypes as $type)
           <tr>
-            <td><a href="{{ short_route('nodes.create', $type['truename']) }}">{{ $type['label'] }}</a></td>
+            <td><a href="{{ short_route('contents.create', $type['truename']) }}">{{ $type['label'] }}</a></td>
             <td>{{ $type['truename'] }}</td>
             <td>{{ $type['description'] ?? '' }}</td>
           </tr>

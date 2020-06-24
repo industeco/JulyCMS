@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class NodeIndex extends Model
+class ContentIndex extends Model
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'node_index';
+    protected $table = 'content_index';
 
     /**
      * 可批量赋值的属性。
@@ -20,8 +20,8 @@ class NodeIndex extends Model
      * @var array
      */
     protected $fillable = [
-        'node_id',
-        'node_field',
+        'content_id',
+        'content_field',
         'field_value',
         'langcode',
     ];
@@ -32,17 +32,17 @@ class NodeIndex extends Model
     {
         $langcodes = array_keys(langcode('all'));
         $records = [];
-        foreach (Node::all() as $node) {
-            $fields = $node->searchableFields();
+        foreach (Content::all() as $content) {
+            $fields = $content->searchableFields();
             $record = [
-                'node_id' => $node->id,
+                'content_id' => $content->id,
             ];
             foreach ($langcodes as $langcode) {
-                $values = $node->cacheGetValues($langcode);
+                $values = $content->cacheGetValues($langcode);
                 foreach ($values as $key => $value) {
                     if (($meta = $fields[$key] ?? null) && !empty($value)) {
                         $records[] = array_merge($record, [
-                            'node_field' => $key,
+                            'content_field' => $key,
                             'field_value' => static::prepareValue($value, $meta['field_type']),
                             'langcode' => $langcode,
                             'weight' => $meta['weight'],
@@ -97,25 +97,25 @@ class NodeIndex extends Model
 
         $results = [];
         foreach (static::searchIndex($keywords) as $result) {
-            $node_id = $result->node_id;
-            $node_field = $result->node_field;
+            $content_id = $result->content_id;
+            $content_field = $result->content_field;
 
             $result = $result->getSearchResult($keywords);
-            if (! isset($results[$node_id])) {
-                $results[$node_id] = [
-                    'node_id' => $node_id,
+            if (! isset($results[$content_id])) {
+                $results[$content_id] = [
+                    'content_id' => $content_id,
                     'weight' => 0,
                 ];
             }
-            $results[$node_id][$node_field] =  $result['content'];
-            $results[$node_id]['weight'] +=  $result['weight'];
+            $results[$content_id][$content_field] =  $result['content'];
+            $results[$content_id]['weight'] +=  $result['weight'];
         }
 
         // 对结果排序
         array_multisort(
             array_column($results, 'weight'),
             SORT_DESC,
-            array_column($results, 'node_id'),
+            array_column($results, 'content_id'),
             SORT_NUMERIC,
             $results
         );

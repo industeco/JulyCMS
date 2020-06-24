@@ -10,7 +10,7 @@ use App\ModelCollections\TagCollection;
 use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
-class Node extends JulyModel
+class Content extends JulyModel
 {
     /**
      * 可批量赋值的属性。
@@ -19,7 +19,7 @@ class Node extends JulyModel
      */
     protected $fillable = [
         'is_preset',
-        'node_type',
+        'content_type',
         'langcode',
         'updated_at',
     ];
@@ -33,19 +33,19 @@ class Node extends JulyModel
         'is_preset' => 'boolean',
     ];
 
-    public function nodeType()
+    public function contentType()
     {
-        return $this->belongsTo(NodeType::class, 'node_type');
+        return $this->belongsTo(ContentType::class, 'content_type');
     }
 
     public function fields()
     {
-        return $this->nodeType->fields->merge(NodeField::globalFields());
+        return $this->contentType->fields->merge(ContentField::globalFields());
     }
 
     public function catalogs()
     {
-        return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog')
+        return $this->belongsToMany(Catalog::class, 'catalog_content', 'content_id', 'catalog')
                 ->withPivot(
                     'parent_id',
                     'prev_id',
@@ -56,36 +56,36 @@ class Node extends JulyModel
     public function tags($langcode = null)
     {
         if ($langcode) {
-            return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+            return $this->belongsToMany(Tag::class, 'content_tag', 'content_id', 'tag')
                 ->wherePivot('langcode', $langcode);
         }
-        return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+        return $this->belongsToMany(Tag::class, 'content_tag', 'content_id', 'tag')
             ->withPivot('langcode');
     }
 
     public function positions()
     {
-        return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog')->toArray();
+        return CatalogContent::where('content_id', $this->id)->get()->groupBy('catalog')->toArray();
     }
 
-    public static function countByNodeType()
+    public static function countByContentType()
     {
-        $nodes = [];
-        $records = DB::select('SELECT `node_type`, count(`node_type`) as `total` FROM `nodes` GROUP BY `node_type`');
+        $contents = [];
+        $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
         foreach ($records as $record) {
-            $nodes[$record->node_type] = $record->total;
+            $contents[$record->content_type] = $record->total;
         }
 
-        return $nodes;
+        return $contents;
     }
 
     public static function allNodes($langcode = null)
     {
-        $nodes = [];
-        foreach (Node::all() as $node) {
-            $nodes[$node->id] = $node->gather($langcode);
+        $contents = [];
+        foreach (Content::all() as $content) {
+            $contents[$content->id] = $content->gather($langcode);
         }
-        return $nodes;
+        return $contents;
     }
 
     public function gather($langcode = null)
@@ -100,7 +100,7 @@ class Node extends JulyModel
     public function searchableFields()
     {
         $fields = [];
-        foreach ($this->nodeType->cacheGetFields() as $field) {
+        foreach ($this->contentType->cacheGetFields() as $field) {
             if ($field['is_searchable']) {
                 $fields[$field['truename']] = [
                     'field_type' => $field['field_type'],
@@ -203,7 +203,7 @@ class Node extends JulyModel
     {
         foreach ($positions as $position) {
             $catalog = Catalog::findOrFail($position['catalog']);
-            $position['node_id'] = $this->id;
+            $position['content_id'] = $this->id;
             if (! is_null($position)) {
                 $catalog->insertPosition($position);
             } elseif ($deleteNull) {
@@ -216,9 +216,9 @@ class Node extends JulyModel
     {
         parent::boot();
 
-        static::deleted(function(Node $node) {
-            foreach ($node->fields() as $field) {
-                $field->deleteValue($node->id);
+        static::deleted(function(Content $content) {
+            foreach ($content->fields() as $field) {
+                $field->deleteValue($content->id);
             }
         });
     }
@@ -237,14 +237,14 @@ class Node extends JulyModel
         config()->set('current_render_langcode', $langcode);
 
         // 获取节点值
-        $node = $this->gather($langcode);
+        $content = $this->gather($langcode);
 
         if ($tpl = $this->template($langcode)) {
 
-            $twig->addGlobal('_node', $this);
+            $twig->addGlobal('_content', $this);
             $twig->addGlobal('_path', $this->get_path());
 
-            $canonical = '/'.ltrim($node['url'], '/');
+            $canonical = '/'.ltrim($content['url'], '/');
             if ($langcode === langcode('site_page')) {
                 $canonical = rtrim(config('jc.url'), '/').$canonical;
             } else {
@@ -253,11 +253,11 @@ class Node extends JulyModel
             $twig->addGlobal('_canonical', $canonical);
 
             // 生成 html
-            $html = $twig->render($tpl, $node);
+            $html = $twig->render($tpl, $content);
 
             // 写入文件
-            if ($node['url']) {
-                $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
+            if ($content['url']) {
+                $file = 'pages/'.$langcode.'/'.ltrim($content['url'], '/');
                 Storage::disk('storage')->put($file, $html);
             }
 
@@ -282,30 +282,30 @@ class Node extends JulyModel
 
     public function suggestedTemplates($langcode = null)
     {
-        $node = $this->gather($langcode);
-        if (!$node['url']) return [];
+        $content = $this->gather($langcode);
+        if (!$content['url']) return [];
 
         $templates = [];
-        if ($node['template']) {
-            $templates[] = ltrim($node['template'], '/');
+        if ($content['template']) {
+            $templates[] = ltrim($content['template'], '/');
         }
 
         // 按 url
-        $url = str_replace('/', '--', trim($node['url'], '\\/'));
+        $url = str_replace('/', '--', trim($content['url'], '\\/'));
         $templates[] = 'url--'.($langcode ? $langcode.'-' : '').$url.'.twig';
 
         // 按 id
         if ($langcode) {
-            $templates[] = 'node--'.$langcode.'-'.$node['id'].'.twig';
+            $templates[] = 'content--'.$langcode.'-'.$content['id'].'.twig';
         }
-        $templates[] = 'node--'.$node['id'].'.twig';
+        $templates[] = 'content--'.$content['id'].'.twig';
 
         if ($parent = Catalog::default()->tree()->parent($this->id)) {
             $templates[] = 'under--' . $parent[0] . '.twig';
         }
 
         // 针对该节点类型的模板
-        $templates[] = 'type--' . $node['node_type'] . '.twig';
+        $templates[] = 'type--' . $content['content_type'] . '.twig';
 
         return $templates;
     }
@@ -315,13 +315,13 @@ class Node extends JulyModel
         $langcode = $langcode ?: langcode('content_value.default');
         $url = '/'.ltrim($url, '/');
 
-        $record = DB::table('node__url')->where([
+        $record = DB::table('content__url')->where([
             ['url_value', $url],
             ['langcode', $langcode],
         ])->first();
 
         if ($record) {
-            return static::find($record->node_id);
+            return static::find($record->content_id);
         }
 
         return null;
@@ -353,10 +353,10 @@ class Node extends JulyModel
         }
 
         $links = [];
-        $nodeInfo = [
-            'node_id' => $this->id,
-            'node_title' => $this->title,
-            'node_url' => $this->url,
+        $contentInfo = [
+            'content_id' => $this->id,
+            'content_title' => $this->title,
+            'content_url' => $this->url,
             'langcode' => $langcode,
         ];
 
@@ -365,14 +365,14 @@ class Node extends JulyModel
         // images
         foreach (extract_image_links($html) as $link) {
             if (! $disk->exists($link)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
+                $links[] = array_merge($contentInfo, ['link' => $link]);
             }
         }
 
         // PDFs
         foreach (extract_pdf_links($html) as $link) {
             if (! $disk->exists($link)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
+                $links[] = array_merge($contentInfo, ['link' => $link]);
             }
         }
 
@@ -384,7 +384,7 @@ class Node extends JulyModel
                 $url = rtrim($url, '/').'/index.html';
             }
             if (!$disk->exists('pages'.$url) && !$disk->exists('pages/'.$langcode.$url)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
+                $links[] = array_merge($contentInfo, ['link' => $link]);
             }
         }
 
@@ -397,7 +397,7 @@ class Node extends JulyModel
     }
 
     /**
-     * Dynamically retrieve attributes on Node.
+     * Dynamically retrieve attributes on Content.
      *
      * @param  string  $key
      * @return mixed
@@ -449,7 +449,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_children($catalog = null)
     {
@@ -465,7 +465,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的所有子节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_descendants($catalog = null)
     {
@@ -481,7 +481,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的直接父节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_parent($catalog = null)
     {
@@ -497,7 +497,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的所有上级节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_ancestors($catalog = null)
     {
@@ -513,7 +513,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的相邻节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_siblings($catalog = null)
     {
@@ -529,7 +529,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的前一个节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_prev($catalog = null)
     {
@@ -540,7 +540,7 @@ class Node extends JulyModel
      * 在指定的目录中，获取当前节点的后一个节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_next($catalog = null)
     {
@@ -561,11 +561,11 @@ class Node extends JulyModel
     /**
      * 获取内容标签
      *
-     * @return \App\Models\NodeType
+     * @return \App\Models\ContentType
      */
     public function get_type()
     {
-        return $this->nodeType;
+        return $this->contentType;
     }
 
     /**

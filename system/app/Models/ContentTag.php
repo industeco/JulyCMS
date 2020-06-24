@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class NodeTag extends Pivot
+class ContentTag extends Pivot
 {
     //
 }

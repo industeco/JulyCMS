@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Models\Node;
+use App\Models\Content;
 use App\ModelIsomers\CatalogTree;
-use App\Contracts\GetNodes;
-use App\ModelCollections\NodeCollection;
+use App\Contracts\GetContents;
+use App\ModelCollections\ContentCollection;
 use App\Traits\TruenameAsPrimaryKey;
 
-class Catalog extends JulyModel implements GetNodes
+class Catalog extends JulyModel implements GetContents
 {
     use TruenameAsPrimaryKey;
 
@@ -54,9 +54,9 @@ class Catalog extends JulyModel implements GetNodes
         return static::fetch('main');
     }
 
-    public function nodes()
+    public function contents()
     {
-        return $this->belongsToMany(Node::class, 'catalog_node', 'catalog', 'node_id')
+        return $this->belongsToMany(Content::class, 'catalog_content', 'catalog', 'content_id')
                 ->withPivot([
                     'parent_id',
                     'prev_id',
@@ -64,22 +64,22 @@ class Catalog extends JulyModel implements GetNodes
                 ]);
     }
 
-    public function nodesMerged()
+    public function contentsMerged()
     {
-        $nodes = [];
-        foreach ($this->nodes as $node) {
-            $values = $node->gather();
-            $values['parent_id'] = $node->pivot->parent_id;
-            $values['prev_id'] = $node->pivot->prev_id;
-            $values['path'] = $node->pivot->path;
-            $nodes[] = $values;
+        $contents = [];
+        foreach ($this->contents as $content) {
+            $values = $content->gather();
+            $values['parent_id'] = $content->pivot->parent_id;
+            $values['prev_id'] = $content->pivot->prev_id;
+            $values['path'] = $content->pivot->path;
+            $contents[] = $values;
         }
-        return $nodes;
+        return $contents;
     }
 
     public static function allPositions()
     {
-        $positions = CatalogNode::all()->groupBy('catalog')->toArray();
+        $positions = CatalogContent::all()->groupBy('catalog')->toArray();
         foreach (Catalog::all() as $catalog) {
             $truename = $catalog->getKey();
             if (! isset($positions[$truename])) {
@@ -91,22 +91,22 @@ class Catalog extends JulyModel implements GetNodes
 
     public function positions()
     {
-        return CatalogNode::where('catalog', $this->getKey())->get()->toArray();
+        return CatalogContent::where('catalog', $this->getKey())->get()->toArray();
     }
 
-    public function cacheGetCatalogNodes()
+    public function cacheGetCatalogContents()
     {
         $cachekey = $this->cacheKey('catalogNodes', []);
-        if ($nodes = $this->cacheGet($cachekey)) {
-            $nodes = $nodes['value'];
+        if ($contents = $this->cacheGet($cachekey)) {
+            $contents = $contents['value'];
         } else {
-            $nodes = CatalogNode::where('catalog', $this->getKey())
-                ->get(['node_id','parent_id','prev_id','path'])->toArray();
+            $contents = CatalogContent::where('catalog', $this->getKey())
+                ->get(['content_id','parent_id','prev_id','path'])->toArray();
 
-            $this->cachePut($cachekey, $nodes);
+            $this->cachePut($cachekey, $contents);
         }
 
-        return $nodes;
+        return $contents;
     }
 
     public function removePosition(array $position)
@@ -114,14 +114,14 @@ class Catalog extends JulyModel implements GetNodes
         $this->cacheClear(['key'=>'catalogNodes']);
         $this->cacheClear(['key'=>'treeNodes']);
 
-        // DB::delete("DELETE from catalog_node where `catalog`=? and (`node_id`=? or `path` like '%/$node_id/%' )");
+        // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
         $truename = $this->getKey();
-        CatalogNode::where([
+        CatalogContent::where([
             'catalog' => $truename,
-            'node_id' => $position['node_id'],
+            'content_id' => $position['content_id'],
         ])->orWhere([
             ['catalog', '=', $truename],
-            ['path', 'like', '%/'.$position['node_id'].'/%'],
+            ['path', 'like', '%/'.$position['content_id'].'/%'],
         ])->delete();
 
         $this->touch();
@@ -137,27 +137,27 @@ class Catalog extends JulyModel implements GetNodes
 
         $parent = $position['parent_id'];
         if ($parent) {
-            $parent = CatalogNode::where([
+            $parent = CatalogContent::where([
                 'catalog' => $position['catalog'],
-                'node_id' => $parent,
+                'content_id' => $parent,
             ])->firstOrFail();
             $position['path'] = $parent->path.$position['parent_id'].'/';
         } else {
             $position['path'] = '/';
         }
 
-        $next = CatalogNode::where([
+        $next = CatalogContent::where([
             'catalog' => $position['catalog'],
             'parent_id' => $position['parent_id'],
             'prev_id' => $position['prev_id'],
         ])->first();
 
         if ($next) {
-            $next->prev_id = $position['node_id'];
+            $next->prev_id = $position['content_id'];
             $next->save();
         }
 
-        CatalogNode::create($position);
+        CatalogContent::create($position);
 
         $this->touch();
     }
@@ -179,10 +179,10 @@ class Catalog extends JulyModel implements GetNodes
 
         DB::beginTransaction();
 
-        DB::table('catalog_node')->where('catalog', $truename)->delete();
+        DB::table('catalog_content')->where('catalog', $truename)->delete();
         foreach ($positions as $position) {
             $position['catalog'] = $truename;
-            DB::table('catalog_node')->insert($position);
+            DB::table('catalog_content')->insert($position);
         }
 
         DB::commit();
@@ -206,7 +206,7 @@ class Catalog extends JulyModel implements GetNodes
      * 获取指定节点的直接子节点
      *
      * @param array $args 指定节点
-     * @return \App\ModelCollections\NodeCollection
+     * @return \App\ModelCollections\ContentCollection
      */
     public function get_children(...$args)
     {
@@ -220,7 +220,7 @@ class Catalog extends JulyModel implements GetNodes
         foreach ($args as $id) {
             $ids = array_merge($ids, $tree->children($id));
         }
-        return NodeCollection::find($ids);
+        return ContentCollection::find($ids);
     }
 
     public function get_under(...$args)
@@ -232,7 +232,7 @@ class Catalog extends JulyModel implements GetNodes
      * 获取指定节点的所有子节点
      *
      * @param array $args 指定节点
-     * @return \App\ModelCollections\NodeCollection
+     * @return \App\ModelCollections\ContentCollection
      */
     public function get_descendants(...$args)
     {
@@ -246,7 +246,7 @@ class Catalog extends JulyModel implements GetNodes
         foreach ($args as $id) {
             $ids = array_merge($ids, $tree->descendants($id));
         }
-        return NodeCollection::find($ids);
+        return ContentCollection::find($ids);
     }
 
     /**
@@ -261,13 +261,13 @@ class Catalog extends JulyModel implements GetNodes
      * 获取指定节点的所有上级节点
      *
      * @param array $args 指定节点
-     * @return \App\ModelCollections\NodeCollection
+     * @return \App\ModelCollections\ContentCollection
      */
     public function get_parent(...$args)
     {
         $args = format_arguments($args);
         if (empty($args)) {
-            return new NodeCollection;
+            return new ContentCollection;
         }
 
         $tree = $this->tree();
@@ -275,7 +275,7 @@ class Catalog extends JulyModel implements GetNodes
         foreach ($args as $id) {
             $ids = array_merge($ids, $tree->parent($id));
         }
-        return NodeCollection::find($ids);
+        return ContentCollection::find($ids);
     }
 
     public function get_over(...$args)
@@ -287,13 +287,13 @@ class Catalog extends JulyModel implements GetNodes
      * 获取指定节点的所有上级节点
      *
      * @param array $args 指定节点
-     * @return \App\ModelCollections\NodeCollection
+     * @return \App\ModelCollections\ContentCollection
      */
     public function get_ancestors(...$args)
     {
         $args = format_arguments($args);
         if (empty($args)) {
-            return new NodeCollection;
+            return new ContentCollection;
         }
 
         $tree = $this->tree();
@@ -301,7 +301,7 @@ class Catalog extends JulyModel implements GetNodes
         foreach ($args as $id) {
             $ids = array_merge($ids, $tree->ancestors($id));
         }
-        return NodeCollection::find($ids);
+        return ContentCollection::find($ids);
     }
 
     public function get_above(...$args)
@@ -313,13 +313,13 @@ class Catalog extends JulyModel implements GetNodes
      * 获取指定节点的相邻节点
      *
      * @param array $args 指定节点
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_siblings(...$args)
     {
         $args = format_arguments($args);
         if (empty($args)) {
-            return new NodeCollection;
+            return new ContentCollection;
         }
 
         $tree = $this->tree();
@@ -327,7 +327,7 @@ class Catalog extends JulyModel implements GetNodes
         foreach ($args as $id) {
             $ids = array_merge($ids, $tree->siblings($id));
         }
-        return NodeCollection::find($ids);
+        return ContentCollection::find($ids);
     }
 
     public function get_around(...$args)
@@ -339,7 +339,7 @@ class Catalog extends JulyModel implements GetNodes
      * 在指定的树中，获取当前节点的前一个节点
      *
      * @param int $id
-     * @return \App\Models\Node
+     * @return \App\Models\Content
      */
     public function get_prev($id)
     {
@@ -348,7 +348,7 @@ class Catalog extends JulyModel implements GetNodes
         }
 
         if ($id = $this->tree()->prev($id)) {
-            return Node::fetch($id);
+            return Content::fetch($id);
         }
         return null;
     }
@@ -357,7 +357,7 @@ class Catalog extends JulyModel implements GetNodes
      * 在指定的树中，获取当前节点的后一个节点
      *
      * @param int $id
-     * @return \App\Models\Node
+     * @return \App\Models\Content
      */
     public function get_next($id)
     {
@@ -366,15 +366,15 @@ class Catalog extends JulyModel implements GetNodes
         }
 
         if ($id = $this->tree()->next($id)) {
-            return Node::fetch($id);
+            return Content::fetch($id);
         }
         return null;
     }
 
-    public function get_nodes(): NodeCollection
+    public function get_contents(): ContentCollection
     {
-        $ids = $this->tree()->nodes();
-        return NodeCollection::find($ids);
+        $ids = $this->tree()->contents();
+        return ContentCollection::find($ids);
     }
 
     /**

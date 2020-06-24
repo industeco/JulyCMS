@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Node;
-use App\Models\NodeType;
+use App\Models\Content;
+use App\Models\ContentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use App\Models\NodeField;
+use App\Models\ContentField;
 use Illuminate\Support\Facades\Log;
 
-class NodeTypeController extends Controller
+class ContentTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -18,17 +18,17 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        $nodeCount = NodeType::usedByNodes();
-        $nodeTypes = NodeType::all()->map(function($nodeType) {
-            return $nodeType->attributesToArray();
+        $contentCount = ContentType::usedByNodes();
+        $contentTypes = ContentType::all()->map(function($contentType) {
+            return $contentType->attributesToArray();
         })->all();
-        foreach ($nodeTypes as &$nodeType) {
-            $nodeType['nodes'] = $nodeCount[$nodeType['truename']] ?? 0;
+        foreach ($contentTypes as &$contentType) {
+            $contentType['contents'] = $contentCount[$contentType['truename']] ?? 0;
         }
-        unset($nodeType);
+        unset($contentType);
 
-        return view_with_langcode('admin::node_types.index', [
-            'nodeTypes' => $nodeTypes,
+        return view_with_langcode('admin::content_types.index', [
+            'contentTypes' => $contentTypes,
         ]);
     }
 
@@ -39,18 +39,18 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $optionalFields = NodeField::localFields()
+        $optionalFields = ContentField::localFields()
                             ->map(function($field) {
                                 return $field->gather();
                             })
                             ->keyBy('truename')
                             ->all();
 
-        return view_with_langcode('admin::node_types.create_edit', [
+        return view_with_langcode('admin::content_types.create_edit', [
             'truename' => null,
             'label' => null,
             'description' => null,
-            'fields' => NodeField::presetLocalFields()->pluck('truename')->all(),
+            'fields' => ContentField::presetLocalFields()->pluck('truename')->all(),
             'availableFields' => $optionalFields,
         ]);
     }
@@ -63,19 +63,19 @@ class NodeTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $nodeType = NodeType::make($request->all());
-        $nodeType->save();
-        $nodeType->updateFields($request->input('fields', []));
+        $contentType = ContentType::make($request->all());
+        $contentType->save();
+        $contentType->updateFields($request->input('fields', []));
         return response('');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\NodeType  $nodeType
+     * @param  \App\Models\ContentType  $contentType
      * @return \Illuminate\Http\Response
      */
-    public function show(NodeType $nodeType)
+    public function show(ContentType $contentType)
     {
         //
     }
@@ -83,19 +83,19 @@ class NodeTypeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\NodeType  $nodeType
+     * @param  \App\Models\ContentType  $contentType
      * @return \Illuminate\Http\Response
      */
-    public function edit(NodeType $nodeType)
+    public function edit(ContentType $contentType)
     {
-        if ('default' === $nodeType->getKey()) {
+        if ('default' === $contentType->getKey()) {
             abort(404);
         }
-        $fields = collect($nodeType->cacheGetFields())->keyBy('truename');
+        $fields = collect($contentType->cacheGetFields())->keyBy('truename');
 
-        $data = $nodeType->gather();
+        $data = $contentType->gather();
         $data['fields'] = $fields->keys()->all();
-        $data['availableFields'] = NodeField::localFields()
+        $data['availableFields'] = ContentField::localFields()
                                     ->map(function($field) {
                                         return $field->gather();
                                     })
@@ -103,33 +103,33 @@ class NodeTypeController extends Controller
                                     ->replace($fields)
                                     ->all();
 
-        return view_with_langcode('admin::node_types.create_edit', $data);
+        return view_with_langcode('admin::content_types.create_edit', $data);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\NodeType  $nodeType
+     * @param  \App\Models\ContentType  $contentType
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, NodeType $nodeType)
+    public function update(Request $request, ContentType $contentType)
     {
-        $nodeType->update($request->all());
-        $nodeType->updateFields($request->input('fields', []));
+        $contentType->update($request->all());
+        $contentType->updateFields($request->input('fields', []));
         return response('');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\NodeType  $nodeType
+     * @param  \App\Models\ContentType  $contentType
      * @return \Illuminate\Http\Response
      */
-    public function destroy(NodeType $nodeType)
+    public function destroy(ContentType $contentType)
     {
-        $nodeType->fields()->detach();
-        $nodeType->delete();
+        $contentType->fields()->detach();
+        $contentType->delete();
         return response('');
     }
 
@@ -142,7 +142,7 @@ class NodeTypeController extends Controller
     public function unique($id)
     {
         return response([
-            'exists' => !empty(NodeType::find($id)),
+            'exists' => !empty(ContentType::find($id)),
         ]);
     }
 }

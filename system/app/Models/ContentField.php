@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-class NodeField extends JulyModel
+class ContentField extends JulyModel
 {
     use TruenameAsPrimaryKey;
 
@@ -19,7 +19,7 @@ class NodeField extends JulyModel
      *
      * @var string
      */
-    protected $table = 'node_fields';
+    protected $table = 'content_fields';
 
     /**
      * 可批量赋值的属性。
@@ -53,8 +53,8 @@ class NodeField extends JulyModel
 
     public function types()
     {
-        return $this->belongsToMany(NodeType::class, 'node_field_node_type', 'node_field', 'node_type')
-                    ->orderBy('node_field_node_type.delta')
+        return $this->belongsToMany(ContentType::class, 'content_field_content_type', 'content_field', 'content_type')
+                    ->orderBy('content_field_content_type.delta')
                     ->withPivot([
                         'delta',
                         'weight',
@@ -74,12 +74,12 @@ class NodeField extends JulyModel
         return FieldType::make($this->getAttribute('field_type'), $this, $langcode);
     }
 
-    public static function usedByNodeTypes()
+    public static function usedByContentTypes()
     {
         $types = [];
-        $records = DB::select('SELECT `node_field`, count(`node_field`) as `total` FROM `node_field_node_type` GROUP BY `node_field`');
+        $records = DB::select('SELECT `content_field`, count(`content_field`) as `total` FROM `content_field_content_type` GROUP BY `content_field`');
         foreach ($records as $record) {
-            $types[$record->node_field] = $record->total;
+            $types[$record->content_field] = $record->total;
         }
 
         return $types;
@@ -171,12 +171,12 @@ class NodeField extends JulyModel
         $original_lang = $this->getAttribute('langcode');
         $langcode = $langcode ?? $original_lang;
 
-        $keyname = implode('.', ['node_field', $this->getKey()]);
+        $keyname = implode('.', ['content_field', $this->getKey()]);
         $records = FieldParameters::where('keyname', 'like', $keyname.'.%')->get()->pluck('data', 'keyname');
 
         $parameters = $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$original_lang];
         if ($pivot = $this->pivot) {
-            $keyname = implode('.', [$keyname, 'node_type', $pivot->node_type]);
+            $keyname = implode('.', [$keyname, 'content_type', $pivot->content_type]);
             $parameters = array_merge(
                     $parameters,
                     $records[$keyname.'.'.$langcode] ?? $records[$keyname.'.'.$original_lang] ?? []
@@ -188,7 +188,7 @@ class NodeField extends JulyModel
 
     public function tableName()
     {
-        return 'node__' . $this->truename;
+        return 'content__' . $this->getKey();
     }
 
     public function tableColumns()
@@ -217,7 +217,7 @@ class NodeField extends JulyModel
             // 创建数据表
             Schema::create($tableName, function (Blueprint $table) use ($columns) {
                 $table->id();
-                $table->unsignedBigInteger('node_id');
+                $table->unsignedBigInteger('content_id');
 
                 foreach($columns as $column) {
                     $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
@@ -227,7 +227,7 @@ class NodeField extends JulyModel
                 $table->string('langcode', 12);
                 $table->timestamps();
 
-                $table->unique(['node_id', 'langcode', 'delta']);
+                $table->unique(['content_id', 'langcode', 'delta']);
             });
         }
     }
@@ -245,15 +245,15 @@ class NodeField extends JulyModel
     /**
      * 删除字段值
      */
-    public function deleteValue($node_id, $langcode = null)
+    public function deleteValue($content_id, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
 
         // 清除字段值缓存
-        $this->cacheClear($this->cacheKey('values', compact('node_id', 'langcode')));
+        $this->cacheClear($this->cacheKey('values', compact('content_id', 'langcode')));
 
         $table = $this->tableName();
-        DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
+        DB::delete("DELETE FROM `$table` WHERE `content_id`=? AND `langcode`=?", [$content_id, $langcode]);
 
         return true;
     }
@@ -261,11 +261,11 @@ class NodeField extends JulyModel
     /**
      * 设置字段值
      *
-     * @param int $node_id
+     * @param int $content_id
      * @param mixed $value
      * @return void
      */
-    public function setValue($value, $node_id, $langcode = null)
+    public function setValue($value, $content_id, $langcode = null)
     {
         // Log::info("Updating field '{$this->truename}'");
 
@@ -273,14 +273,14 @@ class NodeField extends JulyModel
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
-        $this->cacheClear($this->cacheKey('values', compact('node_id', 'langcode')));
+        $this->cacheClear($this->cacheKey('values', compact('content_id', 'langcode')));
 
         $records = $this->fieldType()->toRecords($value);
         if (is_null($records)) {
-            $this->deleteValue($node_id, $langcode);
+            $this->deleteValue($content_id, $langcode);
         } else {
             foreach ($records as $index => &$record) {
-                $record['node_id'] = $node_id;
+                $record['content_id'] = $content_id;
                 $record['langcode'] = $langcode;
                 $record['delta'] = $index;
             }
@@ -290,7 +290,7 @@ class NodeField extends JulyModel
             // Log::info("table: '{$table}'");
 
             DB::beginTransaction();
-            DB::delete("DELETE FROM `$table` WHERE `node_id`=? AND `langcode`=?", [$node_id, $langcode]);
+            DB::delete("DELETE FROM `$table` WHERE `content_id`=? AND `langcode`=?", [$content_id, $langcode]);
             foreach ($records as $record) {
                 DB::table($table)->insert($record);
             }
@@ -301,16 +301,16 @@ class NodeField extends JulyModel
     /**
      * 获取字段值
      *
-     * @param \App\Models\Node $node
+     * @param \App\Models\Content $content
      * @param string $langcode 语言代码
      * @return mixed
      */
-    public function getValue(Node $node, $langcode = null)
+    public function getValue(Content $content, $langcode = null)
     {
-        $langcode = $langcode ?: $node->getAttribute('langcode');
+        $langcode = $langcode ?: $content->getAttribute('langcode');
 
         $cacheKey = $this->cacheKey('values', [
-            'node_id' => $node->getKey(),
+            'content_id' => $content->getKey(),
             'langcode' => $langcode,
         ]);
 
@@ -320,7 +320,7 @@ class NodeField extends JulyModel
 
         $value = null;
         $records = DB::table($this->tableName())->where([
-            ['node_id', $node->getKey()],
+            ['content_id', $content->getKey()],
             ['langcode', $langcode],
         ])->orderBy('delta')->get();
 
@@ -370,11 +370,11 @@ class NodeField extends JulyModel
     {
         parent::boot();
 
-        static::created(function(NodeField $field) {
+        static::created(function(ContentField $field) {
             $field->tableUp();
         });
 
-        static::deleted(function(NodeField $field) {
+        static::deleted(function(ContentField $field) {
             $field->tableDown();
         });
     }
@@ -400,13 +400,13 @@ class NodeField extends JulyModel
         $fieldLabel = $this->label();
         $results = [];
         foreach ($records as $record) {
-            $id = $record->node_id;
+            $id = $record->content_id;
             $lang = $record->langcode;
             $key = $id.'/'.$fieldName.'/'.$lang;
             if (! isset($results[$key])) {
                 $results[$key] = [
-                    'node_id' => $id,
-                    'node_field' => $fieldName,
+                    'content_id' => $id,
+                    'content_field' => $fieldName,
                     'field_type' => $fieldType,
                     'field_label' => $fieldLabel,
                     'langcode' => $lang,

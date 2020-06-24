@@ -397,7 +397,7 @@ if (! function_exists('build_google_sitemap')) {
         $eol = "\n";
 
         // xml 文件
-        $xml = '<'.'?xml version="1.0" encoding="UTF-8" ?'.'>';
+        $xml = '<'.'?xml version="1.0" encoding="UTF-8" ?'.'>'.$eol;
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
         $xml .= ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
         $xml .= ' xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9';
@@ -406,18 +406,18 @@ if (! function_exists('build_google_sitemap')) {
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>'.$eol;
 
-        $urls = DB::table('node__url')
+        $urls = DB::table('content__url')
                 ->where('langcode', $langcode)
                 ->get()
-                ->pluck('url_value', 'node_id')
+                ->pluck('url_value', 'content_id')
                 ->all();
 
         // 生成 xml 内容
-        foreach (Catalog::default()->get_nodes() as $node) {
-            $url = $urls[$node->id] ?? null;
+        foreach (Catalog::default()->get_contents() as $content) {
+            $url = $urls[$content->id] ?? null;
             if (!$url || $url === '/404.html') continue;
 
-            $html = $node->getHtml($langcode);
+            $html = $content->getHtml($langcode);
             if (is_null($html)) {
                 continue;
             }

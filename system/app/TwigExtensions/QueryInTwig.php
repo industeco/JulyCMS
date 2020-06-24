@@ -4,8 +4,8 @@ namespace App\TwigExtensions;
 
 use App\Models;
 use App\ModelCollections\CatalogCollection;
-use App\ModelCollections\NodeCollection;
-use App\ModelCollections\NodeTypeCollection;
+use App\ModelCollections\ContentCollection;
+use App\ModelCollections\ContentTypeCollection;
 use App\ModelCollections\TagCollection;
 use Illuminate\Support\Str;
 use Twig\TwigFunction;
@@ -33,10 +33,10 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
             }),
 
             // 获取节点集
-            new TwigFunction('nodes', [$this, 'nodes']),
+            new TwigFunction('contents', [$this, 'contents']),
 
             // 获取类型集
-            new TwigFunction('types', [$this, 'node_types']),
+            new TwigFunction('types', [$this, 'content_types']),
 
             // 获取目录集
             new TwigFunction('catalogs', [$this, 'catalogs']),
@@ -74,8 +74,8 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
             }),
 
             // 使用 tags 过滤节点集
-            new TwigFilter('tags', function($nodes, array $options = []) {
-                if ($nodes instanceof NodeCollection && !empty($options)) {
+            new TwigFilter('tags', function($contents, array $options = []) {
+                if ($contents instanceof ContentCollection && !empty($options)) {
                     $match = array_pop($options);
                     if (!is_int($match)) {
                         $options[] = $match;
@@ -84,28 +84,28 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
 
                     $options = collect($options)->flatten()->all();
                     if (!empty($options)) {
-                        return $nodes->match_tags($options, $match);
+                        return $contents->match_tags($options, $match);
                     }
                 }
 
-                return $nodes;
+                return $contents;
             }, ['is_variadic' => true]),
 
             // 按内容类型过滤节点集
-            new TwigFilter('types', function($nodes, array $options = []) {
+            new TwigFilter('types', function($contents, array $options = []) {
 
-                if ($nodes instanceof NodeCollection) {
+                if ($contents instanceof ContentCollection) {
                     if (count($options) === 1 && is_array($options[0])) {
                         $options = $options[0];
                     }
                     if (!empty($options)) {
-                        return $nodes->filter(function($node) use($options) {
-                            return in_array($node->node_type, $options);
+                        return $contents->filter(function($content) use($options) {
+                            return in_array($content->content_type, $options);
                         })->keyBy('id');
                     }
                 }
 
-                return $nodes;
+                return $contents;
             }, ['is_variadic' => true]),
         ];
     }
@@ -120,15 +120,15 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      *  - 目录集
      *  - 标签集
      *
-     * @return \App\ModelCollections\NodeCollection
+     * @return \App\ModelCollections\ContentCollection
      */
-    public function nodes(...$args)
+    public function contents(...$args)
     {
         $args = format_arguments($args);
         if (empty($args)) {
-            return NodeCollection::findAll();
+            return ContentCollection::findAll();
         }
-        return NodeCollection::find($args);
+        return ContentCollection::find($args);
     }
 
     /**
@@ -138,15 +138,15 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
      *  - 类型
      *  - 类型真名 (truename)
      *
-     * @return \App\ModelCollections\NodeTypeCollection
+     * @return \App\ModelCollections\ContentTypeCollection
      */
-    public function node_types(...$args)
+    public function content_types(...$args)
     {
         $args = format_arguments($args);
         if (empty($args)) {
-            return NodeTypeCollection::findAll();
+            return ContentTypeCollection::findAll();
         }
-        return NodeTypeCollection::find($args);
+        return ContentTypeCollection::find($args);
     }
 
     /**

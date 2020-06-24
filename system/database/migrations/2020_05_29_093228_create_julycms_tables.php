@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\NodeField;
+use App\Models\ContentField;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -69,7 +69,7 @@ class CreateJulycmsTables extends Migration
 
         // 字段参数表
         Schema::create('field_parameters', function (Blueprint $table) {
-            // 参数键名，例：node_field.title.en 或 node_field.title.node_type.basic.en
+            // 参数键名，例：content_field.title.en 或 content_field.title.content_type.basic.en
             $table->string('keyname', 100)->primary();
 
             // 配置值
@@ -77,7 +77,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容字段
-        Schema::create('node_fields', function (Blueprint $table) {
+        Schema::create('content_fields', function (Blueprint $table) {
             // 字段真名
             $table->string('truename', 50)->primary();
 
@@ -113,7 +113,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容类型
-        Schema::create('node_types', function (Blueprint $table) {
+        Schema::create('content_types', function (Blueprint $table) {
             // 真名
             $table->string('truename', 50)->primary();
 
@@ -131,12 +131,12 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容字段与内容类型关联表
-        Schema::create('node_field_node_type', function (Blueprint $table) {
+        Schema::create('content_field_content_type', function (Blueprint $table) {
             // 类型真名
-            $table->string('node_type', 50);
+            $table->string('content_type', 50);
 
             // 字段真名
-            $table->string('node_field', 50);
+            $table->string('content_field', 50);
 
             // 序号
             $table->unsignedTinyInteger('delta')->default(0);
@@ -151,18 +151,18 @@ class CreateJulycmsTables extends Migration
             $table->string('description', 255)->nullable();
 
             // 同一个字段在同一个类型中最多出现一次
-            $table->unique(['node_type', 'node_field']);
+            $table->unique(['content_type', 'content_field']);
         });
 
         // 内容表
-        Schema::create('nodes', function (Blueprint $table) {
+        Schema::create('contents', function (Blueprint $table) {
             $table->id();
 
             // 是否预设
             $table->boolean('is_preset')->default(0);
 
             // 节点类型
-            $table->string('node_type', 50);
+            $table->string('content_type', 50);
 
             // 源语言（创建时的语言）
             $table->string('langcode', 12);
@@ -190,12 +190,12 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容与目录关联表
-        Schema::create('catalog_node', function (Blueprint $table) {
+        Schema::create('catalog_content', function (Blueprint $table) {
             // 目录真名
             $table->string('catalog', 50);
 
             // 内容 id
-            $table->unsignedBigInteger('node_id');
+            $table->unsignedBigInteger('content_id');
 
             // 父级内容 id
             $table->unsignedBigInteger('parent_id')->nullable();
@@ -231,9 +231,9 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容与标签关联表
-        Schema::create('node_tag', function (Blueprint $table) {
+        Schema::create('content_tag', function (Blueprint $table) {
             // 内容 id
-            $table->unsignedBigInteger('node_id');
+            $table->unsignedBigInteger('content_id');
 
             // 标签 id
             $table->string('tag', 50);
@@ -243,12 +243,12 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容值索引表
-        Schema::create('node_index', function (Blueprint $table) {
+        Schema::create('content_index', function (Blueprint $table) {
             // 内容 id
-            $table->unsignedBigInteger('node_id');
+            $table->unsignedBigInteger('content_id');
 
             // 字段真名
-            $table->string('node_field', 50);
+            $table->string('content_field', 50);
 
             // 字段值
             $table->text('field_value');
@@ -268,20 +268,20 @@ class CreateJulycmsTables extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('node_index');
-        Schema::dropIfExists('node_tag');
+        Schema::dropIfExists('content_index');
+        Schema::dropIfExists('content_tag');
         Schema::dropIfExists('tags');
-        Schema::dropIfExists('catalog_node');
+        Schema::dropIfExists('catalog_content');
         Schema::dropIfExists('catalogs');
-        Schema::dropIfExists('nodes');
-        Schema::dropIfExists('node_field_node_type');
-        Schema::dropIfExists('node_types');
+        Schema::dropIfExists('contents');
+        Schema::dropIfExists('content_field_content_type');
+        Schema::dropIfExists('content_types');
 
-        foreach (NodeField::all() as $field) {
+        foreach (ContentField::all() as $field) {
             $field->tableDown();
         }
 
-        Schema::dropIfExists('node_fields');
+        Schema::dropIfExists('content_fields');
         Schema::dropIfExists('field_parameters');
         Schema::dropIfExists('user_preferences');
         Schema::dropIfExists('users');

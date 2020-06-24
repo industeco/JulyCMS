@@ -2,14 +2,14 @@
 
 namespace App\ModelCollections;
 
-use App\Models\Node;
-use App\Contracts\GetNodes;
+use App\Models\Content;
+use App\Contracts\GetContents;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class NodeCollection extends ModelCollection
+class ContentCollection extends ModelCollection
 {
-    protected static $model = Node::class;
+    protected static $model = Content::class;
     protected static $primaryKey = 'id';
 
     public static function findArray(array $args)
@@ -18,13 +18,13 @@ class NodeCollection extends ModelCollection
         foreach ($args as $arg) {
             // 节点 id
             if (is_numeric($arg)) {
-                if ($node = Node::fetch($arg)) {
-                    $items[$node->id] = $node;
+                if ($content = Content::fetch($arg)) {
+                    $items[$content->id] = $content;
                 }
             }
 
             // 节点对象
-            elseif ($arg instanceof Node) {
+            elseif ($arg instanceof Content) {
                 $items[$arg->id] = $arg;
             }
 
@@ -33,8 +33,8 @@ class NodeCollection extends ModelCollection
             }
 
             // 类型集，标签集等对象
-            elseif ($arg instanceof GetNodes) {
-                $items = array_merge($items, $arg->get_nodes()->keyBy('id')->all());
+            elseif ($arg instanceof GetContents) {
+                $items = array_merge($items, $arg->get_contents()->keyBy('id')->all());
             }
         }
 
@@ -45,7 +45,7 @@ class NodeCollection extends ModelCollection
      * 在指定的树中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_children($catalog = null)
     {
@@ -62,7 +62,7 @@ class NodeCollection extends ModelCollection
      * 在指定的树中，获取当前节点集的所有子节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_descendants($catalog = null)
     {
@@ -79,7 +79,7 @@ class NodeCollection extends ModelCollection
      * 在指定的树中，获取当前节点集的直接父节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_parent($catalog = null)
     {
@@ -96,7 +96,7 @@ class NodeCollection extends ModelCollection
      * 在指定的树中，获取当前节点集的所有上级节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_ancestors($catalog = null)
     {
@@ -113,7 +113,7 @@ class NodeCollection extends ModelCollection
      * 在指定的树中，获取当前节点的相邻节点
      *
      * @param mixed $catalog
-     * @return NodeCollection
+     * @return ContentCollection
      */
     public function get_siblings($catalog = null)
     {
@@ -128,8 +128,8 @@ class NodeCollection extends ModelCollection
 
     public function get_types()
     {
-        $types = $this->pluck('node_type')->unique()->all();
-        return NodeTypeCollection::find($types);
+        $types = $this->pluck('content_type')->unique()->all();
+        return ContentTypeCollection::find($types);
     }
 
     public function get_tags()
@@ -137,8 +137,8 @@ class NodeCollection extends ModelCollection
         $ids = $this->pluck('id')->unique()->all();
         $langcode = config('current_render_langcode') ?? langcode('site_page');
 
-        $tags = DB::table('node_tag')
-            ->whereIn('node_id', $ids)
+        $tags = DB::table('content_tag')
+            ->whereIn('content_id', $ids)
             ->where('langcode', $langcode)
             ->get('tag')->pluck('tag')->all();
 
@@ -147,21 +147,21 @@ class NodeCollection extends ModelCollection
 
     public function get_catalog()
     {
-        $types = $this->pluck('node_type')->unique()->all();
-        return NodeTypeCollection::find($types);
+        $types = $this->pluck('content_type')->unique()->all();
+        return ContentTypeCollection::find($types);
     }
 
     public function match_tags(array $tags, $matches = null)
     {
-        $nodes = TagCollection::find($tags)->match($matches)->get_nodes();
-        return $this->only($nodes->pluck('id'));
+        $contents = TagCollection::find($tags)->match($matches)->get_contents();
+        return $this->only($contents->pluck('id'));
     }
 
     // /**
     //  * 在指定的树中，获取当前节点的相邻节点
     //  *
     //  * @param Tree|TreeCollection|null $tree
-    //  * @return NodeCollection
+    //  * @return ContentCollection
     //  */
     // public function get_path($tree = null)
     // {
@@ -173,11 +173,11 @@ class NodeCollection extends ModelCollection
     //  * 在指定的引用空间中，获取所有引用过当前节点集节点的主节点
     //  *
     //  * @param string $field 字段机读名
-    //  * @return NodeCollection
+    //  * @return ContentCollection
     //  */
     // public function get_hosts($field = null)
     // {
     //     $anchors = $this->pluck('id')->all();
-    //     return NodeReference::host_nodes($anchors, $field);
+    //     return NodeReference::host_contents($anchors, $field);
     // }
 }

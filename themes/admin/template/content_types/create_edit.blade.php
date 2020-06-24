@@ -433,7 +433,7 @@
             let field = clone(app.nodeField);
             field.parameters.datalist = field.parameters.datalist.map(item => item.value);
 
-            axios.post("{{ short_route('node_fields.store') }}", field).then(function(response) {
+            axios.post("{{ short_route('content_fields.store') }}", field).then(function(response) {
               // console.log(response)
               availableFields[field.truename] = field;
               app.nodeType.fields.push(field);
@@ -504,19 +504,19 @@
 
           @if($truename)
           if (app.initial_data === JSON.stringify(nodeType)) {
-            window.location.href = "{{ short_route('node_types.index') }}";
+            window.location.href = "{{ short_route('content_types.index') }}";
             return;
           }
           @endif
 
           @if ($truename)
-          const action = "{{ short_route('node_types.update', $truename) }}";
+          const action = "{{ short_route('content_types.update', $truename) }}";
           @else
-          const action = "{{ short_route('node_types.store') }}";
+          const action = "{{ short_route('content_types.store') }}";
           @endif
 
           axios.{{ $truename ? 'put' : 'post' }}(action, nodeType).then(function(response) {
-            window.location.href = "{{ short_route('node_types.index') }}";
+            window.location.href = "{{ short_route('content_types.index') }}";
           }).catch(function(error) {
             loading.close();
             console.error(error);

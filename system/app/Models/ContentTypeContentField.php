@@ -3,16 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use App\Casts\Json;
 
-class NodeTypeNodeField extends Pivot
+class ContentTypeContentField extends Pivot
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'node_field_node_type';
+    protected $table = 'content_field_content_type';
 
     /**
      * 重定义主键
@@ -41,8 +40,8 @@ class NodeTypeNodeField extends Pivot
      * @var array
      */
     protected $fillable = [
-        'node_type',
-        'node_field',
+        'content_type',
+        'content_field',
         'delta',
         'weight',
         'label',
