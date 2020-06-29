@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Entity;
 
-abstract class BaseEntity extends JulyModel implements Entity
+abstract class BaseContent extends JulyModel implements Entity
 {
     //
 }

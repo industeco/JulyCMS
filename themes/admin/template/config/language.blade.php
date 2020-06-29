@@ -148,7 +148,7 @@
           'langcode.page': "{{ $configs['langcode.page']['value'] }}",
         },
         selected: null,
-        languageList: @json(language_list(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        languageList: @json(lang()->getLanguageList(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       };
     },
 

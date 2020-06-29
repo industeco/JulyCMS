@@ -18,31 +18,28 @@ trait CacheModel
      *
      * @throws \App\Exceptions\InvalidCacheKeyArguments
      */
-    public function cacheKey($key, array $conditions = null)
+    public function cacheKey($key)
     {
-        if (is_string($key) && is_null($conditions)) {
+        if (is_string($key)) {
             return $key;
         }
 
-        if (is_string($key) && is_array($conditions)) {
+        if (is_array($key)) {
+            if (! isset($key['key'])) {
+                throw new InvalidCacheKeyArguments;
+            }
+
+            $conditions = array_merge(Arr::except($key, ['class','key','conditions']), $key['conditions'] ?? []);
             if (method_exists($this, 'getKey')) {
                 $conditions['id'] = $this->getKey();
             }
             ksort($conditions);
-            $key = [
-                'class' => static::class,
-                'key' => $key,
+
+            return md5(json_encode([
+                'class' => $key['class'] ?? static::class,
+                'key' => $key['key'],
                 'conditions' => $conditions,
-            ];
-
-            return md5(json_encode($key));
-        }
-
-        if (is_array($key)) {
-            if (!isset($key['key'])) {
-                throw new InvalidCacheKeyArguments;
-            }
-            return $this->cacheKey($key['key'], $key['conditions'] ?? Arr::except($key, ['class','key']));
+            ]));
         }
 
         throw new InvalidCacheKeyArguments;

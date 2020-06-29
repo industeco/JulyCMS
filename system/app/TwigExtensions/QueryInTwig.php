@@ -32,7 +32,7 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
                 return config($key) ?? config('jc.' . $key) ?? config('app.' . $key) ?? null;
             }),
 
-            // 获取节点集
+            // 获取内容集
             new TwigFunction('contents', [$this, 'contents']),
 
             // 获取类型集

@@ -30,7 +30,7 @@ class ContentIndex extends Model
 
     public static function rebuild()
     {
-        $langcodes = array_keys(langcode('all'));
+        $langcodes = lang()->getAvailableLangcodes();
         $records = [];
         foreach (Content::all() as $content) {
             $fields = $content->searchableFields();

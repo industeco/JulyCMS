@@ -35,7 +35,7 @@ class ContentController extends Controller
             'contentTypes' => ContentType::pluck('label', 'truename')->all(),
             'catalogs' => Catalog::pluck('label', 'truename')->all(),
             'all_tags' => Tag::allTags(),
-            'languages' => available_languages('translatable'),
+            'languages' => lang()->getTranslatableLanguageList(),
         ]);
     }
 
@@ -238,7 +238,7 @@ class ContentController extends Controller
 
         return view_with_langcode('admin::languages', [
             'original_langcode' => $content->getAttribute('langcode'),
-            'languages' => available_languages('translatable'),
+            'languages' => lang()->getTranslatableLanguageList(),
             'entityKey' => $content->getKey(),
             'routePrefix' => 'contents',
         ]);
@@ -262,7 +262,7 @@ class ContentController extends Controller
 
         // 多语言生成
         if (config('jc.multi_language')) {
-            $langs = $request->input('langcode') ?: available_langcodes('accessible');
+            $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
         } else {
             $langs = [langcode('page')];
         }
@@ -285,7 +285,7 @@ class ContentController extends Controller
 
     protected function getTwigTemplates()
     {
-        $templates = ContentField::find('template')->records()->pluck('template_value');
+        $templates = ContentField::find('template')->getRecords()->pluck('template_value');
         return $templates->sort()->unique()->all();
     }
 }

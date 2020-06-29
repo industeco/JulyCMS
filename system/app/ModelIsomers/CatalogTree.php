@@ -21,7 +21,7 @@ class CatalogTree
     {
         $this->catalog = $catalog;
 
-        $cachekey = $catalog->cacheKey('treeNodes');
+        $cachekey = $catalog->cacheKey(['key'=>'treeNodes']);
         if ($treeNodes = $catalog->cacheGet($cachekey)) {
             $treeNodes = $treeNodes['value'];
         }else {

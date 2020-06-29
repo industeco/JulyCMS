@@ -2,6 +2,8 @@
 
 use App\Models\Catalog;
 use App\Support\Arr;
+use App\Support\Lang;
+use App\Support\Html;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -54,141 +56,28 @@ if (! function_exists('base64_decode_array')) {
                 $data[$key] = base64_decode($value);
             }
         }
+
         return $data;
     }
 }
 
-if (! function_exists('under_route')) {
-    function under_route($route, $path)
+if (! function_exists('lang')) {
+    /**
+     * 获取语言操作对象
+     *
+     * @param string|null $langcode
+     * @return \App\Support\Lang
+     */
+    function lang($langcode = null)
     {
-        $route = short_route($route);
-        return $path == $route || strpos($path, $route.'/') === 0;
+        return new Lang($langcode);
     }
 }
 
 if (! function_exists('langcode')) {
-    function langcode($type = null)
+    function langcode($alias = null)
     {
-        if (is_null($type)) {
-            return [
-                'content' => langcode('content'),
-                'page' => langcode('page'),
-            ];
-        }
-
-        switch ($type) {
-            // 可用语言列表
-            case 'available':
-            case 'all':
-            case 'list':
-                $langs = [];
-                $list = language_list();
-                $langcodes = array_keys(config('jc.langcode.list'));
-                foreach ($langcodes as $code) {
-                    $langs[$code] = $list[$code] ?? $code;
-                }
-                return $langs;
-
-            // 内容语言
-            case 'content':
-                return config('request.langcode.content') ?: config('jc.langcode.content');
-
-            // 默认内容语言
-            case 'content.default':
-                return config('jc.langcode.content');
-
-            // 站点页面语言
-            case 'page':
-                return config('request.langcode.page') ?: config('jc.langcode.page');
-
-            // 当前请求语言
-            case 'page.default':
-                return config('jc.langcode.page');
-
-            // 后台页面语言
-            case 'admin_page':
-                return config('jc.langcode.admin_page');
-
-            // 请求语言数组
-            case 'request':
-                return config('request.langcode');
-
-            // Laravel 设置的默认语言
-            default:
-                return config('fallback_lacale');
-        }
-    }
-}
-
-if (! function_exists('available_langcodes')) {
-    /**
-     * 获取可用语言列表
-     *
-     * @param string $permission: 'accessible', 'translatable'
-     * @return array
-     */
-    function available_langcodes($permission = 'accessible')
-    {
-        if (!$permission) {
-            return [];
-        }
-
-        $langcodes = [];
-        foreach (config('jc.langcode.list') as $key => $value) {
-            if ($value[$permission] ?? false) {
-                $langcodes[] = $key;
-            }
-        }
-
-        return $langcodes;
-    }
-}
-
-if (! function_exists('available_languages')) {
-    /**
-     * 获取可用语言列表
-     *
-     * @param string $permission: 'accessible', 'translatable'
-     * @return array
-     */
-    function available_languages($permission = 'accessible')
-    {
-        $list = language_list();
-
-        $languages = [];
-        foreach (config('jc.langcode.list') as $key => $value) {
-            if (!$permission || ($value[$permission] ?? false)) {
-                $languages[$key] = $list[$key] ?? $key;
-            }
-        }
-
-        return $languages;
-    }
-}
-
-if (! function_exists('langname')) {
-    function langname($langcode)
-    {
-        $list = language_list();
-        return $list[$langcode] ?? $langcode;
-    }
-}
-
-if (! function_exists('language_list')) {
-    function language_list()
-    {
-        $langcode = langcode('admin_page');
-        if ($list = config('language_list.'.$langcode, [])) {
-            return $list;
-        }
-
-        $file = base_path('language/'.$langcode.'.php');
-        if (is_file($file)) {
-            $list = require $file;
-            app('config')->set('language_list.'.$langcode, $list);
-        }
-
-        return $list;
+        return lang()->findCode($alias);
     }
 }
 
@@ -234,6 +123,14 @@ if (! function_exists('short_route')) {
             $name = $name[0] ?? null;
         }
         return route($name, $parameters, false);
+    }
+}
+
+if (! function_exists('under_route')) {
+    function under_route($route, $path)
+    {
+        $route = short_route($route);
+        return $path == $route || strpos($path, $route.'/') === 0;
     }
 }
 
@@ -313,8 +210,8 @@ if (! function_exists('last_modified')) {
     }
 }
 
-if (! function_exists('user_agent')) {
-    function user_agent($ua = null)
+if (! function_exists('guess_ua')) {
+    function guess_ua($ua = null)
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
         $uaGuess = $ua;
@@ -382,6 +279,19 @@ if (! function_exists('user_agent')) {
     }
 }
 
+if (! function_exists('html')) {
+    /**
+     * 获取 Html 对象
+     *
+     * @param string $html
+     * @return \App\Support\Html
+     */
+    function html($html)
+    {
+        return new Html($html);
+    }
+}
+
 if (! function_exists('build_google_sitemap')) {
     /**
      * 生成谷歌站点地图（xml 文件）
@@ -421,14 +331,16 @@ if (! function_exists('build_google_sitemap')) {
             if (is_null($html)) {
                 continue;
             }
+            $html = html($html);
+
             $xml .= '<url><loc>'.$home.$url.'</loc>';
 
-            foreach (extract_image_links($html) as $src) {
+            foreach ($html->extractImageLinks() as $src) {
                 $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>".$eol;
             }
             $xml .= '</url>'.$eol;
 
-            $pdfList = array_merge($pdfList, extract_pdf_links($html));
+            $pdfList = array_merge($pdfList, $html->extractPdfLinks());
         }
 
         foreach(array_unique($pdfList) as $pdf) {
@@ -438,48 +350,6 @@ if (! function_exists('build_google_sitemap')) {
         $xml .= '</urlset>';
 
         return $xml;
-    }
-}
-
-if (! function_exists('extract_image_links')) {
-    /**
-     * 从 $html 中提取图片链接
-     *
-     * @param string $html
-     * @return array
-     */
-    function extract_image_links($html)
-    {
-        preg_match_all('/src="(\/[^"]*?\.(?:jpg|jpeg|gif|png|webp))"/', $html, $matches, PREG_PATTERN_ORDER);
-        return array_unique($matches[1]);
-    }
-}
-
-if (! function_exists('extract_pdf_links')) {
-    /**
-     * 从 $html 中提取 PDF 链接
-     *
-     * @param string $html
-     * @return array
-     */
-    function extract_pdf_links($html)
-    {
-        preg_match_all('/href="(\/[^"]*?\.pdf)"/',$html, $matches, PREG_PATTERN_ORDER);
-        return array_unique($matches[1]);
-    }
-}
-
-if (! function_exists('extract_page_links')) {
-    /**
-     * 从 $html 中提取页面链接
-     *
-     * @param string $html
-     * @return array
-     */
-    function extract_page_links($html)
-    {
-        preg_match_all('/href="(\/[^"]*?(\.html|\/))"/',$html, $matches, PREG_PATTERN_ORDER);
-        return array_unique($matches[1]);
     }
 }
 

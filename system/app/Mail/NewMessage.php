@@ -106,7 +106,7 @@ class NewMessage
 
     protected function getUserAgent($ua = null)
     {
-        return user_agent($ua);
+        return guess_ua($ua);
     }
 
     protected function validate()

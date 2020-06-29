@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ langname($langcode) }} ]</span>
+  {{ $truename?'编辑内容类型':'新建内容类型' }} <span id="content_locale">[ {{ lang($langcode)->getName() }} ]</span>
 @endsection
 
 @section('main_content')

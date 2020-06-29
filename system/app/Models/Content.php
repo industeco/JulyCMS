@@ -10,7 +10,7 @@ use App\ModelCollections\TagCollection;
 use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
-class Content extends JulyModel
+class Content extends BaseContent
 {
     /**
      * 可批量赋值的属性。
@@ -32,6 +32,16 @@ class Content extends JulyModel
     protected $casts = [
         'is_preset' => 'boolean',
     ];
+
+    public static function getEntityId()
+    {
+        return 'content';
+    }
+
+    public static function getParentEntityId()
+    {
+        return null;
+    }
 
     public function contentType()
     {
@@ -113,15 +123,18 @@ class Content extends JulyModel
 
     public function cacheGetValues($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
-        $cachekey = $this->cacheKey('values', compact('langcode'));
+        $langcode = $langcode ?: $this->getAttributeValue('langcode');
+        $cachekey = $this->cacheKey([
+            'key' => 'values',
+            'langcode' => $langcode,
+        ]);
 
         if ($values = $this->cacheGet($cachekey)) {
             $values = $values['value'];
         } else {
             $values = [];
             foreach ($this->fields() as $field) {
-                $values[$field->getKey()] = $field->getValue($this, $langcode);
+                $values[$field->getKey()] = $field->getValue($this->getKey(), $langcode);
             }
             $this->cachePut($cachekey, $values);
         }
@@ -138,7 +151,10 @@ class Content extends JulyModel
     public function cacheGetTags($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
-        $cachekey = $this->cacheKey('tags', compact('langcode'));
+        $cachekey = $this->cacheKey([
+            'key' => 'tags',
+            'langcode' => $langcode,
+        ]);
 
         if ($tags = $this->cacheGet($cachekey, $langcode)) {
             $tags = $tags['value'];
@@ -161,7 +177,7 @@ class Content extends JulyModel
      */
     public function saveValues(array $values, $deleteNull = false)
     {
-        $this->cacheClear(['key' => 'values', 'langcode' => langcode('content')]);
+        $this->cacheClear(['key'=>'values', 'langcode'=>langcode('content')]);
         // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
         $changed = $values['changed_values'];
@@ -187,7 +203,6 @@ class Content extends JulyModel
     public function saveTags(array $tags, $langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
-
         $this->cacheClear(['key'=>'tags', 'langcode'=>$langcode]);
 
         Tag::createIfNotExist($tags, $langcode);
@@ -351,6 +366,7 @@ class Content extends JulyModel
         if (! $html) {
             return [];
         }
+        $html = html($html);
 
         $links = [];
         $contentInfo = [
@@ -363,14 +379,14 @@ class Content extends JulyModel
         $disk = Storage::disk('public');
 
         // images
-        foreach (extract_image_links($html) as $link) {
+        foreach ($html->extractImageLinks() as $link) {
             if (! $disk->exists($link)) {
                 $links[] = array_merge($contentInfo, ['link' => $link]);
             }
         }
 
         // PDFs
-        foreach (extract_pdf_links($html) as $link) {
+        foreach ($html->extractPdfLinks() as $link) {
             if (! $disk->exists($link)) {
                 $links[] = array_merge($contentInfo, ['link' => $link]);
             }
@@ -378,7 +394,7 @@ class Content extends JulyModel
 
         // hrefs
         $disk = Storage::disk('storage');
-        foreach (extract_page_links($html) as $link) {
+        foreach ($html->extractPageLinks() as $link) {
             $url = $link;
             if (substr($url, -5) !== '.html') {
                 $url = rtrim($url, '/').'/index.html';

@@ -96,7 +96,7 @@ class Catalog extends JulyModel implements GetContents
 
     public function cacheGetCatalogContents()
     {
-        $cachekey = $this->cacheKey('catalogNodes', []);
+        $cachekey = $this->cacheKey(['key'=>'catalogNodes']);
         if ($contents = $this->cacheGet($cachekey)) {
             $contents = $contents['value'];
         } else {

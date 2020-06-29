@@ -37,7 +37,7 @@ class DetectLangcode
         }
 
         $dirs = explode('/', $uri);
-        if (langname($langcode = $dirs[0] ?? null)) {
+        if (lang()->isLangcode($langcode = $dirs[0] ?? null)) {
             return $langcode;
         }
 

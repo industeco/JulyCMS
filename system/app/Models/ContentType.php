@@ -58,7 +58,7 @@ class ContentType extends JulyModel implements GetContents
             ]);
     }
 
-    public static function usedByNodes()
+    public static function usedByContents()
     {
         $contenttypeUsed = [];
         $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
@@ -78,7 +78,7 @@ class ContentType extends JulyModel implements GetContents
     public function cacheGetFields($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
-        $cacheKey = $this->cacheKey('fields', compact('langcode'));
+        $cacheKey = $this->cacheKey(['key'=>'fields', 'langcode'=>$langcode]);
 
         if ($fields = $this->cacheGet($cacheKey)) {
             return $fields['value'];
@@ -102,7 +102,7 @@ class ContentType extends JulyModel implements GetContents
     public function cacheGetFieldJigsaws($langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
-        $cacheKey = $this->cacheKey('fieldJigsaws', compact('langcode'));
+        $cacheKey = $this->cacheKey(['key'=>'fieldJigsaws', 'langcode'=>$langcode]);
 
         if ($jigsaws = $this->cacheGet($cacheKey)) {
             $jigsaws = $jigsaws['value'];
@@ -136,8 +136,8 @@ class ContentType extends JulyModel implements GetContents
         $langcode = langcode('content');
 
         // 清除碎片缓存
-        $this->cacheClear($this->cacheKey('fields', compact('langcode')));
-        $this->cacheClear($this->cacheKey('fieldJigsaws', compact('langcode')));
+        $this->cacheClear(['key'=>'fields', 'langcode'=>$langcode]);
+        $this->cacheClear(['key'=>'fieldJigsaws', 'langcode'=>$langcode]);
 
         DB::beginTransaction();
 

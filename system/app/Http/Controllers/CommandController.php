@@ -94,9 +94,9 @@ class CommandController extends Controller
     public function buildGoogleSitemap()
     {
         if (config('jc.multi_language')) {
-            $langcodes = available_langcodes('site_page');
+            $langcodes = lang()->getAccessibleLangcodes();
         } else {
-            $langcodes = [langcode('site_page')];
+            $langcodes = [langcode('page')];
         }
         foreach ($langcodes as $langcode) {
             $sitemap = build_google_sitemap($langcode);
@@ -139,7 +139,7 @@ class CommandController extends Controller
         }
 
         $titles = [];
-        foreach (ContentField::fetch('title')->records() as $record) {
+        foreach (ContentField::fetch('title')->getRecords() as $record) {
             $key = $record->content_id.'/'.$record->langcode;
             $titles[$key] = $record->title_value;
         }
@@ -160,7 +160,7 @@ class CommandController extends Controller
     public function findInvalidLinks()
     {
         if (config('jc.multi_language')) {
-            $langcodes = available_langcodes('site_page');
+            $langcodes = lang()->getAccessibleLangcodes();
         } else {
             $langcodes = [langcode('site_page')];
         }

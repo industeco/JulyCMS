@@ -1,7 +1,7 @@
 @extends('admin::layout')
 
 @section('h1')
-  {{ $truename?'编辑目录':'新建目录' }} <span id="content_locale">[ {{ langname($interface_value_langcode) }} ]</span>
+  {{ $truename?'编辑目录':'新建目录' }}
 @endsection
 
 @section('main_content')
