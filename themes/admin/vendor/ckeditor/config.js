@@ -9,17 +9,17 @@ CKEDITOR.editorConfig = function( config ) {
   CKEDITOR.dtd.$removeEmpty.span = 0;
   CKEDITOR.dtd.$removeEmpty.a = 0;
 
-  CKEDITOR.dtd['a']['div'] = 1;
-  CKEDITOR.dtd['a']['p'] = 1;
-  CKEDITOR.dtd['a']['ul'] = 1;
-  CKEDITOR.dtd['a']['ol'] = 1;
+  CKEDITOR.dtd.a.div = 1;
+  CKEDITOR.dtd.a.p = 1;
+  CKEDITOR.dtd.a.ul = 1;
+  CKEDITOR.dtd.a.ol = 1;
 
   config.fillEmptyBlocks = false;
   config.allowedContent = true;
   config.image_previewText = ' ';
   config.coreStyles_bold = {
-      element: 'b',
-      overrides: 'strong',
+    element: 'b',
+    overrides: 'strong',
   };
 
   config.toolbarGroups = [
@@ -29,8 +29,8 @@ CKEDITOR.editorConfig = function( config ) {
     { name: 'links', groups: [ 'links' ] },
     { name: 'insert', groups: [ 'insert' ] },
     { name: 'tools', groups: [ 'tools' ] },
-    { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
+    { name: 'document', groups: [ 'mode', 'document', 'doctools' ] }
   ];
 
-  config.removeButtons = 'Underline,Strike,Outdent,Indent';
+  config.removeButtons = 'Underline,Strike,Outdent,Indent,Styles,Blockquote,HorizontalRule,SpecialChar';
 };
