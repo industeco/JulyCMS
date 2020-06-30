@@ -135,7 +135,7 @@ class ContentCollection extends ModelCollection
     public function get_tags()
     {
         $ids = $this->pluck('id')->unique()->all();
-        $langcode = config('current_render_langcode') ?? langcode('site_page');
+        $langcode = config('render_langcode') ?? langcode('site_page');
 
         $tags = DB::table('content_tag')
             ->whereIn('content_id', $ids)

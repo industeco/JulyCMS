@@ -9,7 +9,7 @@ use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ContentType extends JulyModel implements GetContents
+class ContentType extends BaseInformationType implements GetContents
 {
     use TruenameAsPrimaryKey;
 
@@ -41,11 +41,17 @@ class ContentType extends JulyModel implements GetContents
         'is_preset' => 'boolean',
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function contents()
     {
         return $this->hasMany(Content::class, 'content_type');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function fields()
     {
         return $this->belongsToMany(ContentField::class, 'content_field_content_type', 'content_type', 'content_field')
@@ -58,15 +64,21 @@ class ContentType extends JulyModel implements GetContents
             ]);
     }
 
+    /**
+     * @return array
+     */
     public static function usedByContents()
     {
-        $contenttypeUsed = [];
-        $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
-        foreach ($records as $record) {
-            $contenttypeUsed[$record->content_type] = $record->total;
-        }
+        $sql = 'SELECT `content_type`, count(`content_type`) as `contents` FROM `contents` GROUP BY `content_type`';
+        return collect(DB::select($sql))->pluck('contents', 'content_type')->all();
 
-        return $contenttypeUsed;
+        // $used = [];
+        // $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
+        // foreach ($records as $record) {
+        //     $used[$record->content_type] = $record->total;
+        // }
+
+        // return $used;
     }
 
     /**
@@ -77,7 +89,7 @@ class ContentType extends JulyModel implements GetContents
      */
     public function cacheGetFields($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
         $cacheKey = $this->cacheKey(['key'=>'fields', 'langcode'=>$langcode]);
 
         if ($fields = $this->cacheGet($cacheKey)) {

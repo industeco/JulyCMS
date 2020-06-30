@@ -78,14 +78,12 @@ class ContentController extends Controller
 
     protected function simpleNodes($langcode = null)
     {
-        $contents = [];
-        foreach (Content::allNodes($langcode) as $content) {
-            $contents[$content['id']] = [
-                'id' => $content['id'],
-                'title' => $content['title'],
+        return Content::all()->map(function($content) use($langcode) {
+            return [
+                'id' => $content->getKey(),
+                'title' => $content->gather($langcode)['title'],
             ];
-        }
-        return $contents;
+        })->keyBy('id')->all();
     }
 
     /**

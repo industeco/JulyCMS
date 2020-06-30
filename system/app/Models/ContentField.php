@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-class ContentField extends BaseContentField
+class ContentField extends BaseInformationField
 {
     use TruenameAsPrimaryKey;
 

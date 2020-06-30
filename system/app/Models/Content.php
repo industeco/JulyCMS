@@ -10,7 +10,7 @@ use App\ModelCollections\TagCollection;
 use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
-class Content extends BaseContent
+class Content extends BaseInformation
 {
     /**
      * 可批量赋值的属性。
@@ -43,16 +43,25 @@ class Content extends BaseContent
         return null;
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function contentType()
     {
         return $this->belongsTo(ContentType::class, 'content_type');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function fields()
     {
         return $this->contentType->fields->merge(ContentField::globalFields());
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function catalogs()
     {
         return $this->belongsToMany(Catalog::class, 'catalog_content', 'content_id', 'catalog')
@@ -63,6 +72,9 @@ class Content extends BaseContent
                 );
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function tags($langcode = null)
     {
         if ($langcode) {
@@ -76,26 +88,6 @@ class Content extends BaseContent
     public function positions()
     {
         return CatalogContent::where('content_id', $this->id)->get()->groupBy('catalog')->toArray();
-    }
-
-    public static function countByContentType()
-    {
-        $contents = [];
-        $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
-        foreach ($records as $record) {
-            $contents[$record->content_type] = $record->total;
-        }
-
-        return $contents;
-    }
-
-    public static function allNodes($langcode = null)
-    {
-        $contents = [];
-        foreach (Content::all() as $content) {
-            $contents[$content->id] = $content->gather($langcode);
-        }
-        return $contents;
     }
 
     public function gather($langcode = null)
@@ -123,7 +115,7 @@ class Content extends BaseContent
 
     public function cacheGetValues($langcode = null)
     {
-        $langcode = $langcode ?: $this->getAttributeValue('langcode');
+        $langcode = $langcode ?: $this->langcode();
         $cachekey = $this->cacheKey([
             'key' => 'values',
             'langcode' => $langcode,
@@ -150,7 +142,7 @@ class Content extends BaseContent
      */
     public function cacheGetTags($langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
         $cachekey = $this->cacheKey([
             'key' => 'tags',
             'langcode' => $langcode,
@@ -202,7 +194,7 @@ class Content extends BaseContent
 
     public function saveTags(array $tags, $langcode = null)
     {
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
         $this->cacheClear(['key'=>'tags', 'langcode'=>$langcode]);
 
         Tag::createIfNotExist($tags, $langcode);
@@ -247,9 +239,9 @@ class Content extends BaseContent
     public function render(Twig $twig = null, $langcode = null)
     {
         $twig = $twig ?? $twig = twig('template', true);
-        $langcode = $langcode ?: $this->langcode;
+        $langcode = $langcode ?: $this->langcode();
 
-        config()->set('current_render_langcode', $langcode);
+        config()->set('render_langcode', $langcode);
 
         // 获取节点值
         $content = $this->gather($langcode);
@@ -269,6 +261,9 @@ class Content extends BaseContent
 
             // 生成 html
             $html = $twig->render($tpl, $content);
+
+            //
+            $html = preg_replace('/\n\s+/', "\n", $html);
 
             // 写入文件
             if ($content['url']) {
@@ -602,7 +597,7 @@ class Content extends BaseContent
      */
     public function get_tags()
     {
-        $langcode = config('current_render_langcode') ?? langcode('site_page');
+        $langcode = config('render_langcode') ?? langcode('page');
         $tags = $this->tags($langcode)->get()->keyBy('tag');
         return TagCollection::make($tags);
     }

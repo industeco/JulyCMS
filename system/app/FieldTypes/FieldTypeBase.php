@@ -3,7 +3,7 @@
 namespace App\FieldTypes;
 
 use Illuminate\Support\Facades\Log;
-use App\Models\ContentField;
+use App\Models\BaseInformationField;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -17,7 +17,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
     /**
      * 字段对象
      *
-     * @var \App\Models\ContentField
+     * @var \App\Models\BaseInformationField
      */
     protected $field = null;
 
@@ -37,10 +37,10 @@ abstract class FieldTypeBase implements FieldTypeInterface
     }
 
     /**
-     * @param \App\Models\ContentField|null $field
+     * @param \App\Models\BaseInformationField|null $field
      * @param string $langcode
      */
-    public function __construct(ContentField $field = null, $langcode = null)
+    public function __construct(BaseInformationField $field = null, $langcode = null)
     {
         $this->field = $field;
         $this->langcode = $langcode;
@@ -49,7 +49,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
     /**
      * {@inheritDoc}
      */
-    public function setField(ContentField $field)
+    public function setField(BaseInformationField $field)
     {
         $this->field = $field;
         return $this;

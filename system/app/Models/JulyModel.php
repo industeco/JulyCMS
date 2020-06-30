@@ -37,6 +37,16 @@ abstract class JulyModel extends Model
     }
 
     /**
+     * 获取默认语言
+     *
+     * @return string
+     */
+    public function langcode()
+    {
+        return $this->attributes['langcode'] ?? langcode('content');
+    }
+
+    /**
      * Update the model in the database.
      *
      * @param  array  $attributes

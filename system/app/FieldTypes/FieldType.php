@@ -2,9 +2,9 @@
 
 namespace App\FieldTypes;
 
-use App\Support\Arr;
 use App\Exceptions\FieldTypeNotFound;
-use App\Models\ContentField;
+use App\Models\BaseInformationField;
+use App\Support\Arr;
 
 class FieldType
 {
@@ -60,13 +60,13 @@ class FieldType
      * 获取定义类实例，失败则抛出错误
      *
      * @param mixed $alias 字段类型别名
-     * @param \App\Models\ContentField|null $field
+     * @param \App\Models\BaseInformationField |null $field
      * @param string|null $langcode
      * @return \App\FieldTypes\FieldTypeInterface
      *
      * @throws \App\Exceptions\FieldTypeNotFound
      */
-    public static function make($alias, ?ContentField $field = null, $langcode = null)
+    public static function make($alias, ?BaseInformationField $field = null, $langcode = null)
     {
         if ($type = static::find($alias)) {
             return new $type($field, $langcode);

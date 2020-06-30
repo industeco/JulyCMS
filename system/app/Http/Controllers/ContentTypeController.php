@@ -18,7 +18,7 @@ class ContentTypeController extends Controller
      */
     public function index()
     {
-        $contentCount = ContentType::usedByContents();
+        $contentCount = Content::countByType();
         $contentTypes = ContentType::all()->map(function($contentType) {
             return $contentType->attributesToArray();
         })->all();

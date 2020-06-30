@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-abstract class BaseContentField extends JulyModel implements Entity
+abstract class BaseInformationField extends JulyModel implements Entity
 {
     /**
      * 获取字段类型对象
@@ -75,7 +75,7 @@ abstract class BaseContentField extends JulyModel implements Entity
     public function deleteValue($id, $langcode = null)
     {
         $columnId = static::getParentEntityId().'_id';
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
 
         // 清除字段值缓存
         $this->cacheClear([
@@ -100,7 +100,7 @@ abstract class BaseContentField extends JulyModel implements Entity
     public function setValue($value, $id, $langcode = null)
     {
         $columnId = static::getParentEntityId().'_id';
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
         // Log::info("langcode: '{$langcode}'");
 
         // 清除字段值缓存
@@ -143,7 +143,7 @@ abstract class BaseContentField extends JulyModel implements Entity
     public function getValue($id, $langcode = null)
     {
         $columnId = static::getParentEntityId().'_id';
-        $langcode = $langcode ?: langcode('content');
+        $langcode = $langcode ?: $this->langcode();
 
         $cacheKey = $this->cacheKey( [
             'key' => 'values',
@@ -286,11 +286,11 @@ abstract class BaseContentField extends JulyModel implements Entity
     {
         parent::boot();
 
-        static::created(function(BaseContentField $field) {
+        static::created(function(BaseInformationField $field) {
             $field->tableUp();
         });
 
-        static::deleted(function(BaseContentField $field) {
+        static::deleted(function(BaseInformationField $field) {
             $field->tableDown();
         });
     }
