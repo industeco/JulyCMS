@@ -290,6 +290,9 @@ class Node extends JulyModel
             // 生成 html
             $html = $twig->render($tpl, $node);
 
+            // 清理 html
+            $html = preg_replace('/\n\s*?\n/', "\n", $html);
+
             // 写入文件
             if ($node['url']) {
                 $file = 'pages/'.$langcode.'/'.ltrim($node['url'], '/');
