@@ -256,3 +256,12 @@ body.cke_editable  h5::before {
 body.cke_editable  h6::before {
 	content: 'H6';
 }
+
+table {
+	border-collapse: collapse;
+}
+
+td,th {
+	padding: 5px;
+	border-width: 1px;
+}
