@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class FieldTypeNotFound extends Exception
+class EntityFieldTypeNotFound extends Exception
 {
     //
 }

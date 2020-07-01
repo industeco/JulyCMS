@@ -1,24 +1,15 @@
 <?php
 
-namespace App\FieldTypes;
+namespace App\EntityFieldTypes;
 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
 
-class TextField extends FieldTypeBase
+class TextField extends BaseEntityFieldType
 {
     /**
      * {@inheritDoc}
      */
-    public static function getAlias(): string
-    {
-        return 'text';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function getLabel(): string
+    public static function label(): string
     {
         return '文字';
     }
@@ -26,7 +17,7 @@ class TextField extends FieldTypeBase
     /**
      * {@inheritDoc}
      */
-    public static function getDescription(): ?string
+    public static function description(): ?string
     {
         return '适用于无格式内容';
     }
@@ -67,7 +58,7 @@ class TextField extends FieldTypeBase
      */
     public function getColumns($fieldName = null, array $parameters = null): array
     {
-        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
         $length = $parameters['maxlength'] ?? 0;
         if ($length > 0 && $length <= 255) {
             $column = [
@@ -90,7 +81,7 @@ class TextField extends FieldTypeBase
      */
     public function getRules(array $parameters = null): array
     {
-        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
 
         $rules = parent::getRules($parameters);
 

@@ -1,31 +1,31 @@
 <?php
 
-namespace App\FieldTypes;
+namespace App\EntityFieldTypes;
 
-use App\Models\ContentField;
+use App\Models\BaseEntityField;
 
-interface FieldTypeInterface
+interface EntityFieldTypeInterface
 {
     /**
      * 获取类型别名
      *
      * @return string
      */
-    public static function getAlias(): string;
+    public static function alias(): string;
 
     /**
      * 获取类型标签
      *
      * @return string
      */
-    public static function getLabel(): string;
+    public static function label(): string;
 
     /**
      * 获取类型描述
      *
      * @return string
      */
-    public static function getDescription(): ?string;
+    public static function description(): ?string;
 
     /**
      * 设置字段对象
@@ -33,12 +33,12 @@ interface FieldTypeInterface
      * @param array $field
      * @return static
      */
-    public function setField(ContentField $field);
+    public function setField(BaseEntityField $field);
 
     /**
      * 设置字段参数读取语言
      *
-     * @param array $langcode
+     * @param string $langcode
      * @return static
      */
     public function setLangcode($langcode);

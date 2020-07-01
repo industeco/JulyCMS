@@ -10,7 +10,7 @@ use App\Contracts\GetContents;
 use App\ModelCollections\ContentCollection;
 use App\Traits\TruenameAsPrimaryKey;
 
-class Catalog extends JulyModel implements GetContents
+class Catalog extends BaseModel implements GetContents
 {
     use TruenameAsPrimaryKey;
 

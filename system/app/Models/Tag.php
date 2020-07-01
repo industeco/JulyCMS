@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Contracts\GetContents;
 use App\ModelCollections\ContentCollection;
 
-class Tag extends JulyModel implements GetContents
+class Tag extends BaseModel implements GetContents
 {
     /**
      * 与模型关联的表名

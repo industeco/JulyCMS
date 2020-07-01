@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use App\FieldTypes\FieldType;
-use App\Support\Arr;
+use App\EntityFieldTypes\EntityFieldType;
 use App\Traits\TruenameAsPrimaryKey;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
-class ContentField extends BaseInformationField
+class ContentField extends BaseEntityField
 {
     use TruenameAsPrimaryKey;
 
@@ -71,17 +68,6 @@ class ContentField extends BaseInformationField
                         'label',
                         'description',
                     ]);
-    }
-
-    public static function usedByContentTypes()
-    {
-        $types = [];
-        $records = DB::select('SELECT `content_field`, count(`content_field`) as `total` FROM `content_field_content_type` GROUP BY `content_field`');
-        foreach ($records as $record) {
-            $types[$record->content_field] = $record->total;
-        }
-
-        return $types;
     }
 
     /**
@@ -174,7 +160,7 @@ class ContentField extends BaseInformationField
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach (static::cacheGetGlobalFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = FieldType::make($field['field_type'])->getJigsaws($field);
+                $jigsaws[$field['truename']] = EntityFieldType::find($field['field_type'])->getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),

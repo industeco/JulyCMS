@@ -10,7 +10,7 @@ use App\ModelCollections\TagCollection;
 use Illuminate\Support\Facades\DB;
 use Twig\Environment as Twig;
 
-class Content extends BaseInformation
+class Content extends BaseEntity
 {
     /**
      * 可批量赋值的属性。

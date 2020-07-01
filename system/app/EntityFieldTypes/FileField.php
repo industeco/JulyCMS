@@ -1,21 +1,13 @@
 <?php
 
-namespace App\FieldTypes;
+namespace App\EntityFieldTypes;
 
-class FileField extends FieldTypeBase
+class FileField extends BaseEntityFieldType
 {
     /**
      * {@inheritDoc}
      */
-    public static function getAlias(): string
-    {
-        return 'file';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function getLabel(): string
+    public static function label(): string
     {
         return '文件名';
     }
@@ -23,7 +15,7 @@ class FileField extends FieldTypeBase
     /**
      * {@inheritDoc}
      */
-    public static function getDescription(): string
+    public static function description(): string
     {
         return '带文件浏览按钮';
     }
@@ -91,7 +83,7 @@ class FileField extends FieldTypeBase
      */
     public function getRules(?array $parameters = null): array
     {
-        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
 
         $rules = parent::getRules($parameters);
 

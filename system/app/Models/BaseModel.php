@@ -8,7 +8,7 @@ use App\Traits\FetchModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
-abstract class JulyModel extends Model
+abstract class BaseModel extends Model
 {
     use CacheModel, FetchModel;
 

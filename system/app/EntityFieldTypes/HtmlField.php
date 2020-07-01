@@ -1,23 +1,13 @@
 <?php
 
-namespace App\FieldTypes;
+namespace App\EntityFieldTypes;
 
-use Illuminate\Support\Facades\View;
-
-class HtmlField extends FieldTypeBase
+class HtmlField extends BaseEntityFieldType
 {
     /**
      * {@inheritDoc}
      */
-    public static function getAlias(): string
-    {
-        return 'html';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function getLabel(): string
+    public static function label(): string
     {
         return 'HTML';
     }
@@ -25,7 +15,7 @@ class HtmlField extends FieldTypeBase
     /**
      * {@inheritDoc}
      */
-    public static function getDescription(): ?string
+    public static function description(): ?string
     {
         return '适用于 HTML 文档';
     }

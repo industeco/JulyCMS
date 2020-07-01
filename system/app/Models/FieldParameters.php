@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Casts\Json;
-use App\FieldTypes\FieldType;
+use App\EntityFieldTypes\EntityFieldType;
 
-class FieldParameters extends JulyModel
+class FieldParameters extends BaseModel
 {
     /**
      * 与模型关联的表名

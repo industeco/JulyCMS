@@ -3,7 +3,7 @@
   :rules="{{ $formData }}Rules"
   label-width="108px">
   @if ($mode == 'create')
-  <el-form-item label="字段类型" prop="field_type" size="small" :class="{'has-helptext': !!{{ $formData }}.parameters.field_type}">
+  <el-form-item label="字段类型" prop="field_type" size="small" class="has-helptext">
     <el-select v-model="{{ $formData }}.field_type" placeholder="--选择字段类型--">
       <el-option
         v-for="type in fieldTypes"

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\FieldTypes\FieldType;
+use App\EntityFieldTypes\EntityFieldType;
 use App\Models\FieldParameters;
 use App\Models\ContentField;
 use Illuminate\Http\Request;
@@ -46,7 +46,7 @@ class ContentFieldController extends Controller
         $field = ContentField::make($request->all());
         $parameters = FieldParameters::make([
             'keyname' => implode('.', ['content_field', $field->getKey(), langcode('content')]),
-            'data' => FieldType::extractParameters($request->all()),
+            'data' => EntityFieldType::find($request->input('field_type'))->extractParameters($request->all()),
         ]);
 
         DB::beginTransaction();

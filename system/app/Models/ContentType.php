@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Contracts\GetContents;
-use App\FieldTypes\FieldType;
+use App\EntityFieldTypes\EntityFieldType;
 use App\ModelCollections\ContentCollection;
 use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ContentType extends BaseInformationType implements GetContents
+class ContentType extends BaseEntityType implements GetContents
 {
     use TruenameAsPrimaryKey;
 
@@ -67,18 +67,10 @@ class ContentType extends BaseInformationType implements GetContents
     /**
      * @return array
      */
-    public static function usedByContents()
+    public static function countByEntityField()
     {
-        $sql = 'SELECT `content_type`, count(`content_type`) as `contents` FROM `contents` GROUP BY `content_type`';
-        return collect(DB::select($sql))->pluck('contents', 'content_type')->all();
-
-        // $used = [];
-        // $records = DB::select('SELECT `content_type`, count(`content_type`) as `total` FROM `contents` GROUP BY `content_type`');
-        // foreach ($records as $record) {
-        //     $used[$record->content_type] = $record->total;
-        // }
-
-        // return $used;
+        $sql = 'SELECT `content_field`, count(`content_field`) as `total` FROM `content_field_content_type` GROUP BY `content_field`';
+        return collect(DB::select($sql))->pluck('total', 'content_field')->all();
     }
 
     /**
@@ -124,7 +116,7 @@ class ContentType extends BaseInformationType implements GetContents
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach ($this->cacheGetFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = FieldType::getJigsaws($field);
+                $jigsaws[$field['truename']] = EntityFieldType::find($field['field_type'])->getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),
@@ -164,7 +156,7 @@ class ContentType extends BaseInformationType implements GetContents
 
             FieldParameters::updateOrCreate([
                 'keyname' => implode('.', ['content_field', $field['truename'], 'content_type', $this->getKey(), $langcode]),
-            ], ['data' => FieldType::extractParameters($field)]);
+            ], ['data' => EntityFieldType::find($field['field_type'])->extractParameters($field)]);
         }
         $this->fields()->sync($fields);
 

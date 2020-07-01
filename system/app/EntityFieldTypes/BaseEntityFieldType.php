@@ -1,9 +1,10 @@
 <?php
 
-namespace App\FieldTypes;
+namespace App\EntityFieldTypes;
 
 use Illuminate\Support\Facades\Log;
-use App\Models\BaseInformationField;
+use App\Models\BaseEntityField;
+use Illuminate\Support\Str;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -12,12 +13,12 @@ use App\Models\BaseInformationField;
  *  2. 构建字段数据表列
  *  3. 构建字段表单控件
  */
-abstract class FieldTypeBase implements FieldTypeInterface
+abstract class BaseEntityFieldType implements EntityFieldTypeInterface
 {
     /**
      * 字段对象
      *
-     * @var \App\Models\BaseInformationField
+     * @var \App\Models\BaseEntityField
      */
     protected $field = null;
 
@@ -31,16 +32,25 @@ abstract class FieldTypeBase implements FieldTypeInterface
     /**
      * {@inheritDoc}
      */
-    public static function getDescription(): ?string
+    public static function alias(): string
+    {
+        $alias = Str::snake(class_basename(static::class));
+        return preg_replace('/_field$/', '', $alias);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static function description(): ?string
     {
         return null;
     }
 
     /**
-     * @param \App\Models\BaseInformationField|null $field
+     * @param \App\Models\BaseEntityField|null $field
      * @param string $langcode
      */
-    public function __construct(BaseInformationField $field = null, $langcode = null)
+    public function __construct(BaseEntityField $field = null, string $langcode = null)
     {
         $this->field = $field;
         $this->langcode = $langcode;
@@ -49,7 +59,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
     /**
      * {@inheritDoc}
      */
-    public function setField(BaseInformationField $field)
+    public function setField(BaseEntityField $field)
     {
         $this->field = $field;
         return $this;
@@ -114,7 +124,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
         $data = $data ?? $this->field->gather($this->langcode);
         return [
             'truename' => $data['truename'] ?? $this->field->getKey(),
-            'field_type' => $data['field_type'] ?? $this->getAlias(),
+            'field_type' => $data['field_type'] ?? static::alias(),
             'value' => null,
             'element' => $this->getElement($data),
             'rules' => $this->getRules($data['parameters'] ?? []),
@@ -128,7 +138,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
     {
         $data = $data ?? $this->field->gather($this->langcode);
         $data['parameters']['helptext'] = $data['parameters']['helptext'] ?? $data['description'] ?? null;
-        return view('admin::components.'.$this->getAlias(), $data)->render();
+        return view('admin::components.'.static::alias(), $data)->render();
     }
 
     /**
@@ -136,7 +146,7 @@ abstract class FieldTypeBase implements FieldTypeInterface
      */
     public function getRules(array $parameters = null): array
     {
-        $parameters = $parameters ?? $this->field->parameters($this->langcode);
+        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
 
         $rules = [];
 

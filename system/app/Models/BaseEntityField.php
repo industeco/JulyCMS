@@ -3,24 +3,24 @@
 namespace App\Models;
 
 use App\Contracts\Entity;
-use App\FieldTypes\FieldType;
+use App\EntityFieldTypes\EntityFieldType;
 use App\Support\Arr;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-abstract class BaseInformationField extends JulyModel implements Entity
+abstract class BaseEntityField extends BaseModel implements Entity
 {
     /**
      * 获取字段类型对象
      *
      * @param string|null $langcode
-     * @return \App\FieldTypes\FieldTypeInterface
+     * @return \App\EntityFieldTypes\EntityFieldTypeInterface
      */
-    public function fieldType($langcode = null)
+    public function eaType($langcode = null)
     {
-        return FieldType::make($this->getAttributeValue('field_type'), $this, $langcode);
+        return EntityFieldType::find($this->getAttribute('field_type'), $this, $langcode);
     }
 
     /**
@@ -31,7 +31,7 @@ abstract class BaseInformationField extends JulyModel implements Entity
      */
     public function getParameters($langcode = null)
     {
-        $original_lang = $this->getAttributeValue('langcode');
+        $original_lang = $this->getAttribute('langcode');
         $langcode = $langcode ?? $original_lang;
 
         $keyname = implode('.', [static::getEntityId(), $this->getKey()]);
@@ -110,7 +110,7 @@ abstract class BaseInformationField extends JulyModel implements Entity
             'langcode' => $langcode,
         ]);
 
-        $records = $this->fieldType()->toRecords($value);
+        $records = $this->eaType()->toRecords($value);
         if (is_null($records)) {
             $this->deleteValue($id, $langcode);
         } else {
@@ -167,7 +167,7 @@ abstract class BaseInformationField extends JulyModel implements Entity
             })->all();
 
             // 借助字段类型格式化数据库记录
-            $value = $this->fieldType()->toValue($records);
+            $value = $this->eaType()->toValue($records);
         }
 
         // 缓存字段值
@@ -206,8 +206,8 @@ abstract class BaseInformationField extends JulyModel implements Entity
         $columnId = $entity.'_id';
 
         $fieldName = $this->getKey();
-        $fieldType = $this->getAttributeValue('field_type');
-        $fieldLabel = $this->getAttributeValue('label');
+        $EAType = $this->getAttribute('field_type');
+        $fieldLabel = $this->getAttribute('label');
         $results = [];
         foreach ($records as $record) {
             $key = implode('/', [$record->{$columnId}, $fieldName, $record->langcode]);
@@ -215,7 +215,7 @@ abstract class BaseInformationField extends JulyModel implements Entity
                 $results[$key] = [
                     $columnId => $record->{$columnId},
                     $entity.'_field' => $fieldName,
-                    'field_type' => $fieldType,
+                    'field_type' => $EAType,
                     'field_label' => $fieldLabel,
                     'langcode' => $record->langcode,
                 ];
@@ -232,7 +232,7 @@ abstract class BaseInformationField extends JulyModel implements Entity
 
     public function tableColumns()
     {
-        return $this->fieldType()->getColumns();
+        return $this->eaType()->getColumns();
     }
 
     /**
@@ -286,11 +286,11 @@ abstract class BaseInformationField extends JulyModel implements Entity
     {
         parent::boot();
 
-        static::created(function(BaseInformationField $field) {
+        static::created(function(BaseEntityField $field) {
             $field->tableUp();
         });
 
-        static::deleted(function(BaseInformationField $field) {
+        static::deleted(function(BaseEntityField $field) {
             $field->tableDown();
         });
     }

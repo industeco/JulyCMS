@@ -7,7 +7,7 @@ use App\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class Config extends JulyModel
+class Config extends BaseModel
 {
     /**
      * 与模型关联的表名

@@ -34,11 +34,11 @@
     methods: {
       url(row) {
         if (row.original_langcode === row.langcode) {
-          const url = "{{ short_route('nodes.edit', '#id#') }}";
-          return url.replace('#id#', row.node_id);
+          const url = "{{ short_route('nodes.edit', 'ID') }}";
+          return url.replace('ID', row.node_id);
         } else {
-          const url = "{{ short_route('nodes.translate', ['#id#','#langcode#']) }}";
-          return url.replace('#id#', row.node_id).replace('#langcode#', row.langcode);
+          const url = "{{ short_route('nodes.translate', ['ID','LANGCODE']) }}";
+          return url.replace('ID', row.node_id).replace('LANGCODE', row.langcode);
         }
         return url;
       },

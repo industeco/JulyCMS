@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Contracts\Entity;
 use Illuminate\Support\Facades\DB;
 
-abstract class BaseInformation extends JulyModel implements Entity
+abstract class BaseEntity extends BaseModel implements Entity
 {
     /**
      * 按类别统计

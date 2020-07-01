@@ -26,9 +26,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         try {
-            // 查找字段类型
-            // \App\FieldTypes\FieldType::findFieldTypes();
-
             // 加载数据库中的常规配置
             ConfigModel::loadConfigurations();
         } catch (\Throwable $th) {
