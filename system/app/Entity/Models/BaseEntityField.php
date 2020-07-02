@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Entity\Models;
 
-use App\Contracts\Entity;
-use App\EntityFieldTypes\EntityFieldType;
-use App\Support\Arr;
+use App\Entity\Contracts\Entity;
+use App\Entity\FieldTypes\FieldType;
+use App\Models\BaseModel;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 abstract class BaseEntityField extends BaseModel implements Entity
 {
@@ -18,9 +17,9 @@ abstract class BaseEntityField extends BaseModel implements Entity
      * @param string|null $langcode
      * @return \App\EntityFieldTypes\EntityFieldTypeInterface
      */
-    public function eaType($langcode = null)
+    public function fieldType($langcode = null)
     {
-        return EntityFieldType::find($this->getAttribute('field_type'), $this, $langcode);
+        return FieldType::make($this, $langcode);
     }
 
     /**
@@ -110,7 +109,7 @@ abstract class BaseEntityField extends BaseModel implements Entity
             'langcode' => $langcode,
         ]);
 
-        $records = $this->eaType()->toRecords($value);
+        $records = $this->fieldType()->toRecords($value);
         if (is_null($records)) {
             $this->deleteValue($id, $langcode);
         } else {
@@ -167,7 +166,7 @@ abstract class BaseEntityField extends BaseModel implements Entity
             })->all();
 
             // 借助字段类型格式化数据库记录
-            $value = $this->eaType()->toValue($records);
+            $value = $this->fieldType()->toValue($records);
         }
 
         // 缓存字段值
@@ -232,7 +231,7 @@ abstract class BaseEntityField extends BaseModel implements Entity
 
     public function tableColumns()
     {
-        return $this->eaType()->getColumns();
+        return $this->fieldType()->getColumns();
     }
 
     /**

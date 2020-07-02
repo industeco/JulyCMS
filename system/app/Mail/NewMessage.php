@@ -43,6 +43,7 @@ class NewMessage
         'email' => 'E-mail',
         'name' => 'Name',
         'message' => 'Message',
+        'phone' => 'Phone',
         'company' => 'Company',
         'user_agent' => 'UserAgent',
     ];
@@ -83,7 +84,7 @@ class NewMessage
             $to = config('mail.to.address');
             $subject = 'New Message:';
             $mailBody = $this->getMailBody();
-            Log::info(compact('to', 'subject', 'mailBody'));
+            // Log::info(compact('to', 'subject', 'mailBody'));
 
             if (config('app.demo')) {
                 return true;

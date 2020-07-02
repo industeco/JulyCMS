@@ -1,9 +1,17 @@
 <?php
 
-namespace App\EntityFieldTypes;
+namespace App\Entity\FieldTypes;
 
-class FileField extends BaseEntityFieldType
+class FileField extends BaseFieldType
 {
+    /**
+     * {@inheritDoc}
+     */
+    public static function alias(): string
+    {
+        return 'file';
+    }
+
     /**
      * {@inheritDoc}
      */

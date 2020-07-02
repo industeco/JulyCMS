@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Entity\Models;
 
-use App\Contracts\Entity;
+use App\Entity\Contracts\Entity;
+use App\Models\BaseModel;
 use Illuminate\Support\Facades\DB;
 
 abstract class BaseEntity extends BaseModel implements Entity

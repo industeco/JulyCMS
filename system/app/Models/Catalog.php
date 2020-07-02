@@ -8,6 +8,7 @@ use App\Models\Content;
 use App\ModelIsomers\CatalogTree;
 use App\Contracts\GetContents;
 use App\ModelCollections\ContentCollection;
+use App\Support\Arr;
 use App\Traits\TruenameAsPrimaryKey;
 
 class Catalog extends BaseModel implements GetContents
@@ -96,12 +97,12 @@ class Catalog extends BaseModel implements GetContents
 
     public function cacheGetCatalogContents()
     {
-        $cachekey = $this->cacheKey(['key'=>'catalogNodes']);
+        $cachekey = $this->cacheKey(['key'=>'catalogContents']);
         if ($contents = $this->cacheGet($cachekey)) {
             $contents = $contents['value'];
         } else {
             $contents = CatalogContent::where('catalog', $this->getKey())
-                ->get(['content_id','parent_id','prev_id','path'])->toArray();
+                ->get(['id','parent_id','prev_id','path'])->toArray();
 
             $this->cachePut($cachekey, $contents);
         }
@@ -111,17 +112,17 @@ class Catalog extends BaseModel implements GetContents
 
     public function removePosition(array $position)
     {
-        $this->cacheClear(['key'=>'catalogNodes']);
+        $this->cacheClear(['key'=>'catalogContents']);
         $this->cacheClear(['key'=>'treeNodes']);
 
         // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
         $truename = $this->getKey();
         CatalogContent::where([
             'catalog' => $truename,
-            'content_id' => $position['content_id'],
+            'content_id' => $position['id'],
         ])->orWhere([
             ['catalog', '=', $truename],
-            ['path', 'like', '%/'.$position['content_id'].'/%'],
+            ['path', 'like', '%/'.$position['id'].'/%'],
         ])->delete();
 
         $this->touch();
@@ -153,7 +154,7 @@ class Catalog extends BaseModel implements GetContents
         ])->first();
 
         if ($next) {
-            $next->prev_id = $position['content_id'];
+            $next->prev_id = $position['id'];
             $next->save();
         }
 
@@ -168,20 +169,13 @@ class Catalog extends BaseModel implements GetContents
         $this->cacheClear(['key'=>'treeNodes']);
 
         $truename = $this->getKey();
-        // $supplement = [
-        //     'catalog' => $truename,
-        //     'langcode' => langcode('content'),
-        // ];
-        // foreach ($positions as &$position) {
-        //    $position = array_merge($position, $supplement);
-        // }
-        // unset($position);
 
         DB::beginTransaction();
 
         DB::table('catalog_content')->where('catalog', $truename)->delete();
         foreach ($positions as $position) {
             $position['catalog'] = $truename;
+            $position = Arr::only($position, ['catalog','id','parent_id','prev_id','path']);
             DB::table('catalog_content')->insert($position);
         }
 

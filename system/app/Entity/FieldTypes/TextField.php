@@ -1,11 +1,19 @@
 <?php
 
-namespace App\EntityFieldTypes;
+namespace App\Entity\FieldTypes;
 
 use Illuminate\Support\Facades\Log;
 
-class TextField extends BaseEntityFieldType
+class TextField extends BaseFieldType
 {
+    /**
+     * {@inheritDoc}
+     */
+    public static function alias(): string
+    {
+        return 'text';
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\ContentEntity\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\App;
-use App\Models\Content;
+use App\ContentEntity\Models\Content;
+use App\ContentEntity\Models\ContentType;
+use App\ContentEntity\Models\ContentField;
+use App\Http\Controllers\Controller;
 use App\Models\Catalog;
 use App\Models\Config;
-use App\Models\ContentField;
-use App\Models\ContentType;
 use App\Models\Tag;
 use App\Support\Arr;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 
 class ContentController extends Controller
 {

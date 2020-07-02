@@ -109,25 +109,14 @@ class Tag extends BaseModel implements GetContents
             return $this->attributes['tag'];
         }
 
-        $cluster = static::retrieveTagCluster($this->attributes['original_tag']);
+        $tag = Tag::where('original_tag', $this->attributes['original_tag'])->get()
+                ->pluck('tag', 'langcode')->all();
+
         if ($langcode) {
-            return $cluster[$langcode] ?? $this->attributes['tag'];
+            return $tag[$langcode] ?? $this->attributes['tag'];
         }
 
-        return $cluster;
-    }
-
-    public static function retrieveTagCluster($original_tag)
-    {
-        if ($cluster = static::cacheGet($original_tag)) {
-            return $cluster['value'];
-        }
-
-        $cluster = Tag::where('original_tag', $original_tag)->get()
-                    ->pluck('tag', 'langcode')->toArray();
-        static::cachePut($original_tag, $cluster);
-
-        return $cluster;
+        return $tag;
     }
 
     public static function saveChange(array $changes)
@@ -162,7 +151,9 @@ class Tag extends BaseModel implements GetContents
         }
 
         if ($prepareCreate) {
-            DB::table('tags')->insert($prepareCreate);
+            foreach ($prepareCreate as $tag) {
+                DB::table('tags')->insert($tag);
+            }
         }
     }
 

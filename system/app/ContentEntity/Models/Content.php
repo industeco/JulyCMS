@@ -1,13 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App\ContentEntity\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasAttributes;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use App\Entity\Models\BaseEntity;
 use App\ModelCollections\CatalogCollection;
 use App\ModelCollections\TagCollection;
+use App\Models\Catalog;
+use App\Models\CatalogContent;
+use App\Models\Tag;
+use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Twig\Environment as Twig;
 
 class Content extends BaseEntity
@@ -367,7 +371,7 @@ class Content extends BaseEntity
         $contentInfo = [
             'content_id' => $this->id,
             'content_title' => $this->title,
-            'content_url' => $this->url,
+            'url' => $this->url,
             'langcode' => $langcode,
         ];
 

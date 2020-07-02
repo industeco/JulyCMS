@@ -1,10 +1,10 @@
 <?php
 
-namespace App\EntityFieldTypes;
+namespace App\Entity\FieldTypes;
 
-use App\Models\BaseEntityField;
+use App\Entity\Models\BaseEntityField;
 
-interface EntityFieldTypeInterface
+interface FieldTypeInterface
 {
     /**
      * 获取类型别名

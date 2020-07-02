@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Entity\Models;
 
 use App\Casts\Json;
-use App\EntityFieldTypes\EntityFieldType;
+use App\Models\BaseModel;
 
 class FieldParameters extends BaseModel
 {

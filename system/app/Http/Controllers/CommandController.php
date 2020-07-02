@@ -162,7 +162,7 @@ class CommandController extends Controller
         if (config('jc.multi_language')) {
             $langcodes = lang()->getAccessibleLangcodes();
         } else {
-            $langcodes = [langcode('site_page')];
+            $langcodes = [langcode('page')];
         }
         $invalidLinks = [];
         foreach (Content::fetchAll() as $content) {

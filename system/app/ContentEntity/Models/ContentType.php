@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\ContentEntity\Models;
 
 use App\Contracts\GetContents;
-use App\EntityFieldTypes\EntityFieldType;
+use App\Entity\FieldTypes\FieldType;
+use App\Entity\Models\BaseEntityType;
+use App\Entity\Models\FieldParameters;
 use App\ModelCollections\ContentCollection;
 use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Support\Facades\DB;
@@ -116,7 +118,7 @@ class ContentType extends BaseEntityType implements GetContents
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach ($this->cacheGetFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = EntityFieldType::find($field['field_type'])->getJigsaws($field);
+                $jigsaws[$field['truename']] = FieldType::getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),
@@ -156,7 +158,7 @@ class ContentType extends BaseEntityType implements GetContents
 
             FieldParameters::updateOrCreate([
                 'keyname' => implode('.', ['content_field', $field['truename'], 'content_type', $this->getKey(), $langcode]),
-            ], ['data' => EntityFieldType::find($field['field_type'])->extractParameters($field)]);
+            ], ['data' => FieldType::extractParameters($field)]);
         }
         $this->fields()->sync($fields);
 

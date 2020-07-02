@@ -195,7 +195,7 @@ class CreateJulycmsTables extends Migration
             $table->string('catalog', 50);
 
             // 内容 id
-            $table->unsignedBigInteger('content_id');
+            $table->unsignedBigInteger('id');
 
             // 父级内容 id
             $table->unsignedBigInteger('parent_id')->nullable();

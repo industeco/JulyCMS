@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\ContentEntity\Models;
 
+use App\Entity\Models\BaseEntityField;
 use App\EntityFieldTypes\EntityFieldType;
 use App\Traits\TruenameAsPrimaryKey;
 use Illuminate\Support\Facades\DB;
@@ -160,7 +161,7 @@ class ContentField extends BaseEntityField
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach (static::cacheGetGlobalFields($langcode) as $field) {
-                $jigsaws[$field['truename']] = EntityFieldType::find($field['field_type'])->getJigsaws($field);
+                $jigsaws[$field['truename']] = EntityFieldType::getJigsaws($field);
             }
             $jigsaws = [
                 'created_at' => time(),

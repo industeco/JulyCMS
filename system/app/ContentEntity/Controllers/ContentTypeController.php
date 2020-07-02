@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\ContentEntity\Controllers;
 
-use App\Models\Content;
-use App\Models\ContentType;
+use App\ContentEntity\Models\Content;
+use App\ContentEntity\Models\ContentField;
+use App\ContentEntity\Models\ContentType;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
-use App\Models\ContentField;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 
 class ContentTypeController extends Controller
 {

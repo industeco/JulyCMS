@@ -1,9 +1,17 @@
 <?php
 
-namespace App\EntityFieldTypes;
+namespace App\Entity\FieldTypes;
 
-class HtmlField extends BaseEntityFieldType
+class HtmlField extends BaseFieldType
 {
+    /**
+     * {@inheritDoc}
+     */
+    public static function alias(): string
+    {
+        return 'html';
+    }
+
     /**
      * {@inheritDoc}
      */

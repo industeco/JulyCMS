@@ -1,9 +1,9 @@
 <?php
 
-namespace App\EntityFieldTypes;
+namespace App\Entity\FieldTypes;
 
+use App\Entity\Models\BaseEntityField;
 use Illuminate\Support\Facades\Log;
-use App\Models\BaseEntityField;
 use Illuminate\Support\Str;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  *  2. 构建字段数据表列
  *  3. 构建字段表单控件
  */
-abstract class BaseEntityFieldType implements EntityFieldTypeInterface
+abstract class BaseFieldType implements FieldTypeInterface
 {
     /**
      * 字段对象
@@ -34,8 +34,7 @@ abstract class BaseEntityFieldType implements EntityFieldTypeInterface
      */
     public static function alias(): string
     {
-        $alias = Str::snake(class_basename(static::class));
-        return preg_replace('/_field$/', '', $alias);
+        return strtolower(preg_replace('/Field$/', '', class_basename(static::class)));
     }
 
     /**

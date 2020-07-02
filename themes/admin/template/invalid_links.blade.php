@@ -6,14 +6,14 @@
   <div class="jc-table-wrapper">
     <el-table class="jc-table"
       :data="invalidLinks">
-      <el-table-column label="内容 ID" prop="node_id" width="100" sortable>
+      <el-table-column label="内容 ID" prop="content_id" width="100" sortable>
         <template slot-scope="scope">
-          <a :href="editUrl(scope.row)" target="_blank">@{{ scope.row.node_id }}</a>
+          <a :href="editUrl(scope.row)" target="_blank">@{{ scope.row.content_id }}</a>
         </template>
       </el-table-column>
-      <el-table-column label="内容标题" prop="node_title" width="auto" sortable>
+      <el-table-column label="内容标题" prop="content_title" width="auto" sortable>
         <template slot-scope="scope">
-          <a :href="scope.row.node_url" target="_blank">@{{ scope.row.node_title }}</a>
+          <a :href="scope.row.url" target="_blank">@{{ scope.row.content_title }}</a>
         </template>
       </el-table-column>
       <el-table-column label="无效链接" prop="link" width="auto" sortable></el-table-column>
@@ -35,8 +35,8 @@
 
     methods: {
       editUrl(row) {
-        const route = "{{ short_route('nodes.edit', '#node_id#') }}";
-        return route.replace('#node_id#', row.node_id);
+        const route = "{{ short_route('contents.edit', 'CONTENT_ID') }}";
+        return route.replace('CONTENT_ID', row.content_id);
       },
     },
   });
