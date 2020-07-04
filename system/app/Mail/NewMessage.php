@@ -43,6 +43,7 @@ class NewMessage
         'email' => 'E-mail',
         'name' => 'Name',
         'message' => 'Message',
+        'phone' => 'Phone',
         'company' => 'Company',
         'user_agent' => 'UserAgent',
     ];
@@ -146,6 +147,14 @@ class NewMessage
         if(!preg_match($preg_email, $email)){
             $this->error = 'Email address is not valid.';
             return false;
+        }
+
+        // 验证 phone 字段
+        if ($phone = $this->data['phone'] ?? null) {
+            if (strlen($phone) > 40) {
+                $this->error = 'Phone should be shorter than 40 characters.';
+                return false;
+            }
         }
 
         return true;

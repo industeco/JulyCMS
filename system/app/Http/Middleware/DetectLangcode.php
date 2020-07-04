@@ -34,7 +34,7 @@ class DetectLangcode
     {
         $langcode = null;
         $uri = trim(str_replace('\\', '/', $uri), '/');
-        if (strpos($uri, config('jc.admin.prefix') === 0)) {
+        if (strpos($uri, config('jc.admin.prefix')) === 0) {
             return config('jc.langcode.admin_page');
         }
 
