@@ -11,9 +11,9 @@ class FieldType
      * 可用字段类型
      */
     protected static $types = [
-        TextField::class, // 文本
-        HtmlField::class, // HTML
-        FileField::class, // 文件名
+        'text' => TextField::class, // 文本
+        'html' => HtmlField::class, // HTML
+        'file' => FileField::class, // 文件名
     ];
 
     /**
@@ -24,8 +24,7 @@ class FieldType
     public static function all()
     {
         $types = [];
-        foreach (static::$types as $type) {
-            $alias = $type::alias();
+        foreach (static::$types as $alias => $type) {
             $types[$alias] = [
                 'class' => $type,
                 'alias' => $alias,
@@ -37,10 +36,24 @@ class FieldType
         return $types;
     }
 
+    public static function getType($alias)
+    {
+        return static::$types[$alias] ?? null;
+    }
+
+    public static function getAlias($type)
+    {
+        $alias = array_flip(static::$types)[$type] ?? null;
+        if (! $alias) {
+            $alias = strtolower(preg_replace('/Field$/', '', class_basename($type)));
+        }
+        return $alias;
+    }
+
     /**
      * 获取实体属性类型定义类实例，失败则抛出错误
      *
-     * @param string|\App\Models\BaseEntityField $alias 实体属性类型实例或别名
+     * @param string|\App\Entity\Models\BaseEntityField $alias 实体属性类型实例或别名
      * @param string|null $langcode
      * @return \App\EntityFieldTypes\EntityFieldTypeInterface
      *
@@ -56,10 +69,8 @@ class FieldType
                 $field = null;
             }
 
-            foreach (static::$types as $type) {
-                if ($alias === $type::alias()) {
-                    return new $type($field, $langcode);
-                }
+            if ($type = static::$types[$alias] ?? null) {
+                return new $type($field, $langcode);
             }
         }
 

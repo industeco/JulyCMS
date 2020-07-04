@@ -9,14 +9,6 @@ class TextField extends BaseFieldType
     /**
      * {@inheritDoc}
      */
-    public static function alias(): string
-    {
-        return 'text';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public static function label(): string
     {
         return '文字';

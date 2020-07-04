@@ -7,14 +7,6 @@ class FileField extends BaseFieldType
     /**
      * {@inheritDoc}
      */
-    public static function alias(): string
-    {
-        return 'file';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public static function label(): string
     {
         return '文件名';

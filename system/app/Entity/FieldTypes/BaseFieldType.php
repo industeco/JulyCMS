@@ -32,9 +32,9 @@ abstract class BaseFieldType implements FieldTypeInterface
     /**
      * {@inheritDoc}
      */
-    public static function alias(): string
+    final public static function alias(): string
     {
-        return strtolower(preg_replace('/Field$/', '', class_basename(static::class)));
+        return FieldType::getAlias(static::class);
     }
 
     /**

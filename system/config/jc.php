@@ -28,30 +28,7 @@ return [
 
     // 编辑器配置
     'ckeditor' => [
-        // 'fillEmptyBlocks' => false,
-        // 'allowedContent' => true,
-        // 'image_previewText' => ' ',
         'filebrowserImageBrowseUrl' => ['media.select'],
-        // 'coreStyles_bold' => [
-        //     'element' => 'b',
-        //     'overrides' => 'strong',
-        // ],
-        // 'toolbarGroups' => [
-        //     [ 'name' => 'document', 'groups' => [ 'mode', 'document', 'doctools' ] ],
-        //     [ 'name' => 'clipboard', 'groups' => [ 'clipboard', 'undo' ] ],
-        //     [ 'name' => 'styles', 'groups' => [ 'styles' ] ],
-        //     [ 'name' => 'basicstyles', 'groups' => [ 'basicstyles', 'cleanup' ] ],
-        //     [ 'name' => 'links', 'groups' => [ 'links' ] ],
-        //     [ 'name' => 'paragraph', 'groups' => [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] ],
-        //     [ 'name' => 'insert', 'groups' => [ 'insert' ] ],
-        //     [ 'name' => 'forms', 'groups' => [ 'forms' ] ],
-        //     [ 'name' => 'tools', 'groups' => [ 'tools' ] ],
-        //     // [ 'name' => 'others', 'groups' => [ 'others' ] ],
-        //     // [ 'name' => 'editing', 'groups' => [ 'find', 'selection', 'spellchecker', 'editing' ] ],
-        //     // [ 'name' => 'colors', 'groups' => [ 'colors' ] ],
-        //     // [ 'name' => 'about', 'groups' => [ 'about' ] ],
-        // ],
-        // 'removeButtons' => 'Underline,Styles,Strike,Italic,Indent,Outdent,Blockquote,About,SpecialChar,HorizontalRule,Scayt,Cut,Copy,Paste,PasteText,PasteFromWord',
     ],
 
     // 表单验证规则
@@ -72,7 +49,7 @@ return [
         ],
     ],
 
-    // 侧边栏
+    // 侧边栏配置
     'sidebar_menu' => [
         [
             'title' => '内容',
@@ -135,6 +112,51 @@ return [
                     'children' => [],
                 ],
             ],
+        ],
+    ],
+
+    'field_attributes' => [
+        'helptext' => [
+            'value_type' => 'string',
+        ],
+        'max' => [
+            'value_type' => 'int',
+        ],
+        'maxlengt' => [
+            'value_type' => 'int',
+        ],
+        'min' => [
+            'value_type' => 'int',
+        ],
+        'minlength' => [
+            'value_type' => 'int',
+        ],
+        'multiple' => [
+            'value_type' => 'boolean',
+        ],
+        'options' => [
+            'value_type' => 'array',
+        ],
+        'pattern' => [
+            'value_type' => 'string',
+        ],
+        'placeholder' => [
+            'value_type' => 'string',
+        ],
+        'readonly' => [
+            'value_type' => 'boolean',
+        ],
+        'required' => [
+            'value_type' => 'boolean',
+        ],
+        'size' => [
+            'value_type' => 'int',
+        ],
+        'step' => [
+            'value_type' => 'int',
+        ],
+        'value' => [
+            'value_type' => 'mixed',
         ],
     ],
 ];

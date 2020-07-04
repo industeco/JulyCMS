@@ -7,14 +7,6 @@ class HtmlField extends BaseFieldType
     /**
      * {@inheritDoc}
      */
-    public static function alias(): string
-    {
-        return 'html';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public static function label(): string
     {
         return 'HTML';
