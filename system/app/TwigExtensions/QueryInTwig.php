@@ -7,6 +7,7 @@ use App\ModelCollections\CatalogCollection;
 use App\ModelCollections\NodeCollection;
 use App\ModelCollections\NodeTypeCollection;
 use App\ModelCollections\TagCollection;
+use App\Models\Node;
 use Illuminate\Support\Str;
 use Twig\TwigFunction;
 use Twig\TwigFilter;
@@ -43,6 +44,9 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
 
             // 获取标签集
             new TwigFunction('tags', [$this, 'tags']),
+
+            //
+            new TwigFunction('in_path', [$this, 'in_path'], ['needs_environment' => true]),
         ];
     }
 
@@ -183,5 +187,42 @@ class QueryInTwig extends AbstractExtension implements GlobalsInterface
             return TagCollection::findAll();
         }
         return TagCollection::find($args);
+    }
+
+    /**
+     * 判断给定节点是否在当前节点的路径中
+     *
+     * @param \Twig\Environment $twig
+     * @param \App\Models\Node|int|string $node
+     * @param string|null $active
+     *
+     * @return string|boolean
+     */
+    public function in_path(\Twig\Environment $twig, $node_id, string $active = null)
+    {
+        if ($node_id instanceof Node) {
+            $node_id = $node_id->getKey();
+        }
+        $node_id = (int) $node_id;
+
+        if (! $node_id) {
+            return $active ? '' : false;
+        }
+
+        $globals = $twig->getGlobals();
+
+        if ($path = $globals['_path'] ?? null) {
+            if ($path->contains($node_id)) {
+                return $active ?: true;
+            }
+        }
+
+        if ($node = $globals['_node'] ?? null) {
+            if ($node_id === 1*$node->getKey()) {
+                return $active ?: true;
+            }
+        }
+
+        return $active ? '' : false;
     }
 }
