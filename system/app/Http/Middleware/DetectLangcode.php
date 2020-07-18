@@ -31,7 +31,7 @@ class DetectLangcode
     protected function getPageLangcode($request)
     {
         $uri = trim(str_replace('\\', '/', $request->getRequestUri()), '/');
-        if (strpos($uri, config('jc.admin_prefix', 'admin').'/') === 0) {
+        if (strpos($uri, config('jc.background_route_prefix', 'admin').'/') === 0) {
             config()->set('request.is_admin', true);
             return config('jc.langcode.admin_page');
         }

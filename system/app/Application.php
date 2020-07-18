@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Foundation;
+namespace App;
 
-use Illuminate\Foundation\Application as ApplicationBase;
+use Illuminate\Foundation\Application as LaravelApplication;
 
-class Application extends ApplicationBase
+class Application extends LaravelApplication
 {
     /**
      * Get the path to the public / web directory.

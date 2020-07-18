@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Entity\EntityRoutes;
+use App\Installer\InstallerRoutes;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +44,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
+        InstallerRoutes::register();
+
+        EntityRoutes::register();
+
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();

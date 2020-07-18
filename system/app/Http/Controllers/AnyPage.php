@@ -22,11 +22,11 @@ class AnyPage extends Controller
             return Redirect::to(strtolower($url));
         }
 
-        $url = trim(str_replace('\\/', '/', $url), '/');
+        $url = trim(str_replace('\\', '/', $url), '/');
 
         $langcode = langcode('page');
         if (config('jc.multi_language')) {
-            if (!config('jc.langcode.permissions.'.$langcode.'.page')) {
+            if (!lang($langcode)->isAccessible()) {
                 abort(404);
             }
             if (strpos($url, $langcode.'/') === 0) {

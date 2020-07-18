@@ -115,48 +115,59 @@ return [
         ],
     ],
 
-    'field_attributes' => [
-        'helptext' => [
-            'value_type' => 'string',
-        ],
-        'max' => [
-            'value_type' => 'int',
-        ],
-        'maxlengt' => [
-            'value_type' => 'int',
-        ],
-        'min' => [
-            'value_type' => 'int',
-        ],
-        'minlength' => [
-            'value_type' => 'int',
-        ],
-        'multiple' => [
-            'value_type' => 'boolean',
+    'field_parameters' => [
+        'default_value' => [
+            'value_type' => 'mixed',
+            'translatable' => true,
+            'overwritable' => true,
         ],
         'options' => [
             'value_type' => 'array',
-        ],
-        'pattern' => [
-            'value_type' => 'string',
+            'translatable' => true,
+            'overwritable' => true,
         ],
         'placeholder' => [
             'value_type' => 'string',
+            'translatable' => true,
+            'overwritable' => true,
         ],
-        'readonly' => [
-            'value_type' => 'boolean',
+        'maxlength' => [
+            'value_type' => 'int',
+            'translatable' => false,
+            'overwritable' => false,
         ],
         'required' => [
             'value_type' => 'boolean',
+            'translatable' => false,
+            'overwritable' => true,
+            'default' => false,
         ],
-        'size' => [
-            'value_type' => 'int',
+        'pattern' => [
+            'value_type' => 'string',
+            'translatable' => false,
+            'overwritable' => false,
         ],
-        'step' => [
-            'value_type' => 'int',
+        'file_type' => [
+            'value_type' => 'string',
+            'translatable' => false,
+            'overwritable' => false,
         ],
-        'value' => [
-            'value_type' => 'mixed',
+        'multiple' => [
+            'value_type' => 'boolean',
+            'translatable' => false,
+            'overwritable' => false,
+            'default' => false,
         ],
+        'value_type' => [
+            'value_type' => 'string',
+            'translatable' => false,
+            'overwritable' => false,
+            'default' => 'string',
+        ],
+        // 'helptext' => [
+        //     'value_type' => 'string',
+        //     'translatable' => false,
+        //     'overwritable' => true,
+        // ],
     ],
 ];

@@ -15,7 +15,7 @@ class CreateJulycmsTables extends Migration
     public function up()
     {
         // 配置表
-        Schema::create('configs', function (Blueprint $table) {
+        Schema::create('config_table', function (Blueprint $table) {
             // 配置键
             $table->string('keyname', 100)->primary();
 
@@ -33,7 +33,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 用户表
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('user_table', function (Blueprint $table) {
             $table->id();
 
             // 用户名
@@ -56,7 +56,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 偏好设置表
-        Schema::create('user_preferences', function (Blueprint $table) {
+        Schema::create('user_preference_table', function (Blueprint $table) {
             // 用户 id
             $table->unsignedBigInteger('user_id');
 
@@ -68,21 +68,26 @@ class CreateJulycmsTables extends Migration
         });
 
         // 字段参数表
-        Schema::create('field_parameters', function (Blueprint $table) {
-            // 参数键名，例：content_field.title.en 或 content_field.title.content_type.basic.en
-            $table->string('keyname', 100)->primary();
+        Schema::create('field_parameter_table', function (Blueprint $table) {
+            // 参数键名，例：node.title
+            $table->string('entity_field', 50);
+            $table->string('entity_type', 50)->nullable();
+            $table->string('langcode', 12)->nullable();
 
             // 配置值
-            $table->binary('data');
+            $table->binary('parameters');
         });
 
         // 内容字段
-        Schema::create('content_fields', function (Blueprint $table) {
+        Schema::create('node_field_table', function (Blueprint $table) {
             // 字段真名
             $table->string('truename', 50)->primary();
 
-            // 字段类型，由 cms 定义
+            // 字段类型别名
             $table->string('field_type', 50);
+
+            // 保留字段，不可删除
+            $table->boolean('is_reserved')->default(0);
 
             // 是否预设
             $table->boolean('is_preset')->default(0);
@@ -113,7 +118,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容类型
-        Schema::create('content_types', function (Blueprint $table) {
+        Schema::create('node_type_table', function (Blueprint $table) {
             // 真名
             $table->string('truename', 50)->primary();
 
@@ -131,12 +136,12 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容字段与内容类型关联表
-        Schema::create('content_field_content_type', function (Blueprint $table) {
+        Schema::create('node_type_node_field_table', function (Blueprint $table) {
             // 类型真名
-            $table->string('content_type', 50);
+            $table->string('node_type', 50);
 
             // 字段真名
-            $table->string('content_field', 50);
+            $table->string('node_field', 50);
 
             // 序号
             $table->unsignedTinyInteger('delta')->default(0);
@@ -151,18 +156,15 @@ class CreateJulycmsTables extends Migration
             $table->string('description', 255)->nullable();
 
             // 同一个字段在同一个类型中最多出现一次
-            $table->unique(['content_type', 'content_field']);
+            $table->unique(['node_type', 'node_field']);
         });
 
         // 内容表
-        Schema::create('contents', function (Blueprint $table) {
+        Schema::create('nodes', function (Blueprint $table) {
             $table->id();
 
-            // 是否预设
-            $table->boolean('is_preset')->default(0);
-
             // 节点类型
-            $table->string('content_type', 50);
+            $table->string('node_type', 50);
 
             // 源语言（创建时的语言）
             $table->string('langcode', 12);

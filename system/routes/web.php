@@ -14,19 +14,19 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 安装
-Route::get('install', ['uses'=>'InstallController@home', 'as'=>'install.home']);
-Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.install']);
-Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
+// Route::get('install', ['uses'=>'InstallController@home', 'as'=>'install.home']);
+// Route::post('install', ['uses'=>'InstallController@install', 'as'=>'install.install']);
+// Route::post('install/migrate', ['uses'=>'InstallController@migrate', 'as'=>'install.migrate']);
 
 // 后台
 Route::group([
     'prefix' => config('jc.admin_prefix', 'admin'),
-    'middleware' => ['web','admin'],
+    'middleware' => 'admin',
 ], function() {
     // 登录路由
-    Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');
-    Route::post('login', 'Auth\LoginController@login')->name('admin.auth');
-    Route::get('logout', 'Auth\LoginController@logout')->name('admin.logout');
+    // Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');
+    // Route::post('login', 'Auth\LoginController@login')->name('admin.auth');
+    // Route::get('logout', 'Auth\LoginController@logout')->name('admin.logout');
 
     Route::middleware('auth')->group(function() {
         // 后台首页

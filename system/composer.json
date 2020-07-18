@@ -1,7 +1,7 @@
 {
-    "name": "laravel/laravel",
+    "name": "often233/JulyCMS",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "The JulyCMS Based on Laravel Framework.",
     "keywords": [
         "framework",
         "laravel"
@@ -41,7 +41,7 @@
     },
     "autoload": {
         "files": [
-            "app/helpers.php"
+            "app/Support/helpers.php"
         ],
         "psr-4": {
             "App\\": "app/"
