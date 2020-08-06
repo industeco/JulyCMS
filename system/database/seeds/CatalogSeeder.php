@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\Models\Catalog;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 

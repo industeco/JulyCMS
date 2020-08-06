@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ContentField;
+use App\Entity\Field\NodeField;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +17,7 @@ class CreateJulycmsTables extends Migration
         // 配置表
         Schema::create('config_table', function (Blueprint $table) {
             // 配置键
-            $table->string('keyname', 128)->primary();
+            $table->string('chain', 128)->primary();
 
             // 配置分组
             $table->string('group', 128)->nullable();
@@ -29,7 +29,7 @@ class CreateJulycmsTables extends Migration
             $table->string('description', 255)->nullable();
 
             // 配置值
-            $table->binary('data');
+            $table->binary('configuration');
         });
 
         // 用户表
@@ -56,7 +56,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 偏好设置表
-        Schema::create('user_preference_table', function (Blueprint $table) {
+        Schema::create('user_preferences_table', function (Blueprint $table) {
             // 用户 id
             $table->unsignedBigInteger('user_id');
 
@@ -64,19 +64,16 @@ class CreateJulycmsTables extends Migration
             $table->string('config_keyname', 128);
 
             // 配置值
-            $table->binary('data');
+            $table->binary('preferences');
         });
 
         // 字段参数表
         Schema::create('field_parameters_table', function (Blueprint $table) {
-            // 参数所属字段的真名
-            $table->string('field_truename', 32);
+            // 参数所属字段，node_field.title
+            $table->string('field_key', 65);
 
-            // 参数所属类型的真名
-            $table->string('mold_truename', 32)->nullable();
-
-            // 参数所属实体的 id
-            $table->string('entity_id', 32)->nullable();
+            // 字段所属类型（模具），node_type.article
+            $table->string('mold_key', 65)->nullable();
 
             // 语言代码
             $table->string('langcode', 12)->nullable();
@@ -125,7 +122,7 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容类型
-        Schema::create('node_mold_table', function (Blueprint $table) {
+        Schema::create('node_type_table', function (Blueprint $table) {
             // 真名
             $table->string('truename', 32)->primary();
 
@@ -143,9 +140,9 @@ class CreateJulycmsTables extends Migration
         });
 
         // 内容字段与内容类型关联表
-        Schema::create('node_mold_node_field_table', function (Blueprint $table) {
+        Schema::create('node_type_node_field_table', function (Blueprint $table) {
             // 类型真名
-            $table->string('node_mold', 32);
+            $table->string('node_type', 32);
 
             // 字段真名
             $table->string('node_field', 32);
@@ -163,7 +160,7 @@ class CreateJulycmsTables extends Migration
             $table->string('description', 255)->nullable();
 
             // 同一个字段在同一个类型中最多出现一次
-            $table->unique(['node_mold', 'node_field']);
+            $table->unique(['node_type', 'node_field']);
         });
 
         // 内容表
@@ -171,7 +168,7 @@ class CreateJulycmsTables extends Migration
             $table->id();
 
             // 节点类型
-            $table->string('node_mold', 32);
+            $table->string('node_type', 32);
 
             // 源语言（创建时的语言）
             $table->string('langcode', 12);
@@ -242,7 +239,7 @@ class CreateJulycmsTables extends Migration
             $table->unsignedBigInteger('node_id');
 
             // 标签 id
-            $table->string('tag', 50);
+            $table->string('tag', 64);
 
             // 语言代码
             $table->string('langcode', 12);

@@ -26,8 +26,7 @@ class Html
      */
     public function extractPageLinks()
     {
-        preg_match_all('/href="(\/[^"]*?(\.html|\/))"/', $this->html, $matches, PREG_PATTERN_ORDER);
-        return array_values(array_unique($matches[1]));
+        return $this->extract('/href="(\/[^"]*?(\.html|\/))"/');
     }
 
     /**
@@ -37,8 +36,7 @@ class Html
      */
     public function extractImageLinks()
     {
-        preg_match_all('/src="(\/[^"]*?\.(?:jpg|jpeg|gif|png|webp))"/', $this->html, $matches, PREG_PATTERN_ORDER);
-        return array_values(array_unique($matches[1]));
+        return $this->extract('/src="(\/[^"]*?\.(?:jpg|jpeg|gif|png|webp))"/');
     }
 
     /**
@@ -48,7 +46,17 @@ class Html
      */
     public function extractPdfLinks()
     {
-        preg_match_all('/href="(\/[^"]*?\.pdf)"/', $this->html, $matches, PREG_PATTERN_ORDER);
+        return $this->extract('/href="(\/[^"]*?\.pdf)"/');
+    }
+
+    protected function extract($reg)
+    {
+        preg_match_all($reg, $this->html, $matches, PREG_PATTERN_ORDER);
         return array_values(array_unique($matches[1]));
+    }
+
+    public function __toString()
+    {
+        return $this->html;
     }
 }
