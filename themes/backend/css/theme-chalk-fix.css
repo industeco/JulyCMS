@@ -1,0 +1,246 @@
+
+/* element ui 样式修正 */
+
+.el-form-item.has-helptext + .el-form-item {
+  margin-top: 36px;
+}
+
+.el-form--label-top .el-form-item__label {
+  margin-bottom: 2px;
+  padding: 0;
+  font-weight: bold;
+  line-height: 20px;
+  color: #212121;
+}
+
+.el-form--label-top .el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:before,
+.el-form--label-top .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:before {
+  display: none;
+}
+
+.el-form--label-top .el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:after,
+.el-form--label-top .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:after {
+  content: '*';
+  color: #F56C6C;
+  margin-left: 4px;
+  position: relative;
+  top: -1px;
+}
+
+.el-input__inner, .el-textarea__inner {
+  position: relative;
+  z-index: 1;
+  border: 1px solid #b8b8b8;
+  border-radius: 2px;
+  color: #595959;
+  background-color: #fcfcfa;
+  -webkit-transition: border linear 0.2s,box-shadow linear 0.2s;
+  transition: border linear 0.2s,box-shadow linear 0.2s;
+}
+
+.el-input__inner:focus, .el-textarea__inner:focus {
+  border-color: #40b6ff;
+  outline: 0;
+  background-color: #fff;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 0 8px #40b6ff;
+}
+
+.el-input {
+  /* display: inline-block; */
+  width: auto;
+  max-width: 100%;
+}
+
+.el-message-box__input .el-input {
+  width: 100%;
+}
+
+.el-input__inner {
+  padding: 0 12px;
+  max-width: 100%;
+}
+
+.el-input--small .el-input__inner {
+  height: 30px;
+  line-height: 30px;
+}
+
+.el-textarea__inner {
+  padding: 5px 12px;
+}
+
+.el-input__suffix, .el-input__count {
+  z-index: 2;
+}
+
+.el-textarea .el-input__count {
+  padding: 0 5px;
+  line-height: 20px;
+}
+
+.el-form-item__content > .jc-form-item-help {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  height: 22px;
+  line-height: 22px;
+  font-size: 12px;
+  color: #757575;
+}
+
+.is-error > .el-form-item__content > .jc-form-item-help {
+  opacity: 0;
+}
+
+.el-form .el-select {
+  min-width: 200px;
+}
+
+.el-select__tags {
+  z-index: 2;
+}
+
+.el-select .el-tag.is-duplicated {
+  color: #fff;
+  background-color: #ff5252;
+}
+
+.el-select .el-tag.is-hit {
+  border-color: #ff5252;
+}
+
+.el-select .el-tag--mini {
+  height: 24px;
+  padding: 0 10px;
+  line-height: 23px;
+}
+
+.el-select .el-tag--mini .el-icon-close {
+  transform: scale(.85);
+}
+
+
+
+.el-dialog__wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-dialog {
+  margin: 0;
+}
+
+.el-table__body, .el-table__footer, .el-table__header {
+  border-collapse: collapse;
+}
+
+.el-table .cell {
+  height: auto;
+  line-height: 24px;
+}
+
+.el-table th>.cell,
+.el-table-column--selection > .cell {
+  display: flex;
+  align-items: center;
+}
+
+.el-table .el-table-column--selection > .cell {
+  width: 100%;
+  padding: 0;
+  justify-content: center;
+}
+
+.with-operators td:last-child > .cell {
+  overflow: visible;
+  height: auto;
+}
+
+.el-table .caret-wrapper {
+  height: 22px;
+}
+
+.el-table .sort-caret.ascending {
+  top: 0;
+}
+
+.el-table .sort-caret.descending {
+  bottom: 0;
+}
+
+.el-table .el-table__body td {
+  border-width: 0 0 1px 0;
+}
+
+.el-table th.is-leaf {
+  border-bottom: 1px solid #bfbfba;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover>td {
+  background-color: transparent;
+}
+
+.el-table-column--selection .el-checkbox__input,
+.el-table-column--selection .el-checkbox__inner {
+  display: block;
+}
+
+.el-table .cell > .el-table__expand-icon > .el-icon-arrow-right {
+  font-weight: 700;
+  color: #448aff;
+}
+
+.el-input-number__decrease, .el-input-number__increase {
+  z-index: 2;
+}
+
+.el-loading-spinner i {
+  font-size: 32px;
+}
+
+.el-input .el-input__count,
+.el-textarea .el-input__count {
+  height: 20px;
+  line-height: 20px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: transparent;
+  white-space: nowrap;
+}
+
+.el-input .el-input__count .el-input__count-inner {
+  padding: 0;
+  background-color: transparent;
+  white-space: nowrap;
+}
+
+.el-tabs__item.is-active,
+.el-tabs__active-bar {
+  color: #448aff;
+}
+
+.el-upload:focus .el-upload-dragger,
+.el-upload-dragger:hover {
+  border-color: #448aff;
+}
+
+.el-upload-dragger .el-upload__text em {
+  color: #448aff;
+  font-style: normal;
+}
+
+.el-upload--picture-card:hover {
+  border-color: #448aff;
+  color: #448aff;
+}
+
+.el-upload:focus {
+  border-color: transparent;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: #448aff;
+  border-color: #448aff;
+}

@@ -26,8 +26,8 @@ class UserSeeder extends Seeder
             [
                 'name' => Request::input('admin_name', 'admin'),
                 'password' => Hash::make(Request::input('admin_password', 'admin666')),
-                'role' => 'supperadmin',
-            ]
+                'role' => 'superadmin',
+            ],
         ];
     }
 }

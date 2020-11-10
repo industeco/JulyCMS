@@ -8,6 +8,7 @@ use App\ModelCollections\TagCollection;
 use App\Models\Catalog;
 use App\Models\CatalogContent;
 use App\Models\Tag;
+use App\Utils\Html;
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -257,9 +258,9 @@ class Content extends BaseEntity
 
             $canonical = '/'.ltrim($content['url'], '/');
             if ($langcode === langcode('site_page')) {
-                $canonical = rtrim(config('jc.url'), '/').$canonical;
+                $canonical = rtrim(config('app.url'), '/').$canonical;
             } else {
-                $canonical = rtrim(config('jc.url'), '/').'/'.$langcode.$canonical;
+                $canonical = rtrim(config('app.url'), '/').'/'.$langcode.$canonical;
             }
             $twig->addGlobal('_canonical', $canonical);
 
@@ -287,7 +288,7 @@ class Content extends BaseEntity
     public function template($langcode = null)
     {
         foreach ($this->suggestedTemplates($langcode) as $tpl) {
-            if (is_file(foreground_path('template/'.$tpl))) {
+            if (is_file(frontend_path('template/'.$tpl))) {
                 return $tpl;
             }
         }
@@ -365,7 +366,7 @@ class Content extends BaseEntity
         if (! $html) {
             return [];
         }
-        $html = html($html);
+        $html = new Html($html);
 
         $links = [];
         $contentInfo = [
@@ -590,7 +591,7 @@ class Content extends BaseEntity
      */
     public function get_catalogs()
     {
-        $catalogs = $this->catalogs()->get()->keyBy('truename');
+        $catalogs = $this->catalogs()->get()->keyBy('id');
         return CatalogCollection::make($catalogs);
     }
 
@@ -601,13 +602,13 @@ class Content extends BaseEntity
      */
     public function get_tags()
     {
-        $langcode = config('render_langcode') ?? langcode('page');
+        $langcode = config('render_langcode') ?? langcode('frontend');
         $tags = $this->tags($langcode)->get()->keyBy('tag');
         return TagCollection::make($tags);
     }
 
     public function get_url()
     {
-        return rtrim(config('jc.url'), '/').'/'.ltrim($this->url, '/');
+        return rtrim(config('app.url'), '/').'/'.ltrim($this->url, '/');
     }
 }

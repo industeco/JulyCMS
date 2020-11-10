@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Utils\EventsBook;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\QueryException;
-use App\Models\Config as ConfigModel;
+use July\July;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton('events_book', function() {
+            return new EventsBook();
+        });
+
+        $this->app->terminating(function() {
+            events()->store();
+        });
     }
 
     /**
@@ -25,17 +32,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        try {
-            // 加载数据库中的常规配置
-            ConfigModel::loadConfigurations();
-        } catch (\Throwable $th) {
-            if (!($th instanceof QueryException)) {
-                throw $th;
-            }
-        }
-
         // 添加视图命名空间
-        view()->addNamespace('admin', background_path('template'));
-        // view()->addNamespace('theme', public_path('themes/default/template'));
+        view()->addNamespace('backend', backend_path('template'));
+
+        // 登记迁移文件的路径
+        if (!config('app.installed') || $this->app->runningInConsole()) {
+            $this->loadMigrationsFrom(July::discoverMigrationPaths());
+        }
     }
 }

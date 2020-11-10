@@ -1,6 +1,6 @@
 <?php
 
-use App\Entity\Field\NodeField;
+use App\ContentEntity\Models\ContentField;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,254 +14,368 @@ class CreateJulycmsTables extends Migration
      */
     public function up()
     {
-        // 配置表
-        Schema::create('config_table', function (Blueprint $table) {
-            // 配置键
-            $table->string('chain', 128)->primary();
+        // // 配置表
+        // Schema::create('configs', function (Blueprint $table) {
+        //     // 配置键
+        //     $table->string('id', 128)->primary();
 
-            // 配置分组
-            $table->string('group', 128)->nullable();
+        //     // 配置分组
+        //     $table->string('group', 128)->default('default');
 
-            // 标签
-            $table->string('label', 64);
+        //     // 标签
+        //     $table->string('label', 32)->nullable();
 
-            // 描述
-            $table->string('description', 255)->nullable();
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
 
-            // 配置值
-            $table->binary('configuration');
-        });
+        //     // 是否可见：是否在后台展示该选项
+        //     $table->boolean('is_visible')->default(true);
 
-        // 用户表
-        Schema::create('user_table', function (Blueprint $table) {
-            $table->id();
+        //     // 是否可变更
+        //     $table->boolean('is_changable')->default(true);
 
-            // 用户名
-            $table->string('name', 32)->unique();
+        //     // 是否可翻译
+        //     $table->boolean('is_translatable')->default(false);
 
-            // 密码
-            $table->string('password');
+        //     // 默认语言
+        //     $table->string('langcode', 12)->nullable();
+        // });
 
-            // 角色：supperadmin, admin, editor, user
-            $table->string('role', 32)->default('user');
+        // // 配置表
+        // Schema::create('config__value', function (Blueprint $table) {
+        //     // 配置键
+        //     $table->string('config_id', 128);
 
-            // 登录令牌，防止重复登录
-            $table->string('login_token')->nullable();
+        //     // 标签
+        //     $table->string('langcode', 12)->nullable();
 
-            // remember_token
-            $table->rememberToken();
+        //     // 配置值
+        //     $table->binary('value');
+        // });
 
-            // 时间戳
-            $table->timestamps();
-        });
+        // // 用户表
+        // Schema::create('users', function (Blueprint $table) {
+        //     $table->id();
 
-        // 偏好设置表
-        Schema::create('user_preferences_table', function (Blueprint $table) {
-            // 用户 id
-            $table->unsignedBigInteger('user_id');
+        //     // 用户名
+        //     $table->string('name', 32)->unique();
 
-            // 配置键
-            $table->string('config_keyname', 128);
+        //     // 密码
+        //     $table->string('password');
 
-            // 配置值
-            $table->binary('preferences');
-        });
+        //     // 角色：superadmin, admin, editor, user
+        //     $table->string('role', 32)->default('user');
 
-        // 字段参数表
-        Schema::create('field_parameters_table', function (Blueprint $table) {
-            // 参数所属字段，node_field.title
-            $table->string('field_key', 65);
+        //     // 登录令牌，防止重复登录
+        //     $table->string('login_token')->nullable();
 
-            // 字段所属类型（模具），node_type.article
-            $table->string('mold_key', 65)->nullable();
+        //     // remember_token
+        //     $table->rememberToken();
 
-            // 语言代码
-            $table->string('langcode', 12)->nullable();
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
 
-            // 参数值
-            $table->binary('parameters');
-        });
+        // // 偏好设置表
+        // Schema::create('user__preferences', function (Blueprint $table) {
+        //     // 用户 id
+        //     $table->unsignedBigInteger('user_id');
 
-        // 内容字段
-        Schema::create('node_field_table', function (Blueprint $table) {
-            // 字段真名
-            $table->string('truename', 32)->primary();
+        //     // 配置键
+        //     $table->string('config_id', 128);
 
-            // 字段类型别名
-            $table->string('field_type', 32);
+        //     // 配置值
+        //     $table->binary('preferences');
+        // });
 
-            // 保留字段，不可删除
-            $table->boolean('is_reserved')->default(0);
+        // // 内容字段
+        // Schema::create('node_fields', function (Blueprint $table) {
+        //     // 字段真名
+        //     $table->string('id', 32)->primary();
 
-            // 是否预设字段；预设字段会出现在
-            $table->boolean('is_preset')->default(0);
+        //     // 字段类型的实体 id
+        //     $table->string('field_type', 32);
 
-            // 是否全局字段（全局字段是所有类型通用的，但不出现在具体类型中）
-            $table->boolean('is_global')->default(0);
+        //     // 是否必要字段：必要字段不可删除
+        //     $table->boolean('is_necessary')->default(0);
 
-            // 是否可检索
-            $table->boolean('is_searchable')->default(1);
+        //     // 是否预设字段：预设字段会默认出现在 type 中
+        //     $table->boolean('is_preset')->default(0);
 
-            // 搜索权重
-            $table->unsignedDecimal('weight')->default(1);
+        //     // 是否全局字段：全局字段是所有类型通用的，但不出现在具体类型中
+        //     $table->boolean('is_global')->default(0);
 
-            // 分组（分组标签）
-            $table->string('group', 32)->nullable();
+        //     // 是否可检索
+        //     $table->boolean('is_searchable')->default(1);
 
-            // 标签
-            $table->string('label', 64);
+        //     // 搜索权重
+        //     $table->unsignedDecimal('weight')->default(1);
 
-            // 描述
-            $table->string('description', 255)->nullable();
+        //     // 分组（分组标签）
+        //     $table->string('group', 32)->nullable();
 
-            // 语言
-            $table->string('langcode', 12);
+        //     // 标签
+        //     $table->string('label', 32);
 
-            // 时间戳
-            $table->timestamps();
-        });
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
 
-        // 内容类型
-        Schema::create('node_type_table', function (Blueprint $table) {
-            // 真名
-            $table->string('truename', 32)->primary();
+        //     // 语言
+        //     $table->string('langcode', 12);
 
-            // 是否预设
-            $table->boolean('is_preset')->default(0);
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
 
-            // 标签
-            $table->string('label', 64);
+        // // 内容类型
+        // Schema::create('node_types', function (Blueprint $table) {
+        //     // 真名
+        //     $table->string('id', 32)->primary();
 
-            // 描述
-            $table->string('description', 255)->nullable();
+        //     // 是否必要类型：必要类型不可删除
+        //     $table->boolean('is_necessary')->default(0);
 
-            // 时间戳
-            $table->timestamps();
-        });
+        //     // 标签
+        //     $table->string('label', 32);
 
-        // 内容字段与内容类型关联表
-        Schema::create('node_type_node_field_table', function (Blueprint $table) {
-            // 类型真名
-            $table->string('node_type', 32);
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
 
-            // 字段真名
-            $table->string('node_field', 32);
+        //     // 语言
+        //     $table->string('langcode', 12);
 
-            // 序号
-            $table->unsignedTinyInteger('delta')->default(0);
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
 
-            // 搜索权重
-            $table->unsignedDecimal('weight')->nullable();
+        // // 内容字段与内容类型关联表
+        // Schema::create('node_type_node_field', function (Blueprint $table) {
+        //     // 类型真名
+        //     $table->string('node_type_id', 32);
 
-            // 标签
-            $table->string('label', 64)->nullable();
+        //     // 字段真名
+        //     $table->string('node_field_id', 32);
 
-            // 描述
-            $table->string('description', 255)->nullable();
+        //     // 序号
+        //     $table->unsignedTinyInteger('delta')->default(0);
 
-            // 同一个字段在同一个类型中最多出现一次
-            $table->unique(['node_type', 'node_field']);
-        });
+        //     // 搜索权重
+        //     $table->unsignedDecimal('weight')->nullable();
 
-        // 内容表
-        Schema::create('node_table', function (Blueprint $table) {
-            $table->id();
+        //     // 标签
+        //     $table->string('label', 32)->nullable();
 
-            // 节点类型
-            $table->string('node_type', 32);
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
 
-            // 源语言（创建时的语言）
-            $table->string('langcode', 12);
+        //     // 同一个字段在同一个类型中最多出现一次
+        //     $table->unique(['node_type_id', 'node_field_id']);
+        // });
 
-            // 时间戳
-            $table->timestamps();
-        });
+        // // 内容字段参数表
+        // Schema::create('node_field__parameters', function (Blueprint $table) {
+        //     // 字段真名
+        //     $table->string('node_field_id', 32);
 
-        // 目录
-        Schema::create('catalog_table', function (Blueprint $table) {
-            // 真名
-            $table->string('truename', 32)->primary();
+        //     // 类型真名
+        //     $table->string('node_type_id', 32)->nullable();
 
-            // 是否预设
-            $table->boolean('is_preset')->default(0);
+        //     // 语言
+        //     $table->string('langcode', 12);
 
-            // 标签
-            $table->string('label', 64);
+        //     // 字段配置
+        //     $table->binary('parameters');
+        // });
 
-            // 描述
-            $table->string('description', 255)->nullable();
+        // // 内容表
+        // Schema::create('nodes', function (Blueprint $table) {
+        //     $table->id();
 
-            // 时间戳
-            $table->timestamps();
-        });
+        //     // 节点类型
+        //     $table->string('node_type_id', 32);
 
-        // 内容与目录关联表
-        Schema::create('catalog_node_table', function (Blueprint $table) {
-            // 目录真名
-            $table->string('catalog', 32);
+        //     // 源语言（创建时的语言）
+        //     $table->string('langcode', 12);
 
-            // 内容 id
-            $table->unsignedBigInteger('id');
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
 
-            // 父级内容 id
-            $table->unsignedBigInteger('parent_id')->nullable();
+        // // 目录
+        // Schema::create('catalogs', function (Blueprint $table) {
+        //     // id
+        //     $table->string('id', 32)->primary();
 
-            // 相邻内容 id
-            $table->unsignedBigInteger('prev_id')->nullable();
+        //     // 是否必要目录：必要项不可删除
+        //     $table->boolean('is_necessary')->default(0);
 
-            // 路径
-            $table->string('path')->default('/');
-        });
+        //     // 标签
+        //     $table->string('label', 32);
 
-        // 标签
-        Schema::create('tag_table', function (Blueprint $table) {
-            // 标签名
-            $table->string('tag', 64)->primary();
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
 
-            // 是否在页面上显示
-            $table->boolean('is_show')->default(1);
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
 
-            // 标签原文（表示翻译自该标签）
-            $table->string('original_tag', 64);
+        // // 内容与目录关联表
+        // Schema::create('catalog_node', function (Blueprint $table) {
+        //     // 目录真名
+        //     $table->string('catalog_id', 32);
 
-            // 语言
-            $table->string('langcode', 12);
+        //     // 内容 id
+        //     $table->unsignedBigInteger('node_id');
 
-            // 时间戳
-            $table->timestamps();
+        //     // 父级内容 id
+        //     $table->unsignedBigInteger('parent_id')->nullable();
 
-            $table->unique(['original_tag', 'langcode']);
-        });
+        //     // 相邻内容 id
+        //     $table->unsignedBigInteger('prev_id')->nullable();
 
-        // 节点与标签关联表
-        Schema::create('node_tag_table', function (Blueprint $table) {
-            // 节点 id
-            $table->unsignedBigInteger('node_id');
+        //     // 路径
+        //     $table->string('path')->default('/');
+        // });
 
-            // 标签 id
-            $table->string('tag', 64);
+        // // 内容字段
+        // Schema::create('term_fields', function (Blueprint $table) {
+        //     // 字段真名
+        //     $table->string('id', 32)->primary();
 
-            // 语言代码
-            $table->string('langcode', 12);
-        });
+        //     // 字段类型的实体 id
+        //     $table->string('field_type', 32);
 
-        // 节点内容索引表
-        Schema::create('node_index_table', function (Blueprint $table) {
-            // 节点 id
-            $table->unsignedBigInteger('node_id');
+        //     // 是否必要字段：必要字段不可删除
+        //     $table->boolean('is_necessary')->default(0);
 
-            // 字段真名
-            $table->string('node_field', 50);
+        //     // 是否预设字段：预设字段会默认出现在 type 中
+        //     $table->boolean('is_preset')->default(0);
 
-            // 字段值
-            $table->text('field_value');
+        //     // 是否全局字段：全局字段是所有类型通用的，但不出现在具体类型中
+        //     $table->boolean('is_global')->default(0);
 
-            // 语言代码
-            $table->string('langcode', 12);
+        //     // 是否可检索
+        //     $table->boolean('is_searchable')->default(1);
 
-            // 权重
-            $table->unsignedFloat('weight')->default(1);
-        });
+        //     // 搜索权重
+        //     $table->unsignedDecimal('weight')->default(1);
+
+        //     // 分组（分组标签）
+        //     $table->string('group', 32)->nullable();
+
+        //     // 标签
+        //     $table->string('label', 32);
+
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
+
+        //     // 语言
+        //     $table->string('langcode', 12);
+
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
+
+        // // 词汇表
+        // Schema::create('vocabularies', function (Blueprint $table) {
+        //     // 词汇表 id （机读名）
+        //     $table->string('id', 32)->primary();
+
+        //     // 是否必要：必要项不可删除
+        //     $table->boolean('is_necessary')->default(0);
+
+        //     // 标签
+        //     $table->string('label', 32);
+
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
+
+        //     // 语言
+        //     $table->string('langcode', 12);
+
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
+
+        // // 内容字段与内容类型关联表
+        // Schema::create('vocabulary_term_field', function (Blueprint $table) {
+        //     // 类型真名
+        //     $table->string('vocabulary_id', 32);
+
+        //     // 字段真名
+        //     $table->string('term_field_id', 32);
+
+        //     // 序号
+        //     $table->unsignedTinyInteger('delta')->default(0);
+
+        //     // 搜索权重
+        //     $table->unsignedDecimal('weight')->nullable();
+
+        //     // 标签
+        //     $table->string('label', 32)->nullable();
+
+        //     // 描述
+        //     $table->string('description', 255)->nullable();
+
+        //     // 字段在同一类型中只能出现一次
+        //     $table->unique(['vocabulary_id', 'term_field_id']);
+        // });
+
+        // // 内容字段参数表
+        // Schema::create('term_field__parameters', function (Blueprint $table) {
+        //     // 字段真名
+        //     $table->string('term_field_id', 32);
+
+        //     // 词汇表
+        //     $table->string('vocabulary_id', 32)->nullable();
+
+        //     // 语言
+        //     $table->string('langcode', 12);
+
+        //     // 字段配置
+        //     $table->binary('parameters');
+        // });
+
+        // // 词汇
+        // Schema::create('terms', function (Blueprint $table) {
+        //     $table->id();
+
+        //     // 词汇表
+        //     $table->string('vocabulary_id', 32);
+
+        //     // 源语言（创建时的语言）
+        //     $table->string('langcode', 12);
+
+        //     // 时间戳
+        //     $table->timestamps();
+        // });
+
+        // // 节点与标签关联表
+        // Schema::create('node_term', function (Blueprint $table) {
+        //     // 节点 id
+        //     $table->unsignedBigInteger('node_id');
+
+        //     // 标签 id
+        //     $table->string('term_id', 32);
+        // });
+
+        // // 节点内容索引表
+        // Schema::create('node_index', function (Blueprint $table) {
+        //     // 节点 id
+        //     $table->unsignedBigInteger('node_id');
+
+        //     // 字段真名
+        //     $table->string('node_field_id', 32);
+
+        //     // 字段值
+        //     $table->text('content');
+
+        //     // 语言代码
+        //     $table->string('langcode', 12);
+
+        //     // 权重
+        //     $table->unsignedFloat('weight')->default(1);
+        // });
     }
 
     /**
@@ -271,23 +385,24 @@ class CreateJulycmsTables extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('node_index_table');
-        Schema::dropIfExists('node_tag_table');
-        Schema::dropIfExists('tag_table');
-        Schema::dropIfExists('catalog_node_table');
-        Schema::dropIfExists('catalog_table');
-        Schema::dropIfExists('node_table');
-        Schema::dropIfExists('node_type_node_field_table');
-        Schema::dropIfExists('node_type_table');
+        // Schema::dropIfExists('node_index');
+        // Schema::dropIfExists('node_tag');
+        // Schema::dropIfExists('tags');
+        // Schema::dropIfExists('catalog_node');
+        // Schema::dropIfExists('catalogs');
+        // Schema::dropIfExists('nodes');
+        // Schema::dropIfExists('node_field__parameterss');
+        // Schema::dropIfExists('node_field_node_type');
+        // Schema::dropIfExists('node_types');
 
-        foreach (NodeField::all() as $field) {
-            $field->tableDown();
-        }
+        // foreach (ContentField::all() as $field) {
+        //     $field->tableDown();
+        // }
 
-        Schema::dropIfExists('node_field_table');
-        Schema::dropIfExists('field_parameters_table');
-        Schema::dropIfExists('user_preferences_table');
-        Schema::dropIfExists('user_table');
-        Schema::dropIfExists('config_table');
+        // Schema::dropIfExists('node_fields');
+        // Schema::dropIfExists('user__preferencess');
+        // Schema::dropIfExists('users');
+        // Schema::dropIfExists('config__data');
+        // Schema::dropIfExists('configs');
     }
 }

@@ -1,9 +1,9 @@
 /*
+!/.gitignore
 !/files/
 !/images/
 !/themes/
 !/system/
-!/.gitignore
 !/.editorconfig
 !/.htaccess
 !/index.php

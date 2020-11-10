@@ -19,7 +19,7 @@ class ConfigSeeder extends Seeder
 
     protected function getConfigData()
     {
-        $clang = config('jc.langcode.content');
+        $clang = config('jc.language.content');
         $data = [
             [
                 'keyname' => 'multi_language',
@@ -28,7 +28,7 @@ class ConfigSeeder extends Seeder
                 'description' => '启用后可对内容进行翻译，可访问多语言页面。',
                 'data' => [
                     'value_type' => 'boolean',
-                    'value' => config('jc.multi_language', false),
+                    'value' => config('jc.language.multiple', false),
                 ],
             ],
             [
@@ -38,7 +38,7 @@ class ConfigSeeder extends Seeder
                 'description' => '可用语言列表',
                 'data' => [
                     'value_type' => 'array',
-                    'value' => config('jc.langcode.list'),
+                    'value' => config('jc.language.list'),
                 ],
             ],
             [
@@ -58,7 +58,7 @@ class ConfigSeeder extends Seeder
                 'description' => '访问网站（非后台）页面时默认使用的语言。',
                 'data' => [
                     'value_type' => 'string',
-                    'value' =>  config('jc.langcode.page'),
+                    'value' => config('jc.language.page'),
                 ],
             ],
             [

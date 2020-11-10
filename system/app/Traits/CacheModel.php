@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Support\Arr;
+use App\Utils\Arr;
 use App\Exceptions\InvalidCacheKeyArguments;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;

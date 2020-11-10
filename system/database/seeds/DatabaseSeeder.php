@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ContentField;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use July\July;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,19 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $seeders = July::discoverSeeders();
+
         DB::beginTransaction();
 
-        $this->call(ConfigSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(ContentFieldSeeder::class);
-        $this->call(ContentTypeSeeder::class);
-        $this->call(CatalogSeeder::class);
-        $this->call(TagSeeder::class);
+        foreach ($seeders as $seeder) {
+            $this->call($seeder);
+        }
 
         DB::commit();
 
-        foreach (ContentField::all() as $field) {
-            $field->tableUp();
+        foreach ($seeders as $seeder) {
+            if (method_exists($seeder, 'afterSeeding')) {
+                $seeder::afterSeeding();
+            }
         }
     }
 }

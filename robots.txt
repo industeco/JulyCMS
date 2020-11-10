@@ -1,4 +1,4 @@
 User-agent: *
-Disallow: /
-Disallow: /admin/
+Allow: /
+Disallow: /july/admin/
 Disallow: /404.html

@@ -75,7 +75,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS'),
-        'name' => env('MAIL_FROM_NAME', env('APP_OWNER')),
+        'name' => env('MAIL_FROM_NAME') ?: env('SITE_SUBJECT'),
     ],
 
     'to' => [

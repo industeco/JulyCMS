@@ -11,7 +11,7 @@
 |
 */
 
-$app = new July\Application(
+$app = new App\Application(
     dirname(dirname(__FILE__))
 );
 

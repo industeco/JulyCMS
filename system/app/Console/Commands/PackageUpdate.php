@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Utils\Archive;
 use Illuminate\Console\Command;
 
 class PackageUpdate extends Command
@@ -37,20 +38,38 @@ class PackageUpdate extends Command
      */
     public function handle()
     {
-        $whiteList = [
-            'system/app/*' => '',
-            'system/bootstrap/app.php' => '',
-            'system/bootstrap/autoload.php' => '',
-            'system/config/*' => '',
-            'system/database/migrations/*' => '',
-            'system/database/seeds/*' => '',
-            'system/language/*' => '',
-            'system/routes/*' => '',
-            'themes/admin/*' => '',
-            'index.php' => '',
+        $allowList = [
+            'system/' => [
+                'app/**',
+                'bootstrap/*.php',
+                'config/*.php',
+                'database/' => [
+                    'migrations/*.php',
+                    'seeds/*.php',
+                ],
+                'language/*.php',
+                'routes/*.php',
+            ],
+            'themes/backend/**',
+            'index.php',
         ];
 
-        $pkg = public_path('julycms_update.zip');
-        return package_files($pkg, get_file_list($whiteList));
+        return Archive::create('julycms_update.zip')->from($allowList)->zip();
+
+        // $whiteList = [
+        //     'system/app/*' => '',
+        //     'system/bootstrap/app.php' => '',
+        //     'system/bootstrap/autoload.php' => '',
+        //     'system/config/*' => '',
+        //     'system/database/migrations/*' => '',
+        //     'system/database/seeds/*' => '',
+        //     'system/language/*' => '',
+        //     'system/routes/*' => '',
+        //     'themes/backend/*' => '',
+        //     'index.php' => '',
+        // ];
+
+        // $pkg = public_path('julycms_update.zip');
+        // return package_files($pkg, get_file_list($whiteList));
     }
 }

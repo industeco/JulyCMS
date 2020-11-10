@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\Arr;
+use App\Utils\Arr;
 use App\Traits\CacheModel;
 use App\Traits\FetchModel;
 use Illuminate\Database\Eloquent\Model;

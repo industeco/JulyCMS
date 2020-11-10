@@ -63,7 +63,7 @@ class CommandController extends Controller
             $reply = $msg->getError();
         }
 
-        return view('admin::mail', ['message' => $reply]);
+        return view('backend::mail', ['message' => $reply]);
     }
 
     /**
@@ -93,7 +93,7 @@ class CommandController extends Controller
      */
     public function buildGoogleSitemap()
     {
-        if (config('jc.multi_language')) {
+        if (config('jc.language.multiple')) {
             $langcodes = lang()->getAccessibleLangcodes();
         } else {
             $langcodes = [langcode('page')];
@@ -151,7 +151,7 @@ class CommandController extends Controller
             $result['original_langcode'] = $contents->get($result['content_id'])->langcode;
         }
 
-        return view_with_langcode('admin::search', [
+        return view_with_langcode('backend::search', [
             'keywords' => $keywords,
             'results' => $results,
         ]);
@@ -159,7 +159,7 @@ class CommandController extends Controller
 
     public function findInvalidLinks()
     {
-        if (config('jc.multi_language')) {
+        if (config('jc.language.multiple')) {
             $langcodes = lang()->getAccessibleLangcodes();
         } else {
             $langcodes = [langcode('page')];
@@ -171,7 +171,7 @@ class CommandController extends Controller
             }
         }
 
-        return view_with_langcode('admin::invalid_links', [
+        return view_with_langcode('backend::invalid_links', [
             'invalidLinks' => $invalidLinks,
         ]);
     }

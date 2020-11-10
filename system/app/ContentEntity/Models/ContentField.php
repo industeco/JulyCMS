@@ -157,7 +157,7 @@ class ContentField extends BaseEntityField
             $jigsaws = $jigsaws['value'];
         }
 
-        $lastModified = last_modified(background_path('template/components/'));
+        $lastModified = last_modified(backend_path('template/components/'));
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach (static::cacheGetGlobalFields($langcode) as $field) {

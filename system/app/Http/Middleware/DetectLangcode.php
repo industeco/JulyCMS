@@ -15,25 +15,29 @@ class DetectLangcode
      */
     public function handle($request, Closure $next)
     {
-        $config = config();
-
         // 设置内容语言
         if ($clang = $request->input('langcode') ?? $request->input('content_langcode')) {
-            $config->set('request.langcode.content', $clang);
+            config()->set('request.language.content', $clang);
         }
 
         // 设置页面语言
-        $config->set('request.langcode.page', $this->getPageLangcode($request));
+        config()->set('request.language.frontend', $this->getFrontendLangcode($request));
 
         return $next($request);
     }
 
-    protected function getPageLangcode($request)
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return string
+     */
+    protected function getFrontendLangcode($request)
     {
         $uri = trim(str_replace('\\', '/', $request->getRequestUri()), '/');
-        if (strpos($uri, config('jc.background_route_prefix', 'admin').'/') === 0) {
+        if (strpos($uri, config('jc.site.backend_route_prefix', 'admin').'/') === 0) {
             config()->set('request.is_admin', true);
-            return config('jc.langcode.admin_page');
+            return config('jc.language.backend');
         }
 
         $dirs = explode('/', $uri);
@@ -41,6 +45,6 @@ class DetectLangcode
             return $langcode;
         }
 
-        return config('jc.langcode.page');
+        return config('jc.language.frontend');
     }
 }

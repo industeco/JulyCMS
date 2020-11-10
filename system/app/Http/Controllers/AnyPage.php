@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Content;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use July\Core\Node\Node;
 
 class AnyPage extends Controller
 {
@@ -24,8 +24,8 @@ class AnyPage extends Controller
 
         $url = trim(str_replace('\\', '/', $url), '/');
 
-        $langcode = langcode('page');
-        if (config('jc.multi_language')) {
+        $langcode = langcode('frontend');
+        if (config('jc.language.multiple')) {
             if (!lang($langcode)->isAccessible()) {
                 abort(404);
             }
@@ -33,7 +33,7 @@ class AnyPage extends Controller
                 $url = substr($url, strlen($langcode.'/'));
             }
         } else {
-            if (strpos($url, $langcode.'/') === 0 || $langcode !== langcode('page.default')) {
+            if (strpos($url, $langcode.'/') === 0 || $langcode !== langcode('frontend.default')) {
                 abort(404);
             }
         }
@@ -93,8 +93,8 @@ class AnyPage extends Controller
             return $disk->get($file);
         }
 
-        if ($content = Content::findByUrl($url, $langcode)) {
-            if ($html = $content->getHtml($langcode)) {
+        if ($node = Node::findByUrl($url, $langcode)) {
+            if ($html = $node->getHtml($langcode)) {
                 return $html;
             }
         }

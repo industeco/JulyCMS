@@ -18,12 +18,12 @@ class MediaController extends Controller
 
     public function index()
     {
-        return view('admin::media.index');
+        return view('backend::media.index');
     }
 
     public function select()
     {
-        return view('admin::media.select');
+        return view('backend::media.select');
     }
 
     public function under(Request $request)

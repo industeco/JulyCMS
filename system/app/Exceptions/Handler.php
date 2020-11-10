@@ -2,12 +2,12 @@
 
 namespace App\Exceptions;
 
-use App\Models\Content;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Illuminate\Support\Facades\Storage;
+use July\Core\Node\Node;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
@@ -55,24 +55,24 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        // 修改错误页面（如 404 页）获取方式，优先读取对应的 html 文件
-        if ($exception instanceof HttpException) {
+        // // 修改错误页面（如 404 页）获取方式，优先读取对应的 html 文件
+        // if ($exception instanceof HttpException) {
 
-            $code = $exception->getStatusCode();
-            $langcode = langcode('current_page');
-            $file = 'pages/'.$langcode.'/'.$code.'.html';
-            $disk = Storage::disk('storage');
+        //     $code = $exception->getStatusCode();
+        //     $langcode = langcode('frontend');
+        //     $file = 'pages/'.$langcode.'/'.$code.'.html';
+        //     $disk = Storage::disk('storage');
 
-            if ($disk->exists($file)) {
-                return response($disk->get($file), $code);
-            }
+        //     if ($disk->exists($file)) {
+        //         return response($disk->get($file), $code);
+        //     }
 
-            if ($content = Content::findByUrl('/'.$code.'.html', $langcode)) {
-                if ($html = $content->getHtml($langcode)) {
-                    return response($html, $code);
-                }
-            }
-        }
+        //     if ($node = Node::findByUrl('/'.$code.'.html', $langcode)) {
+        //         if ($html = $node->getHtml($langcode)) {
+        //             return response($html, $code);
+        //         }
+        //     }
+        // }
 
         return parent::render($request, $exception);
     }

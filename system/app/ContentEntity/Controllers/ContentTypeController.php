@@ -28,7 +28,7 @@ class ContentTypeController extends Controller
         }
         unset($contentType);
 
-        return view_with_langcode('admin::content_types.index', [
+        return view_with_langcode('backend::content_types.index', [
             'contentTypes' => $contentTypes,
         ]);
     }
@@ -47,7 +47,7 @@ class ContentTypeController extends Controller
                             ->keyBy('truename')
                             ->all();
 
-        return view_with_langcode('admin::content_types.create_edit', [
+        return view_with_langcode('backend::content_types.create_edit', [
             'truename' => null,
             'label' => null,
             'description' => null,
@@ -104,7 +104,7 @@ class ContentTypeController extends Controller
                                     ->replace($fields)
                                     ->all();
 
-        return view_with_langcode('admin::content_types.create_edit', $data);
+        return view_with_langcode('backend::content_types.create_edit', $data);
     }
 
     /**

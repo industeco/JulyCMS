@@ -127,7 +127,7 @@ class ContentFieldSeeder extends Seeder
             ],
         ];
 
-        $langcode = config('jc.langcode.content');
+        $langcode = config('jc.language.content');
         return array_map(function($record) use($langcode) {
             return array_merge($record, [
                 'langcode' => $langcode,

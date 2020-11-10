@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Entity\EntityRoutes;
-use App\Installer\InstallerRoutes;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use July\July;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -44,9 +44,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
-        InstallerRoutes::register();
-
-        EntityRoutes::register();
+        // 核心组件路由
+        $this->mapJulyRoutes();
 
         $this->mapApiRoutes();
 
@@ -82,5 +81,15 @@ class RouteServiceProvider extends ServiceProvider
              ->middleware('api')
              ->namespace($this->namespace)
              ->group(base_path('routes/api.php'));
+    }
+
+    /**
+     * 定义 JulyCMS 核心组件路由
+     */
+    protected function mapJulyRoutes()
+    {
+        foreach (July::discoverRoutes() as $routes) {
+            $routes::register();
+        }
     }
 }

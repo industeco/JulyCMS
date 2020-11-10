@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Catalog;
 use App\Models\Config;
 use App\Models\Tag;
-use App\Support\Arr;
+use App\Utils\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +31,12 @@ class ContentController extends Controller
             return $data;
         })->keyBy('id')->all();
 
-        return view_with_langcode('admin::contents.index', [
+        return view_with_langcode('backend::contents.index', [
             'contents' => $contents,
             'contentTypes' => ContentType::pluck('label', 'truename')->all(),
             'catalogs' => Catalog::pluck('label', 'truename')->all(),
             'all_tags' => Tag::allTags(),
-            'languages' => lang()->getTranslatableLanguageList(),
+            'languages' => lang()->getTranslatableLanguages(),
         ]);
     }
 
@@ -47,7 +47,7 @@ class ContentController extends Controller
      */
     public function chooseNodetype()
     {
-        return view_with_langcode('admin::contents.contenttypes', [
+        return view_with_langcode('backend::contents.contenttypes', [
             'contentTypes' => ContentType::all()->all(),
         ]);
     }
@@ -60,7 +60,7 @@ class ContentController extends Controller
      */
     public function create(ContentType $contentType)
     {
-        return view_with_langcode('admin::contents.create_edit', [
+        return view_with_langcode('backend::contents.create_edit', [
             'id' => 0,
             'content_type' => $contentType->getKey(),
             'contentTypeLabel' => $contentType->getAttribute('label'),
@@ -176,7 +176,7 @@ class ContentController extends Controller
             $data['editMode'] = '翻译';
         }
 
-        return view_with_langcode('admin::contents.create_edit', $data);
+        return view_with_langcode('backend::contents.create_edit', $data);
     }
 
     /**
@@ -231,13 +231,13 @@ class ContentController extends Controller
      */
     public function chooseLanguage(Content $content)
     {
-        if (!config('jc.multi_language')) {
+        if (!config('jc.language.multiple')) {
             abort(404);
         }
 
-        return view_with_langcode('admin::languages', [
+        return view_with_langcode('backend::languages', [
             'original_langcode' => $content->getAttribute('langcode'),
-            'languages' => lang()->getTranslatableLanguageList(),
+            'languages' => lang()->getTranslatableLanguages(),
             'entityKey' => $content->getKey(),
             'routePrefix' => 'contents',
         ]);
@@ -260,7 +260,7 @@ class ContentController extends Controller
         $twig = twig('template', true);
 
         // 多语言生成
-        if (config('jc.multi_language')) {
+        if (config('jc.language.multiple')) {
             $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
         } else {
             $langs = [langcode('page')];

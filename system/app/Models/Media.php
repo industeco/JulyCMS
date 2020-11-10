@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
-use Illuminate\Http\Request;
 
 class Media
 {
@@ -29,12 +27,12 @@ class Media
 
     /**
      * @param string $cwd
-     * @return \App\Models\Media
+     * @return self
      */
     public function prepare($cwd)
     {
         $this->code = 200;
-        $this->cwd = str_replace('\\', '/', trim($cwd, '\\/').'/');
+        $this->cwd  = str_replace('\\', '/', trim($cwd, '\\/').'/');
 
         $this->category = null;
         if (preg_match('/^[^\/]+/', $this->cwd, $matches)) {
@@ -50,9 +48,10 @@ class Media
             return $this->cwd;
         }
 
-        if (strpos($file, $this->cwd) !== 0) {
+        if (strncasecmp($file, $this->cwd, strlen($this->cwd)) !== 0) {
             return $this->cwd.ltrim($file, '\\/');
         }
+
         return $file;
     }
 
@@ -63,7 +62,7 @@ class Media
 
     protected function thumb($file)
     {
-        return $this->diskPath('.thumbs/'.basename($file));
+        return $this->diskPath('_thumbs/'.basename($file));
     }
 
     public function under($path)
@@ -72,7 +71,7 @@ class Media
 
         $folders = [];
         foreach ($this->disk->directories($path) as $dir) {
-            if (basename($dir) !== '.thumbs') {
+            if (basename($dir) !== '_thumbs') {
                 $folders[] = $this->dirInfo($dir);
             }
         }
@@ -150,7 +149,7 @@ class Media
         // 生成缩略图
         if (Str::startsWith($file->getMimeType(), 'image')) {
             $thumb = $this->path($this->thumb($legalName));
-            $this->mkdir('.thumbs/');
+            $this->mkdir('_thumbs/');
             Image::make($file)->widen(200)->save($thumb);
         }
 

@@ -1,173 +1,221 @@
 <?php
 
 return [
-    // 后台路由前缀
-    'admin_prefix' => 'admin',
+    // 站点基本设置
+    'site' => [
+        // 网站主体
+        'subject' => env('SITE_SUBJECT', 'Wangke'),
 
-    // 多语言开关
-    'multi_language' => false,
+        // 后端路由前缀
+        'backend_route_prefix' => 'admin',
 
-    // 语言设置
-    'langcode' => [
+        // 是否允许通过实体路径访问
+        'entity_path_accessible' => false,
+    ],
+
+    // 语言
+    'language' => [
+        // 多语言开关
+        'multiple' => false,
+
+        // 可用语言列表
         'list' => [
             'en' => [
-                'accessible' => true,
-                'translatable' => true,
+                'accessible' => true,   // 前端可访问该语言页面
+                'translatable' => true, // 内容可翻译为该语言
             ],
         ],
+
+        // 后端界面默认语言
+        'backend' => 'zh-Hans',
+
+        // 后台添加内容时的默认语言
         'content' => 'en',
-        'page' => 'en',
-        'admin_page' => 'zh-Hans',
+
+        // 前端页面默认语言
+        'frontend' => 'en',
     ],
 
-    // 默认主题
+    // 主题
     'theme' => [
-        'background' => 'admin',
-        'foreground' => 'default',
+        'backend' => 'backend',
+        'frontend' => 'frontend',
     ],
 
-    // 编辑器配置
-    'ckeditor' => [
-        'filebrowserImageBrowseUrl' => ['media.select'],
+    // （后端）用户界面配置
+    'ui' => [
+        // 侧边栏
+        'sidebar' => [
+            // 菜单项
+            'menu_items' => [
+                [
+                    'title' => '内容',
+                    'icon' => 'create',
+                    'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+                    'children' => [],
+                ],
+                [
+                    'title' => '类型',
+                    'icon' => 'category',
+                    'route' => 'node_types.index',
+                    'children' => [],
+                ],
+                [
+                    'title' => '结构',
+                    'icon' => 'device_hub',
+                    'route' => null,
+                    'children' => [
+                        [
+                            'title' => '目录',
+                            'icon' => null,
+                            'route' => 'catalogs.index',
+                            'children' => [],
+                        ],
+                        [
+                            'title' => '标签',
+                            'icon' => null,
+                            'route' => 'tags.index',
+                            'children' => [],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => '文件',
+                    'icon' => 'folder',
+                    'route' => 'media.index',
+                    'children' => [],
+                ],
+                [
+                    'title' => '设置',
+                    'icon' => 'settings',
+                    'route' => null,
+                    'children' => [
+                        [
+                            'title' => '基本设置',
+                            'icon' => null,
+                            'route' => ['configs.edit', 'site_information'],
+                            'children' => [],
+                        ],
+                        [
+                            'title' => '语言',
+                            'icon' => null,
+                            'route' => ['configs.edit', 'language'],
+                            'children' => [],
+                        ],
+                        [
+                            'title' => '偏好',
+                            'icon' => null,
+                            'route' => ['configs.edit', 'user_preferences'],
+                            'children' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ],
     ],
 
-    // 表单验证规则
-    'rules' => [
-        'file_type' => [
+    // 表单
+    'form' => [
+        // 富文本编辑器配置
+        'editor' => [
+            'default' => 'ckeditor',
+            'ckeditor' => [
+                'filebrowserImageBrowseUrl' => ['media.select'],
+            ],
+        ],
+
+        // 全局字段分组
+        'global_field_groups' => [
+            'taxonomy' => [
+                'label' => '分类信息',   // 分组面板标题
+                'expanded' => false,    // 是否默认展开
+            ],
+            'page_present' => [
+                'label' => '页面呈现',
+                'expanded' => false,
+            ],
+            'page_meta' => [
+                'label' => '页面 META 信息',
+                'expanded' => false,
+            ],
+        ],
+    ],
+
+    // 表单验证
+    'validation' => [
+        'file_bundles' => [
             'image' => [
                 'png','jpg','jpeg','webp','bmp','svg','gif','ico',
             ],
+
             'file' => [
                 'pdf', 'doc', 'ppt', 'xls', 'dwg',
             ],
         ],
 
-        'pattern' => [
+        'patterns' => [
             'url' => '/^(\\/[a-z0-9\\-_]+)+\\.html$/',
             'twig' => '/^(\\/[a-z0-9\\-_]+)+(\\.html)?\\.twig$/',
             'email' => '\'email\'',
         ],
     ],
 
-    // 侧边栏配置
-    'sidebar_menu' => [
-        [
-            'title' => '内容',
-            'icon' => 'create',
-            'route' => 'nodes.index',   // 路由名，下同
-            'children' => [],
-        ],
-        [
-            'title' => '类型',
-            'icon' => 'category',
-            'route' => 'node_types.index',
-            'children' => [],
-        ],
-        [
-            'title' => '结构',
-            'icon' => 'device_hub',
-            'route' => null,
-            'children' => [
-                [
-                    'title' => '目录',
-                    'icon' => null,
-                    'route' => 'catalogs.index',
-                    'children' => [],
-                ],
-                [
-                    'title' => '标签',
-                    'icon' => null,
-                    'route' => 'tags.index',
-                    'children' => [],
-                ],
+    'entity_field' => [
+        'parameters_meta' => [
+            'type' => [
+                'cast' => 'string',
+                'translatable' => false,
+                'overwritable' => false,
+                'default' => 'string',
+            ],
+            'default' => [
+                'cast' => '@type',
+                'translatable' => true,
+                'overwritable' => true,
+            ],
+            'options' => [
+                'cast' => 'array',
+                'translatable' => true,
+                'overwritable' => true,
+            ],
+            'placeholder' => [
+                'cast' => '@type',
+                'translatable' => true,
+                'overwritable' => true,
+            ],
+            'maxlength' => [
+                'cast' => 'int',
+                'translatable' => false,
+                'overwritable' => false,
+            ],
+            'required' => [
+                'cast' => 'boolean',
+                'translatable' => false,
+                'overwritable' => true,
+                'default' => false,
+            ],
+            'pattern' => [
+                'cast' => 'string',
+                'translatable' => false,
+                'overwritable' => false,
+            ],
+            'file_bundle' => [
+                'cast' => 'string',
+                'translatable' => false,
+                'overwritable' => false,
+                // 'enumerators' => ['image', 'file'],
+            ],
+            'multiple' => [
+                'cast' => 'boolean',
+                'translatable' => false,
+                'overwritable' => false,
+                'default' => false,
+            ],
+            'helptext' => [
+                'cast' => 'string',
+                'translatable' => false,
+                'overwritable' => true,
             ],
         ],
-        [
-            'title' => '文件',
-            'icon' => 'folder',
-            'route' => 'media.index',
-            'children' => [],
-        ],
-        [
-            'title' => '设置',
-            'icon' => 'settings',
-            'route' => null,
-            'children' => [
-                [
-                    'title' => '基础',
-                    'icon' => null,
-                    'route' => ['configs.edit', 'basic'],
-                    'children' => [],
-                ],
-                [
-                    'title' => '语言',
-                    'icon' => null,
-                    'route' => ['configs.edit', 'language'],
-                    'children' => [],
-                ],
-                [
-                    'title' => '偏好',
-                    'icon' => null,
-                    'route' => ['configs.edit', 'preference'],
-                    'children' => [],
-                ],
-            ],
-        ],
-    ],
-
-    'field_parameters' => [
-        'default_value' => [
-            'value_type' => 'mixed',
-            'translatable' => true,
-            'overwritable' => true,
-        ],
-        'options' => [
-            'value_type' => 'array',
-            'translatable' => true,
-            'overwritable' => true,
-        ],
-        'placeholder' => [
-            'value_type' => 'string',
-            'translatable' => true,
-            'overwritable' => true,
-        ],
-        'maxlength' => [
-            'value_type' => 'int',
-            'translatable' => false,
-            'overwritable' => false,
-        ],
-        'required' => [
-            'value_type' => 'boolean',
-            'translatable' => false,
-            'overwritable' => true,
-            'default' => false,
-        ],
-        'pattern' => [
-            'value_type' => 'string',
-            'translatable' => false,
-            'overwritable' => false,
-        ],
-        'file_type' => [
-            'value_type' => 'string',
-            'translatable' => false,
-            'overwritable' => false,
-        ],
-        'multiple' => [
-            'value_type' => 'boolean',
-            'translatable' => false,
-            'overwritable' => false,
-            'default' => false,
-        ],
-        'value_type' => [
-            'value_type' => 'string',
-            'translatable' => false,
-            'overwritable' => false,
-            'default' => 'string',
-        ],
-        // 'helptext' => [
-        //     'value_type' => 'string',
-        //     'translatable' => false,
-        //     'overwritable' => true,
-        // ],
     ],
 ];

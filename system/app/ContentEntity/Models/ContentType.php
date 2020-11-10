@@ -114,7 +114,7 @@ class ContentType extends BaseEntityType implements GetContents
             $jigsaws = $jigsaws['value'];
         }
 
-        $lastModified = last_modified(background_path('template/components/'));
+        $lastModified = last_modified(backend_path('template/components/'));
         if (!$jigsaws || $jigsaws['created_at'] < $lastModified) {
             $jigsaws = [];
             foreach ($this->cacheGetFields($langcode) as $field) {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Catalog;
 use App\Models\Content;
 use App\Models\ContentField;
-use App\Support\Arr;
+use App\Utils\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
@@ -22,7 +22,7 @@ class CatalogController extends Controller
             return $catalog->gather();
         })->all();
 
-        return view_with_langcode('admin::catalogs.index', [
+        return view_with_langcode('backend::catalogs.index', [
             'catalogs' => $catalogs,
         ]);
     }
@@ -34,7 +34,7 @@ class CatalogController extends Controller
      */
     public function create()
     {
-        return view_with_langcode('admin::catalogs.create_edit', [
+        return view_with_langcode('backend::catalogs.create_edit', [
             'truename' => null,
         ]);
     }
@@ -71,7 +71,7 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view_with_langcode('admin::catalogs.create_edit', $catalog->gather());
+        return view_with_langcode('backend::catalogs.create_edit', $catalog->gather());
     }
 
     /**
@@ -107,14 +107,14 @@ class CatalogController extends Controller
         $data['catalog_contents'] = $catalog->positions();
 
         // 非预设字段
-        $exceptAttributes = ContentField::commonFields()->pluck('truename')->all();
+        $exceptAttributes = ContentField::optionalFields()->pluck('truename')->all();
 
         // 获取所有节点信息，排除信息中的非预设字段
         $data['all_contents'] = Content::all()->map(function($content) use($exceptAttributes) {
             return Arr::except($content->gather(), $exceptAttributes);
         })->keyBy('id')->all();
 
-        return view_with_langcode('admin::catalogs.sort', $data);
+        return view_with_langcode('backend::catalogs.sort', $data);
     }
 
     public function updateOrders(Request $request, Catalog $catalog)
