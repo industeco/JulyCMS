@@ -12,51 +12,16 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use July\Core\EntityField\EntityFieldBase;
 
-abstract class EntityBase extends AppModel implements EntityInterface
+abstract class ModelEntityBase extends EntityBase
 {
-    /**
-     * 缓存的实体属性名列表
-     *
-     * @var array
-     */
-    protected static $cachedAttributes = [
-        'intrinsicAttributes' => null, // 固有属性
-        'attachedAttributes' => null,  // 附加属性
-        'entityFields' => null,        // 实体字段
-    ];
-
-    /**
-     * 实体的当前语言版本
-     *
-     * @var string|null
-     */
-    protected $contentLangcode = null;
-
-    /**
-     * 获取实体名
-     *
-     * @return string
-     */
-    public static function getEntityName()
-    {
-        return Str::snake(class_basename(static::class));
-    }
-
     /**
      * 获取实体 id
      *
      * @return int|string
      */
-    abstract public function getEntityKey();
-
-    /**
-     * 获取实体路径
-     *
-     * @return string
-     */
-    public function getEntityPath()
+    public function getEntityKey()
     {
-        return str_replace('.', '/', static::getEntityName()).'/'.$this->getEntityKey();
+        return $this->getKey();
     }
 
     /**
@@ -92,39 +57,6 @@ abstract class EntityBase extends AppModel implements EntityInterface
             }
             throw $th;
         }
-    }
-
-    /**
-     * 是否可翻译
-     *
-     * @return bool
-     */
-    public static function isTranslatable()
-    {
-        return (new static)->hasIntrinsicAttribute('langcode');
-    }
-
-    /**
-     * 设置当前实例语言版本
-     *
-     * @param  string $langcode 语言代码
-     * @return $this
-     */
-    public function translateTo(string $langcode)
-    {
-        $this->contentLangcode = $langcode;
-
-        return $this;
-    }
-
-    /**
-     * 获取当前实例的语言
-     *
-     * @return string|null
-     */
-    public function getLangcode()
-    {
-        return $this->contentLangcode ?? $this->getAttribute('langcode');
     }
 
     /**
@@ -168,7 +100,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function hasIntrinsicAttribute($key)
     {
-        return in_array($key, $this->getCachedAttributes('intrinsicAttributes'));
+        return in_array($key, $this->getCachedAttributeNames('intrinsicAttributes'));
     }
 
     /**
@@ -210,7 +142,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function hasEntityField($key)
     {
-        return in_array($key, $this->getCachedAttributes('entityFields'));
+        return in_array($key, $this->getCachedAttributeNames('entityFields'));
     }
 
     /**
@@ -254,26 +186,6 @@ abstract class EntityBase extends AppModel implements EntityInterface
         );
 
         return $attributes;
-    }
-
-    /**
-     * 获取缓存的属性名列表
-     *
-     * @param  string $type 属性类型（）
-     */
-    public function getCachedAttributes(string $type)
-    {
-        $type = Str::camel($type);
-        if (! array_key_exists($type, static::$cachedAttributes)) {
-            return [];
-        }
-
-        if (is_array($attributes = static::$cachedAttributes[$type])) {
-            return $attributes;
-        }
-
-        $method = 'collect'.ucfirst($type);
-        return static::$cachedAttributes[$type] = $this->{$method}()->keys()->all();
     }
 
     /**

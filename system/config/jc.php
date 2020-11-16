@@ -161,7 +161,7 @@ return [
     ],
 
     'entity_field' => [
-        'parameters_meta' => [
+        'parameters_schema' => [
             'type' => [
                 'cast' => 'string',
                 'translatable' => false,

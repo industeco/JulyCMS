@@ -2,27 +2,8 @@
 
 use App\Utils\Types;
 use App\Utils\Lang;
-use App\Utils\Html;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Str;
-
-// if (! function_exists('july_path')) {
-//     /**
-//      * 后台主题路径
-//      *
-//      * @param  string  $path
-//      * @return string
-//      */
-//     function july_path($path = '')
-//     {
-//         $pieces = array_filter([
-//             'july',
-//             ltrim($path, '\\/'),
-//         ]);
-
-//         return base_path(join(DIRECTORY_SEPARATOR, $pieces));
-//     }
-// }
 
 if (! function_exists('backend_path')) {
     /**
@@ -33,13 +14,10 @@ if (! function_exists('backend_path')) {
      */
     function backend_path($path = '')
     {
-        $pieces = array_filter([
-            'themes',
-            trim(config('jc.theme.backend'), '\\/'),
-            ltrim($path, '\\/'),
-        ]);
+        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('jc.theme.backend'), '\\/').
+            ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
-        return public_path(join(DIRECTORY_SEPARATOR, $pieces));
+        return public_path($path);
     }
 }
 
@@ -52,13 +30,10 @@ if (! function_exists('frontend_path')) {
      */
     function frontend_path($path = '')
     {
-        $pieces = array_filter([
-            'themes',
-            trim(config('jc.theme.frontend'), '\\/'),
-            ltrim($path, '\\/'),
-        ]);
+        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('jc.theme.frontend'), '\\/').
+            ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
-        return public_path(join(DIRECTORY_SEPARATOR, $pieces));
+        return public_path($path);
     }
 }
 
@@ -95,7 +70,7 @@ if (! function_exists('lang')) {
      * @param string|null $langcode
      * @return \App\Utils\Lang
      */
-    function lang($langcode = null)
+    function lang(?string $langcode = null)
     {
         return new Lang($langcode);
     }

@@ -2,22 +2,21 @@
 
 namespace July\Core\Config;
 
-use July\Core\EntityField\FieldStorageBase;
 use July\Core\Entity\Exceptions\InvalidEntityException;
+use July\Core\EntityField\Accessor\FieldAccessorBase;
 
-class PathAliasStorage extends FieldStorageBase
+class PartialViewAccessor extends FieldAccessorBase
 {
     /**
      * {@inheritdoc}
      */
     public function get()
     {
-        if (!$this->entity || !$this->entity->exists) {
+        if (!$this->entity->exists) {
             throw new InvalidEntityException('字段存取器的关联实体无效');
         }
 
-        return PathAlias::findAliasByPath($this->entity->getEntityPath())
-            ->get($this->entity->getLangcode());
+        return PartialView::findViewByPath($this->entity->getEntityPath())->get($this->entity->getLangcode());
     }
 
     /**
@@ -25,7 +24,7 @@ class PathAliasStorage extends FieldStorageBase
      */
     public function set($value)
     {
-        if (!$this->entity || !$this->entity->exists) {
+        if (!$this->entity->exists) {
             throw new InvalidEntityException('字段存取器的关联实体无效');
         }
 
@@ -34,14 +33,14 @@ class PathAliasStorage extends FieldStorageBase
             return;
         }
 
-        if (!$this->isValideUrl($value)) {
+        if (!$this->isValideViewName($value)) {
             throw new \TypeError('URL 格式不正确');
         }
 
-        PathAlias::query()->updateOrCreate([
+        PartialView::query()->updateOrCreate([
             'path' => $this->entity->getEntityPath(),
             'langcode' => $this->entity->getLangcode(),
-        ], ['alias' => $value]);
+        ], ['view' => $value]);
     }
 
     /**
@@ -49,11 +48,11 @@ class PathAliasStorage extends FieldStorageBase
      */
     public function delete()
     {
-        if (!$this->entity || !$this->entity->exists) {
+        if (!$this->entity->exists) {
             throw new InvalidEntityException('字段存取器的关联实体无效');
         }
 
-        PathAlias::query()->where([
+        PartialView::query()->where([
             'path' => $this->entity->getEntityPath(),
             'langcode' => $this->entity->getLangcode(),
         ])->delete();
@@ -70,16 +69,16 @@ class PathAliasStorage extends FieldStorageBase
     /**
      * 验证是否合法的 URL
      *
-     * @param  mixed $url
+     * @param  mixed $view
      * @return bool
      */
-    protected function isValideUrl($url)
+    protected function isValideViewName($view)
     {
-        if (!is_string($url) || empty($url)) {
+        if (!is_string($view) || empty($view)) {
             return false;
         }
 
-        if (preg_match('/^(\/[a-z0-9\-_]+)+(\.html)?$/i', $url)) {
+        if (preg_match('/^(\/[a-z0-9\-_]+)+(\.html)?\.twig$/i', $view)) {
             return true;
         }
 

@@ -23,32 +23,29 @@ class NodeFieldSeeder extends SeederBase
     protected function getNodeFieldsRecords()
     {
         $records = [
-            [
-                'id' => 'catalog_positions',
-                'field_type_id' => 'text',
-                'storage_name' => 'path_alias',
-                'is_necessary' => true,
-                'is_searchable' => false,
-                'preset_type' => 2,
-                'global_group' => 'page_present',
-                'label' => '节点目录',
-                'description' => null,
-            ],
-            [
-                'id' => 'tags',
-                'field_type_id' => 'text',
-                'storage_name' => 'term',
-                'is_necessary' => true,
-                'is_searchable' => false,
-                'preset_type' => 2,
-                'global_group' => 'page_present',
-                'label' => '标签',
-                'description' => null,
-            ],
+            // [
+            //     'id' => 'catalog_positions',
+            //     'field_type_id' => 'tags',
+            //     'is_necessary' => true,
+            //     'is_searchable' => false,
+            //     'preset_type' => 2,
+            //     'global_group' => 'page_present',
+            //     'label' => '节点目录',
+            //     'description' => null,
+            // ],
+            // [
+            //     'id' => 'tags',
+            //     'field_type_id' => 'tags',
+            //     'is_necessary' => true,
+            //     'is_searchable' => false,
+            //     'preset_type' => 2,
+            //     'global_group' => 'page_present',
+            //     'label' => '标签',
+            //     'description' => null,
+            // ],
             [
                 'id' => 'url',
                 'field_type_id' => 'text',
-                'storage_name' => 'path_alias',
                 'is_necessary' => true,
                 'is_searchable' => false,
                 'preset_type' => 2,
@@ -59,7 +56,6 @@ class NodeFieldSeeder extends SeederBase
             [
                 'id' => 'template',
                 'field_type_id' => 'text',
-                'storage_name' => 'partial_view',
                 'is_necessary' => true,
                 'is_searchable' => false,
                 'preset_type' => 2,
@@ -155,11 +151,11 @@ class NodeFieldSeeder extends SeederBase
             ],
         ];
 
-        $langcode = langcode('content.default');
+        // $langcode = langcode('content.default');
         foreach ($records as $index => &$record) {
             $record += [
                 // 'delta' => $index,
-                'langcode' => $langcode,
+                // 'langcode' => $langcode,
                 'updated_at' => Date::now(),
                 'created_at' => Date::now(),
             ];
@@ -259,7 +255,7 @@ class NodeFieldSeeder extends SeederBase
     public static function afterSeeding()
     {
         foreach (NodeField::all() as $field) {
-            $field->tableUp();
+            // $field->tableUp();
         }
     }
 }

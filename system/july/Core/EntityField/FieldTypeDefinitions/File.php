@@ -40,7 +40,7 @@ class File extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getColumns($fieldName = null, ?array $parameters = null): array
+    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
     {
         $fieldName = $fieldName ?? $this->field->getKey();
         $column = [
@@ -57,9 +57,9 @@ class File extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getRules(?array $parameters = null): array
+    public function getRules(?array $parameters = []): array
     {
-        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
+        $parameters = $parameters ?: $this->field->getParameters();
 
         $rules = parent::getRules($parameters);
 

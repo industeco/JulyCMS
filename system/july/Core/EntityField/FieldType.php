@@ -8,7 +8,7 @@ use July\Core\Entity\EntityInterface;
 use July\Core\Entity\EntityTrait;
 use July\Core\Entity\Exceptions\EntityNotFoundException;
 use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\FieldTypeDefinitions\DefinitionInterface;
+use July\Core\EntityField\FieldTypeDefinitions\DefinitionBase;
 use Symfony\Component\Finder\Finder;
 
 class FieldType implements EntityInterface
@@ -16,7 +16,7 @@ class FieldType implements EntityInterface
     use EntityTrait;
 
     /**
-     * @var \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null
+     * @var \July\Core\EntityField\FieldTypeDefinitions\Definition|null
      */
     protected $definition;
 
@@ -27,7 +27,7 @@ class FieldType implements EntityInterface
      */
     protected static $definitions = [];
 
-    public function __construct(DefinitionInterface $definition = null)
+    public function __construct(DefinitionBase $definition = null)
     {
         $this->definition = $definition;
     }
@@ -90,7 +90,7 @@ class FieldType implements EntityInterface
         }
 
         $ref = new \ReflectionClass($class);
-        return $ref->isInstantiable() && $ref->implementsInterface(DefinitionInterface::class);
+        return $ref->isInstantiable() && $ref->isSubclassOf(DefinitionBase::class);
     }
 
     /**
@@ -98,7 +98,7 @@ class FieldType implements EntityInterface
      *
      * @return int|string
      */
-    public function getEntityId()
+    public function getEntityKey()
     {
         return $this->definition->getAttribute('id');
     }
@@ -131,7 +131,7 @@ class FieldType implements EntityInterface
      * 根据字段类型别名获取字段类型定义类
      *
      * @param  \July\Core\EntityField\EntityFieldBase|string $id 字段类型 id 或字段类型定义对象
-     * @return \July\Core\EntityField\FieldTypeDefinitions\DefinitionInterface|null
+     * @return \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null
      */
     public static function getDefinition($id)
     {
@@ -173,8 +173,8 @@ class FieldType implements EntityInterface
     /**
      * 获取字段类型定义类实例，失败则抛出错误
      *
-     * @param  \July\Core\Entity\EntityFieldBase|string $id 类型定义 id
-     * @return self
+     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
+     * @return static
      *
      * @throws \July\Core\Entity\Exceptions\EntityNotFoundException
      */

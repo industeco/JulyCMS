@@ -7,9 +7,50 @@ use Illuminate\Support\Str;
 use July\July;
 use Symfony\Component\Finder\Finder;
 
-class EntityManager
+final class EntityManager
 {
+    /**
+     * 其它实体
+     *
+     * @var array
+     */
     protected static $entities = [];
+
+    /**
+     * 核心实体
+     *
+     * @var array
+     */
+    protected static $coreEntities = [];
+
+    /**
+     * 登记实体类（非核心）
+     *
+     * @param  array $entities
+     * @return void
+     */
+    public static function registerEntities(array $entities)
+    {
+        foreach ($entities as $entity) {
+            if (static::isEntityClass($entity)) {
+                static::$entities[$entity::getEntityName()] = $entity;
+            }
+        }
+    }
+
+    /**
+     * 从指定路径发现并登记实体类（非核心）
+     *
+     * @param  string $path 路径
+     * @param  string $prefix 类前缀
+     * @return void
+     */
+    public static function registerEntitiesInPath(string $path, string $prefix)
+    {
+        foreach (static::discoverEntitiesInPath($path, $prefix) as $entity) {
+            static::$entities[$entity::getEntityName()] = $entity;
+        }
+    }
 
     /**
      * 判断是否实体对象
@@ -19,7 +60,7 @@ class EntityManager
      */
     public static function isEntity($instance)
     {
-        return $instance instanceof EntityInterface;
+        return $instance && $instance instanceof EntityInterface;
     }
 
     /**
@@ -46,11 +87,11 @@ class EntityManager
      */
     public static function resolveName(string $name)
     {
-        if (empty(static::$entities)) {
-            static::discoverEntities();
+        if (empty(static::$coreEntities)) {
+            static::discoverCoreEntities();
         }
 
-        return array_search($name, static::$entities) ?: null;
+        return static::$coreEntities[$name] ?? static::$entities[$name] ?? null;
     }
 
     /**
@@ -61,7 +102,7 @@ class EntityManager
      */
     public static function resolvePath(string $path)
     {
-        [$name, $id] = static::splitEntityPath($path);
+        [$name, $id] = explode('/', $path);
 
         if ($entity = static::resolveName($name)) {
             return $entity::find($id);
@@ -73,46 +114,68 @@ class EntityManager
     /**
      * 从文件系统（或缓存）找出所有实体类
      *
+     * @param  bool $force 强制重新查找（通过清除缓存实现）
      * @return void
      */
-    public static function discoverEntities()
+    public static function discoverCoreEntities($force = false)
     {
-        if ('production' !== config('app.env')) {
-            static::$entities = static::discoverEntityFromFiles();
-            return;
+        $cachekey = 'core_entities';
+
+        if ($force) {
+            Pocket::create(static::class)->clear($cachekey);
         }
 
-        $pocket = new Pocket(static::class);
+        $path = base_path('july/Core');
+        $prefix = 'July\\Core\\';
 
-        if ($result = $pocket->get('entities')) {
-            static::$entities = $result->value;
+        if ('production' === config('app.env')) {
+            $pocket = new Pocket(static::class);
+
+            if ($result = $pocket->get($cachekey)) {
+                $entities = $result->value();
+            } else {
+                $entities = static::discoverEntitiesInPath($path, $prefix);
+                $pocket->put($cachekey, $entities);
+            }
         } else {
-            $pocket->put('entities', static::$entities = static::discoverEntityFromFiles());
+            $entities = static::discoverEntitiesInPath($path, $prefix);
+        }
+
+        static::$coreEntities = [];
+        foreach ($entities as $entity) {
+            static::$coreEntities[$entity::getEntityName()] = $entity;
         }
     }
 
     /**
-     * 从文件系统找出所有实体类
+     * 在文件系统中查找实体类
      *
      * @return array
      */
-    protected static function discoverEntityFromFiles()
+    public static function discoverEntitiesInPath(string $path, string $prefix)
     {
-        // 使用 Symfony\Finder 获取文件
+        if (! is_dir($path)) {
+            return [];
+        }
+
+        // 实体类数组
         $entities = [];
 
-        $files = Finder::create()->files()->name('*.php')
-                    ->in(july_path('Core'))
-                    ->notPath(['migrations', 'seeds', 'Controllers', 'Exceptions'])
-                    ->notName(['*Interface.php', '*Base.php', '*Trait.php']);
+        // 使用 Symfony\Finder 在 $path 目录下获取 .php 文件
+        $files = Finder::create()->files()->in($path)
+            ->name('*.php')
+            ->notPath(['migrations', 'seeds', 'Controllers', 'Exceptions'])
+            ->notName(['*Interface.php', '*Base.php', '*Trait.php']);
 
+        // 依次将找到的 .php 文件按文件名转换为类名，并判断是否实体类
+        // 如果是，则添加到 $entities
         foreach ($files as $file) {
             // 获取类名
-            $class = 'July\\Core\\'.static::normalizeClass($file->getRelativePathname());
+            $class = $prefix.static::pathToClass($file->getRelativePathname());
 
             // 判断是否实体类
             if (static::isEntityClass($class)) {
-                $entities[$class] = $class::getEntityName();
+                $entities[] = $class;
             }
         }
 
@@ -120,33 +183,27 @@ class EntityManager
     }
 
     /**
-     * 拆分实体路径
+     * 将路径转化为类名
      *
-     * @param  string $path 实体路径；格式：实体名/实体对象 id
-     * @return array
+     * @param  string $path 文件路径
+     * @return string
      */
-    public static function splitEntityPath(string $path)
-    {
-        $path = explode('/', $path);
-        $id = array_pop($path);
-        $name = join('.', $path);
-        return [$name, $id];
-    }
-
-    protected static function normalizeClass($path)
+    protected static function pathToClass(string $path)
     {
         return str_replace('/', '\\', preg_replace('/\.php$/i', '', $path));
-        // return trim($path, '\\');
     }
 
-    // public static function bounce($entityName)
+    // /**
+    //  * 解析实体路径，返回实体名和实体 id
+    //  *
+    //  * @param  string $path 实体路径（格式：实体名/实体 id）
+    //  * @return array
+    //  */
+    // public static function resolveEntityPath(string $path)
     // {
-    //     if (false === strpos($entityName, '.')) {
-    //         return Str::studly($entityName);
-    //     }
-
-    //     return collect(explode('.', $entityName))->map(function($str) {
-    //         return Str::studly($str);
-    //     })->join('\\');
+    //     $path = explode('/', $path);
+    //     $id = array_pop($path);
+    //     $name = join('.', $path);
+    //     return [$name, $id];
     // }
 }

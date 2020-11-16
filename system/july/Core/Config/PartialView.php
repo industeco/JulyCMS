@@ -4,14 +4,14 @@ namespace July\Core\Config;
 
 use July\Core\Entity\EntityBase;
 
-class PathView extends EntityBase
+class PartialView extends EntityBase
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'path_view';
+    protected $table = 'partial_view';
 
     /**
      * 是否自动维护时间戳

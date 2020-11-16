@@ -12,7 +12,7 @@
 */
 
 $app = new App\Application(
-    dirname(dirname(__FILE__))
+    dirname(__DIR__)
 );
 
 // $app = new Illuminate\Foundation\Application(

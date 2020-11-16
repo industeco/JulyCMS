@@ -2,9 +2,7 @@
 
 namespace July\Core\Entity\Exceptions;
 
-use UnexpectedValueException;
-
-class InvalidEntityException extends UnexpectedValueException
+class InvalidEntityException extends \RuntimeException
 {
     protected $message = '无效的实体';
 }

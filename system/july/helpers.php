@@ -4,19 +4,14 @@ use Illuminate\Support\Str;
 
 if (! function_exists('july_path')) {
     /**
-     * 后台主题路径
+     * 主要功能区路径
      *
      * @param  string  $path
      * @return string
      */
     function july_path($path = '')
     {
-        $pieces = array_filter([
-            'july',
-            ltrim($path, '\\/'),
-        ]);
-
-        return base_path(join(DIRECTORY_SEPARATOR, $pieces));
+        return base_path('july'.($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path));
     }
 }
 
@@ -37,19 +32,16 @@ if (! function_exists('twig')) {
     }
 }
 
-if (! function_exists('normalize_entity_name')) {
-    function normalize_entity_name(string $name)
-    {
-        return str_replace('.', '__', Str::snake($name));
-    }
-}
-
 if (! function_exists('variablize')) {
-    function variablize(string $str, array $replace = null)
+    function variablize(string $str, string $replacement = '_')
     {
-        if ($replace) {
-            $str = str_replace(array_keys($replace), array_values($replace), $str);
+        $str = preg_replace('/[^0-9a-z_]/', $replacement, Str::snake($str));
+
+        $str = preg_replace('/[^0-9a-z_]/', '_', $str);
+        if (!preg_match('/^[a-z_]/', $str)) {
+            $str = '_'.$str;
         }
-        return preg_replace('/[^0-9a-z_]/', '_', Str::snake($str));
+
+        return $str;
     }
 }

@@ -23,7 +23,7 @@ class CreateNodeFieldsTable extends Migration
             $table->string('field_type_id', 32);
 
             // 存储该字段的值的实体名
-            $table->string('storage_name', 32)->nullable();
+            // $table->string('storage_name', 32)->nullable();
 
             // 是否必要字段：必要字段是系统正常运行所需，不可删除
             $table->boolean('is_necessary')->default(0);
@@ -72,7 +72,7 @@ class CreateNodeFieldsTable extends Migration
     public function down()
     {
         foreach (NodeField::all() as $field) {
-            $field->getStorage()->tableDown();
+            $field->tableDown();
         }
 
         Schema::dropIfExists('node_fields');

@@ -1,15 +1,14 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace July\Core\EntityField\Accessor;
 
 use App\Utils\Arr;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use July\Core\EntityField\FieldStorageBase;
 use July\Core\Entity\Exceptions\InvalidEntityException;
 
-class EntityFieldStorage extends FieldStorageBase
+class FieldAccessor extends FieldAccessorBase
 {
     /**
      * {@inheritdoc}
@@ -83,7 +82,7 @@ class EntityFieldStorage extends FieldStorageBase
             $this->getTableName(),
             $this->entity->getLangcode(),
             $this->getEntityForeignKeyName(),
-            $this->entity->getEntityId(),
+            $this->entity->getEntityKey(),
         ];
     }
 

@@ -2,7 +2,7 @@
 
 namespace July\Core\EntityField\FieldTypeDefinitions;
 
-use July\Core\EntityField\EntityFieldInterface;
+use July\Core\EntityField\EntityFieldBase;
 
 interface DefinitionInterface
 {
@@ -13,7 +13,7 @@ interface DefinitionInterface
      * @param  mixed $default
      * @return mixed
      */
-    public static function get($attribute, $default = null);
+    public static function get(string $attribute, $default = null);
 
     /**
      * 设置字段对象
@@ -21,7 +21,7 @@ interface DefinitionInterface
      * @param  array $field
      * @return self
      */
-    public function setField(EntityFieldInterface $field);
+    public function bindField(EntityFieldBase $field);
 
     /**
      * 设置字段参数读取语言
@@ -29,14 +29,15 @@ interface DefinitionInterface
      * @param  string $langcode
      * @return self
      */
-    public function setLangcode($langcode);
+    public function translateTo(string $langcode);
 
     /**
-     * 获取该类型字段参数的模式（属性，属性值类型，默认值等）
+     * 获取当前类型字段参数的模式（属性，属性值类型，默认值等）
      *
+     * @param  array|null $schema
      * @return array
      */
-    public function getParametersSchema(): array;
+    public function getParametersSchemaAttribute(?array $schema = []): array;
 
     /**
      * 从表单数据中提取字段参数
@@ -57,11 +58,11 @@ interface DefinitionInterface
      *     ...
      * ]
      *
-     * @param  string|null $fieldName
+     * @param  string $fieldName
      * @param  array|null $parameters
      * @return array
      */
-    public function getColumns($fieldName = null, array $parameters = null): array;
+    public function getColumns(?string $fieldName = null, ?array $parameters = []): array;
 
     /**
      * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
@@ -69,15 +70,15 @@ interface DefinitionInterface
      * @param  array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
      * @return array
      */
-    public function getMaterials(array $data = null): array;
+    public function getMaterials(?array $data = []): array;
 
     /**
      * 获取表单组件（element-ui component）
      *
-     * @param  array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
+     * @param  array|null $data 字段数据
      * @return string
      */
-    public function getComponent(array $data = null): ?string;
+    public function getComponent(?array $data = []): ?string;
 
     /**
      * 获取验证规则（用于前端 js 验证）
@@ -85,7 +86,7 @@ interface DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getRules(array $parameters = null): array;
+    public function getRules(?array $parameters = []): array;
 
     /**
      * 获取验证器（用于后端验证）
@@ -93,25 +94,25 @@ interface DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getValidator(array $parameters = null): array;
+    public function getValidator(?array $parameters = []): array;
 
     /**
      * 将记录转换为值
      *
      * @param  array $records 表记录
-     * @param  array $columns|null 字段值表列
-     * @param  array $parameters|null 字段参数
+     * @param  array|null $columns 字段值表列
+     * @param  array|null $parameters 字段参数
      * @return mixed
      */
-    public function toValue(array $records, array $columns = null, array $parameters = null);
+    public function toValue(array $records, ?array $columns = [], ?array $parameters = []);
 
     /**
      * 将值转换为记录
      *
      * @param  mixed $value 字段值
-     * @param  array $columns|null 字段值表列
-     * @param  array $parameters|null 字段参数
+     * @param  array|null $columns 字段值表列
+     * @param  array|null $parameters 字段参数
      * @return array|null
      */
-    public function toRecords($value, array $columns = null, array $parameters = null): ?array;
+    public function toRecords($value, ?array $columns = [], ?array $parameters = []): ?array;
 }

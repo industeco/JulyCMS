@@ -1,14 +1,15 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace July\Core\EntityField\Accessor;
 
 use July\Core\Entity\EntityBase;
 use July\Core\Entity\Exceptions\InvalidEntityException;
+use July\Core\EntityField\EntityFieldBase;
 
 /**
  * 字段存取器
  */
-abstract class FieldStorageBase implements FieldStorageInterface
+abstract class FieldAccessorBase
 {
     /**
      * 关联实体
@@ -61,6 +62,26 @@ abstract class FieldStorageBase implements FieldStorageInterface
         $this->field = $field;
 
         return $this;
+    }
+
+    /**
+     * 获取绑定的实体
+     *
+     * @return \July\Core\Entity\EntityBase|null
+     */
+    final public function getBoundEntity()
+    {
+        return $this->entity;
+    }
+
+    /**
+     * 获取绑定的字段
+     *
+     * @return \July\Core\EntityField\EntityFieldBase|null
+     */
+    final public function getBoundField()
+    {
+        return $this->field;
     }
 
     /**

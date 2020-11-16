@@ -1,13 +1,14 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace July\Core\EntityField\Accessor;
 
 use July\Core\Entity\EntityBase;
+use July\Core\EntityField\EntityFieldBase;
 
 /**
  * 字段存取器
  */
-interface FieldStorageInterface
+interface FieldAccessorInterface
 {
     /**
      * 字段存取器构造函数

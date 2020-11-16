@@ -6,7 +6,7 @@ use App\Traits\HasAttributesTrait;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use July\Core\EntityField\EntityFieldInterface;
+use July\Core\EntityField\EntityFieldBase;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -34,20 +34,18 @@ abstract class DefinitionBase implements DefinitionInterface
     protected $langcode = null;
 
     /**
-     * @param \July\Core\EntityField\EntityFieldBase|null $field
-     * @param string|null $langcode
+     * 指示字段是否已翻译
+     *
+     * @var bool
      */
-    public function __construct(EntityFieldInterface $field = null)
-    {
-        $this->field = $field;
-    }
+    protected $translated = false;
 
     /**
-     * {@inheritdoc}
+     * @param \July\Core\EntityField\EntityFieldBase|null $field
      */
-    public static function get($attribute, $default = null)
+    public function __construct(EntityFieldBase $field = null)
     {
-        return (new static)->getAttribute($attribute) ?? null;
+        $this->field = $field;
     }
 
     /**
@@ -58,6 +56,214 @@ abstract class DefinitionBase implements DefinitionInterface
     public function getKey()
     {
         return $this->attributes['id'] ?? Str::snake(class_basename(static::class));
+    }
+
+    /**
+     * 获取指定属性
+     *
+     * @param  string $attribute
+     * @param  mixed $default
+     * @return mixed
+     */
+    public static function get(string $attribute, $default = null)
+    {
+        return (new static)->getAttribute($attribute) ?? null;
+    }
+
+    /**
+     * 绑定字段对象
+     *
+     * @param  array $field
+     * @return self
+     */
+    public function bindField(EntityFieldBase $field)
+    {
+        $this->field = $field;
+
+        return $this;
+    }
+
+    /**
+     * 设置语言版本
+     *
+     * @param  string $langcode
+     * @return static
+     */
+    public function translateTo(string $langcode)
+    {
+        $this->langcode = $langcode;
+        if ($this->field) {
+            $this->field->translateTo($langcode);
+        }
+
+        return $this;
+    }
+
+    /**
+     * 获取字段定义语言
+     *
+     * @param  string $langcode
+     * @return static
+     */
+    public function getLangcode()
+    {
+        if ($this->field) {
+            return $this->field->getLangcode();
+        }
+
+        return $this->langcode;
+    }
+
+    /**
+     * 从表单数据中提取字段参数
+     *
+     * @param array $raw 包含表单数据的数组
+     * @return array
+     */
+    public function extractParameters(array $raw): array
+    {
+        $raw = $raw['parameters'] ?? $raw;
+        $parameters = [];
+        foreach ($this->parametersSchema as $key => $meta) {
+            if (isset($raw[$key])) {
+                $parameters[$key] = Types::cast($raw[$key], $meta['cast'] ?? null);
+            } elseif (isset($meta['default'])) {
+                $parameters[$key] = $meta['default'];
+            }
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * 字段数据存储表的列信息，结构：
+     * [
+     *     [
+     *         type => string,
+     *         name => string,
+     *         parameters => array,
+     *     ],
+     *     ...
+     * ]
+     *
+     * @param  string|null $fieldName
+     * @param  array|null $parameters
+     * @return array
+     */
+    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
+    {
+        return [];
+    }
+
+    /**
+     * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
+     *
+     * @param  array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
+     * @return array
+     */
+    public function getMaterials(?array $data = []): array
+    {
+        $data = $data ?: $this->field->gather();
+
+        return [
+            'id' => $data['id'],
+            'data' => $data,
+            'field_type_id' => $this->getKey(),
+            'value' => null,
+            'element' => $this->getComponent($data),
+            'rules' => $this->getRules($data['parameters'] ?? []),
+        ];
+    }
+
+    /**
+     * 获取表单组件（element-ui component）
+     *
+     * @param  array|null $data 字段数据
+     * @return string
+     */
+    public function getComponent(?array $data = []): ?string
+    {
+        $data = $data ?: $this->field->gather();
+
+        if (! isset($data['parameters']['helptext'])) {
+            $data['parameters']['helptext'] = $data['description'] ?? null;
+        }
+
+        return view('backend::components.'.$this->getKey(), $data)->render();
+    }
+
+    /**
+     * 获取验证规则（用于前端 js 验证）
+     *
+     * @param  array|null $parameters 字段参数
+     * @return array
+     */
+    public function getRules(?array $parameters = []): array
+    {
+        $parameters = $parameters ?: $this->field->getParameters();
+
+        $rules = [];
+
+        if ($parameters['required'] ?? false) {
+            $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
+        }
+
+        $max = $parameters['maxlength'] ?? 0;
+        if ($max > 0) {
+            $rules[] = "{max:{$max}, message:'最多 {$max} 个字符', trigger:'change'}";
+        }
+
+        return $rules;
+    }
+
+    /**
+     * 获取验证器（用于后端验证）
+     *
+     * @param  array|null $parameters 字段参数
+     * @return array
+     */
+    public function getValidator(?array $parameters = []): array
+    {
+        return [];
+    }
+
+    /**
+     * 将记录转换为值
+     *
+     * @param  array $records 表记录
+     * @param  array|null $columns 字段值表列
+     * @param  array|null $parameters 字段参数
+     * @return mixed
+     */
+    public function toValue(array $records, ?array $columns = [], ?array $parameters = [])
+    {
+        $columns = $columns ?: $this->getColumns();
+        $name = $columns[0]['name'];
+
+        return trim($records[0][$name]);
+    }
+
+    /**
+     * 将值转换为记录
+     *
+     * @param  mixed $value 字段值
+     * @param  array|null $columns 字段值表列
+     * @param  array|null $parameters 字段参数
+     * @return array|null
+     */
+    public function toRecords($value, ?array $columns = [], ?array $parameters = []): ?array
+    {
+        if (! strlen($value)) {
+            return null;
+        }
+
+        $columns = $columns ?: $this->getColumns();
+
+        return [
+            [
+                $columns[0]['name'] => $value,
+            ],
+        ];
     }
 
     /**
@@ -74,164 +280,40 @@ abstract class DefinitionBase implements DefinitionInterface
     /**
      * 获取类型标签
      *
-     * @param string|null $label
+     * @param  string|null $label
      * @return string
      */
-    public function getLabelAttribute($label)
+    public function getLabelAttribute(?string $label)
     {
         return $label ?? class_basename(static::class);
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setField(EntityFieldInterface $field)
-    {
-        $this->field = $field;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLangcode($langcode)
-    {
-        $this->langcode = $langcode;
-
-        return $this;
-    }
-
-    /**
-     * 获取该类型字段参数的模式（属性，属性值类型，默认值等）
+     * 获取当前类型字段参数的模式（属性，属性值类型，默认值等）
      *
+     * @param  array|null $schema
      * @return array
      */
-    public function getParametersSchema(): array
+    public function getParametersSchemaAttribute(?array $schema = []): array
     {
-        $schema = [];
-        $defaultSchema = config('jc.entity_field.parameters_meta');
-        foreach ($this->getAttribute('schema') ?? [] as $key => $value) {
-            if (is_int($key)) {
-                $key = $value;
-            }
-            if (is_string($key)) {
-                $schema[$key] = array_merge($defaultSchema[$key] ?? [], is_array($value) ? $value : []);
-            }
-        }
-
-        $schema['type'] = array_merge($defaultSchema['type'] ?? [], $schema['type'] ?? []);
-        $schema['required'] = array_merge($defaultSchema['required'] ?? [], $schema['required'] ?? []);
-
-        return $schema;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function extractParameters(array $raw): array
-    {
-        $raw = $raw['parameters'] ?? $raw;
-        $parameters = [];
-        foreach ($this->getParametersSchema() as $key => $meta) {
-            if (isset($raw[$key])) {
-                $parameters[$key] = Types::cast($raw[$key], $meta['cast'] ?? null);
-            } elseif (isset($meta['default'])) {
-                $parameters[$key] = $meta['default'];
-            }
-        }
-
-        return $parameters;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getColumns($fieldName = null, array $parameters = null): array
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getMaterials(array $data = null): array
-    {
-        $data = $data ?? $this->field->gather($this->langcode);
-        return [
-            'id' => $data['id'],
-            'data' => $data,
-            'field_type_id' => $this->id,
-            'value' => null,
-            'element' => $this->getComponent($data),
-            'rules' => $this->getRules($data['parameters'] ?? []),
+        $default = config('jc.entity_field.parameters_schema');
+        $result = [
+            'type' => $default['type'] ?? [],
+            'required' => $default['required'] ?? [],
         ];
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getComponent(?array $data = null): ?string
-    {
-        $data = $data ?? $this->field->gather($this->langcode);
-        $data['parameters']['helptext'] = $data['parameters']['helptext'] ?? $data['description'] ?? null;
-        return view('backend::components.'.$this->id, $data)->render();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getRules(array $parameters = null): array
-    {
-        $parameters = $parameters ?? $this->field->getParameters($this->langcode);
-
-        $rules = [];
-
-        if ($parameters['required'] ?? false) {
-            $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
+        if ($schema) {
+            foreach ($schema as $key => $value) {
+                if (is_int($key)) {
+                    $key = $value;
+                    $value = [];
+                }
+                if (is_string($key)) {
+                    $result[$key] = array_merge($default[$key] ?? [], is_array($value) ? $value : []);
+                }
+            }
         }
 
-        $max = $parameters['maxlength'] ?? 0;
-        if ($max > 0) {
-            $rules[] = "{max:{$max}, message: '最多 {$max} 个字符', trigger: 'change'}";
-        }
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getValidator(array $parameters = null): array
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toValue(array $records, array $columns = null, array $parameters = null)
-    {
-        $columns = $columns ?? $this->getColumns();
-        $name = $columns[0]['name'];
-        return trim($records[0][$name]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toRecords($value, array $columns = null, array $parameters = null): ?array
-    {
-        $columns = $columns ?? $this->getColumns();
-
-        if (!strlen($value)) {
-            return null;
-        }
-
-        return [
-            [
-                $columns[0]['name'] => $value,
-            ],
-        ];
+        return $result;
     }
 }

@@ -121,7 +121,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
         if (!$materials || $materials['created_at'] < $modified) {
             $materials = [];
             foreach ($this->fields as $field) {
-                $materials[$field->id] = FieldType::findOrFail($field)->setLangcode($langcode)->getMaterials();
+                $materials[$field->id] = FieldType::findOrFail($field)->translateTo($langcode)->getMaterials();
             }
 
             $materials = [

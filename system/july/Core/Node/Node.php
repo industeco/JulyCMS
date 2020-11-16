@@ -36,15 +36,6 @@ class Node extends EntityBase
     ];
 
     /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
-     */
-    protected $appends = [
-        'templates',
-    ];
-
-    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function nodeType()
@@ -111,7 +102,7 @@ class Node extends EntityBase
     /**
      * {@inheritdoc}
      */
-    public function getEntityFields()
+    public function collectEntityFields()
     {
         return NodeField::getGlobalFields()->merge($this->fields)
             ->map(function(EntityFieldBase $field) {
@@ -130,10 +121,8 @@ class Node extends EntityBase
      */
     public function takeEntityFieldMaterials()
     {
-        $langcode = $this->getLangcode();
-
         $pocket = new Pocket($this);
-        $key = 'entity_fields_material/'.$langcode;
+        $key = 'entity_field_materials/'.$this->getLangcode();
 
         if ($materials = $pocket->get($key)) {
             $materials = $materials->value();
@@ -142,8 +131,8 @@ class Node extends EntityBase
         $modified = last_modified(backend_path('template/components/'));
         if (!$materials || $materials['created_at'] < $modified) {
             $materials = [];
-            foreach ($this->getEntityFields() as $field) {
-                $materials[$field->getKey()] = FieldType::findOrFail($field)->setLangcode($langcode)->getMaterials();
+            foreach ($this->collectEntityFields() as $field) {
+                $materials[$field->getKey()] = FieldType::findOrFail($field)->getMaterials();
             }
 
             $materials = [
@@ -235,7 +224,7 @@ class Node extends EntityBase
 
         $values = Arr::only($values, $values['changed_values']);
 
-        foreach ($this->getEntityFields() as $field) {
+        foreach ($this->collectEntityFields() as $field) {
             if (is_null($value = $values[$field->id] ?? null)) {
                 $field->deleteValue();
             } else {
@@ -286,7 +275,7 @@ class Node extends EntityBase
         parent::boot();
 
         static::deleted(function(Node $node) {
-            foreach ($node->getEntityFields() as $field) {
+            foreach ($node->collectEntityFields() as $field) {
                 $field->deleteValue();
             }
         });

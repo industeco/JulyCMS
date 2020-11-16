@@ -5,16 +5,22 @@ namespace July\Core\Node;
 use App\Utils\EventsBook;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
-use July\Core\Config\PathAliasStorage;
-use July\Core\Config\PathViewStorage;
+use July\Core\Config\PathAliasAccessor;
+use July\Core\Config\PartialViewAccessor;
 use July\Core\Entity\EntityBase;
 use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\EntityFieldStorage;
+use July\Core\EntityField\FieldAccessor;
 use July\Core\EntityField\FieldParameters;
 use July\Core\EntityField\FieldType;
+use July\Core\Taxonomy\TagsAccessor;
 
 class NodeField extends EntityFieldBase
 {
+    /**
+     * 宿主实体的实体名
+     */
+    protected static $hostEntityName = 'node';
+
     /**
      * 可选字段
      */
@@ -66,13 +72,11 @@ class NodeField extends EntityFieldBase
     protected $fillable = [
         'id',
         'field_type_id',
-        // 'entity_name',
         'is_necessary',
         'is_searchable',
         'weight',
         'preset_type',
         'global_group',
-        // 'delta',
         'label',
         'description',
         // 'langcode',
@@ -87,22 +91,8 @@ class NodeField extends EntityFieldBase
         'is_necessary' => 'boolean',
         'is_searchable' => 'boolean',
         'preset_type' => 'int',
-        // 'delta' => 'int',
         'weight' => 'decimal:2',
     ];
-
-    protected static $storages = [
-        'url' => PathAliasStorage::class,
-        'template' => PathViewStorage::class,
-    ];
-
-    // /**
-    //  * {@inheritdoc}
-    //  */
-    // public static function getParentEntityClass()
-    // {
-    //     return Node::class;
-    // }
 
     /**
      * 获取使用过当前字段的所有类型
@@ -119,20 +109,6 @@ class NodeField extends EntityFieldBase
                         'label',
                         'description',
                     ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getStorage(EntityBase $entity = null)
-    {
-        $storage = static::$storages[$this->getKey()] ?? EntityFieldStorage::class;
-        if ($entity) {
-            $this->translateTo($entity->getLangcode());
-        } else {
-            $entity = new Node;
-        }
-        return new $storage($entity, $this);
     }
 
     /**
@@ -153,7 +129,7 @@ class NodeField extends EntityFieldBase
     public static function takeFieldsInfo()
     {
         $pocket = new Pocket(static::class);
-        $key = 'all_fields_info';
+        $key = 'field_infos';
         $event = static::class.'/'.$key.':created';
 
         if ($data = $pocket->get($key)) {
@@ -166,7 +142,7 @@ class NodeField extends EntityFieldBase
             }
         }
 
-        $data = static::query()->with('parameters')->get()
+        $data = static::query()->with('fieldParameters')->get()
             ->map(function(NodeField $field) {
                 return $field->gather();
             })->all();
@@ -181,40 +157,40 @@ class NodeField extends EntityFieldBase
     /**
      * 获取所有全局字段的信息
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Support\Collection
      */
     public static function takeGlobalFieldsInfo()
     {
-        return NodeField::takeFieldsInfo()->groupBy('preset_type')->get(static::GLOBAL_FIELD);
+        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::GLOBAL_FIELD);
     }
 
     /**
      * 获取所有预设字段的信息
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Support\Collection
      */
     public static function takePresetFieldsInfo()
     {
-        return NodeField::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_FIELD);
+        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_FIELD);
     }
 
     /**
      * 获取所有非全局字段
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Support\Collection
      */
     public static function takeSelectableFieldsInfo()
     {
-        return NodeField::takeFieldsInfo()->groupBy('preset_type')->get(static::SELECTABLE_FIELD);
+        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::SELECTABLE_FIELD);
     }
 
     /**
      * 获取全局字段的构建材料
      *
-     * @param  string $langcode
+     * @param  string|null $langcode
      * @return array
      */
-    public static function takeGlobalFieldMaterials(string $langcode = null)
+    public static function takeGlobalFieldMaterials(?string $langcode = null)
     {
         $langcode = $langcode ?? langcode('content');
 

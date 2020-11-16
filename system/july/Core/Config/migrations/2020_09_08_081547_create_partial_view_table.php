@@ -34,6 +34,6 @@ class CreatePartialViewTable extends Migration
      */
     public function down()
     {
-        // Schema::dropIfExists('path_view');
+        // Schema::dropIfExists('partial_view');
     }
 }
