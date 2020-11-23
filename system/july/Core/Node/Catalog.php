@@ -148,60 +148,60 @@ class Catalog extends EntityBase implements GetNodesInterface
         // return $nodes;
     }
 
-    public function removePosition(array $position)
-    {
-        $pocket = new Pocket($this);
-        // $pocket->clear('nodes');
-        $pocket->clear('treeNodes');
+    // public function removePosition(array $position)
+    // {
+    //     $pocket = new Pocket($this);
+    //     // $pocket->clear('nodes');
+    //     $pocket->clear('treeNodes');
 
-        // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
-        $id = $this->getKey();
-        CatalogNode::where([
-            'catalog' => $id,
-            'node_id' => $position['id'],
-        ])->orWhere([
-            ['catalog', '=', $id],
-            ['path', 'like', '%/'.$position['id'].'/%'],
-        ])->delete();
+    //     // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
+    //     $id = $this->getKey();
+    //     CatalogNode::where([
+    //         'catalog' => $id,
+    //         'node_id' => $position['id'],
+    //     ])->orWhere([
+    //         ['catalog', '=', $id],
+    //         ['path', 'like', '%/'.$position['id'].'/%'],
+    //     ])->delete();
 
-        $this->touch();
-    }
+    //     $this->touch();
+    // }
 
-    public function insertPosition(array $position)
-    {
-        $pocket = new Pocket($this);
-        // $pocket->clear('nodes');
-        $pocket->clear('treeNodes');
+    // public function insertPosition(array $position)
+    // {
+    //     $pocket = new Pocket($this);
+    //     // $pocket->clear('nodes');
+    //     $pocket->clear('treeNodes');
 
-        // $position['catalog'] = $this->id;
-        $position['langcode'] = langcode('content');
+    //     // $position['catalog'] = $this->id;
+    //     $position['langcode'] = langcode('content');
 
-        $parent = $position['parent_id'];
-        if ($parent) {
-            $parent = CatalogNode::where([
-                'catalog' => $position['catalog'],
-                'content_id' => $parent,
-            ])->firstOrFail();
-            $position['path'] = $parent->path.$position['parent_id'].'/';
-        } else {
-            $position['path'] = '/';
-        }
+    //     $parent = $position['parent_id'];
+    //     if ($parent) {
+    //         $parent = CatalogNode::where([
+    //             'catalog' => $position['catalog'],
+    //             'content_id' => $parent,
+    //         ])->firstOrFail();
+    //         $position['path'] = $parent->path.$position['parent_id'].'/';
+    //     } else {
+    //         $position['path'] = '/';
+    //     }
 
-        $next = CatalogNode::where([
-            'catalog' => $position['catalog'],
-            'parent_id' => $position['parent_id'],
-            'prev_id' => $position['prev_id'],
-        ])->first();
+    //     $next = CatalogNode::where([
+    //         'catalog' => $position['catalog'],
+    //         'parent_id' => $position['parent_id'],
+    //         'prev_id' => $position['prev_id'],
+    //     ])->first();
 
-        if ($next) {
-            $next->prev_id = $position['id'];
-            $next->save();
-        }
+    //     if ($next) {
+    //         $next->prev_id = $position['id'];
+    //         $next->save();
+    //     }
 
-        CatalogNode::create($position);
+    //     CatalogNode::create($position);
 
-        $this->touch();
-    }
+    //     $this->touch();
+    // }
 
     public function updatePositions(array $positions)
     {
@@ -388,7 +388,7 @@ class Catalog extends EntityBase implements GetNodesInterface
         }
 
         if ($id = $this->tree()->prev($id)) {
-            return Node::fetch($id);
+            return Node::carry($id);
         }
 
         return null;
@@ -407,7 +407,7 @@ class Catalog extends EntityBase implements GetNodesInterface
         }
 
         if ($id = $this->tree()->next($id)) {
-            return Node::fetch($id);
+            return Node::carry($id);
         }
 
         return null;

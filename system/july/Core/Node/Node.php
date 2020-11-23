@@ -37,17 +37,6 @@ class Node extends EntityBase
     ];
 
     /**
-     * 外联属性登记处
-     *
-     * @var array
-     */
-    protected static $links = [
-        'url' => PathAliasLinkage::class,
-        'template' => PartialViewLinkage::class,
-        // 'catalog_positions' => CatalogPositionsLinkage::class,
-    ];
-
-    /**
      * 内建属性登记处
      *
      * @var array
@@ -58,6 +47,17 @@ class Node extends EntityBase
         'langcode',
         'created_at',
         'updated_at',
+    ];
+
+    /**
+     * 外联属性登记处
+     *
+     * @var array
+     */
+    protected static $links = [
+        'url' => PathAliasLinkage::class,
+        'template' => PartialViewLinkage::class,
+        // 'catalog_positions' => CatalogPositionsLinkage::class,
     ];
 
     /**
@@ -694,7 +694,7 @@ class Node extends EntityBase
 
     public function get_url()
     {
-        return rtrim(config('app.url'), '/').'/'.ltrim($this->url, '/');
+        return rtrim(config('app.url'), '/').$this->url;
     }
 
 

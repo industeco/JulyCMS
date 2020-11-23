@@ -7,8 +7,7 @@ use July\Core\Entity\EntitySetBase;
 
 class CatalogSet extends EntitySetBase
 {
-    protected static $model = Catalog::class;
-    protected static $primaryKey = 'id';
+    protected static $entity = Catalog::class;
 
     /**
      * Get the first item from the collection passing the given truth test.

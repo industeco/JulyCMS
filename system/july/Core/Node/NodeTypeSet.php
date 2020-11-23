@@ -7,13 +7,12 @@ use July\Core\Node\Node;
 
 class NodeTypeSet extends EntitySetBase
 {
-    protected static $model = NodeType::class;
-    protected static $primaryKey = 'id';
+    protected static $entity = NodeType::class;
 
     public function get_nodes()
     {
         $types = $this->pluck('id')->all();
-        $contents = Node::whereIn('content_type', $types)->get('id')->pluck('id')->all();
-        return NodeSet::find($contents);
+        $nodeIds = Node::query()->whereIn('node_type_id', $types)->pluck('id')->all();
+        return NodeSet::find($nodeIds);
     }
 }

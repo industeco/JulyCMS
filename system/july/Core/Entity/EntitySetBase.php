@@ -9,11 +9,11 @@ abstract class EntitySetBase extends Collection
     /**
      * @var string
      */
-    protected static $model;
+    protected static $entity;
 
     public static function getKeyName()
     {
-        return (new static::$model)->getKeyName();
+        return (new static::$entity)->getKeyName();
     }
 
     public static function find($args)
@@ -34,33 +34,33 @@ abstract class EntitySetBase extends Collection
             $args = [$args];
         }
 
-        return static::findArray($args);
+        return static::findMany($args);
+    }
+
+    public static function findMany(array $args)
+    {
+        $entity = static::$entity;
+        $key = static::getKeyName();
+
+        $entities = [];
+        foreach ($args as $arg) {
+            if ($arg instanceof static) {
+                $entities = array_merge($entities, $arg->all());
+            } elseif (is_object($arg) && ($arg instanceof $entity)) {
+                $entities[$arg->getKey()] = $arg;
+            } elseif ($instance = $entity::carry($arg)) {
+                $entities[$instance->getKey()] = $instance;
+            }
+        }
+
+        return (new static($entities))->keyBy($key);
     }
 
     public static function findAll()
     {
-        $model = static::$model;
-        $primaryKey = static::getKeyName();
+        $entity = static::$entity;
+        $key = static::getKeyName();
 
-        return (new static($model::fetchAll()))->keyBy($primaryKey);
-    }
-
-    public static function findArray(array $args)
-    {
-        $model = static::$model;
-        $primaryKey = static::getKeyName();
-
-        $items = [];
-        foreach ($args as $arg) {
-            if ($arg instanceof static) {
-                $items = array_merge($items, $arg->all());
-            } elseif (is_object($arg) && ($arg instanceof $model)) {
-                $items[$arg->getKey()] = $arg;
-            } elseif ($instance = $model::fetch($arg)) {
-                $items[$instance->getKey()] = $instance;
-            }
-        }
-
-        return (new static($items))->keyBy($primaryKey);
+        return (new static($entity::carryAll()))->keyBy($key);
     }
 }

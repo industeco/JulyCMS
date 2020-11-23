@@ -120,9 +120,19 @@
     app.recieveMediaUrl(url)
   }
 
-  function getHtmlFieldValue(field) {
-    return document.getElementById('field_value__'+field).innerHTML;
-  }
+  const node = {
+    @foreach ($node as $key => $value)
+    @if (is_null($value))
+    {{ $key }}: null,
+    @else
+    {{ $key }}: Base64.decode("{{ base64_encode($value) }}"),
+    @endif
+    @endforeach
+  };
+
+  // function getHtmlFieldValue(field) {
+  //   return document.getElementById('field_value__'+field).innerHTML;
+  // }
 
   let app = new Vue({
     el: '#main_content',
@@ -152,8 +162,7 @@
       };
 
       return {
-        node: @json($node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-
+        node: node,
         rules: {
           url: [
             { pattern:/^(\/[a-z0-9\-_]+)+\.html$/, message:'网址格式不正确', trigger:'blur' },

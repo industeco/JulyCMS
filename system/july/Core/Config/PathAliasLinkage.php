@@ -12,16 +12,7 @@ class PathAliasLinkage extends LinkageBase
      */
     protected function performGet()
     {
-        $item = PathAlias::query()->where([
-            'path' => $this->entity->getEntityPath(),
-            'langcode' => $this->entity->getLangcode(),
-        ])->first();
-
-        return $item ? $item->alias : null;
-
-        // return $this->entity->getPathAlias();
-
-        // return PathAlias::findAliasByPath($this->entity->getEntityPath())->get($this->entity->getLangcode());
+        return $this->entity->getPathAlias();
     }
 
     /**

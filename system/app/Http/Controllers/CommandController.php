@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use July\Core\Node\Node;
+use July\Core\Node\NodeField;
+use July\Core\Node\NodeIndex;
+use July\Utils\GoogleSitemap;
 
 class CommandController extends Controller
 {
@@ -48,7 +52,7 @@ class CommandController extends Controller
      */
     public function buildIndex()
     {
-        return ContentIndex::rebuild();
+        return NodeIndex::rebuild();
     }
 
     /**
@@ -73,11 +77,11 @@ class CommandController extends Controller
      */
     public function search(Request $request)
     {
-        Content::fetchAll();
+        Node::carryAll();
 
-        $results = ContentIndex::search($request->input('keywords'));
+        $results = NodeIndex::search($request->input('keywords'));
         foreach ($results['results'] as &$result) {
-            $result['content'] = Content::fetch($result['content_id']);
+            $result['node'] = Node::carry($result['node_id']);
         }
         $results['title'] = 'Search';
         $results['meta_title'] = 'Search Result';
@@ -99,7 +103,7 @@ class CommandController extends Controller
             $langcodes = [langcode('page')];
         }
         foreach ($langcodes as $langcode) {
-            $sitemap = build_google_sitemap($langcode);
+            $sitemap = GoogleSitemap::build($langcode);
             Storage::disk('storage')->put('pages/'.$langcode.'/sitemap.xml', $sitemap);
         }
 
@@ -134,17 +138,17 @@ class CommandController extends Controller
         $keywords = $request->input('keywords');
 
         $results = [];
-        foreach (ContentField::fetchAll() as $field) {
+        foreach (NodeField::carryAll() as $field) {
             $results = array_merge($results, $field->search($keywords));
         }
 
         $titles = [];
-        foreach (ContentField::fetch('title')->getRecords() as $record) {
+        foreach (NodeField::carry('title')->getRecords() as $record) {
             $key = $record->content_id.'/'.$record->langcode;
             $titles[$key] = $record->title_value;
         }
 
-        $contents = Content::fetchAll()->keyBy('id');
+        $contents = Node::carryAll()->keyBy('id');
         foreach ($results as &$result) {
             $key = $result['content_id'].'/'.$result['langcode'];
             $result['content_title'] = $titles[$key] ?? null;
@@ -165,7 +169,7 @@ class CommandController extends Controller
             $langcodes = [langcode('page')];
         }
         $invalidLinks = [];
-        foreach (Content::fetchAll() as $content) {
+        foreach (Node::carryAll() as $content) {
             foreach ($langcodes as $langcode) {
                 $invalidLinks = array_merge($invalidLinks, $content->findInvalidLinks($langcode));
             }

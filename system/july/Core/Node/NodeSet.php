@@ -7,17 +7,16 @@ use July\Core\Entity\EntitySetBase;
 
 class NodeSet extends EntitySetBase
 {
-    protected static $model = Node::class;
-    protected static $primaryKey = 'id';
+    protected static $entity = Node::class;
 
-    public static function findArray(array $args)
+    protected static function collectMany(array $args)
     {
         $items = [];
         foreach ($args as $arg) {
             // 节点 id
             if (is_numeric($arg)) {
-                if ($content = Node::fetch($arg)) {
-                    $items[$content->id] = $content;
+                if ($node = Node::carry($arg)) {
+                    $items[$node->id] = $node;
                 }
             }
 
@@ -130,30 +129,30 @@ class NodeSet extends EntitySetBase
         return NodeTypeSet::find($types);
     }
 
-    public function get_tags()
-    {
-        $ids = $this->pluck('id')->unique()->all();
-        $langcode = config('render_langcode') ?? langcode('frontend');
-
-        $tags = DB::table('node_tag')
-            ->whereIn('node_id', $ids)
-            ->where('langcode', $langcode)
-            ->get('tag')->pluck('tag')->all();
-
-        return TagSet::find($tags);
-    }
-
     public function get_catalog()
     {
         $types = $this->pluck('content_type')->unique()->all();
         return NodeTypeSet::find($types);
     }
 
-    public function match_tags(array $tags, $matches = null)
-    {
-        $contents = TagSet::find($tags)->match($matches)->get_contents();
-        return $this->only($contents->pluck('id'));
-    }
+    // public function get_tags()
+    // {
+    //     $ids = $this->pluck('id')->unique()->all();
+    //     $langcode = config('render_langcode') ?? langcode('frontend');
+
+    //     $tags = DB::table('node_tag')
+    //         ->whereIn('node_id', $ids)
+    //         ->where('langcode', $langcode)
+    //         ->get('tag')->pluck('tag')->all();
+
+    //     return TagSet::find($tags);
+    // }
+
+    // public function match_tags(array $tags, $matches = null)
+    // {
+    //     $contents = TagSet::find($tags)->match($matches)->get_contents();
+    //     return $this->only($contents->pluck('id'));
+    // }
 
     // /**
     //  * 在指定的树中，获取当前节点的相邻节点

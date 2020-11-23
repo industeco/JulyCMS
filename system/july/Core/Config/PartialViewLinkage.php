@@ -12,16 +12,7 @@ class PartialViewLinkage extends LinkageBase
      */
     protected function performGet()
     {
-        $item = PartialView::query()->where([
-            'path' => $this->entity->getEntityPath(),
-            'langcode' => $this->entity->getLangcode(),
-        ])->first();
-
-        return $item ? $item->alias : null;
-
-        // return $this->entity->getPartialView();
-
-        // return PartialView::findViewByPath($this->entity->getEntityPath())->get($this->entity->getLangcode());
+        return $this->entity->getPartialView();
     }
 
     /**

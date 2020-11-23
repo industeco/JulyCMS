@@ -17,7 +17,7 @@ use Twig\Environment as Twig;
 abstract class EntityBase extends AppModel implements EntityInterface
 {
     // use EntityTrait, HasMutatorTrait;
-    use FetchModel;
+    use CarryEntityTrait;
 
     /**
      * 实体属性名册缓存

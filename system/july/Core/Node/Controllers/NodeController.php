@@ -254,7 +254,7 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        // $contents = Node::fetchAll();
+        // $contents = Node::carryAll();
         if ($ids = $request->input('selected_nodes')) {
             $nodes = Node::find($ids);
         } else {
