@@ -16,7 +16,7 @@ class Html extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
+    public function getColumns(?string $fieldName = null, ?array $parameters = [])
     {
         $fieldName = $fieldName ?: $this->field->getKey();
         $column = [

@@ -71,12 +71,12 @@ return [
                             'route' => 'catalogs.index',
                             'children' => [],
                         ],
-                        [
-                            'title' => '标签',
-                            'icon' => null,
-                            'route' => 'tags.index',
-                            'children' => [],
-                        ],
+                        // [
+                        //     'title' => '标签',
+                        //     'icon' => null,
+                        //     'route' => 'tags.index',
+                        //     'children' => [],
+                        // ],
                     ],
                 ],
                 [

@@ -62,6 +62,21 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'is_necessary',
+        'label',
+        'description',
+        'langcode',
+        'created_at',
+        'updated_at',
+    ];
+
+    /**
      * 当前类型下的所有节点
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -106,7 +121,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
      * @param  string|null $langcode
      * @return array
      */
-    public function takeFieldMaterials(string $langcode = null)
+    public function retrieveFieldMaterials(string $langcode = null)
     {
         $langcode = $langcode ?: langcode('content');
 
@@ -141,7 +156,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    public function updateFields(array $data)
+    public function updateEntityFields(array $data)
     {
         // Log::info($data);
         $langcode = langcode('content');

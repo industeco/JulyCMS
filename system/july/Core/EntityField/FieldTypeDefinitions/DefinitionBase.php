@@ -61,13 +61,13 @@ abstract class DefinitionBase implements DefinitionInterface
     /**
      * 获取指定属性
      *
-     * @param  string $attribute
+     * @param  string $key
      * @param  mixed $default
      * @return mixed
      */
-    public static function get(string $attribute, $default = null)
+    public static function get(string $key, $default = null)
     {
-        return (new static)->getAttribute($attribute) ?? null;
+        return (new static)->getAttribute($key) ?? null;
     }
 
     /**
@@ -120,11 +120,11 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param array $raw 包含表单数据的数组
      * @return array
      */
-    public function extractParameters(array $raw): array
+    public function extractParameters(array $raw)
     {
         $raw = $raw['parameters'] ?? $raw;
         $parameters = [];
-        foreach ($this->parametersSchema as $key => $meta) {
+        foreach ($this->getParametersSchema() as $key => $meta) {
             if (isset($raw[$key])) {
                 $parameters[$key] = Types::cast($raw[$key], $meta['cast'] ?? null);
             } elseif (isset($meta['default'])) {
@@ -150,7 +150,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $parameters
      * @return array
      */
-    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
+    public function getColumns(?string $fieldName = null, ?array $parameters = [])
     {
         return [];
     }
@@ -161,13 +161,12 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
      * @return array
      */
-    public function getMaterials(?array $data = []): array
+    public function getMaterials(?array $data = [])
     {
         $data = $data ?: $this->field->gather();
 
         return [
             'id' => $data['id'],
-            'data' => $data,
             'field_type_id' => $this->getKey(),
             'value' => null,
             'element' => $this->getComponent($data),
@@ -181,7 +180,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $data 字段数据
      * @return string
      */
-    public function getComponent(?array $data = []): ?string
+    public function getComponent(?array $data = [])
     {
         $data = $data ?: $this->field->gather();
 
@@ -198,7 +197,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getRules(?array $parameters = []): array
+    public function getRules(?array $parameters = [])
     {
         $parameters = $parameters ?: $this->field->getParameters();
 
@@ -222,7 +221,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getValidator(?array $parameters = []): array
+    public function getValidator(?array $parameters = [])
     {
         return [];
     }
@@ -251,7 +250,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array|null
      */
-    public function toRecords($value, ?array $columns = [], ?array $parameters = []): ?array
+    public function toRecords($value, ?array $columns = [], ?array $parameters = [])
     {
         if (! strlen($value)) {
             return null;
@@ -264,17 +263,6 @@ abstract class DefinitionBase implements DefinitionInterface
                 $columns[0]['name'] => $value,
             ],
         ];
-    }
-
-    /**
-     * 获取类型 id
-     *
-     * @param string|null $id
-     * @return string
-     */
-    public function getIdAttribute($id)
-    {
-        return $this->getKey();
     }
 
     /**
@@ -294,7 +282,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array|null $schema
      * @return array
      */
-    public function getParametersSchemaAttribute(?array $schema = []): array
+    public function getParametersSchema()
     {
         $default = config('jc.entity_field.parameters_schema');
         $result = [
@@ -302,15 +290,13 @@ abstract class DefinitionBase implements DefinitionInterface
             'required' => $default['required'] ?? [],
         ];
 
-        if ($schema) {
-            foreach ($schema as $key => $value) {
-                if (is_int($key)) {
-                    $key = $value;
-                    $value = [];
-                }
-                if (is_string($key)) {
-                    $result[$key] = array_merge($default[$key] ?? [], is_array($value) ? $value : []);
-                }
+        foreach ($this->attributes['schema'] ?? [] as $key => $value) {
+            if (is_int($key)) {
+                $key = $value;
+                $value = [];
+            }
+            if (is_string($key)) {
+                $result[$key] = array_merge($default[$key] ?? [], is_array($value) ? $value : []);
             }
         }
 

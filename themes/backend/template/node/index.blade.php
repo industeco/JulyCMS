@@ -239,6 +239,7 @@
       deleteNode(node) {
         if (! node) return;
 
+        // console.log(this.deleteUrl.replace('%id%', node.id));
         this.$confirm(`确定要删除内容？`, '删除内容', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
@@ -257,7 +258,7 @@
           }).catch(function(error) {
             console.error(error);
           })
-        }).catch();
+        }).catch(()=>{});
       },
 
       handleContextmenu(row, column, event) {

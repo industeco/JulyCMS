@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 class CatalogTree
 {
     /**
-     * @var \July\Node\Catalog
+     * @var \July\Core\Node\Catalog
      */
     protected $catalog = null;
 
@@ -35,7 +35,7 @@ class CatalogTree
 
     protected function getTreeNodes()
     {
-        $nodes = $this->catalog->pocketCatalogNodes();
+        $nodes = $this->catalog->retrieveNodePositions();
 
         $treeNodes = [
             0 => [
@@ -52,7 +52,7 @@ class CatalogTree
 
         if (count($nodes) === 1) {
             $node = reset($nodes);
-            $node['path'] = array_values(array_filter(explode('/', $node['path'])));
+            $node['path'] = explode('/', trim($node['path'], '/'));
             $treeNodes[$node['node_id']] = $node;
 
             return $treeNodes;
@@ -70,14 +70,14 @@ class CatalogTree
     protected function sortNodes(array $nodes)
     {
         $nodes = collect($nodes)->map(function($node) {
-            $path = array_values(array_filter(explode('/', $node['path'])));
+            $path = explode('/', trim($node['path'], '/'));
             return [
                 'node_id' => (int) $node['node_id'],
                 'parent_id' => (int) $node['parent_id'],
                 'prev_id' => (int) $node['prev_id'],
                 'path' => array_map('intval', $path),
             ];
-        })->keyBy('node_id')->toArray();
+        })->keyBy('node_id')->all();
 
         $first = null;
         foreach ($nodes as $id => $node) {
@@ -135,9 +135,9 @@ class CatalogTree
      */
     public function parent($id)
     {
-        if ($content = $this->nodes->get($id)) {
-            if ($content['parent_id']) {
-                return [$content['parent_id']];
+        if ($node = $this->nodes->get($id)) {
+            if ($node['parent_id']) {
+                return [$node['parent_id']];
             }
         }
         return [];
@@ -151,8 +151,8 @@ class CatalogTree
      */
     public function ancestors($id)
     {
-        if ($content = $this->nodes->get($id)) {
-            return $content['path'];
+        if ($node = $this->nodes->get($id)) {
+            return $node['path'];
         }
         return [];
     }
@@ -167,9 +167,9 @@ class CatalogTree
     {
         $children = [];
         if ($this->nodes->has($id)) {
-            foreach ($this->nodes as $content_id => $content) {
-                if ($content_id && $content['parent_id'] == $id) {
-                    $children[] = $content_id;
+            foreach ($this->nodes as $node_id => $node) {
+                if ($node_id && $node['parent_id'] == $id) {
+                    $children[] = $node_id;
                 }
             }
         }
@@ -191,16 +191,16 @@ class CatalogTree
         $descendants = [];
         if ($this->nodes->has($id)) {
             $end = false;
-            foreach ($this->nodes as $content_id => $content) {
+            foreach ($this->nodes as $node_id => $node) {
                 if ($end) {
-                    if ($content_id == $end) {
+                    if ($node_id == $end) {
                         break;
                     } else {
-                        $descendants[] = $content_id;
+                        $descendants[] = $node_id;
                     }
                 }
-                if ($content_id == $id) {
-                    $end = $content['next_id'] ?? -1;
+                if ($node_id == $id) {
+                    $end = $node['next_id'] ?? -1;
                     continue;
                 }
             }
@@ -218,11 +218,11 @@ class CatalogTree
     public function siblings($id)
     {
         $siblings = [];
-        if ($id > 0 && ($content = $this->nodes->get($id))) {
-            $parent_id = $content['parent_id'];
-            foreach ($this->nodes as $content_id => $content) {
-                if ($content['parent_id'] == $parent_id && $content_id != $id) {
-                    $siblings[] = $content_id;
+        if ($id > 0 && ($node = $this->nodes->get($id))) {
+            $parent_id = $node['parent_id'];
+            foreach ($this->nodes as $node_id => $node) {
+                if ($node['parent_id'] == $parent_id && $node_id != $id) {
+                    $siblings[] = $node_id;
                 }
             }
         }
@@ -238,8 +238,8 @@ class CatalogTree
      */
     public function prev($id)
     {
-        if ($content = $this->nodes->get($id)) {
-            return $content['prev_id'] ?? null;
+        if ($node = $this->nodes->get($id)) {
+            return $node['prev_id'] ?? null;
         }
         return null;
     }
@@ -252,8 +252,8 @@ class CatalogTree
      */
     public function next($id)
     {
-        if ($content = $this->nodes->get($id)) {
-            return $content['next_id'] ?? null;
+        if ($node = $this->nodes->get($id)) {
+            return $node['next_id'] ?? null;
         }
         return null;
     }

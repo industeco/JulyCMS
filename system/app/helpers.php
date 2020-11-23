@@ -202,6 +202,16 @@ if (! function_exists('normalize_args')) {
     }
 }
 
+if (! function_exists('short_md5')) {
+    /**
+     * @return string
+     */
+    function short_md5(string $input)
+    {
+        return substr(md5($input), 8, 16);
+    }
+}
+
 if (! function_exists('events')) {
     /**
      * @return \App\Utils\EventsBook

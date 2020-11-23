@@ -20,7 +20,7 @@ class File extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function extractParameters(array $raw): array
+    public function extractParameters(array $raw)
     {
         $parameters = parent::extractParameters($raw);
 
@@ -40,7 +40,7 @@ class File extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
+    public function getColumns(?string $fieldName = null, ?array $parameters = [])
     {
         $fieldName = $fieldName ?? $this->field->getKey();
         $column = [
@@ -57,7 +57,7 @@ class File extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getRules(?array $parameters = []): array
+    public function getRules(?array $parameters = [])
     {
         $parameters = $parameters ?: $this->field->getParameters();
 

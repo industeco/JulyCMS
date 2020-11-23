@@ -3,104 +3,67 @@
 namespace July\Core\EntityField;
 
 use App\Utils\Pocket;
+use App\Utils\PocketUserInterface;
 use Illuminate\Support\Str;
-use July\Core\Entity\EntityInterface;
-use July\Core\Entity\EntityTrait;
-use July\Core\Entity\Exceptions\EntityNotFoundException;
+use July\Core\EntityField\Exceptions\FieldTypeNotFoundException;
 use July\Core\EntityField\EntityFieldBase;
 use July\Core\EntityField\FieldTypeDefinitions\DefinitionBase;
 use Symfony\Component\Finder\Finder;
 
-class FieldType implements EntityInterface
+class FieldType implements PocketUserInterface
 {
-    use EntityTrait;
-
     /**
-     * @var \July\Core\EntityField\FieldTypeDefinitions\Definition|null
-     */
-    protected $definition;
-
-    /**
-     * 可用字段类型
+     * 可用的字段类型定义
      *
      * @var array
      */
     protected static $definitions = [];
 
+    /**
+     * 绑定的字段类型定义
+     *
+     * @var \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null
+     */
+    protected $definition;
+
+    /**
+     * @param  \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null $definition
+     */
     public function __construct(DefinitionBase $definition = null)
     {
         $this->definition = $definition;
     }
 
     /**
-     * 查找定义类
+     * 获取字段类型定义类实例
      *
-     * @return void
+     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
+     * @return self
      */
-    public static function discoverDefinitions()
+    public static function find($id)
     {
-        if (config('app.env') !== 'production') {
-            static::$definitions = static::discoverDefinitionsFromFiles();
-            return;
+        if ($definition = static::getDefinition($id)) {
+            return new static($definition);
         }
 
-        $pocket = new Pocket(static::class);
-        $key = 'definitions';
-        if ($definitions = $pocket->get($key)) {
-            static::$definitions = $definitions->value();
-        } else {
-            $pocket->put($key, static::$definitions = static::discoverDefinitionsFromFiles());
-        }
+        return null;
     }
 
     /**
-     * 查找定义类
+     * 获取字段类型定义类实例，失败则抛出错误
      *
-     * @return array
+     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
+     * @return static
+     *
+     * @throws \July\Core\EntityField\Exceptions\FieldTypeNotFoundException
      */
-    protected static function discoverDefinitionsFromFiles()
+    public static function findOrFail($id)
     {
-        $definitions = [];
-
-        $finder = Finder::create()
-            ->files()
-            ->name('*.php')
-            ->in(__DIR__.\DIRECTORY_SEPARATOR.'FieldTypeDefinitions');
-
-        foreach ($finder as $file) {
-            $class = 'July\\Core\\EntityField\\FieldTypeDefinitions\\'.$file->getBasename('.php');
-            if (static::isDefinitionClass($class)) {
-                $definitions[$class] = $class::get('id');
-            }
+        if ($fieldType = static::find($id)) {
+            return $fieldType;
         }
 
-        return $definitions;
-    }
-
-    /**
-     * 判断一个类是否类型定义类
-     *
-     * @param string $class
-     * @return bool
-     */
-    public static function isDefinitionClass(string $class)
-    {
-        if (! class_exists($class)) {
-            return false;
-        }
-
-        $ref = new \ReflectionClass($class);
-        return $ref->isInstantiable() && $ref->isSubclassOf(DefinitionBase::class);
-    }
-
-    /**
-     * 获取实体 id
-     *
-     * @return int|string
-     */
-    public function getEntityKey()
-    {
-        return $this->definition->getAttribute('id');
+        throw new FieldTypeNotFoundException();
     }
 
     /**
@@ -142,7 +105,7 @@ class FieldType implements EntityInterface
         $field = null;
         if ($id instanceof EntityFieldBase) {
             $field = $id;
-            $id = $field->getAttribute('field_type_id');
+            $id = $field->getAttributeValue('field_type_id');
         }
 
         if (is_string($id)) {
@@ -155,36 +118,94 @@ class FieldType implements EntityInterface
     }
 
     /**
-     * 获取字段类型定义类实例
+     * 查找定义类
      *
-     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
-     * @param  string|null $langcode
-     * @return self
+     * @return void
      */
-    public static function find($id)
+    public static function discoverDefinitions()
     {
-        if ($definition = static::getDefinition($id)) {
-            return new static($definition);
+        if (config('app.env') !== 'production') {
+            static::$definitions = static::discoverDefinitionsFromFiles();
+            return;
+        }
+
+        $pocket = new Pocket(static::class);
+        $key = 'definitions';
+        if ($definitions = $pocket->get($key)) {
+            static::$definitions = $definitions->value();
+        } else {
+            $pocket->put($key, static::$definitions = static::discoverDefinitionsFromFiles());
+        }
+    }
+
+    /**
+     * 查找定义类
+     *
+     * @return array
+     */
+    protected static function discoverDefinitionsFromFiles()
+    {
+        $definitions = [];
+
+        $path = 'july/Core/EntityField/FieldTypeDefinitions';
+        $prefix = 'July\\Core\\EntityField\\FieldTypeDefinitions\\';
+
+        $finder = Finder::create()
+            ->files()
+            ->name('*.php')
+            ->in(base_path($path));
+
+        foreach ($finder as $file) {
+            $class = $prefix.$file->getBasename('.php');
+            if (static::isDefinitionClass($class)) {
+                $definitions[$class] = $class::get('id');
+            }
+        }
+
+        return $definitions;
+    }
+
+    /**
+     * 判断一个类是否类型定义类
+     *
+     * @param string $class
+     * @return bool
+     */
+    public static function isDefinitionClass(string $class)
+    {
+        if (! class_exists($class)) {
+            return false;
+        }
+
+        $ref = new \ReflectionClass($class);
+        return $ref->isInstantiable() && $ref->isSubclassOf(DefinitionBase::class);
+    }
+
+    /**
+     * 获取字段默认值
+     *
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        if ($this->definition) {
+            return $this->definition->default_value;
         }
 
         return null;
     }
 
     /**
-     * 获取字段类型定义类实例，失败则抛出错误
-     *
-     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
-     * @return static
-     *
-     * @throws \July\Core\Entity\Exceptions\EntityNotFoundException
+     * {@inheritdoc}
      */
-    public static function findOrFail($id)
+    public function getPocketId()
     {
-        if ($fieldType = static::find($id)) {
-            return $fieldType;
+        $key = static::class;
+        if ($this->definition) {
+            $key .= '/'.$this->definition->id;
         }
 
-        throw new EntityNotFoundException();
+        return $key;
     }
 
     public function __call($name, array $arguments)

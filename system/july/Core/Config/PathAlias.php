@@ -33,6 +33,18 @@ class PathAlias extends EntityBase
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'path',
+        'alias',
+        'langcode',
+    ];
+
+    /**
      * 根据实体路径查找别名
      *
      * @param  string $path

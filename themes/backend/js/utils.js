@@ -43,23 +43,19 @@ function getChildNodes(nodes, parent_id) {
 }
 
 // 拆分数据
-function toRecords(treeData, records, parent, prev, path) {
-  if (records == null) {
-    records = [];
-    parent = null;
-    prev = null;
-    path = '/';
-  }
+function toRecords(treeData, parent, prev, path) {
+  let records = [];
 
+  path = path || '/';
   treeData.forEach(node => {
     records.push({
       id: node.id,
       parent_id: parent || null,
       prev_id: prev || null,
-      path: path,
+      path: path || '/',
     });
     if (node.children && node.children.length) {
-      toRecords(node.children, records, node.id, null, path + node.id + '/');
+      records = records.concat(toRecords(node.children, node.id, null, path + node.id + '/'));
     }
     prev = node.id;
   });

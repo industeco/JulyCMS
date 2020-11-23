@@ -2,7 +2,10 @@
 
 namespace July\Core\Entity;
 
-interface EntityInterface
+use App\Utils\PocketUserInterface;
+use Twig\Environment as Twig;
+
+interface EntityInterface extends PocketUserInterface
 {
     /**
      * 获取实体名
@@ -12,11 +15,18 @@ interface EntityInterface
     public static function getEntityName();
 
     /**
+     * 获取实体类型的实体名
+     *
+     * @return string|null
+     */
+    public static function getBundleName();
+
+    /**
      * 获取实体对象 id
      *
      * @return int|string
      */
-    public function getEntityKey();
+    public function getEntityId();
 
     /**
      * 获取实体路径，由实体名与实体实例的 id 组成
@@ -48,7 +58,7 @@ interface EntityInterface
      *
      * @return bool
      */
-    public static function isTranslatable();
+    public function isTranslatable();
 
     /**
      * 设置当前实例语言版本
@@ -59,108 +69,27 @@ interface EntityInterface
     public function translateTo(string $langcode);
 
     /**
-     * 获取当前实例的语言
+     * 获取当前实例的语言版本（代码）
      *
      * @return string|null
      */
     public function getLangcode();
 
     /**
-     * 集合实体的三类属性
+     * 渲染实体
      *
-     * @return array
+     * @param \Twig\Environment $twig
+     * @return string|null
      */
-    public function gather();
+    public function render(Twig $twig = null);
 
     /**
-     * 获取固有属性集
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function collectIntrinsicAttributes();
-
-    /**
-     * 判断是否包含名为 {$key} 的固有属性
+     * 判断是否包含名为 {$key} 的实体属性
      *
      * @param  string $key 属性名
      * @return bool
      */
-    public function hasIntrinsicAttribute($key);
-
-    // /**
-    //  * 获取固有属性的值
-    //  *
-    //  * @param  string $key
-    //  * @return mixed
-    //  */
-    // public function getIntrinsicAttributeValue($key);
-
-    /**
-     * 获取所有固有属性的值
-     *
-     * @return array
-     */
-    public function intrinsicAttributesToArray();
-
-    /**
-     * 获取附加属性集
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function collectAttachedAttributes();
-
-    /**
-     * 判断是否包含名为 {$key} 的附加属性
-     *
-     * @param  string $key 属性名
-     * @return bool
-     */
-    public function hasAttachedAttribute($key);
-
-    // /**
-    //  * 获取附加属性的值
-    //  *
-    //  * @param  string $key
-    //  * @return mixed
-    //  */
-    // public function getAttachedAttributeValue($key);
-
-    /**
-     * 获取所有附加属性的值
-     *
-     * @return array
-     */
-    public function attachedAttributesToArray();
-
-    /**
-     * 获取实体字段对象集
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function collectEntityFields();
-
-    /**
-     * 判断是否包含名为 {$key} 的实体字段
-     *
-     * @param  string $key 属性名
-     * @return bool
-     */
-    public function hasEntityField($key);
-
-    // /**
-    //  * 获取实体字段的值
-    //  *
-    //  * @param  string $key
-    //  * @return mixed
-    //  */
-    // public function getEntityFieldValue($key);
-
-    /**
-     * 获取所有实体字段的值
-     *
-     * @return array
-     */
-    public function entityFieldsToArray();
+    public function hasEntityAttribute(string $key);
 
     /**
      * 获取实体属性值
@@ -168,5 +97,111 @@ interface EntityInterface
      * @param  string $key 属性名
      * @return mixed
      */
-    public function getEntityAttribute($key);
+    public function getEntityAttribute(string $key);
+
+    /**
+     * 集合实体的三类属性
+     *
+     * @return array
+     */
+    public function entityToArray();
+
+    /**
+     * 判断是否包含名为 {$key} 的列（内建属性）
+     *
+     * @param  string $key 列名
+     * @return bool
+     */
+    public function hasColumn(string $key);
+
+    /**
+     * 获取列（内建属性）的值
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getColumnValue(string $key);
+
+    /**
+     * 获取所有固有属性的值
+     *
+     * @return array
+     */
+    public function columnsToArray();
+
+    /**
+     * 判断是否包含名为 {$key} 的实体字段
+     *
+     * @param  string $key 属性名
+     * @return bool
+     */
+    public function hasField(string $key);
+
+    /**
+     * 获取实体字段的值
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getFieldValue(string $key);
+
+    /**
+     * 获取所有实体字段的值
+     *
+     * @return array
+     */
+    public function fieldsToArray();
+
+    /**
+     * 登记外联属性
+     *
+     * @param  array $links
+     */
+    public static function registerLinks(array $links);
+
+    /**
+     * 判断是否包含名为 {$key} 的外联属性
+     *
+     * @param  string $key 属性名
+     * @return bool
+     */
+    public function hasLink(string $key);
+
+    /**
+     * 获取附加属性的值
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getLinkValue(string $key);
+
+    /**
+     * 获取所有附加属性的值
+     *
+     * @return array
+     */
+    public function linksToArray();
+
+
+
+    // /**
+    //  * 获取内建属性集
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public function collectColumns();
+
+    // /**
+    //  * 获取外联属性集
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public function collectLinks();
+
+    // /**
+    //  * 获取实体字段对象集
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public function collectFields();
 }

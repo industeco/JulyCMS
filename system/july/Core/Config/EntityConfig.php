@@ -42,6 +42,18 @@ class EntityConfig extends EntityBase
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'path',
+        'langcode',
+        'config',
+    ];
+
+    /**
      * 根据实体路径查找配置项
      *
      * @param string $path

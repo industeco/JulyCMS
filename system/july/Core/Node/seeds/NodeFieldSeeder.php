@@ -29,7 +29,7 @@ class NodeFieldSeeder extends SeederBase
             //     'is_necessary' => true,
             //     'is_searchable' => false,
             //     'preset_type' => 2,
-            //     'global_group' => 'page_present',
+            //     'global_group' => 'catalog',
             //     'label' => '节点目录',
             //     'description' => null,
             // ],
@@ -39,30 +39,30 @@ class NodeFieldSeeder extends SeederBase
             //     'is_necessary' => true,
             //     'is_searchable' => false,
             //     'preset_type' => 2,
-            //     'global_group' => 'page_present',
+            //     'global_group' => 'tags',
             //     'label' => '标签',
             //     'description' => null,
             // ],
-            [
-                'id' => 'url',
-                'field_type_id' => 'text',
-                'is_necessary' => true,
-                'is_searchable' => false,
-                'preset_type' => 2,
-                'global_group' => 'page_present',
-                'label' => '网址',
-                'description' => null,
-            ],
-            [
-                'id' => 'template',
-                'field_type_id' => 'text',
-                'is_necessary' => true,
-                'is_searchable' => false,
-                'preset_type' => 2,
-                'global_group' => 'page_present',
-                'label' => '模板',
-                'description' => 'twig 模板，用于生成页面。',
-            ],
+            // [
+            //     'id' => 'url',
+            //     'field_type_id' => 'text',
+            //     'is_necessary' => true,
+            //     'is_searchable' => false,
+            //     'preset_type' => 2,
+            //     'global_group' => 'page_present',
+            //     'label' => '网址',
+            //     'description' => null,
+            // ],
+            // [
+            //     'id' => 'template',
+            //     'field_type_id' => 'text',
+            //     'is_necessary' => true,
+            //     'is_searchable' => false,
+            //     'preset_type' => 2,
+            //     'global_group' => 'page_present',
+            //     'label' => '模板',
+            //     'description' => 'twig 模板，用于生成页面。',
+            // ],
             [
                 'id' => 'meta_title',
                 'field_type_id' => 'text',
@@ -255,7 +255,7 @@ class NodeFieldSeeder extends SeederBase
     public static function afterSeeding()
     {
         foreach (NodeField::all() as $field) {
-            // $field->tableUp();
+            $field->tableUp();
         }
     }
 }

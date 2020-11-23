@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -19,47 +20,43 @@ class Pocket
     protected $prefix = '';
 
     /**
-     * 构造函数
-     *
-     * @param string|object $subject
+     * @param  string|object $subject
      */
     public function __construct($subject)
     {
         $this->subject = $subject;
-        $this->normalizePrefix();
+
+        $this->prefix = static::generatePrefix($subject);
     }
 
     /**
-     * 快捷构造函数
+     * 快捷创建
      *
-     * @param string|object $subject
+     * @param  string|object $subject
      * @return self
      */
-    public static function create($subject)
+    public static function make($subject)
     {
         return new static($subject);
     }
 
     /**
-     * 初始化缓存键的前缀
+     * 生成缓存键的前缀
      *
-     * @return self
+     * @param  string|object $subject
+     * @return string
      */
-    protected function normalizePrefix()
+    public static function generatePrefix($subject)
     {
-        $prefix = '';
-        if (is_object($this->subject)) {
-            $prefix = get_class($this->subject);
-            $subject = optional($this->subject);
-            if (! empty($key = $subject->getKey() ?? $subject->getEntityId())) {
-                $prefix .= '/'.trim($key);
+        if (is_object($subject)) {
+            if ($subject instanceof PocketUserInterface) {
+                $subject = $subject->getPocketId();
+            } elseif ($subject instanceof Model) {
+                $subject = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
             }
-        } else {
-            $prefix = trim($this->subject);
         }
-        $this->prefix = rtrim(str_replace('\\', '/', $prefix), '/').'/';
 
-        return $this;
+        return short_md5(serialize($subject)).'/';
     }
 
     /**
@@ -71,18 +68,30 @@ class Pocket
     public function key($key)
     {
         if ($key instanceof Value) {
-            return $key;
+            if ($this->isKey($key->value())) {
+                return $key;
+            }
+            $key = $key->value();
         }
 
         if (is_array($key)) {
             asort($key);
         }
 
-        if (! is_string($key)) {
-            $key = serialize($key);
-        }
+        return new Value($this->prefix.short_md5(serialize($key)));
+    }
 
-        return new Value(md5($this->prefix.ltrim($key, '\\/')));
+    /**
+     * 判断是否 Pocket Key
+     *
+     * @param  mixed $key
+     * @return bool
+     */
+    protected function isKey($key)
+    {
+        return is_string($key) &&
+            preg_match('/^[a-f0-9]{16}\/[a-f0-9]{16}$/', $key) &&
+            Str::startsWith($key, $this->prefix);
     }
 
     /**
@@ -161,19 +170,11 @@ class Pocket
     protected function callSubject(string $method, array $parameters)
     {
         if (is_object($this->subject)) {
-            if ($value = optional($this->subject)->$method(...$parameters)) {
-                return $value;
-            }
+            return optional($this->subject)->$method(...$parameters);
         }
 
         if (is_string($this->subject) && class_exists($this->subject)) {
-            if (method_exists($this->subject, $method)) {
-                return $this->subject::$method(...$parameters);
-            } else {
-                if ($value = optional(new $this->subject)->$method(...$parameters)) {
-                    return $value;
-                }
-            }
+            return optional(new $this->subject)->$method(...$parameters);
         }
 
         return null;

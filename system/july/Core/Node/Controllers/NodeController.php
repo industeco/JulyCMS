@@ -12,8 +12,10 @@ use July\Core\Node\NodeType;
 use July\Core\Node\NodeField;
 use July\Core\Taxonomy\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
+use July\Core\Config\PartialView;
 
 class NodeController extends Controller
 {
@@ -24,15 +26,20 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $nodes = Node::all()->map(function($node) {
-                return Arr::only($node->gather(), ['id','node_type_id','updated_at','created_at','title','url','tags','templates']);
+        $keys = array_merge(
+            Node::make()->getColumnKeys(),
+            ['title', 'url', 'template']
+        );
+
+        $nodes = Node::all()->map(function (Node $node) use ($keys) {
+                return Arr::only($node->gather(), $keys);
             })->keyBy('id')->all();
 
         return view_with_langcode('backend::node.index', [
                 'nodes' => $nodes,
                 'node_types' => NodeType::all()->pluck('label', 'id')->all(),
-                // 'catalogs' => Catalog::pluck('label', 'id')->all(),
-                'catalogs' => ['main' => '默认目录'],
+                'catalogs' => Catalog::all()->pluck('label', 'id')->all(),
+                // 'catalogs' => ['main' => '默认目录'],
                 // 'tags' => Tag::allTags(),
                 'tags' => [],
                 'languages' => Lang::getTranslatableLanguages(),
@@ -59,48 +66,39 @@ class NodeController extends Controller
      */
     public function create(NodeType $nodeType)
     {
+        // $nodes = Node::all()->map(function(Node $node) {
+        //     return [
+        //         'id' => $node->id,
+        //         'title' => $node->title,
+        //     ];
+        // })->keyBy('id')->all();
+
+        $langcode = langcode('content');
+        $node = new Node([
+                'node_type_id' => $nodeType->getKey(),
+                'langcode' => $langcode,
+            ]);
+
         $data = [
-            'node' => [
-                'id' => 0,
-                'tags' => [],
-                'catalog_positions' => [],
-            ],
+            'node' => array_merge($node->gather(), ['path' => '']),
             'node_type' => [
-                'id' => $nodeType->id,
+                'id' => $nodeType->getKey(),
                 'label' => $nodeType->label,
             ],
-            'fields' => [
-                'selected' => $nodeType->takeFieldMaterials(),
-                'global' => NodeField::takeGlobalFieldMaterials(),
-            ],
+            'fields' => $node->retrieveFormMaterials(),
             'context' => [
                 // 'tags' => Tag::allTags($langcode),
                 // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
-                'tags' => [],
-                'nodes' => $this->simpleNodes(),
-                'templates' => $this->getTwigTemplates(),
-                'catalog_nodes' => Catalog::allPositions(),
+                // 'nodes' => $nodes,
+                'templates' => $this->getTwigTemplates($langcode),
+                // 'catalog_nodes' => Catalog::allPositions(),
                 'editor_config' => Config::getEditorConfig(),
-                'edit_mode' => '新建',
             ],
+            'langcode' => $langcode,
+            'mode' => 'create',
         ];
 
-        // dd($data);
-
-        return view_with_langcode('backend::node.create_edit', $data);
-    }
-
-    protected function simpleNodes(string $langcode = null)
-    {
-        return Node::all()->map(function(Node $node) use($langcode) {
-            if ($langcode) {
-                $node->translateTo($langcode);
-            }
-            return [
-                'id' => $node->getKey(),
-                'title' => $node->getAttribute('title'),
-            ];
-        })->keyBy('id')->all();
+        return view('backend::node.create_edit', $data);
     }
 
     /**
@@ -116,16 +114,16 @@ class NodeController extends Controller
         $node = Node::make($data);
         $node->save();
 
-        $node->saveValues($data);
+        // $node->saveValues($data);
 
-        if ($tags = $request->input('tags')) {
-            $node->saveTags($tags);
-        }
+        // if ($tags = $request->input('tags')) {
+        //     $node->saveTags($tags);
+        // }
 
-        $positions = (array) $request->input('changed_positions');
-        if ($positions) {
-            $node->savePositions($positions);
-        }
+        // $positions = (array) $request->input('changed_positions');
+        // if ($positions) {
+        //     $node->savePositions($positions);
+        // }
 
         return response([
             'node_id' => $node->getKey(),
@@ -147,81 +145,39 @@ class NodeController extends Controller
      * 展示编辑或翻译界面
      *
      * @param  \July\Core\Node\Node  $node
-     * @param  string|null  $langcode
+     * @param  string|null  $translateTo
      * @return \Illuminate\Http\Response
      */
-    public function edit(Node $node, string $langcode = null)
+    public function edit(Node $node, string $translateTo = null)
     {
-        if ($langcode) {
-            config(['request.langcode.content' => $langcode]);
+        if ($translateTo) {
+            config(['request.langcode.content' => $translateTo]);
+            $node->translateTo($translateTo);
         }
-
-        $values = $node->gather($langcode);
-
-        // 已选字段
-        $selectedFields = [];
-
-        // 全局字段
-        $globalFields = [];
-
-        foreach ($node->takeEntityFieldMaterials($langcode) as $fieldId => $materials) {
-            $materials['value'] = $values[$fieldId] ?? null;
-            if ($materials['data']['preset_type'] === NodeField::GLOBAL_FIELD) {
-                $globalFields[$fieldId] = $materials;
-            } else {
-                $selectedFields[$fieldId] = $materials;
-            }
-        }
+        $langcode = $node->getLangcode();
 
         $data = [
-            'node' => [
-                'id' => $node->id,
-                'tags' => $values['tags'] ?? [],
-                'catalog_positions' => $node->positions(),
-            ],
+            'node' => array_merge($node->gather(), ['path' => $node->getEntityPath()]),
             'node_type' => [
                 'id' => $node->nodeType->id,
                 'label' => $node->nodeType->label,
             ],
-            'fields' => [
-                'selected' => $selectedFields,
-                'global' => $globalFields,
-            ],
+            'fields' => $node->retrieveFieldMaterials(),
             'context' => [
                 // 'tags' => Tag::allTags($langcode),
                 // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
-                'tags' => [],
-                'nodes' => $this->simpleNodes($langcode),
-                'templates' => $this->getTwigTemplates(),
-                'catalog_nodes' => Catalog::allPositions(),
+                // 'nodes' => $this->simpleNodes($langcode),
+                'templates' => $this->getTwigTemplates($langcode),
+                // 'catalog_nodes' => Catalog::allPositions(),
                 'editor_config' => Config::getEditorConfig(),
-                'edit_mode' => $langcode ? '翻译' : '编辑',
             ],
+            'langcode' => $langcode,
+            'mode' => ($translateTo && $translateTo !== $langcode) ? 'translate' : 'edit',
         ];
 
         // dd($data);
 
         return view_with_langcode('backend::node.create_edit', $data);
-
-        // $data = [
-        //     'id' => $node->id,
-        //     'node_type_id' => $values['node_type'],
-        //     'node_type_label' => $node->nodeType->getAttribute('label'),
-        //     'fields' => $selectedFields,
-        //     'globalFields' => $globalFields,
-        //     'tags' => $values['tags'],
-        //     'positions' => $node->positions(),
-        //     'all_tags' => Tag::allTags($langcode),
-        //     'all_nodes' => $this->simpleNodes($langcode),
-        //     'all_templates' => $this->getTwigTemplates(),
-        //     'catalog_nodes' => Catalog::allPositions(),
-        //     'editorConfig' => Config::getEditorConfig(),
-        //     'editMode' => '编辑',
-        // ];
-
-        // if ($langcode) {
-        //     $data['editMode'] = '翻译';
-        // }
     }
 
     /**
@@ -233,25 +189,11 @@ class NodeController extends Controller
      */
     public function update(Request $request, Node $node)
     {
-        // Log::info('Recieved update data:');
-        // Log::info($request->all());
-
-        $changed = (array) $request->input('changed_values');
+        $changed = (array) $request->input('_changed');
 
         if (!empty($changed)) {
             // Log::info($changed);
-            // $node->update($node->prepareUpdate($request));
-            $node->touch();
-            $node->saveValues($request->all(), true);
-
-            if (in_array('tags', $changed)) {
-                $node->saveTags($request->input('tags'));
-            }
-        }
-
-        $positions = (array) $request->input('changed_positions');
-        if ($positions) {
-            $node->savePositions($positions, true);
+            $node->update($request->only($changed));
         }
 
         return response('');
@@ -260,12 +202,15 @@ class NodeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Core\Node\Node  $content
+     * @param  \July\Core\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Node $content)
+    public function destroy(Node $node)
     {
-        $content->delete();
+        Log::info($node->id);
+        $node->delete();
+
+        return response('');
     }
 
     /**
@@ -274,18 +219,31 @@ class NodeController extends Controller
      * @param  \July\Core\Node\Node  $content
      * @return \Illuminate\Http\Response
      */
-    public function chooseLanguage(Node $content)
+    public function chooseLanguage(Node $node)
     {
         if (!config('jc.language.multiple')) {
             abort(404);
         }
 
         return view_with_langcode('backend::languages', [
-            'original_langcode' => $content->getAttribute('langcode'),
+            'original_langcode' => $node->getAttribute('langcode'),
             'languages' => lang()->getTranslatableLanguages(),
-            'entityKey' => $content->getKey(),
-            'routePrefix' => 'contents',
+            'entityKey' => $node->getKey(),
+            'routePrefix' => 'nodes',
         ]);
+    }
+
+    protected function simpleNodes(string $langcode = null)
+    {
+        return Node::all()->map(function (Node $node) use ($langcode) {
+            if ($langcode) {
+                $node->translateTo($langcode);
+            }
+            return [
+                'id' => $node->getKey(),
+                'title' => $node->getAttributeValue('title'),
+            ];
+        })->keyBy('id')->all();
     }
 
     /**
@@ -296,10 +254,11 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        $contents = Node::fetchAll();
-        $ids = $request->input('contents');
-        if (! empty($ids)) {
-            $contents = Node::fetchMany($ids);
+        // $contents = Node::fetchAll();
+        if ($ids = $request->input('selected_nodes')) {
+            $nodes = Node::find($ids);
+        } else {
+            $nodes = Node::all();
         }
 
         $twig = twig('template', true);
@@ -308,28 +267,32 @@ class NodeController extends Controller
         if (config('jc.language.multiple')) {
             $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
         } else {
-            $langs = [langcode('page')];
+            $langs = [langcode('frontend')];
         }
 
         $success = [];
-        foreach ($contents as $content) {
+        foreach ($nodes as $node) {
             $result = [];
             foreach ($langs as $langcode) {
-                if ($content->render($twig, $langcode)) {
+                if ($node->render($twig, $langcode)) {
                     $result[$langcode] = true;
                 } else {
                     $result[$langcode] = false;
                 }
             }
-            $success[$content->id] = $result;
+            $success[$node->id] = $result;
         }
 
         return response($success);
     }
 
-    protected function getTwigTemplates()
+    /**
+     * @return array
+     */
+    protected function getTwigTemplates(string $langcode)
     {
-        $templates = NodeField::find('template')->getRecords()->pluck('template_value');
-        return $templates->sort()->unique()->all();
+        $templates = PartialView::query()->where('langcode', $langcode)->get()->pluck('view');
+
+        return array_values($templates->sort()->unique()->all());
     }
 }

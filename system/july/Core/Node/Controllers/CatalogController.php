@@ -19,12 +19,10 @@ class CatalogController extends Controller
      */
     public function index()
     {
-        $catalogs = Catalog::all()->map(function($catalog) {
-            return $catalog->gather();
-        })->all();
-
-        return view_with_langcode('backend::catalogs.index', [
-            'catalogs' => $catalogs,
+        return view('backend::catalog.index', [
+            'catalogs' => Catalog::all()->map(function($catalog) {
+                return $catalog->gather();
+            })->all(),
         ]);
     }
 
@@ -35,8 +33,9 @@ class CatalogController extends Controller
      */
     public function create()
     {
-        return view_with_langcode('backend::catalogs.create_edit', [
+        return view('backend::catalog.create_edit', [
             'id' => null,
+            'langcode' => langcode('backend'),
         ]);
     }
 
@@ -48,9 +47,7 @@ class CatalogController extends Controller
      */
     public function store(Request $request)
     {
-        $catalog = Catalog::make($request->all());
-        $catalog->save();
-        return Response::make($catalog);
+        return response(Catalog::make($request->all())->save());
     }
 
     /**
@@ -72,7 +69,7 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view_with_langcode('backend::catalogs.create_edit', $catalog->gather());
+        return view('backend::catalog.create_edit', array_merge($catalog->gather(), ['langcode' => langcode('backend')]));
     }
 
     /**
@@ -84,8 +81,7 @@ class CatalogController extends Controller
      */
     public function update(Request $request, Catalog $catalog)
     {
-        $catalog->update($request->all());
-        return response('');
+        return response($catalog->update($request->all()));
     }
 
     /**
@@ -96,31 +92,34 @@ class CatalogController extends Controller
      */
     public function destroy(Catalog $catalog)
     {
-        $catalog->contents()->detach();
+        $catalog->nodes()->detach();
         $catalog->delete();
+
         return response('');
     }
 
     public function sort(Catalog $catalog)
     {
-        $data = $catalog->gather();
-
-        $data['catalog_contents'] = $catalog->positions();
+        $data = [
+            'catalog' => $catalog->gather(),
+            'positions' => $catalog->positions(),
+        ];
 
         // 非预设字段
-        $exceptAttributes = NodeField::optionalFields()->pluck('id')->all();
+        $keys = NodeField::normalFields()->pluck('id')->all();
 
-        // 获取所有节点信息，排除信息中的非预设字段
-        $data['all_contents'] = Node::all()->map(function($content) use($exceptAttributes) {
-            return Arr::except($content->gather(), $exceptAttributes);
+        // 获取所有节点数据，并排除数据中的常规字段
+        $data['nodes'] = Node::all()->map(function (Node $node) use ($keys) {
+            return Arr::except($node->gather(), $keys);
         })->keyBy('id')->all();
 
-        return view_with_langcode('backend::catalogs.sort', $data);
+        return view('backend::catalog.sort', $data);
     }
 
     public function updateOrders(Request $request, Catalog $catalog)
     {
-        $catalog->updatePositions($request->input('catalog_contents'));
+        $catalog->updatePositions($request->input('positions'));
+
         return response('');
     }
 

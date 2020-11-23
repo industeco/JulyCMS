@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\App;
 
 class DetectLangcode
 {
@@ -36,7 +37,8 @@ class DetectLangcode
     {
         $uri = trim(str_replace('\\', '/', $request->getRequestUri()), '/');
         if (strpos($uri, config('jc.site.backend_route_prefix', 'admin').'/') === 0) {
-            config()->set('request.is_admin', true);
+            config()->set('request.is_backend', true);
+            App::setLocale(langcode('backend'));
             return config('jc.language.backend');
         }
 

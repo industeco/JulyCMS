@@ -72,6 +72,23 @@ class Config extends EntityBase implements EntityInterface
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'group',
+        'label',
+        'description',
+        'is_readonly',
+        'is_translatable',
+        'langcode',
+        'updated_at',
+        'created_at',
+    ];
+
+    /**
      * 覆写时转换一些数据
      *
      * @var array

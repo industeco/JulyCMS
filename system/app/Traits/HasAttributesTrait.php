@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 
 trait HasAttributesTrait
 {
+    use HasMutatorTrait;
+
     /**
      * 类的保护属性
      *
@@ -15,23 +17,17 @@ trait HasAttributesTrait
     protected $attributes = [];
 
     /**
-     * The cache of the mutated attributes for each class.
-     *
-     * @var array
-     */
-    protected static $mutatorCache = [];
-
-    /**
-     * Convert the model's attributes to an array.
+     * Convert attributes to an array.
      *
      * @return array
      */
     public function attributesToArray()
     {
         $attributes = $this->attributes;
-        foreach ($this->getMutatedAttributes() as $key) {
-            $attributes[$key] = $this->mutateAttribute($key, $attributes[$key] ?? null);
-        }
+
+        $attributes = $this->addMutatedAttributesToArray(
+            $attributes, $mutatedAttributes = $this->getMutatedAttributes()
+        );
 
         return $attributes;
     }
@@ -68,29 +64,6 @@ trait HasAttributesTrait
     }
 
     /**
-     * Determine if a get mutator exists for an attribute.
-     *
-     * @param  string  $key
-     * @return bool
-     */
-    public function hasGetMutator($key)
-    {
-        return method_exists($this, 'get'.Str::studly($key).'Attribute');
-    }
-
-    /**
-     * Get the value of an attribute using its mutator.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return mixed
-     */
-    protected function mutateAttribute($key, $value)
-    {
-        return $this->{'get'.Str::studly($key).'Attribute'}($value);
-    }
-
-    /**
      * Set a given attribute on the model.
      *
      * @param  string  $key
@@ -112,87 +85,20 @@ trait HasAttributesTrait
     }
 
     /**
-     * Determine if a set mutator exists for an attribute.
+     * Get a subset of the attributes.
      *
-     * @param  string  $key
-     * @return bool
-     */
-    public function hasSetMutator($key)
-    {
-        return method_exists($this, 'set'.Str::studly($key).'Attribute');
-    }
-
-    /**
-     * Set the value of an attribute using its mutator.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return mixed
-     */
-    protected function setMutatedAttributeValue($key, $value)
-    {
-        $this->{'set'.Str::studly($key).'Attribute'}($value);
-
-        return $this;
-    }
-
-    /**
-     * Get a subset of the model's attributes.
-     *
-     * @param  array|mixed  $attributes
+     * @param  array|mixed  $keys
      * @return array
      */
-    public function only($attributes)
+    public function only($keys)
     {
         $results = [];
 
-        foreach (is_array($attributes) ? $attributes : func_get_args() as $attribute) {
-            $results[$attribute] = $this->getAttribute($attribute);
+        foreach (is_array($keys) ? $keys : func_get_args() as $key) {
+            $results[$key] = $this->getAttribute($key);
         }
 
         return $results;
-    }
-
-    /**
-     * Get the mutated attributes for a given instance.
-     *
-     * @return array
-     */
-    public function getMutatedAttributes()
-    {
-        $class = static::class;
-
-        if (! isset(static::$mutatorCache[$class])) {
-            static::cacheMutatedAttributes($class);
-        }
-
-        return static::$mutatorCache[$class];
-    }
-
-    /**
-     * Extract and cache all the mutated attributes of a class.
-     *
-     * @param  string  $class
-     * @return void
-     */
-    public static function cacheMutatedAttributes($class)
-    {
-        static::$mutatorCache[$class] = array_map(function ($match) {
-            return Str::snake($match);
-        }, static::getMutatorMethods($class));
-    }
-
-    /**
-     * Get all of the attribute mutator methods.
-     *
-     * @param  mixed  $class
-     * @return array
-     */
-    protected static function getMutatorMethods($class)
-    {
-        preg_match_all('/(?<=^|;)get([^;]+?)Attribute(;|$)/', implode(';', get_class_methods($class)), $matches);
-
-        return $matches[1];
     }
 
     /**

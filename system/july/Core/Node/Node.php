@@ -7,6 +7,8 @@ use App\Utils\Html;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use July\Core\Config\PartialViewLinkage;
+use July\Core\Config\PathAliasLinkage;
 use July\Core\Entity\EntityBase;
 use July\Core\EntityField\EntityFieldBase;
 use July\Core\EntityField\FieldType;
@@ -32,8 +34,76 @@ class Node extends EntityBase
     protected $fillable = [
         'node_type_id',
         'langcode',
+    ];
+
+    /**
+     * 外联属性登记处
+     *
+     * @var array
+     */
+    protected static $links = [
+        'url' => PathAliasLinkage::class,
+        'template' => PartialViewLinkage::class,
+        // 'catalog_positions' => CatalogPositionsLinkage::class,
+    ];
+
+    /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'node_type_id',
+        'langcode',
+        'created_at',
         'updated_at',
     ];
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getBundleName()
+    {
+        return NodeType::getEntityName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBundle()
+    {
+        if ($this->exists) {
+            return $this->nodeType()->first();
+        }
+
+        if ($bundle_id = $this->attributes['node_type_id'] ?? null) {
+            return NodeType::find($bundle_id);
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function collectFields()
+    {
+        $fields = NodeField::globalFields()->get();
+        if ($this->exists) {
+            $fields = $fields->merge($this->fields()->get());
+        } elseif ($nodeType = $this->getBundle()) {
+            $fields = $fields->merge($nodeType->fields);
+        } else {
+            $fields = $fields->merge(NodeField::presetFields()->get());
+        }
+
+        return $fields->map(function(EntityFieldBase $field) {
+                return $field->bindEntity($this);
+            })->keyBy(function(EntityFieldBase $field) {
+                return $field->getKey();
+            });
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -50,7 +120,7 @@ class Node extends EntityBase
      */
     public function fields()
     {
-        return $this->belongsToMany(NodeField::class, NodeTypeNodeField::class, 'node_type_id', 'node_field_id', 'node_type_id')
+        return $this->belongsToMany(NodeField::class, NodeFieldNodeType::class, 'node_type_id', 'node_field_id', 'node_type_id')
                     ->orderBy('node_fields.preset_type', 'desc')
                     ->orderBy('node_field_node_type.delta')
                     ->withPivot([
@@ -100,57 +170,77 @@ class Node extends EntityBase
     }
 
     /**
-     * {@inheritdoc}
+     * 获取用于渲染页面表单的原料
+     *
+     * @return array
      */
-    public function collectEntityFields()
+    public function retrieveFormMaterials()
     {
-        return NodeField::getGlobalFields()->merge($this->fields)
-            ->map(function(EntityFieldBase $field) {
-                return $field->bindEntity($this);
-            })
-            ->keyBy(function(EntityFieldBase $field) {
-                return $field->getKey();
-            });
+        return array_merge(
+            $this->retrieveFieldMaterials(),
+            $this->retrieveLinkMaterials()
+        );
     }
 
     /**
-     * 获取字段拼图（与字段相关的一组信息，用于组成表单）
+     * 获取字段渲染原料（与字段相关的一组信息，用于组成表单）
      *
-     * @param  string|null $langcode
      * @return array
      */
-    public function takeEntityFieldMaterials()
+    public function retrieveFieldMaterials()
     {
-        $pocket = new Pocket($this);
-        $key = 'entity_field_materials/'.$this->getLangcode();
-
-        if ($materials = $pocket->get($key)) {
-            $materials = $materials->value();
+        $materials = [];
+        foreach ($this->collectFields() as $field) {
+            $materials[$field->getKey()] = array_merge(
+                FieldType::findOrFail($field)->getMaterials(),
+                ['preset_type' => $field->preset_type]
+            );
         }
 
-        $modified = last_modified(backend_path('template/components/'));
-        if (!$materials || $materials['created_at'] < $modified) {
-            $materials = [];
-            foreach ($this->collectEntityFields() as $field) {
-                $materials[$field->getKey()] = FieldType::findOrFail($field)->getMaterials();
-            }
+        return $materials;
 
-            $materials = [
-                'created_at' => time(),
-                'materials' => $materials,
-            ];
+        // $pocket = new Pocket(static::class);
+        // $key = join('/', [
+        //     $this->attributes['node_type_id'] ?? '{node_type_id}',
+        //     $this->getLangcode() ?: '{langcode}',
+        //     'field_materials',
+        // ]);
 
-            $pocket->put($key, $materials);
-        }
+        // if ($materials = $pocket->get($key)) {
+        //     $materials = $materials->value();
+        // }
 
-        return $materials['materials'];
+        // $modified = last_modified(backend_path('template/components/'));
+        // if (!$materials || $materials['created_at'] < $modified) {
+        //     $materials = [];
+        //     foreach ($this->collectFields() as $field) {
+        //         $materials[$field->getKey()] = array_merge(
+        //             FieldType::findOrFail($field)->getMaterials(),
+        //             ['preset_type' => $field->preset_type]
+        //         );
+        //     }
+
+        //     $materials = [
+        //         'created_at' => time(),
+        //         'materials' => $materials,
+        //     ];
+
+        //     $pocket->put($key, $materials);
+        // }
+
+        // return $materials['materials'];
+    }
+
+    public function retrieveLinkMaterials()
+    {
+        return [];
     }
 
 
     public function searchableFields()
     {
         $fields = [];
-        foreach ($this->contentType->cacheGetFields() as $field) {
+        foreach ($this->nodeType->cacheGetFields() as $field) {
             if ($field['is_searchable']) {
                 $fields[$field['id']] = [
                     'field_type' => $field['field_type'],
@@ -183,89 +273,89 @@ class Node extends EntityBase
         return $values;
     }
 
-    /**
-     * 获取内容标签
-     *
-     * @param string|null $langcode
-     * @return array
-     */
-    public function cacheGetTags($langcode = null)
-    {
-        $langcode = $langcode ?: $this->langcode;
-        $cachekey = $this->cacheKey([
-            'key' => 'tags',
-            'langcode' => $langcode,
-        ]);
+    // /**
+    //  * 获取内容标签
+    //  *
+    //  * @param string|null $langcode
+    //  * @return array
+    //  */
+    // public function cacheGetTags($langcode = null)
+    // {
+    //     $langcode = $langcode ?: $this->langcode;
+    //     $cachekey = $this->cacheKey([
+    //         'key' => 'tags',
+    //         'langcode' => $langcode,
+    //     ]);
 
-        if ($tags = $this->cacheGet($cachekey, $langcode)) {
-            $tags = $tags['value'];
-        } else {
-            $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
-            if (empty($tags)) {
-                $tags = [];
-                foreach ($this->tags($this->getAttribute('langcode'))->get() as $tag) {
-                    $tags[] = $tag->getRightTag($langcode);
-                }
-            }
-            $this->cachePut($cachekey, $tags);
-        }
+    //     if ($tags = $this->cacheGet($cachekey, $langcode)) {
+    //         $tags = $tags['value'];
+    //     } else {
+    //         $tags = $this->tags($langcode)->get()->pluck('tag')->toArray();
+    //         if (empty($tags)) {
+    //             $tags = [];
+    //             foreach ($this->tags($this->getAttribute('langcode'))->get() as $tag) {
+    //                 $tags[] = $tag->getRightTag($langcode);
+    //             }
+    //         }
+    //         $this->cachePut($cachekey, $tags);
+    //     }
 
-        return $tags;
-    }
+    //     return $tags;
+    // }
 
-    /**
-     * 保存属性值
-     */
-    public function saveValues(array $values)
-    {
-        Pocket::create($this)->clear('values/'.$this->getLangcode());
-        // $this->cacheClear(['key'=>'values', 'langcode'=>langcode('content')]);
-        // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
+    // /**
+    //  * 保存属性值
+    //  */
+    // public function saveValues(array $values)
+    // {
+    //     Pocket::make($this)->clear('values/'.$this->getLangcode());
+    //     // $this->cacheClear(['key'=>'values', 'langcode'=>langcode('content')]);
+    //     // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
-        $values = Arr::only($values, $values['changed_values']);
+    //     $values = Arr::only($values, $values['changed_values']);
 
-        foreach ($this->collectEntityFields() as $field) {
-            if (is_null($value = $values[$field->id] ?? null)) {
-                $field->deleteValue();
-            } else {
-                $field->saveValue($value);
-            }
-        }
+    //     foreach ($this->collectEntityFields() as $field) {
+    //         if (is_null($value = $values[$field->id] ?? null)) {
+    //             $field->deleteValue();
+    //         } else {
+    //             $field->saveValue($value);
+    //         }
+    //     }
 
-        // Log::info($this->cacheGetValues());
-    }
+    //     // Log::info($this->cacheGetValues());
+    // }
 
-    public function saveTags(array $tags, $langcode = null)
-    {
-        $langcode = $langcode ?: $this->langcode;
-        $this->cacheClear(['key'=>'tags', 'langcode'=>$langcode]);
+    // public function saveTags(array $tags, $langcode = null)
+    // {
+    //     $langcode = $langcode ?: $this->langcode;
+    //     $this->cacheClear(['key'=>'tags', 'langcode'=>$langcode]);
 
-        Term::createIfNotExist($tags, $langcode);
+    //     Term::createIfNotExist($tags, $langcode);
 
-        $tags = array_fill_keys($tags, ['langcode' => $langcode]);
-        $this->tags($langcode)->sync($tags);
-    }
+    //     $tags = array_fill_keys($tags, ['langcode' => $langcode]);
+    //     $this->tags($langcode)->sync($tags);
+    // }
 
-    /**
-     * 保存当前内容在各目录中的位置
-     *
-     * @param  array $positions 待保存的位置信息
-     * @param  bool $deleteNull 是否删除 null 值
-     * @return void
-     */
-    public function savePositions(array $positions, $deleteNull = false)
-    {
-        $node_id = $this->getKey();
-        foreach ($positions as $position) {
-            $catalog = Catalog::findOrFail($position['catalog_id']);
-            $position['node_id'] = $node_id;
-            if (! is_null($position)) {
-                $catalog->insertPosition($position);
-            } elseif ($deleteNull) {
-                $catalog->removePosition($position);
-            }
-        }
-    }
+    // /**
+    //  * 保存当前内容在各目录中的位置
+    //  *
+    //  * @param  array $positions 待保存的位置信息
+    //  * @param  bool $deleteNull 是否删除 null 值
+    //  * @return void
+    //  */
+    // public function savePositions(array $positions, $deleteNull = false)
+    // {
+    //     $node_id = $this->getKey();
+    //     foreach ($positions as $position) {
+    //         $catalog = Catalog::findOrFail($position['catalog_id']);
+    //         $position['node_id'] = $node_id;
+    //         $catalog->insertPosition($position);
+    //         // if (! is_null($position)) {
+    //         // } elseif ($deleteNull) {
+    //         //     $catalog->removePosition($position);
+    //         // }
+    //     }
+    // }
 
     /**
      * {@inheritdoc}
@@ -274,8 +364,8 @@ class Node extends EntityBase
     {
         parent::boot();
 
-        static::deleted(function(Node $node) {
-            foreach ($node->collectEntityFields() as $field) {
+        static::deleting(function(Node $node) {
+            foreach ($node->collectFields() as $field) {
                 $field->deleteValue();
             }
         });
@@ -289,43 +379,54 @@ class Node extends EntityBase
      */
     public function render(Twig $twig = null)
     {
-        $twig = $twig ?? $twig = twig();
+        $tpl = $this->template();
+        if (! $tpl) {
+            return null;
+        }
+
         $langcode = $this->getLangcode();
+        $path = $this->getEntityPath();
+        $data = $this->gather();
+
+        $twig = $twig ?? $twig = twig();
+        $twig->addGlobal('_node', $this);
+        $twig->addGlobal('_path', $this->get_path());
+        $twig->addGlobal('_canonical', $this->getCanonical($data['url'] ?? '/'.$path));
 
         config()->set('render_langcode', $langcode);
 
-        // 获取节点值
-        $data = $this->gather($langcode);
+        // 生成 html
+        $html = $twig->render($tpl, $data);
 
-        if ($tpl = $this->template($langcode)) {
+        config()->set('render_langcode', null);
 
-            $twig->addGlobal('_node', $this);
-            $twig->addGlobal('_path', $this->get_path());
+        //
+        $html = preg_replace('/\n\s+/', "\n", $html);
 
-            $canonical = '/'.ltrim($data['url'], '/');
-            if ($langcode === langcode('page')) {
-                $canonical = rtrim(config('app.url'), '/').$canonical;
-            } else {
-                $canonical = rtrim(config('app.url'), '/').'/'.$langcode.$canonical;
-            }
-            $twig->addGlobal('_canonical', $canonical);
-
-            // 生成 html
-            $html = $twig->render($tpl, $data);
-
-            //
-            $html = preg_replace('/\n\s+/', "\n", $html);
-
-            // 写入文件
-            if ($data['url']) {
-                $file = 'pages/'.$langcode.'/'.ltrim($data['url'], '/');
-                Storage::disk('storage')->put($file, $html);
-            }
-
-            return $html;
+        // 写入文件
+        if ($data['url']) {
+            Storage::disk('storage')->put('pages/'.$langcode.'/'.$path, $html);
         }
 
-        return null;
+        return $html;
+    }
+
+    /**
+     * 计算权威页面
+     *
+     * @param  string|null $url 指定 url
+     * @return string
+     */
+    public function getCanonical(string $url = null)
+    {
+        $url = $url ?? $this->getPathAlias() ?? '/'.$this->getEntityPath();
+
+        // 如果不是前台默认语言，则权威页面加上语言代码
+        if ($this->getLangcode() !== langcode('page')) {
+            $url = '/'.$this->getLangcode().$url;
+        }
+
+        return rtrim(config('app.url'), '/').$url;
     }
 
     /**
@@ -341,20 +442,16 @@ class Node extends EntityBase
     /**
      * 获取可能的模板
      *
-     * @param  string $langcode
      * @return string|null
      */
-    public function template(string $langcode = null)
+    public function template()
     {
-        foreach ($this->suggestedTemplates($langcode) as $tpl) {
-            if (false !== strpos($tpl, '{langcode}')) {
-                if ($langcode) {
-                    $tpl = str_replace('{langcode}', $langcode, $tpl);
-                } else {
-                    continue;
-                }
-            }
+        $langcode = $this->getLangcode();
 
+        foreach ($this->suggestedTemplates() as $tpl) {
+            if (false !== strpos($tpl, '{langcode}')) {
+                $tpl = str_replace('{langcode}', $langcode, $tpl);
+            }
             if (is_file(frontend_path('template/'.$tpl))) {
                 return $tpl;
             }
@@ -366,27 +463,29 @@ class Node extends EntityBase
     /**
      * 获取建议模板
      *
-     * @param  string $langcode
      * @return array
      */
-    public function suggestedTemplates(string $langcode = null)
+    public function suggestedTemplates()
     {
-        $node = $this->gather($langcode);
-        if (empty($node['url'] ?? null)) return [];
+        // $node = $this->gather();
 
         $templates = [];
-        if ($node['template'] ?? null) {
-            $templates[] = ltrim($node['template'], '/');
+
+        if ($template = $this->getPartialView()) {
+            $templates[] = $template;
         }
 
-        // 按 url
-        $url = str_replace('/', '--', trim($node['url'], '\\/'));
-        $templates[] = 'url_'.$url.'.{langcode}.twig';
-        $templates[] = 'url_'.$url.'.twig';
-
         // 按 id
-        $templates[] = 'node_'.$node['id'].'.{langcode}.twig';
-        $templates[] = 'node_'.$node['id'].'.twig';
+        $templates[] = 'node_'.$this->id.'.{langcode}.twig';
+        $templates[] = 'node_'.$this->id.'.twig';
+
+        // 按 url
+        if ($url = $this->getPathAlias()) {
+            # code...
+            $url = str_replace('/', '_', trim($url, '\\/'));
+            $templates[] = 'url_'.$url.'.{langcode}.twig';
+            $templates[] = 'url_'.$url.'.twig';
+        }
 
         if ($parent = Catalog::default()->tree()->parent($this->id)) {
             $templates[] = 'under_' . $parent[0] . '.{langcode}.twig';
@@ -394,8 +493,8 @@ class Node extends EntityBase
         }
 
         // 针对该节点类型的模板
-        $templates[] = 'type_'.$node['node_type_id'].'.{langcode}.twig';
-        $templates[] = 'type_'.$node['node_type_id'].'.twig';
+        $templates[] = 'type_'.$this->node_type_id.'.{langcode}.twig';
+        $templates[] = 'type_'.$this->node_type_id.'.twig';
 
         return $templates;
     }

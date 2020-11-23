@@ -1,12 +1,12 @@
 @extends('backend::layout')
 
-@section('h1', '排序 '.$label.'['.$truename.'] 目录')
+@section('h1', '排序 '.$catalog['label'].'['.$catalog['id'].']')
 
 @section('main_content')
   <div id="main_tools">
     <div id="main_tools_left" class="jc-btn-group">
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
-        @click="nodeSelectorVisible = true">
+        @click="nodeListVisible = true">
         <div class="md-ripple"><div class="md-button-content">添加内容</div></div>
       </button>
     </div>
@@ -17,15 +17,15 @@
     <el-tree
       ref="catalog_reorder"
       class="jc-tree"
-      :data="catalogNodes"
+      :data="positions"
       :draggable="true"
       :indent="20"
-      node-key="node_id">
+      node-key="id">
       <div class="jc-tree-node-inner" slot-scope="{ node, data }">
         <svg class="jc-svg-icon jc-drag-handle"><use xlink:href="#jcon_drag"></use></svg>
-        <span class="el-tree-node__label">[@{{ data.node_id }}] @{{ getNodeInfo(data.node_id, 'title') }}</span>
-        <span class="jc-tree-nodeinfo">类型：@{{ getNodeInfo(data.node_id, 'node_type') }}</span>
-        <span class="jc-tree-nodeinfo">上次修改：@{{ getNodeInfo(data.node_id, 'updated_at') }}</span>
+        <span class="el-tree-node__label">[@{{ data.id }}] @{{ getNodeInfo(data.id, 'title') }}</span>
+        <span class="jc-tree-nodeinfo">类型：@{{ getNodeInfo(data.id, 'node_type_id') }}</span>
+        <span class="jc-tree-nodeinfo">上次修改：@{{ getNodeInfo(data.id, 'updated_at') }}</span>
         <button
           type="button" title="从当前目录移除" class="md-button md-fab md-mini md-accent md-theme-default jc-theme-light"
           @click="remove(node)">
@@ -42,7 +42,7 @@
       id="node_selector"
       top="-5vh"
       :show-close="false"
-      :visible.sync="nodeSelectorVisible">
+      :visible.sync="nodeListVisible">
       <el-table
         ref="nodes_table"
         title="选择内容"
@@ -67,7 +67,7 @@
           sortable>
         </el-table-column>
         <el-table-column
-          prop="node_type"
+          prop="node_type_id"
           label="类型"
           sortable>
         </el-table-column>
@@ -78,7 +78,7 @@
         </el-table-column>
       </el-table>
       <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="nodeSelectorVisible = false">取 消</el-button>
+        <el-button size="small" @click="nodeListVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="handleNodeSelectorConfirm">确 定</el-button>
       </span>
     </el-dialog>
@@ -88,40 +88,49 @@
 @section('script')
 <script>
 
-  let catalog_nodes = @json($catalog_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  let initialPositions = [
+    @foreach ($positions as $position)
+    {
+      id:{{ $position['node_id'] }},
+      parent_id:{{ $position['parent_id'] ?? 'null' }},
+      prev_id:{{ $position['prev_id'] ?? 'null' }},
+      path:"{{ $position['path'] }}",
+    },
+    @endforeach
+  ];
 
   let app = new Vue({
     el: '#main_content',
     data() {
       return {
-        catalogNodes: [],
-        nodes: @json($all_nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        positions: [],
+        nodes: @json($nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         selectableNodes: [],
-        selectedNodes: null,
-        nodesInCatalog: {},
-        nodeSelectorVisible: false,
+        selected: null,
+        settled: {},
+        nodeListVisible: false,
       }
     },
 
     created: function() {
       // 初始化目录数据
-      this.$set(this.$data, 'catalogNodes', toTree(catalog_nodes));
+      this.$set(this.$data, 'positions', toTree(initialPositions));
 
       // 生成目录中已存在的节点的列表
-      for (let i = 0; i < catalog_nodes.length; i++) {
-        this.nodesInCatalog[catalog_nodes[i].node_id] = true;
+      for (let i = 0; i < initialPositions.length; i++) {
+        this.settled[initialPositions[i].id] = true;
       }
 
       this.chooseSelectableNode()
 
-      this.initial_data = JSON.stringify(this.catalogNodes)
+      this.initial_data = JSON.stringify(this.positions)
     },
 
     methods: {
       chooseSelectableNode() {
         const nodes = [];
         for (const id in this.nodes) {
-          if (! this.nodesInCatalog[id]) {
+          if (! this.settled[id]) {
             nodes.push(this.nodes[id])
           }
         }
@@ -139,9 +148,9 @@
 
       remove(node) {
         if (node.childNodes && node.childNodes.length) {
-          this.$confirm('下级节点会被一并删除，且不可恢复！确定要删除吗？', '删除节点', {
-            confirmButtonText: '删除',
-            cancelButtonText: '取消',
+          this.$confirm('注意：下级节点会被一并删除！要删除吗？', '删除节点', {
+            confirmButtonText: '要',
+            cancelButtonText: '不要',
             type: 'warning',
           }).then(() => {
             this.removeNode(node)
@@ -153,29 +162,29 @@
 
       removeNode(node) {
         node.remove();
-        this.nodesInCatalog[node.data.node_id] = false
+        this.settled[node.data.node_id] = false
         this.chooseSelectableNode()
       },
 
       handleNodesSelectionChange(selected) {
-        this.selectedNodes = selected;
+        this.selected = selected;
       },
 
       // 当按下对话框确定按钮时
       handleNodeSelectorConfirm() {
-        let prev = this.catalogNodes[this.catalogNodes.length - 1];
-        for (let i = 0; i < this.selectedNodes.length; i++) {
-          const node = this.selectedNodes[i];
-          this.catalogNodes.push({
-            'node_id': node.id,
+        let prev = this.positions[this.positions.length - 1];
+        for (let i = 0; i < this.selected.length; i++) {
+          const node = this.selected[i];
+          this.positions.push({
+            'id': node.id,
             'parent_id': null,
-            'prev_id': node && node.node_id || null,
+            'prev_id': prev && prev.id || null,
           })
-          this.nodesInCatalog[node.id] = true
+          this.settled[node.id] = true
           prev = node;
         }
         this.chooseSelectableNode()
-        this.nodeSelectorVisible = false
+        this.nodeListVisible = false
       },
 
       saveOrder() {
@@ -186,19 +195,26 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        if (app.initial_data === JSON.stringify(app.catalogNodes)) {
+        if (app.initial_data === JSON.stringify(app.positions)) {
           window.location.href = "{{ short_url('catalogs.index') }}";
           return;
         }
 
         const data = {
-          'content_value_langcode': '{{ $langcode }}',
-          'catalog_nodes': toRecords(app.catalogNodes),
+          'positions': toRecords(app.positions).map(function(node) {
+            return {
+              node_id: node.id,
+              parent_id: node.parent_id,
+              prev_id: node.prev_id,
+              path: node.path,
+            };
+          }),
         };
 
-        axios.put("{{ short_url('catalogs.updateOrders', $truename) }}", data).then(function(response) {
+        console.log(data);
+
+        axios.put("{{ short_url('catalogs.updateOrders', $catalog['id']) }}", data).then(function(response) {
           // console.log(response)
-          // loading.close()
           window.location.href = "{{ short_url('catalogs.index') }}";
         }).catch(function(error) {
           app.$message.error(error);

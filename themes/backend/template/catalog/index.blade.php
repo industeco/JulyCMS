@@ -16,16 +16,16 @@
         :data="catalogs"
         @row-contextmenu="handleContextmenu">
         <el-table-column type="index" label="行号" width="80"></el-table-column>
-        <el-table-column label="真名" prop="truename" width="200" sortable></el-table-column>
+        <el-table-column label="ID" prop="id" width="200" sortable></el-table-column>
         <el-table-column label="名称" prop="label" width="200" sortable></el-table-column>
         <el-table-column label="描述" prop="description" width="auto"></el-table-column>
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="getUrl('edit', scope.row.truename)" title="修改" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('edit', scope.row.id)" title="修改" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="getUrl('sort', scope.row.truename)" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('sort', scope.row.id)" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">sort</i></div></div>
               </a>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
@@ -83,9 +83,9 @@
           translatable: false,
           deletable: false,
         },
-        editUrl: "{{ short_url('catalogs.edit', '#truename#') }}",
-        sortUrl: "{{ short_url('catalogs.sort', '#truename#') }}",
-        deleteUrl: "{{ short_url('catalogs.destroy', '#truename#') }}",
+        editUrl: "{{ short_url('catalogs.edit', '#id#') }}",
+        sortUrl: "{{ short_url('catalogs.sort', '#id#') }}",
+        deleteUrl: "{{ short_url('catalogs.destroy', '#id#') }}",
       };
     },
 
@@ -97,20 +97,20 @@
 
         const _tar = this.contextmenu;
         _tar.target = row;
-        _tar.editUrl = this.editUrl.replace('#truename#', row.truename);
-        _tar.sortUrl = this.sortUrl.replace('#truename#', row.truename);
+        _tar.editUrl = this.editUrl.replace('#id#', row.id);
+        _tar.sortUrl = this.sortUrl.replace('#id#', row.id);
         _tar.deletable = !row.is_preset;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
       },
 
-      getUrl(route, truename) {
+      getUrl(route, id) {
         switch (route) {
           case 'edit':
-            return this.editUrl.replace('#truename#', truename);
+            return this.editUrl.replace('#id#', id);
           case 'sort':
-            return this.sortUrl.replace('#truename#', truename);
+            return this.sortUrl.replace('#id#', id);
         }
       },
 
@@ -118,8 +118,8 @@
         if (catalog.is_preset) {
           return;
         }
-        const truename = catalog.truename;
-        this.$confirm(`确定要删除目录 ${truename} ？`, '删除目录', {
+        const id = catalog.id;
+        this.$confirm(`确定要删除目录 ${id} ？`, '删除目录', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
           type: 'warning',
@@ -129,7 +129,7 @@
             text: '正在删除 ...',
             background: 'rgba(0, 0, 0, 0.7)',
           });
-          axios.delete(this.deleteUrl.replace('#truename#', truename)).then(function(response) {
+          axios.delete(this.deleteUrl.replace('#id#', id)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success'
             loading.text = '已删除'

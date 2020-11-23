@@ -46,11 +46,11 @@ class NodeTypeController extends Controller
     {
         $allFields = NodeField::takeFieldsInfo()->groupBy('preset_type');
 
-        $currentFields = $allFields->get(NodeField::PRESET_FIELD)
+        $currentFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
             ->sortBy('delta')->pluck('id')->all();
 
-        $availableFields = $allFields->get(NodeField::PRESET_FIELD)
-            ->merge($allFields->get(NodeField::SELECTABLE_FIELD))
+        $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
+            ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
             ->sortBy('delta')
             ->keyBy('id')
             ->all();
@@ -103,8 +103,8 @@ class NodeTypeController extends Controller
     {
         $allFields = NodeField::takeFieldsInfo()->groupBy('preset_type');
 
-        $availableFields = $allFields->get(NodeField::PRESET_FIELD)
-            ->merge($allFields->get(NodeField::SELECTABLE_FIELD))
+        $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
+            ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
             ->sortBy('id')
             ->keyBy('id')
             ->all();

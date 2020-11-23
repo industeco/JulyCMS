@@ -4,7 +4,12 @@ namespace July;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\App;
 use July\Core\Config\Config as JulyConfig;
+use July\Core\Config\PartialViewLinkage;
+use July\Core\Config\PathAliasLinkage;
+use July\Core\Node\CatalogPositionsLinkage;
+use July\Core\Node\Node;
 
 class JulyServiceProvider extends ServiceProvider
 {

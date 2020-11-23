@@ -9,6 +9,9 @@ class Value
      */
     protected $value = null;
 
+    /**
+     * @param  mixed $value
+     */
     public function __construct($value)
     {
         if ($value instanceof static) {
@@ -17,16 +20,33 @@ class Value
         $this->value = $value;
     }
 
-    public static function create($value)
+    /**
+     * 快捷创建
+     *
+     * @param  mixed $value
+     * @return static
+     */
+    public static function make($value)
     {
         return new static($value);
     }
 
+    /**
+     * 获取 $value
+     *
+     * @return mixed
+     */
     public function value()
     {
         return $this->value;
     }
 
+    /**
+     * 允许以属性方式获取
+     *
+     * @param  string $name
+     * @return mixed
+     */
     public function __get($name)
     {
         if ($name === 'value') {

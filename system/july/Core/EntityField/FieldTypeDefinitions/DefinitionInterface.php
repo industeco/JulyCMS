@@ -34,10 +34,9 @@ interface DefinitionInterface
     /**
      * 获取当前类型字段参数的模式（属性，属性值类型，默认值等）
      *
-     * @param  array|null $schema
      * @return array
      */
-    public function getParametersSchemaAttribute(?array $schema = []): array;
+    public function getParametersSchema();
 
     /**
      * 从表单数据中提取字段参数
@@ -45,7 +44,7 @@ interface DefinitionInterface
      * @param array $raw 包含表单数据的数组
      * @return array
      */
-    public function extractParameters(array $raw): array;
+    public function extractParameters(array $raw);
 
     /**
      * 字段数据存储表的列信息，结构：
@@ -62,7 +61,7 @@ interface DefinitionInterface
      * @param  array|null $parameters
      * @return array
      */
-    public function getColumns(?string $fieldName = null, ?array $parameters = []): array;
+    public function getColumns(?string $fieldName = null, ?array $parameters = []);
 
     /**
      * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
@@ -70,7 +69,7 @@ interface DefinitionInterface
      * @param  array|null $data 字段数据 = 固定属性(attributes) + 参数(parameters)
      * @return array
      */
-    public function getMaterials(?array $data = []): array;
+    public function getMaterials(?array $data = []);
 
     /**
      * 获取表单组件（element-ui component）
@@ -78,7 +77,7 @@ interface DefinitionInterface
      * @param  array|null $data 字段数据
      * @return string
      */
-    public function getComponent(?array $data = []): ?string;
+    public function getComponent(?array $data = []);
 
     /**
      * 获取验证规则（用于前端 js 验证）
@@ -86,7 +85,7 @@ interface DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getRules(?array $parameters = []): array;
+    public function getRules(?array $parameters = []);
 
     /**
      * 获取验证器（用于后端验证）
@@ -94,7 +93,7 @@ interface DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getValidator(?array $parameters = []): array;
+    public function getValidator(?array $parameters = []);
 
     /**
      * 将记录转换为值
@@ -114,5 +113,5 @@ interface DefinitionInterface
      * @param  array|null $parameters 字段参数
      * @return array|null
      */
-    public function toRecords($value, ?array $columns = [], ?array $parameters = []): ?array;
+    public function toRecords($value, ?array $columns = [], ?array $parameters = []);
 }

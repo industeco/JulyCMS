@@ -15,9 +15,12 @@ class Html
     }
 
     /**
-     * @return self
+     * 快捷创建
+     *
+     * @param  string $html HTML 内容
+     * @return static
      */
-    public static function create($html)
+    public static function make($html)
     {
         return new static($html);
     }

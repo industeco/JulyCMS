@@ -1,7 +1,7 @@
 @extends('backend::layout')
 
 @section('h1')
-  {{ $truename?'编辑目录':'新建目录' }}
+  {{ $id?'编辑目录':'新建目录' }}
 @endsection
 
 @section('main_content')
@@ -10,10 +10,10 @@
     :rules="catalogRules"
     label-position="top">
     <div id="main_form_left">
-      @include('backend::widgets.truename', ['readOnly' => $truename, 'scope' => 'catalog'])
-      <el-form-item label="名称" prop="name" size="small">
+      @include('backend::widgets.id', ['_readOnly' => $id, '_model' => 'catalog'])
+      <el-form-item label="名称" prop="label" size="small">
         <el-input
-          v-model="catalog.name"
+          v-model="catalog.label"
           native-size="60"
           maxlength="32"
           show-word-limit></el-input>
@@ -44,7 +44,7 @@
     return JSON.parse(JSON.stringify(obj))
   }
 
-  let mode = "{{ $truename ? 'edit' : 'create' }}";
+  let mode = "{{ $id ? 'edit' : 'create' }}";
 
   let app = new Vue({
     el: '#main_content',
@@ -52,7 +52,7 @@
 
       var isUnique = function(rule, value, callback) {
         if (value && value.length) {
-          const action = "{{ short_url('checkunique.catalogs', '#value#') }}";
+          const action = "{{ short_url('catalogs.is_exist', '#value#') }}";
           axios.get(action.replace('#value#', value)).then(function(response) {
             if (response.data.exists) {
               callback(new Error('『真名』已存在'))
@@ -67,23 +67,22 @@
 
       return {
         catalog: {
-          interface_value_langcode: '{{ $interface_value_langcode }}',
-          content_value_langcode: '{{ $content_value_langcode }}',
-          truename: '{{ $truename ?? '' }}',
-          name: '{{ $name ?? '' }}',
+          langcode: '{{ $langcode }}',
+          id: '{{ $id ?? '' }}',
+          label: '{{ $label ?? '' }}',
           description: '{{ $description ?? '' }}',
         },
 
         catalogRules: {
-          @if (!$truename)
-          truename: [
+          @if (!$id)
+          id: [
             { required: true, message: '『真名』不能为空', trigger: 'submit' },
             { max: 32, message: '最多 32 个字符', trigger: 'change' },
             { pattern: /^[a-z0-9_]+$/, message: '只能包含小写字母、数字和下划线', trigger: 'change' },
             { validator: isUnique, trigger: 'blur' }
           ],
           @endif
-          name: [
+          label: [
             { required: true, message: '『名称』不能为空', trigger: 'submit' },
             { max: 32, message: '最多 32 个字符（或 16 个汉字）', trigger: 'change' }
           ],
@@ -94,7 +93,7 @@
       }
     },
 
-    @if($truename)
+    @if($id)
     created: function() {
       this.initial_data = JSON.stringify(this.catalog)
     },
@@ -112,20 +111,20 @@
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          @if($truename)
+          @if($id)
             if (app.initial_data === JSON.stringify(app.catalog)) {
               window.location.href = "{{ short_url('catalogs.index') }}";
               return;
             }
           @endif
 
-          @if($truename)
-          const action = "{{ short_url('catalogs.update', $truename) }}";
+          @if($id)
+          const action = "{{ short_url('catalogs.update', $id) }}";
           @else
           const action = "{{ short_url('catalogs.store') }}";
           @endif
 
-          axios.{{ $truename ? 'put' : 'post' }}(action, app.catalog).then(function(response) {
+          axios.{{ $id ? 'put' : 'post' }}(action, app.catalog).then(function(response) {
             // loading.close()
             window.location.href = "{{ short_url('catalogs.index') }}";
           }).catch(function(error) {

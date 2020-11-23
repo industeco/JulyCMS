@@ -82,9 +82,10 @@ class PathAliasController extends Controller
      */
     public function isExist(Request $request)
     {
-        $entity = PathAlias::findEntityByAlias($request->input('url'));
+        $item = PathAlias::query()->where('alias',$request->input('url'))->first();
+        $path = $item ? $item->path : '';
         return response([
-            'is_exist' => $entity && $entity->getEntityPath() !== $request->input('path'),
+            'is_exist' => $path && $path !== $request->input('path'),
         ]);
     }
 }

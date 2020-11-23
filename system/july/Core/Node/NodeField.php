@@ -2,39 +2,25 @@
 
 namespace July\Core\Node;
 
-use App\Utils\EventsBook;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
-use July\Core\Config\PathAliasAccessor;
-use July\Core\Config\PartialViewAccessor;
 use July\Core\Entity\EntityBase;
 use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\FieldAccessor;
 use July\Core\EntityField\FieldParameters;
 use July\Core\EntityField\FieldType;
-use July\Core\Taxonomy\TagsAccessor;
 
 class NodeField extends EntityFieldBase
 {
+    const PRESET_TYPE = [
+        'normal' => 0,
+        'preset' => 1,
+        'global' => 2,
+    ];
+
     /**
      * 宿主实体的实体名
      */
     protected static $hostEntityName = 'node';
-
-    /**
-     * 可选字段
-     */
-    const SELECTABLE_FIELD = 0;
-
-    /**
-     * 预设字段
-     */
-    const PRESET_FIELD = 1;
-
-    /**
-     * 全局字段
-     */
-    const GLOBAL_FIELD = 2;
 
     /**
      * 与模型关联的表名
@@ -95,6 +81,25 @@ class NodeField extends EntityFieldBase
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'field_type_id',
+        'is_necessary',
+        'is_searchable',
+        'weight',
+        'preset_type',
+        'global_group',
+        'label',
+        'description',
+        'created_at',
+        'updated_at',
+    ];
+
+    /**
      * 获取使用过当前字段的所有类型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -112,13 +117,47 @@ class NodeField extends EntityFieldBase
     }
 
     /**
-     * 获取所有全局字段
+     * 将预设类型转换为文字
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @param  string|int
+     * @return string
      */
-    public static function getGlobalFields()
+    public function getPresetTypeAttribute($presetType)
     {
-        return static::query()->where('preset_type', static::GLOBAL_FIELD)->get();
+        return array_flip(static::PRESET_TYPE)[$presetType] ?? 'normal';
+    }
+
+    /**
+     * 限定仅查询常规字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNormalFields($query)
+    {
+        return $query->where('preset_type', static::PRESET_TYPE['normal']);
+    }
+
+    /**
+     * 限定仅查询预设字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePresetFields($query)
+    {
+        return $query->where('preset_type', static::PRESET_TYPE['preset']);
+    }
+
+    /**
+     * 限定仅查询全局预设字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeGlobalFields($query)
+    {
+        return $query->where('preset_type', static::PRESET_TYPE['global']);
     }
 
     /**
@@ -128,60 +167,80 @@ class NodeField extends EntityFieldBase
      */
     public static function takeFieldsInfo()
     {
-        $pocket = new Pocket(static::class);
-        $key = 'field_infos';
-        $event = static::class.'/'.$key.':created';
-
-        if ($data = $pocket->get($key)) {
-            $events = [
-                static::class.':changed',
-                FieldParameters::class.':changed',
-            ];
-            if (! events()->hasHappenedAfter($events, $event)) {
-                return collect($data->value());
-            }
-        }
-
-        $data = static::query()->with('fieldParameters')->get()
+        return static::query()->with('fieldParameters')->get()
             ->map(function(NodeField $field) {
                 return $field->gather();
-            })->all();
+            });
 
-        $pocket->put($key, $data);
+        // $pocket = new Pocket(static::class);
+        // $key = 'field_infos';
+        // $event = static::class.'/'.$key.':created';
 
-        events()->record($event);
+        // if ($data = $pocket->get($key)) {
+        //     $events = [
+        //         static::class.':changed',
+        //         FieldParameters::class.':changed',
+        //     ];
+        //     if (! events()->hasHappenedAfter($events, $event)) {
+        //         return collect($data->value());
+        //     }
+        // }
 
-        return collect($data);
+        // $data = static::query()->with('fieldParameters')->get()
+        //     ->map(function(NodeField $field) {
+        //         return $field->gather();
+        //     })->all();
+
+        // $pocket->put($key, $data);
+
+        // events()->record($event);
+
+        // return collect($data);
     }
 
     /**
-     * 获取所有全局字段的信息
+     * 获取全局字段的信息
      *
      * @return \Illuminate\Support\Collection
      */
     public static function takeGlobalFieldsInfo()
     {
-        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::GLOBAL_FIELD);
+        return static::globalFields()->with('fieldParameters')->get()
+            ->map(function(NodeField $field) {
+                return $field->gather();
+            });
+
+        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['global']);
     }
 
     /**
-     * 获取所有预设字段的信息
+     * 获取预设字段的信息
      *
      * @return \Illuminate\Support\Collection
      */
     public static function takePresetFieldsInfo()
     {
-        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_FIELD);
+        return static::presetFields()->with('fieldParameters')->get()
+            ->map(function(NodeField $field) {
+                return $field->gather();
+            });
+
+        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['preset']);
     }
 
     /**
-     * 获取所有非全局字段
+     * 获取常规字段的信息
      *
      * @return \Illuminate\Support\Collection
      */
     public static function takeSelectableFieldsInfo()
     {
-        return static::takeFieldsInfo()->groupBy('preset_type')->get(static::SELECTABLE_FIELD);
+        return static::normalFields()->with('fieldParameters')->get()
+            ->map(function(NodeField $field) {
+                return $field->gather();
+            });
+
+        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['normal']);
     }
 
     /**

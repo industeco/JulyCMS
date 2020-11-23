@@ -59,6 +59,20 @@ class Catalog extends EntityBase implements GetNodesInterface
     ];
 
     /**
+     * 内建属性登记处
+     *
+     * @var array
+     */
+    protected static $columns = [
+        'id',
+        'is_necessary',
+        'label',
+        'description',
+        'created_at',
+        'updated_at',
+    ];
+
+    /**
      * 排序后的目录内容
      *
      * @var \July\Core\Node\CatalogTree
@@ -67,9 +81,12 @@ class Catalog extends EntityBase implements GetNodesInterface
 
     public static function default()
     {
-        return static::fetch('main');
+        return static::findOrFail('main');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function nodes()
     {
         return $this->belongsToMany(Node::class)
@@ -84,22 +101,22 @@ class Catalog extends EntityBase implements GetNodesInterface
     {
         $nodes = [];
         foreach ($this->nodes as $node) {
-            $values = $node->gather();
+            $values = $node->entityToArray();
             $values['parent_id'] = $node->pivot->parent_id;
             $values['prev_id'] = $node->pivot->prev_id;
             $values['path'] = $node->pivot->path;
             $nodes[] = $values;
         }
+
         return $nodes;
     }
 
     public static function allPositions()
     {
         $positions = CatalogNode::all()->groupBy('catalog_id')->toArray();
-        foreach (Catalog::all() as $catalog) {
-            $id = $catalog->getKey();
-            if (! isset($positions[$id])) {
-                $positions[$id] = [];
+        foreach (Catalog::query()->pluck('id') as $catalog_id) {
+            if (! isset($positions[$catalog_id])) {
+                $positions[$catalog_id] = [];
             }
         }
 
@@ -108,37 +125,40 @@ class Catalog extends EntityBase implements GetNodesInterface
 
     public function positions()
     {
-        return CatalogNode::where('catalog_id', $this->getKey())->get()->toArray();
+        return CatalogNode::query()->where('catalog_id', $this->getKey())->get()->toArray();
     }
 
-    public function pocketCatalogNodes()
+    public function retrieveNodePositions()
     {
-        $pocket = new Pocket($this);
-        $key = $pocket->key('nodes');
+        return CatalogNode::query()->where('catalog_id', $this->getKey())
+                ->get(['node_id','parent_id','prev_id','path'])->toArray();
 
-        if ($nodes = $pocket->get($key)) {
-            $nodes = $nodes->value;
-        } else {
-            $nodes = CatalogNode::where('catalog_id', $this->getKey())
-                ->get(['id','parent_id','prev_id','path'])->toArray();
+        // $pocket = new Pocket($this);
+        // $key = $pocket->key('nodes');
 
-            $pocket->put($key, $nodes);
-        }
+        // if ($nodes = $pocket->get($key)) {
+        //     $nodes = $nodes->value;
+        // } else {
+        //     $nodes = CatalogNode::query()->where('catalog_id', $this->getKey())
+        //         ->get(['id','parent_id','prev_id','path'])->toArray();
 
-        return $nodes;
+        //     $pocket->put($key, $nodes);
+        // }
+
+        // return $nodes;
     }
 
     public function removePosition(array $position)
     {
         $pocket = new Pocket($this);
-        $pocket->clear('nodes');
+        // $pocket->clear('nodes');
         $pocket->clear('treeNodes');
 
         // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
         $id = $this->getKey();
         CatalogNode::where([
             'catalog' => $id,
-            'content_id' => $position['id'],
+            'node_id' => $position['id'],
         ])->orWhere([
             ['catalog', '=', $id],
             ['path', 'like', '%/'.$position['id'].'/%'],
@@ -150,7 +170,7 @@ class Catalog extends EntityBase implements GetNodesInterface
     public function insertPosition(array $position)
     {
         $pocket = new Pocket($this);
-        $pocket->clear('nodes');
+        // $pocket->clear('nodes');
         $pocket->clear('treeNodes');
 
         // $position['catalog'] = $this->id;
@@ -186,7 +206,7 @@ class Catalog extends EntityBase implements GetNodesInterface
     public function updatePositions(array $positions)
     {
         $pocket = new Pocket($this);
-        $pocket->clear('nodes');
+        // $pocket->clear('nodes');
         $pocket->clear('treeNodes');
 
         $id = $this->getKey();
@@ -195,9 +215,9 @@ class Catalog extends EntityBase implements GetNodesInterface
 
         DB::table('catalog_node')->where('catalog_id', $id)->delete();
         foreach ($positions as $position) {
-            $position['catalog'] = $id;
-            $position = Arr::only($position, ['catalog','id','parent_id','prev_id','path']);
-            DB::table('catalog_content')->insert($position);
+            $position['catalog_id'] = $id;
+            $position = Arr::only($position, ['catalog_id','node_id','parent_id','prev_id','path']);
+            DB::table('catalog_node')->insert($position);
         }
 
         DB::commit();

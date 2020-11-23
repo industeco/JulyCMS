@@ -9,10 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use July\Core\Entity\EntityBase;
 use July\Core\Entity\EntityManager;
-use July\Core\Entity\ModelEntityBase;
 use July\Core\EntityField\Exceptions\InvalidHostEntityException;
 
-abstract class EntityFieldBase extends ModelEntityBase
+abstract class EntityFieldBase extends EntityBase
 {
     /**
      * 宿主实体的实体名
@@ -66,7 +65,7 @@ abstract class EntityFieldBase extends ModelEntityBase
      *
      * @throws \July\Core\EntityField\Exceptions\InvalidHostEntityException
      */
-    public function bindHostEntity(EntityBase $entity)
+    public function bindEntity(EntityBase $entity)
     {
         $class = EntityManager::resolveName(static::getHostEntityName());
         if ($class && $entity instanceof $class) {
@@ -93,11 +92,11 @@ abstract class EntityFieldBase extends ModelEntityBase
     public function getLangcode()
     {
         $host = $this->getHostEntity();
-        if ($host->exists) {
-            return $host->getLangcode();
+        if ($host->getLangcode()) {
+            $this->contentLangcode = $host->getLangcode();
         }
 
-        return $this->contentLangcode;
+        return $this->contentLangcode ?: langcode('content');
     }
 
     /**
@@ -141,6 +140,8 @@ abstract class EntityFieldBase extends ModelEntityBase
             return $item->langcode.'|'.$item->bundle_name;
         });
 
+        // return $fieldParameters;
+
         foreach ($keys as $key) {
             if ($parameters = $fieldParameters->get($key)) {
                 return $parameters->parameters;
@@ -153,21 +154,28 @@ abstract class EntityFieldBase extends ModelEntityBase
     /**
      * 收集实体的常用属性组成数组
      *
+     * @param  array $keys 限定的列名
      * @return array
      */
-    public function gather()
+    public function gather(array $keys = ['*'])
     {
-        $data = $this->attributesToArray();
-        $data['delta'] = 0;
+        $attributes = $this->entityToArray();
+        $attributes['delta'] = 0;
         if ($pivot = $this->pivot) {
-            $data['label'] = $pivot->label ?? $data['label'];
-            $data['description'] = $pivot->description ?? $data['description'];
-            $data['delta'] = (int) $pivot->delta;
+            $attributes['label'] = $pivot->label ?? $attributes['label'];
+            $attributes['description'] = $pivot->description ?? $attributes['description'];
+            $attributes['delta'] = (int) $pivot->delta;
         }
 
-        $data['parameters'] = $this->getParameters();
+        if ($keys && !in_array('*', $keys)) {
+            $attributes = Arr::only($attributes, $keys);
+        }
 
-        return $data;
+        if (in_array('*', $keys) || in_array('parameters', $keys)) {
+            $attributes['parameters'] = $this->getParameters();
+        }
+
+        return $attributes;
     }
 
     /**
@@ -175,9 +183,9 @@ abstract class EntityFieldBase extends ModelEntityBase
      *
      * @return string
      */
-    public function getTableName()
+    public function getFieldTable()
     {
-        return static::getHostEntityName().'__'.$this->getEntityKey();
+        return static::getHostEntityName().'__'.$this->getEntityId();
     }
 
     /**
@@ -204,19 +212,21 @@ abstract class EntityFieldBase extends ModelEntityBase
      * 一组常用量
      *
      * @return array
+     *
+     * @throws \July\Core\EntityField\Exceptions\InvalidHostEntityException
      */
     protected function sharedVariables()
     {
-        if (!$this->hostEntity || !$this->hostEntity->exists) {
-            throw new InvalidHostEntityException;
+        try {
+            return [
+                $this->getFieldTable(),
+                $this->getHostForeignKey(),
+                $this->hostEntity->getEntityId(),
+                $this->hostEntity->getLangcode(),
+            ];
+        } catch (\Throwable $th) {
+            throw new InvalidHostEntityException($th->getMessage());
         }
-
-        return [
-            $this->getTableName(),
-            $this->getHostForeignKey(),
-            $this->hostEntity->getEntityKey(),
-            $this->hostEntity->getLangcode(),
-        ];
     }
 
     /**
@@ -227,22 +237,22 @@ abstract class EntityFieldBase extends ModelEntityBase
      */
     public function setValue($value)
     {
-        list($table, $foreignKey, $entityKey, $langcode) = $this->sharedVariables();
+        list($table, $foreignKey, $entityId, $langcode) = $this->sharedVariables();
 
         // 清除字段值缓存
-        $cachekey = join('/', [$entityKey, $langcode, 'value']);
-        Pocket::create($this)->clear($cachekey);
+        $cachekey = join('/', [$entityId, $langcode, 'value']);
+        Pocket::make($this)->clear($cachekey);
 
         DB::beginTransaction();
 
         // 删除旧记录
-        DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityKey, $langcode]);
+        DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityId, $langcode]);
 
         // 插入新记录
         if ($records = $this->getFieldType()->toRecords($value)) {
             foreach ($records as $index => $record) {
                 DB::table($table)->insert($record + [
-                    $foreignKey => $entityKey,
+                    $foreignKey => $entityId,
                     'langcode' => $langcode,
                     'delta' => $index,
                 ]);
@@ -259,11 +269,15 @@ abstract class EntityFieldBase extends ModelEntityBase
      */
     public function getValue()
     {
-        list($table, $foreignKey, $entityKey, $langcode) = $this->sharedVariables();
+        if ($this->hostEntity && !$this->hostEntity->exists) {
+            return $this->getFieldType()->getDefaultValue();
+        }
+
+        list($table, $foreignKey, $entityId, $langcode) = $this->sharedVariables();
 
         // 尝试从缓存获取值
         $pocket = new Pocket($this);
-        $cachekey = join('/', [$entityKey, $langcode, 'value']);
+        $cachekey = join('/', [$entityId, $langcode, 'value']);
         if ($value = $pocket->get($cachekey)) {
             return $value->value();
         }
@@ -271,7 +285,7 @@ abstract class EntityFieldBase extends ModelEntityBase
         $value = null;
 
         // 从数据库获取值
-        $records = DB::select("SELECT * FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=? ORDER BY `delta`", [$entityKey, $langcode]);
+        $records = DB::select("SELECT * FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=? ORDER BY `delta`", [$entityId, $langcode]);
         if (! empty($records)) {
             // 借助字段类型，将数据库记录重新组合为字段值
             $value = $this->getFieldType()->toValue(array_map(function($record) {
@@ -292,13 +306,13 @@ abstract class EntityFieldBase extends ModelEntityBase
      */
     public function deleteValue()
     {
-        list($table, $foreignKey, $entityKey, $langcode) = $this->sharedVariables();
+        list($table, $foreignKey, $entityId, $langcode) = $this->sharedVariables();
 
         // 清除字段值缓存
-        $cachekey = join('/', [$entityKey, $langcode, 'value']);
-        Pocket::create($this)->clear($cachekey);
+        $cachekey = join('/', [$entityId, $langcode, 'value']);
+        Pocket::make($this)->clear($cachekey);
 
-        DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityKey, $langcode]);
+        DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityId, $langcode]);
     }
 
     /**
@@ -314,18 +328,13 @@ abstract class EntityFieldBase extends ModelEntityBase
             $conditions[] = [$column['name'], 'like', '%'.$needle.'%', 'or'];
         }
 
-        $field = [
-           'id' => $this->getEntityKey(),
-           'field_type_id' => $this->getAttribute('field_type_id'),
-           'label' => $this->getAttribute('label'),
-           'description' => $this->getAttribute('description'),
-        ];
+        $field = $this->gather(['id', 'field_type_id', 'label', 'description']);
 
         // 实体在存储表中的外键名
         $foreignKey = $this->getHostForeignKey();
 
         $results = [];
-        foreach (DB::table($this->getTableName())->where($conditions)->get() as $record) {
+        foreach (DB::table($this->getFieldTable())->where($conditions)->get() as $record) {
             $record = (array) $record;
             $key = join('/', [$record[$foreignKey], $field['id'], $record['langcode'] ?? 'und']);
             if (! isset($results[$key])) {
@@ -347,7 +356,7 @@ abstract class EntityFieldBase extends ModelEntityBase
     public function tableUp()
     {
         // 获取独立表表名，并判断是否已存在
-        $tableName = $this->getTableName();
+        $tableName = $this->getFieldTable();
         if (Schema::hasTable($tableName)) {
             return;
         }
@@ -374,7 +383,7 @@ abstract class EntityFieldBase extends ModelEntityBase
             $table->unique([$foreignKey, 'langcode', 'delta']);
         });
 
-        // $this->getFieldAccessor()->tableUp();
+        // $this->getFieldLinkage()->tableUp();
     }
 
     /**
@@ -384,7 +393,7 @@ abstract class EntityFieldBase extends ModelEntityBase
      */
     public function tableDown()
     {
-        Schema::dropIfExists($this->getTableName());
+        Schema::dropIfExists($this->getFieldTable());
     }
 
     /**

@@ -10,18 +10,18 @@ use Symfony\Component\Finder\Finder;
 final class EntityManager
 {
     /**
-     * 其它实体
-     *
-     * @var array
-     */
-    protected static $entities = [];
-
-    /**
-     * 核心实体
+     * 核心实体类
      *
      * @var array
      */
     protected static $coreEntities = [];
+
+    /**
+     * 其它实体类
+     *
+     * @var array
+     */
+    protected static $entities = [];
 
     /**
      * 登记实体类（非核心）
@@ -53,76 +53,17 @@ final class EntityManager
     }
 
     /**
-     * 判断是否实体对象
-     *
-     * @param  object $instance
-     * @return bool
-     */
-    public static function isEntity($instance)
-    {
-        return $instance && $instance instanceof EntityInterface;
-    }
-
-    /**
-     * 判断是否实体类
-     *
-     * @param string $class
-     * @return bool
-     */
-    public static function isEntityClass($class)
-    {
-        if (! class_exists($class)) {
-            return false;
-        }
-
-        $cls = new \ReflectionClass($class);
-        return $cls->isInstantiable() && $cls->implementsInterface(EntityInterface::class);
-    }
-
-    /**
-     * 从实体名解析出实体类，或 null
-     *
-     * @param  string  $entityName 实体名（小写 + 下划线）
-     * @return string|null
-     */
-    public static function resolveName(string $name)
-    {
-        if (empty(static::$coreEntities)) {
-            static::discoverCoreEntities();
-        }
-
-        return static::$coreEntities[$name] ?? static::$entities[$name] ?? null;
-    }
-
-    /**
-     * 从实体路径解析出实体对象，失败则返回 null
-     *
-     * @param  string  $path 实体路径
-     * @return \July\Core\Entity\EntityInterface|null
-     */
-    public static function resolvePath(string $path)
-    {
-        [$name, $id] = explode('/', $path);
-
-        if ($entity = static::resolveName($name)) {
-            return $entity::find($id);
-        }
-
-        return null;
-    }
-
-    /**
-     * 从文件系统（或缓存）找出所有实体类
+     * 登记核心实体类
      *
      * @param  bool $force 强制重新查找（通过清除缓存实现）
      * @return void
      */
-    public static function discoverCoreEntities($force = false)
+    public static function registerCoreEntities($force = false)
     {
         $cachekey = 'core_entities';
 
         if ($force) {
-            Pocket::create(static::class)->clear($cachekey);
+            Pocket::make(static::class)->clear($cachekey);
         }
 
         $path = base_path('july/Core');
@@ -183,6 +124,65 @@ final class EntityManager
     }
 
     /**
+     * 从实体名解析出实体类，或 null
+     *
+     * @param  string $entityName 实体名（小写 + 下划线）
+     * @return string|null
+     */
+    public static function resolveName(string $name)
+    {
+        if (empty(static::$coreEntities)) {
+            static::registerCoreEntities();
+        }
+
+        return static::$coreEntities[$name] ?? static::$entities[$name] ?? null;
+    }
+
+    /**
+     * 从实体路径解析出实体对象，失败则返回 null
+     *
+     * @param  string  $path 实体路径
+     * @return \July\Core\Entity\EntityInterface|null
+     */
+    public static function resolvePath(string $path)
+    {
+        [$name, $id] = explode('/', $path);
+
+        if ($entity = static::resolveName($name)) {
+            return $entity::find($id);
+        }
+
+        return null;
+    }
+
+    /**
+     * 判断是否实体对象
+     *
+     * @param  object $instance
+     * @return bool
+     */
+    public static function isEntity($instance)
+    {
+        return $instance && $instance instanceof EntityInterface;
+    }
+
+    /**
+     * 判断是否实体类
+     *
+     * @param string $class
+     * @return bool
+     */
+    public static function isEntityClass($class)
+    {
+        if (! class_exists($class)) {
+            return false;
+        }
+
+        $cls = new \ReflectionClass($class);
+        return $cls->isInstantiable() && $cls->implementsInterface(EntityInterface::class);
+    }
+
+    /**
      * 将路径转化为类名
      *
      * @param  string $path 文件路径
@@ -192,18 +192,4 @@ final class EntityManager
     {
         return str_replace('/', '\\', preg_replace('/\.php$/i', '', $path));
     }
-
-    // /**
-    //  * 解析实体路径，返回实体名和实体 id
-    //  *
-    //  * @param  string $path 实体路径（格式：实体名/实体 id）
-    //  * @return array
-    //  */
-    // public static function resolveEntityPath(string $path)
-    // {
-    //     $path = explode('/', $path);
-    //     $id = array_pop($path);
-    //     $name = join('.', $path);
-    //     return [$name, $id];
-    // }
 }

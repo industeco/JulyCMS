@@ -211,22 +211,22 @@ class Archive
             $finder = Finder::create()->in($dir);
 
             switch ($pattern) {
-                case '*':   // 目录下的所有文件和文件夹
+                case '*':   // 目录下的文件和文件夹
                     return $finder->depth(0);
 
-                case '**':  // 目录和子目录下的所有文件和文件夹
+                case '**':  // 目录下的所有文件和文件夹
                     return $finder;
 
-                case '*/':  // 目录下的所有文件夹
+                case '*/':  // 目录下的文件夹
                     return $finder->directories()->depth(0);
 
-                case '**/': // 目录和子目录下的所有文件夹
+                case '**/': // 目录下的所有文件夹
                     return $finder->directories();
 
-                case '*.*': // 目录下的所有文件
+                case '*.*': // 目录下的文件
                     return $finder->files()->depth(0);
 
-                case '**.*':    // 目录和子目录下的所有文件
+                case '**.*':    // 目录下的所有文件
                     return $finder->files();
             }
 

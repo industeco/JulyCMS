@@ -25,7 +25,7 @@ class Text extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getColumns(?string $fieldName = null, ?array $parameters = []): array
+    public function getColumns(?string $fieldName = null, ?array $parameters = [])
     {
         $parameters = $parameters ?: $this->field->getParameters();
         $length = $parameters['maxlength'] ?? 0;
@@ -48,7 +48,7 @@ class Text extends DefinitionBase
     /**
      * {@inheritdoc}
      */
-    public function getRules(?array $parameters = []): array
+    public function getRules(?array $parameters = [])
     {
         $parameters = $parameters ?: $this->field->getParameters();
 

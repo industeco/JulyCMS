@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use July\Core\Config\PathAlias;
+use July\Core\Entity\EntityManager;
 use July\Core\Node\Node;
+use July\Utils\GoogleSitemap;
 
 class AnyPage extends Controller
 {
@@ -32,17 +35,15 @@ class AnyPage extends Controller
             if (strpos($url, $langcode.'/') === 0) {
                 $url = substr($url, strlen($langcode.'/'));
             }
-        } else {
-            if (strpos($url, $langcode.'/') === 0 || $langcode !== langcode('frontend.default')) {
-                abort(404);
-            }
+        } elseif ($langcode !== langcode('frontend.default') || strpos($url, $langcode.'/') === 0) {
+            abort(404);
         }
 
         if ($url === 'sitemap.xml') {
             return $this->getGoogleSitemap($langcode);
         }
 
-        $url = $this->completeUrl($url);
+        $url = $this->normalizeUrl($url);
         if ($url === '404.html') {
             abort(404);
         }
@@ -62,13 +63,13 @@ class AnyPage extends Controller
             return $disk->get($file);
         }
 
-        $content = build_google_sitemap($langcode);
+        $content = GoogleSitemap::build($langcode);
         $disk->put($file, $content);
 
         return $content;
     }
 
-    protected function completeUrl($url)
+    protected function normalizeUrl($url)
     {
         if ($url === '') {
             return 'index.html';
@@ -87,18 +88,17 @@ class AnyPage extends Controller
 
     protected function getHtml($url, $langcode)
     {
-        $file = 'pages/'.$langcode.'/'.$url;
+        $entity = PathAlias::findEntityByAlias('/'.$url);
+        if (! $entity) {
+            return null;
+        }
+
+        $file = 'pages/'.$langcode.'/'.$entity->getEntityPath();
         $disk = Storage::disk('storage');
         if ($disk->exists($file)) {
             return $disk->get($file);
         }
 
-        if ($node = Node::findByUrl($url, $langcode)) {
-            if ($html = $node->getHtml($langcode)) {
-                return $html;
-            }
-        }
-
-        return null;
+        return $entity->translateTo($langcode)->render();
     }
 }
