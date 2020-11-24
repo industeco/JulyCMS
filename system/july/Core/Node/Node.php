@@ -5,6 +5,7 @@ namespace July\Core\Node;
 use App\Utils\Arr;
 use App\Utils\Html;
 use App\Utils\Pocket;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Core\Config\PartialViewLinkage;
@@ -368,6 +369,11 @@ class Node extends EntityBase
             foreach ($node->collectFields() as $field) {
                 $field->deleteValue();
             }
+            Cache::forget($node->getHtmlCacheKey());
+        });
+
+        static::updated(function(Node $node) {
+            Cache::forget($node->getHtmlCacheKey());
         });
     }
 
@@ -400,15 +406,14 @@ class Node extends EntityBase
 
         config()->set('render_langcode', null);
 
-        //
-        $html = preg_replace('/\n\s+/', "\n", $html);
+        return preg_replace('/\n\s+/', "\n", $html);
 
-        // 写入文件
-        if ($data['url']) {
-            Storage::disk('storage')->put('pages/'.$langcode.'/'.$path, $html);
-        }
+        // // 写入文件
+        // if ($data['url']) {
+        //     Storage::disk('storage')->put('pages/'.$langcode.'/'.$path, $html);
+        // }
 
-        return $html;
+        // return $html;
     }
 
     /**
@@ -696,40 +701,4 @@ class Node extends EntityBase
     {
         return rtrim(config('app.url'), '/').$this->url;
     }
-
-
-    // public static function findByUrl($url, $langcode = null)
-    // {
-    //     $langcode = $langcode ?: langcode('node_value.default');
-    //     $url = '/'.ltrim($url, '/');
-
-    //     $record = DB::table('node__url')->where([
-    //         ['url_value', $url],
-    //         ['langcode', $langcode],
-    //     ])->first();
-
-    //     if ($record) {
-    //         return static::find($record->node_id);
-    //     }
-
-    //     return null;
-    // }
-
-    // public function getHtml($langcode = null)
-    // {
-    //     $langcode = $langcode ?: $this->langcode;
-
-    //     $values = $this->cacheGetValues($langcode);
-    //     if ($url = $values['url'] ?? null) {
-    //         $file = 'pages/'.$langcode.$url;
-    //         $disk = Storage::disk('storage');
-    //         if ($disk->exists($file)) {
-    //             return $disk->get($file);;
-    //         }
-
-    //         return $this->render(null, $langcode);
-    //     }
-
-    //     return null;
-    // }
 }

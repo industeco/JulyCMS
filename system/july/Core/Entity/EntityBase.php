@@ -6,6 +6,7 @@ use App\Model as AppModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use July\Core\Config\PartialView;
 use July\Core\Config\PathAlias;
@@ -721,6 +722,37 @@ abstract class EntityBase extends AppModel implements EntityInterface
     public function render(Twig $twig = null)
     {
         return null;
+    }
+
+    /**
+     * 实体渲染结果的缓存键
+     *
+     * @return string
+     */
+    public function getHtmlCacheKey()
+    {
+        return 'entity_html:'.$this->getEntityPath().'/'.$this->getLangcode();
+    }
+
+    /**
+     * 获取实体渲染结果
+     *
+     * @return string
+     */
+    public function getHtml()
+    {
+        $cachekey = $this->getHtmlCacheKey();
+
+        if ($html = Cache::get($cachekey)) {
+            return $html;
+        }
+
+        if ($html = $this->render()) {
+            Cache::put($cachekey, $html);
+            return $html;
+        }
+
+        return '';
     }
 
     /**

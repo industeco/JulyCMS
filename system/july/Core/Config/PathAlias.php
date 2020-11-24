@@ -59,7 +59,7 @@ class PathAlias extends EntityBase
      * 根据别名查找实体
      *
      * @param string $alias
-     * @return \July\Core\Entity\EntityInterface|null
+     * @return \July\Core\Entity\EntityBase|null
      */
     public static function findEntityByAlias(string $alias)
     {

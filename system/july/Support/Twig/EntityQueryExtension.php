@@ -42,7 +42,7 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('catalogs', [$this, 'catalogs']),
 
             // 获取标签集
-            new TwigFunction('tags', [$this, 'tags']),
+            // new TwigFunction('tags', [$this, 'tags']),
         ];
     }
 

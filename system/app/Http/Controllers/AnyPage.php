@@ -88,17 +88,10 @@ class AnyPage extends Controller
 
     protected function getHtml($url, $langcode)
     {
-        $entity = PathAlias::findEntityByAlias('/'.$url);
-        if (! $entity) {
-            return null;
+        if ($entity = PathAlias::findEntityByAlias('/'.$url)) {
+            return $entity->translateTo($langcode)->getHtml();
         }
 
-        $file = 'pages/'.$langcode.'/'.$entity->getEntityPath();
-        $disk = Storage::disk('storage');
-        if ($disk->exists($file)) {
-            return $disk->get($file);
-        }
-
-        return $entity->translateTo($langcode)->render();
+        return null;
     }
 }
