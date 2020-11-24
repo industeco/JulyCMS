@@ -24,26 +24,6 @@ class NodeFieldSeeder extends SeederBase
     {
         $records = [
             // [
-            //     'id' => 'catalog_positions',
-            //     'field_type_id' => 'tags',
-            //     'is_necessary' => true,
-            //     'is_searchable' => false,
-            //     'preset_type' => 2,
-            //     'global_group' => 'catalog',
-            //     'label' => '节点目录',
-            //     'description' => null,
-            // ],
-            // [
-            //     'id' => 'tags',
-            //     'field_type_id' => 'tags',
-            //     'is_necessary' => true,
-            //     'is_searchable' => false,
-            //     'preset_type' => 2,
-            //     'global_group' => 'tags',
-            //     'label' => '标签',
-            //     'description' => null,
-            // ],
-            // [
             //     'id' => 'url',
             //     'field_type_id' => 'text',
             //     'is_necessary' => true,
@@ -173,22 +153,22 @@ class NodeFieldSeeder extends SeederBase
     protected function getFieldParametersRecords()
     {
         $records = [
-            [
-                'field_id' => 'url',
-                'parameters' => [
-                    'maxlength' => 255,
-                    'pattern' => 'url',
-                    'placeholder' => '/index.html',
-                ],
-            ],
-            [
-                'field_id' => 'template',
-                'parameters' => [
-                    'maxlength' => 200,
-                    'pattern' => 'twig',
-                    'placeholder' => '/home.twig',
-                ],
-            ],
+            // [
+            //     'field_id' => 'url',
+            //     'parameters' => [
+            //         'maxlength' => 255,
+            //         'pattern' => 'url',
+            //         'placeholder' => '/index.html',
+            //     ],
+            // ],
+            // [
+            //     'field_id' => 'template',
+            //     'parameters' => [
+            //         'maxlength' => 200,
+            //         'pattern' => 'twig',
+            //         'placeholder' => '/home.twig',
+            //     ],
+            // ],
             [
                 'field_id' => 'meta_title',
                 'parameters' => [

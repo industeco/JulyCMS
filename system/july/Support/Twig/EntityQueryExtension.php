@@ -7,7 +7,7 @@ use July\Core\Node\Catalog;
 use July\Core\Node\CatalogSet;
 use July\Core\Node\NodeSet;
 use July\Core\Node\NodeTypeSet;
-use July\Core\Taxonomy\TagSet;
+use July\Core\Taxonomy\TermSet;
 use Twig\TwigFunction;
 use Twig\TwigFilter;
 use Twig\Extension\AbstractExtension;
@@ -99,11 +99,8 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      * 获取节点集
      *
      * @param array $args 用于获取节点的参数，可以是：
-     *  - 节点
      *  - 节点 id
-     *  - 节点类型集
-     *  - 节点目录集
-     *  - 标签集
+     *  - 节点对象
      *
      * @return \July\Core\Node\NodeSet
      */
@@ -120,8 +117,8 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      * 获取类型集
      *
      * @param array $args 用于获取节点类型的参数，可以是：
-     *  - 节点类型对象
      *  - 节点类型 id
+     *  - 节点类型对象
      *
      * @return \July\Core\Node\NodeTypeSet
      */
@@ -138,8 +135,8 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      * 获取节点树集
      *
      * @param array $args 用于获取节点目录的参数，可以是：
-     *  - 节点目录
      *  - 节点目录 id
+     *  - 节点目录对象
      *
      * @return \July\Core\Node\CatalogSet
      */
@@ -152,21 +149,21 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
         return CatalogSet::find($args);
     }
 
-    /**
-     * 获取标签集
-     *
-     * @param array $args 用于获取标签的参数，可以是：
-     *  - 标签
-     *  - 标签名
-     *
-     * @return \July\Core\Taxonomy\TagSet
-     */
-    public function tags(...$args)
-    {
-        $args = normalize_args($args);
-        if (empty($args)) {
-            return TagSet::findAll();
-        }
-        return TagSet::find($args);
-    }
+    // /**
+    //  * 获取标签集
+    //  *
+    //  * @param array $args 用于获取标签的参数，可以是：
+    //  *  - 标签
+    //  *  - 标签名
+    //  *
+    //  * @return \July\Core\Taxonomy\TermSet
+    //  */
+    // public function tags(...$args)
+    // {
+    //     $args = normalize_args($args);
+    //     if (empty($args)) {
+    //         return TermSet::findAll();
+    //     }
+    //     return TermSet::find($args);
+    // }
 }

@@ -9,34 +9,34 @@ class NodeSet extends EntitySetBase
 {
     protected static $entity = Node::class;
 
-    protected static function collectMany(array $args)
-    {
-        $items = [];
-        foreach ($args as $arg) {
-            // 节点 id
-            if (is_numeric($arg)) {
-                if ($node = Node::carry($arg)) {
-                    $items[$node->id] = $node;
-                }
-            }
+    // protected static function collectMany(array $args)
+    // {
+    //     $items = [];
+    //     foreach ($args as $arg) {
+    //         // 节点 id
+    //         if (is_numeric($arg)) {
+    //             if ($node = Node::carry($arg)) {
+    //                 $items[$node->id] = $node;
+    //             }
+    //         }
 
-            // 节点对象
-            elseif ($arg instanceof Node) {
-                $items[$arg->id] = $arg;
-            }
+    //         // 节点对象
+    //         elseif ($arg instanceof Node) {
+    //             $items[$arg->id] = $arg;
+    //         }
 
-            elseif ($arg instanceof static) {
-                $items = array_merge($items, $arg->all());
-            }
+    //         // elseif ($arg instanceof static) {
+    //         //     $items = array_merge($items, $arg->all());
+    //         // }
 
-            // 类型集，标签集等对象
-            elseif ($arg instanceof GetNodesInterface) {
-                $items = array_merge($items, $arg->get_nodes()->keyBy('id')->all());
-            }
-        }
+    //         // // 类型集，标签集等对象
+    //         // elseif ($arg instanceof GetNodesInterface) {
+    //         //     $items = array_merge($items, $arg->get_nodes()->keyBy('id')->all());
+    //         // }
+    //     }
 
-        return (new static($items))->keyBy('id');
-    }
+    //     return (new static($items))->keyBy('id');
+    // }
 
     /**
      * 在指定的树中，获取当前节点集的直接子节点

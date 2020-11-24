@@ -44,9 +44,10 @@ abstract class EntitySetBase extends Collection
 
         $entities = [];
         foreach ($args as $arg) {
-            if ($arg instanceof static) {
-                $entities = array_merge($entities, $arg->all());
-            } elseif (is_object($arg) && ($arg instanceof $entity)) {
+            // if ($arg instanceof static) {
+            //     $entities = array_merge($entities, $arg->all());
+            // } else
+            if (is_object($arg) && ($arg instanceof $entity)) {
                 $entities[$arg->getKey()] = $arg;
             } elseif ($instance = $entity::carry($arg)) {
                 $entities[$instance->getKey()] = $instance;

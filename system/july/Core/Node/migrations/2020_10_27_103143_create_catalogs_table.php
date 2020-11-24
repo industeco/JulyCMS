@@ -49,6 +49,9 @@ class CreateCatalogsTable extends Migration
 
             // 路径
             $table->string('path')->default('/');
+
+            // 每个节点在一个目录中最多出现一次
+            $table->unique(['catalog_id', 'node_id']);
         });
     }
 
