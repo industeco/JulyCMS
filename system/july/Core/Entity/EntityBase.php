@@ -716,22 +716,11 @@ abstract class EntityBase extends AppModel implements EntityInterface
     /**
      * 渲染实体
      *
-     * @param \Twig\Environment $twig
      * @return string|null
      */
-    public function render(Twig $twig = null)
+    public function render()
     {
         return null;
-    }
-
-    /**
-     * 实体渲染结果的缓存键
-     *
-     * @return string
-     */
-    public function getHtmlCacheKey()
-    {
-        return 'entity_html:'.$this->getEntityPath().'/'.$this->getLangcode();
     }
 
     /**
@@ -749,10 +738,21 @@ abstract class EntityBase extends AppModel implements EntityInterface
 
         if ($html = $this->render()) {
             Cache::put($cachekey, $html);
+
             return $html;
         }
 
         return '';
+    }
+
+    /**
+     * 实体渲染结果的缓存键
+     *
+     * @return string
+     */
+    public function getHtmlCacheKey()
+    {
+        return 'entity_html:'.$this->getEntityPath().'/'.$this->getLangcode();
     }
 
     /**

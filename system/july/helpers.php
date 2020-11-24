@@ -15,22 +15,22 @@ if (! function_exists('july_path')) {
     }
 }
 
-if (! function_exists('twig')) {
-    function twig($path = null, $debug = false)
-    {
-        $loader = new \Twig\Loader\FilesystemLoader($path ?: 'template', frontend_path());
-        if ($debug) {
-            $twig = new \Twig\Environment($loader, ['debug' => true]);
-            $twig->addExtension(new \Twig\Extension\DebugExtension);
-        } else {
-            $twig = new \Twig\Environment($loader);
-        }
+// if (! function_exists('twig')) {
+//     function twig($path = null, $debug = false)
+//     {
+//         $loader = new \Twig\Loader\FilesystemLoader($path ?: 'template', frontend_path());
+//         if ($debug) {
+//             $twig = new \Twig\Environment($loader, ['debug' => true]);
+//             $twig->addExtension(new \Twig\Extension\DebugExtension);
+//         } else {
+//             $twig = new \Twig\Environment($loader);
+//         }
 
-        $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
+//         $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
 
-        return $twig;
-    }
-}
+//         return $twig;
+//     }
+// }
 
 if (! function_exists('variablize')) {
     function variablize(string $str, string $replacement = '_')

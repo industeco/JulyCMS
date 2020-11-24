@@ -20,7 +20,19 @@ class JulyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton('twig', function () {
+            $loader = new \Twig\Loader\FilesystemLoader('template', frontend_path());
+            if (config('app.debug')) {
+                $twig = new \Twig\Environment($loader, ['debug' => true]);
+                $twig->addExtension(new \Twig\Extension\DebugExtension);
+            } else {
+                $twig = new \Twig\Environment($loader);
+            }
+
+            $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
+
+            return $twig;
+        });
     }
 
     /**

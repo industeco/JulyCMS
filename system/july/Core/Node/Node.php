@@ -16,7 +16,6 @@ use July\Core\EntityField\FieldType;
 use July\Core\Node\CatalogSet;
 use July\Core\Taxonomy\Term;
 use July\Core\Taxonomy\TermSet;
-use Twig\Environment as Twig;
 
 class Node extends EntityBase
 {
@@ -380,26 +379,25 @@ class Node extends EntityBase
     /**
      * 生成页面
      *
-     * @param \Twig\Environment $twig
      * @return string|null
      */
-    public function render(Twig $twig = null)
+    public function render()
     {
         $tpl = $this->template();
         if (! $tpl) {
             return null;
         }
 
-        $langcode = $this->getLangcode();
-        $path = $this->getEntityPath();
         $data = $this->gather();
 
-        $twig = $twig ?? $twig = twig();
+        /** @var \Twig\Environment */
+        $twig = app('twig');
+
         $twig->addGlobal('_node', $this);
         $twig->addGlobal('_path', $this->get_path());
-        $twig->addGlobal('_canonical', $this->getCanonical($data['url'] ?? '/'.$path));
+        $twig->addGlobal('_canonical', $this->getCanonical($data['url'] ?? '/'.$this->getEntityPath()));
 
-        config()->set('render_langcode', $langcode);
+        config()->set('render_langcode', $this->getLangcode());
 
         // 生成 html
         $html = $twig->render($tpl, $data);
@@ -407,13 +405,6 @@ class Node extends EntityBase
         config()->set('render_langcode', null);
 
         return preg_replace('/\n\s+/', "\n", $html);
-
-        // // 写入文件
-        // if ($data['url']) {
-        //     Storage::disk('storage')->put('pages/'.$langcode.'/'.$path, $html);
-        // }
-
-        // return $html;
     }
 
     /**

@@ -261,8 +261,6 @@ class NodeController extends Controller
             $nodes = Node::all();
         }
 
-        $twig = twig('template', true);
-
         // 多语言生成
         if (config('jc.language.multiple')) {
             $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
@@ -274,7 +272,7 @@ class NodeController extends Controller
         foreach ($nodes as $node) {
             $result = [];
             foreach ($langs as $langcode) {
-                if ($node->render($twig, $langcode)) {
+                if ($node->render()) {
                     $result[$langcode] = true;
                 } else {
                     $result[$langcode] = false;
