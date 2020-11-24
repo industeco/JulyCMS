@@ -45,23 +45,6 @@ interface EntityFieldInterface extends EntityInterface
     public function getBoundEntity();
 
     /**
-     * 注册字段存取器
-     *
-     * @param  string $fieldId 字段 id
-     * @param  string $accessor 存取器类名
-     * @return void
-     */
-    public static function registerFieldLinkage(string $fieldId, string $accessor);
-
-    /**
-     * 获取字段存取器，存取器专司字段值的存储和读取
-     *
-     * @param  \July\Core\Entity\EntityBase|null $entity
-     * @return \July\Core\EntityField\FieldLinkageInterface
-     */
-    public function getFieldLinkage(EntityBase $entity = null);
-
-    /**
      * 设置字段值
      *
      * @param  mixed $value

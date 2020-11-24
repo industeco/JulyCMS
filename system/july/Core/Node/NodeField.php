@@ -161,11 +161,22 @@ class NodeField extends EntityFieldBase
     }
 
     /**
+     * 限定仅查询全局预设字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchableFields($query)
+    {
+        return $query->where('is_searchable', true);
+    }
+
+    /**
      * 获取所有字段的信息（包含参数）
      *
      * @return \Illuminate\Support\Collection
      */
-    public static function takeFieldsInfo()
+    public static function retrieveFieldsInfo()
     {
         return static::query()->with('fieldParameters')->get()
             ->map(function(NodeField $field) {
@@ -210,7 +221,7 @@ class NodeField extends EntityFieldBase
                 return $field->gather();
             });
 
-        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['global']);
+        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['global']);
     }
 
     /**
@@ -225,7 +236,7 @@ class NodeField extends EntityFieldBase
                 return $field->gather();
             });
 
-        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['preset']);
+        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['preset']);
     }
 
     /**
@@ -240,7 +251,7 @@ class NodeField extends EntityFieldBase
                 return $field->gather();
             });
 
-        // return static::takeFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['normal']);
+        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['normal']);
     }
 
     /**

@@ -27,7 +27,7 @@ class CreateNodeFieldNodeTypeTable extends Migration
             $table->unsignedTinyInteger('delta')->default(0);
 
             // 搜索权重
-            $table->unsignedDecimal('weight')->nullable();
+            // $table->unsignedDecimal('weight')->nullable();
 
             // 标签
             $table->string('label', 32)->nullable();

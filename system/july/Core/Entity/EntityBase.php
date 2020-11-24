@@ -3,7 +3,6 @@
 namespace July\Core\Entity;
 
 use App\Model as AppModel;
-use App\Traits\FetchModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -637,18 +636,18 @@ abstract class EntityBase extends AppModel implements EntityInterface
     }
 
     /**
-     * 动态获取实体属性
+     * Get an attribute from the model.
      *
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key)
+    public function getAttribute($key)
     {
         if (! $key) {
             return;
         }
 
-        return $this->getEntityAttribute($key) ?? $this->getAttribute($key);
+        return $this->getEntityAttribute($key) ?? parent::getAttribute($key);
     }
 
     /**

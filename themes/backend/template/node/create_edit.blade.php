@@ -81,15 +81,13 @@
 @section('script')
 
 {{-- 通过 script:template 保存 html 内容 --}}
-{{--
-@foreach ($fields as $field)
-  @if ($field['field_type_id']=='html')
-  <script type="text/template" id="field_value__{{ $field['id'] }}">
-    {!! $field["value"] !!}
-  </script>
-  @endif
+@foreach ($node as $key => $value)
+@if (is_string($value) && strlen($value) > 255)
+<script type="text/template" id="field__{{ $key }}">
+  {!! $value !!}
+</script>
+@endif
 @endforeach
---}}
 
 <script>
   window.showMediasWindow = function() {
@@ -120,26 +118,29 @@
     app.recieveMediaUrl(url)
   }
 
+  function recieveFieldValue(id) {
+    return document.getElementById('field__'+id).innerHTML;
+  }
+
   const node = {
     @foreach ($node as $key => $value)
     @if (is_null($value))
     {{ $key }}: null,
+    @elseif (is_numeric($value))
+    {{ $key }}: $value,
+    @elseif (is_string($value) && strlen($value) > 255)
+    {{ $key }}: recieveFieldValue('{{ $value }}'),
     @else
     {{ $key }}: Base64.decode("{{ base64_encode($value) }}"),
     @endif
     @endforeach
   };
 
-  // function getHtmlFieldValue(field) {
-  //   return document.getElementById('field_value__'+field).innerHTML;
-  // }
-
   let app = new Vue({
     el: '#main_content',
     data() {
 
       var isUniqueUrl = function(rule, value, callback) {
-        console.log('isUniqueUrl');
         if (!value || !value.length) {
           callback();
         } else {
@@ -149,15 +150,13 @@
             path: '{{ $node["path"] }}',
           }).then(function(response) {
             if (response.data.is_exist) {
-              console.log('is_exist')
               callback(new Error('url 已存在'));
             } else {
-              console.log('not exist')
               callback();
             }
           }).catch(function(error) {
             console.error(error);
-          })
+          });
         }
       };
 
@@ -169,7 +168,7 @@
             { validator:isUniqueUrl, trigger:'blur' },
           ],
           template: [
-            { pattern: /^[a-z0-9\-_]+(\/[a-z0-9\-_]+)*(\.html)?\.twig$/, message: '模板格式不正确', trigger: 'blur' },
+            { pattern: /^[a-z0-9\-_]+(\/[a-z0-9\-_]+)*\.twig$/, message: '模板格式不正确', trigger: 'blur' },
           ],
           @foreach ($fields as $field)
           @if($field['rules'])
@@ -193,7 +192,7 @@
         },
 
         expanded: [],
-      }
+      };
     },
 
     created: function() {
@@ -270,9 +269,7 @@
           @endif
 
           const node = clone(app.node);
-
           node._changed = changed;
-
           // console.log(node)
           @if ($node['id'])
           const action = "{{ short_url('nodes.update', $node['id']) }}";
@@ -291,8 +288,8 @@
               app.$message.error(error);
             })
         }).catch(function(error) {
-          loading.close();
           console.error(error);
+          loading.close();
         })
       },
     }

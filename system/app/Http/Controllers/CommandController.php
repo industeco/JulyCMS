@@ -31,16 +31,16 @@ class CommandController extends Controller
         // 清除缓存
         Artisan::call('cache:clear');
 
-        // 清空 storage/pages 目录
-        $disk = Storage::disk('storage');
-        foreach ($disk->files('pages') as $file) {
-            if ($file !== 'pages/.gitignore') {
-                $disk->delete($file);
-            }
-        }
-        foreach ($disk->directories('pages') as $dir) {
-            $disk->deleteDirectory($dir);
-        }
+        // // 清空 storage/pages 目录
+        // $disk = Storage::disk('storage');
+        // foreach ($disk->files('pages') as $file) {
+        //     if ($file !== 'pages/.gitignore') {
+        //         $disk->delete($file);
+        //     }
+        // }
+        // foreach ($disk->directories('pages') as $dir) {
+        //     $disk->deleteDirectory($dir);
+        // }
 
         return true;
     }
@@ -144,15 +144,15 @@ class CommandController extends Controller
 
         $titles = [];
         foreach (NodeField::carry('title')->getRecords() as $record) {
-            $key = $record->content_id.'/'.$record->langcode;
+            $key = $record->node_id.'/'.$record->langcode;
             $titles[$key] = $record->title_value;
         }
 
-        $contents = Node::carryAll()->keyBy('id');
+        $nodes = Node::carryAll()->keyBy('id');
         foreach ($results as &$result) {
-            $key = $result['content_id'].'/'.$result['langcode'];
-            $result['content_title'] = $titles[$key] ?? null;
-            $result['original_langcode'] = $contents->get($result['content_id'])->langcode;
+            $key = $result['node_id'].'/'.$result['langcode'];
+            $result['node_title'] = $titles[$key] ?? null;
+            $result['original_langcode'] = $nodes->get($result['node_id'])->langcode;
         }
 
         return view_with_langcode('backend::search', [
@@ -169,9 +169,9 @@ class CommandController extends Controller
             $langcodes = [langcode('page')];
         }
         $invalidLinks = [];
-        foreach (Node::carryAll() as $content) {
+        foreach (Node::carryAll() as $node) {
             foreach ($langcodes as $langcode) {
-                $invalidLinks = array_merge($invalidLinks, $content->findInvalidLinks($langcode));
+                $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks($langcode));
             }
         }
 

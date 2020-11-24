@@ -183,7 +183,7 @@ abstract class EntityFieldBase extends EntityBase
      *
      * @return string
      */
-    public function getFieldTable()
+    public function getValueTable()
     {
         return static::getHostEntityName().'__'.$this->getEntityId();
     }
@@ -193,7 +193,7 @@ abstract class EntityFieldBase extends EntityBase
      *
      * @return array
      */
-    public function getTableColumns()
+    public function getValueColumns()
     {
         return $this->getFieldType()->getColumns();
     }
@@ -219,7 +219,7 @@ abstract class EntityFieldBase extends EntityBase
     {
         try {
             return [
-                $this->getFieldTable(),
+                $this->getValueTable(),
                 $this->getHostForeignKey(),
                 $this->hostEntity->getEntityId(),
                 $this->hostEntity->getLangcode(),
@@ -324,7 +324,7 @@ abstract class EntityFieldBase extends EntityBase
     public function searchValue(string $needle)
     {
         $conditions = [];
-        foreach ($this->getTableColumns() as $column) {
+        foreach ($this->getValueColumns() as $column) {
             $conditions[] = [$column['name'], 'like', '%'.$needle.'%', 'or'];
         }
 
@@ -334,7 +334,7 @@ abstract class EntityFieldBase extends EntityBase
         $foreignKey = $this->getHostForeignKey();
 
         $results = [];
-        foreach (DB::table($this->getFieldTable())->where($conditions)->get() as $record) {
+        foreach (DB::table($this->getValueTable())->where($conditions)->get() as $record) {
             $record = (array) $record;
             $key = join('/', [$record[$foreignKey], $field['id'], $record['langcode'] ?? 'und']);
             if (! isset($results[$key])) {
@@ -356,7 +356,7 @@ abstract class EntityFieldBase extends EntityBase
     public function tableUp()
     {
         // 获取独立表表名，并判断是否已存在
-        $tableName = $this->getFieldTable();
+        $tableName = $this->getValueTable();
         if (Schema::hasTable($tableName)) {
             return;
         }
@@ -365,7 +365,7 @@ abstract class EntityFieldBase extends EntityBase
         $foreignKey = $this->getHostForeignKey();
 
         // 获取用于创建数据表列的参数
-        $columns = $this->getTableColumns();
+        $columns = $this->getValueColumns();
 
         // 创建数据表
         Schema::create($tableName, function (Blueprint $table) use ($columns, $foreignKey) {
@@ -393,7 +393,7 @@ abstract class EntityFieldBase extends EntityBase
      */
     public function tableDown()
     {
-        Schema::dropIfExists($this->getFieldTable());
+        Schema::dropIfExists($this->getValueTable());
     }
 
     /**
@@ -426,16 +426,13 @@ abstract class EntityFieldBase extends EntityBase
     //     }
     // }
 
-    // public function getRecords(string $langcode = null)
-    // {
-    //     if (is_null($table = $this->tableName())) {
-    //         return collect();
-    //     }
-
-    //     if ($langcode) {
-    //         return DB::table($table)->where('langcode', $langcode)->get();
-    //     } else {
-    //         return DB::table($table)->get();
-    //     }
-    // }
+    /**
+     * @return array[]
+     */
+    public function getValueRecords()
+    {
+        return DB::table($this->getValueTable())->get()->map(function ($record) {
+            return (array) $record;
+        })->all();
+    }
 }

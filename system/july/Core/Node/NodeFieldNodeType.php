@@ -30,7 +30,7 @@ class NodeFieldNodeType extends Pivot
         'node_type_id',
         'node_field_id',
         'delta',
-        'weight',
+        // 'weight',
         'label',
         'description',
     ];
@@ -42,7 +42,7 @@ class NodeFieldNodeType extends Pivot
      */
     protected $casts = [
         'delta' => 'int',
-        'weight' => 'decimal:2',
+        // 'weight' => 'decimal:2',
     ];
 
     /**

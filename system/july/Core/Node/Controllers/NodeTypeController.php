@@ -44,7 +44,7 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $allFields = NodeField::takeFieldsInfo()->groupBy('preset_type');
+        $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
 
         $currentFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
             ->sortBy('delta')->pluck('id')->all();
@@ -78,7 +78,7 @@ class NodeTypeController extends Controller
     {
         $nodeType = NodeType::make($request->all());
         $nodeType->save();
-        $nodeType->updateFields($request->input('fields', []));
+        $nodeType->updateRelatedFields($request->input('fields', []));
         return response('');
     }
 
@@ -101,7 +101,7 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $allFields = NodeField::takeFieldsInfo()->groupBy('preset_type');
+        $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
 
         $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
             ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
@@ -130,7 +130,7 @@ class NodeTypeController extends Controller
     public function update(Request $request, NodeType $nodeType)
     {
         $nodeType->update($request->all());
-        $nodeType->updateFields($request->input('fields', []));
+        $nodeType->updateRelatedFields($request->input('fields', []));
         return response('');
     }
 

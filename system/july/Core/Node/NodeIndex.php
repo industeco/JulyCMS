@@ -21,47 +21,79 @@ class NodeIndex extends Model
      */
     protected $fillable = [
         'node_id',
-        'node_field_id',
+        'field_id',
         'field_value',
         'langcode',
     ];
 
+    /**
+     * 存放经关键词分拆后的令牌
+     *
+     * @var array
+     */
     protected $tokens = [];
 
+    /**
+     * 重建索引
+     *
+     * @return bool
+     */
     public static function rebuild()
     {
-        $langcodes = lang()->getAvailableLangcodes();
-        $records = [];
-        foreach (Node::all() as $node) {
-            $fields = $node->searchableFields();
-            $record = [
-                'node_id' => $node->id,
-            ];
-            foreach ($langcodes as $langcode) {
-                $values = $node->cacheGetValues($langcode);
-                foreach ($values as $key => $value) {
-                    if (($meta = $fields[$key] ?? null) && !empty($value)) {
-                        $records[] = array_merge($record, [
-                            'node_field' => $key,
-                            'field_value' => static::prepareValue($value, $meta['field_type']),
-                            'langcode' => $langcode,
-                            'weight' => $meta['weight'],
-                        ]);
-                    }
-                }
-            }
-        }
+        DB::beginTransaction();
 
-        DB::delete('DELETE FROM indexes;');
-        DB::transaction(function() use ($records) {
-            foreach ($records as $record) {
-                DB::table('indexes')->insert($record);
+        DB::delete('DELETE FROM node_index;');
+        NodeField::searchableFields()->each(function (NodeField $field) {
+            foreach (static::extractValueIndex($field) as $record) {
+                DB::table('node_index')->insert($record);
             }
         });
+
+        DB::commit();
 
         return true;
     }
 
+    /**
+     * 将指定字段的值转化为索引记录
+     *
+     * @param  \July\Core\Node\NodeField $field
+     * @return array
+     */
+    protected static function extractValueIndex(NodeField $field)
+    {
+        $values = [];
+
+        $key = $field->getKey();
+        $field_type = $field->field_type_id;
+        $weight = $field->weight;
+        $columns = collect($field->getValueColumns())->pluck('name')->all();
+        $nodeForeignKey = $field->getHostForeignKey();
+        foreach ($field->getValueRecords() as $record) {
+            foreach ($columns as $column) {
+                if (empty($record[$column])) {
+                    continue;
+                }
+                $values[] = [
+                    'node_id' => $record[$nodeForeignKey],
+                    'field_id' => $key,
+                    'field_value' => static::prepareValue($record[$column], $field_type),
+                    'langcode' => $record['langcode'],
+                    'weight' => $weight,
+                ];
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * 净化 HTML 内容
+     *
+     * @param  string $content 字段内容
+     * @param  string $type 内容类型
+     * @return string
+     */
     protected static function prepareValue($content, $type)
     {
         $content = preg_replace('/\s+/', ' ', $content);
@@ -84,6 +116,12 @@ class NodeIndex extends Model
         return trim($content, ' ;');
     }
 
+    /**
+     * 在索引中检索指定的关键词
+     *
+     * @param  string $keywords 待检索的关键词
+     * @return array
+     */
     public static function search($keywords)
     {
         if (empty($keywords)) {
@@ -93,29 +131,29 @@ class NodeIndex extends Model
             ];
         }
 
-        $keywords = static::getKeywords($keywords);
+        $keywords = static::normalizeKeywords($keywords);
 
         $results = [];
         foreach (static::searchIndex($keywords) as $result) {
-            $content_id = $result->content_id;
-            $content_field = $result->content_field;
+            $node_id = $result->node_id;
+            $field_id = $result->field_id;
 
-            $result = $result->getSearchResult($keywords);
-            if (! isset($results[$content_id])) {
-                $results[$content_id] = [
-                    'content_id' => $content_id,
+            $result = $result->toSearchResult($keywords);
+            if (! isset($results[$node_id])) {
+                $results[$node_id] = [
+                    'node_id' => $node_id,
                     'weight' => 0,
                 ];
             }
-            $results[$content_id][$content_field] =  $result['content'];
-            $results[$content_id]['weight'] +=  $result['weight'];
+            $results[$node_id][$field_id] =  $result['content'];
+            $results[$node_id]['weight'] +=  $result['weight'];
         }
 
         // 对结果排序
         array_multisort(
             array_column($results, 'weight'),
             SORT_DESC,
-            array_column($results, 'content_id'),
+            array_column($results, 'node_id'),
             SORT_NUMERIC,
             $results
         );
@@ -126,16 +164,28 @@ class NodeIndex extends Model
         ];
     }
 
-    protected static function searchIndex(array $keywords, $langcode = null)
+    /**
+     * 在索引中检索指定的关键词
+     *
+     * @param  array $keywords 关键词
+     * @param  string|null $langcode
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    protected static function searchIndex(array $keywords, string $langcode = null)
     {
         $langcode = $langcode ?: langcode('frontend');
 
-        $likes = [];
+        $conditions = [];
         foreach ($keywords as $keyword => $weight) {
-            $likes[] = ['field_value', 'like', '%'.$keyword.'%', 'or'];
+            $conditions[] = ['field_value', 'like', '%'.$keyword.'%', 'or'];
         }
 
-        return static::where('langcode', $langcode)->where($likes)->get();
+        return static::query()
+            ->where('langcode', $langcode)
+            ->where(function ($query) use ($conditions) {
+                $query->where($conditions);
+            })
+            ->get();
     }
 
     /**
@@ -144,7 +194,7 @@ class NodeIndex extends Model
      * @param string $input
      * @return array
      */
-    protected static function getKeywords($input)
+    protected static function normalizeKeywords($input)
     {
         if (empty($input)) {
             return [];
@@ -156,46 +206,43 @@ class NodeIndex extends Model
 
         $keywords = array_filter(preg_split('/\s+/', $input));
         $keywords = array_slice($keywords, 0, 10);
-        $keywords = static::reorganizeKeywords($keywords);
+        $keywords = static::combineKeywords($keywords);
         arsort($keywords);
 
         return $keywords;
     }
 
     /**
-     * 为关键词标记权重
+     * 组合关键词，并标记权重
      *
      * @param array $keywords
-     * @param int $offset 偏移
      * @return array
      */
-    public static function reorganizeKeywords(array $keywords, $offset = 0)
+    public static function combineKeywords(array $keywords)
     {
         // 计算每个单词的权重，从左到右依次降低
-        $weightSequence = [];
+        $wordWeights = [];
         foreach ($keywords as $index => $word) {
-            $weightSequence[] = exp(-0.5*pow($index/3.82, 2));
+            $wordWeights[] = exp(-0.5*pow($index/3.82, 2));
         }
 
         // 将单词按顺序组合成查询短句，并计算每个短句的权重
-        $queryWeight = [];
+        $combined = [];
         $offset = 0;
         while ($keywords) {
-
             $words = [];
             $weight = 0;
             foreach ($keywords as $index => $word) {
                 $words[] = $word;
-                $query = implode(' ', $words);
-                $weight += $weightSequence[$offset + $index];
-                $queryWeight[$query] = $weight;
+                $weight += $wordWeights[$offset + $index];
+                $combined[implode(' ', $words)] = $weight;
             }
 
             $keywords = array_slice($keywords, 1);
             $offset++;
         }
 
-        return $queryWeight;
+        return $combined;
 
         // $weights = [];
         // $words = [];
@@ -207,16 +254,22 @@ class NodeIndex extends Model
 
         // $keywords = array_slice($keywords, 1);
         // if ($keywords) {
-        //     $weights = array_merge($weights, static::weightKeywords($keywords, $offset + 1));
+        //     $weights = array_merge($weights, static::combineKeywords($keywords, $offset + 1));
         // }
 
         // return $weights;
     }
 
-    public function getSearchResult(array $keywords)
+    /**
+     * 将字段值转化为一条搜索结果
+     *
+     * @param  array $keywords
+     * @return array
+     */
+    public function toSearchResult(array $keywords)
     {
         // $this->tokenize($keywords);
-        $tokens = $this->splitByKeywords($keywords);
+        $tokens = $this->tokenizer($keywords);
 
         $similar = $this->similar($this->attributes['field_value'], key($keywords));
         $weight = $this->weight*($this->attributes['weight'] ?? 1)*pow(10, pow($similar, 3));
@@ -227,7 +280,13 @@ class NodeIndex extends Model
         ];
     }
 
-    protected function splitByKeywords(array $keywords)
+    /**
+     * 使用关键词将字段值令牌化
+     *
+     * @param  array $keywords
+     * @return array
+     */
+    protected function tokenizer(array $keywords)
     {
         $this->weight = 0;
         $content = trim($this->attributes['field_value']);
@@ -242,7 +301,7 @@ class NodeIndex extends Model
                     $weight *= 1 - str_diff($word, $keyword)*.5/strlen($keyword);
                 }
                 $this->weight += $weight;
-                $tokens[] = '<span class="keyword">' . $word . '</span>';
+                $tokens[] = '<span class="keyword">'.$word.'</span>';
 
                 $content = substr($content, $pos + strlen($keyword));
                 $pos = stripos($content, $keyword);
@@ -255,6 +314,12 @@ class NodeIndex extends Model
         return $tokens;
     }
 
+    /**
+     * 将令牌拼合在一起
+     *
+     * @param  array $tokens
+     * @return string
+     */
     protected function joinTokens(array $tokens)
     {
         $content = trim($this->attributes['field_value']);
@@ -264,26 +329,27 @@ class NodeIndex extends Model
 
         $pieces = [];
         $length = 0;
-        foreach ($tokens as $index => $token) {
-            if ($index%2) {
-                $left = $tokens[$index-1];
-                if ($left) {
-                    $left = explode(' ', $tokens[$index-1]);
-                    $left = array_slice($left, -1*min(intval(count($left)/2), 5));
-                    $left = implode(' ', $left);
-                }
+        for ($i=1; $i < count($tokens); $i+=2) {
+            $left = $tokens[$i-1];
+            if ($left) {
+                $left = explode(' ', $left);
+                $left = array_slice($left, -1*min(intval(count($left)/2), 5));
+                $left = implode(' ', $left);
+            }
 
-                $right = explode(' ', $tokens[$index+1]);
+            $right = $tokens[$i+1] ?? '';
+            if ($right) {
+                $right = explode(' ', $right);
                 $right = array_slice($right, 0, min(intval(count($right)/2), 5));
                 $right = implode(' ', $right);
+            }
 
-                $piece = $left.$token.$right;
-                $pieces[] = $piece;
-                $length += strlen($piece) - 29;
+            $piece = trim($left.$tokens[$i].$right, '.,:;!?');
+            $pieces[] = $piece;
+            $length += strlen($piece) - strlen('<span class="keyword"></span>');
 
-                if ($length >= 200) {
-                    break;
-                }
+            if ($length >= 200) {
+                break;
             }
         }
 

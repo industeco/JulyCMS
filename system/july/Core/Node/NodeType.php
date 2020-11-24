@@ -95,7 +95,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
             ->orderBy('node_field_node_type.delta')
             ->withPivot([
                 'delta',
-                'weight',
+                // 'weight',
                 'label',
                 'description',
             ]);
@@ -156,7 +156,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    public function updateEntityFields(array $data)
+    public function updateRelatedFields(array $data)
     {
         // Log::info($data);
         $langcode = langcode('content');
@@ -182,7 +182,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
         foreach ($data as $index => $field) {
             $fields[$field['id']] = [
                 'delta' => $index,
-                'weight' => $field['weight'] ?? 1,
+                // 'weight' => $field['weight'] ?? 1,
                 'label' => $field['label'] ?? null,
                 'description' => $field['description'] ?? null,
             ];
