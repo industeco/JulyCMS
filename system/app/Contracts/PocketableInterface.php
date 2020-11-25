@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Utils;
+namespace App\Contracts;
 
-interface PocketUserInterface
+interface PocketableInterface
 {
     /**
      * 获取 Pocket ID

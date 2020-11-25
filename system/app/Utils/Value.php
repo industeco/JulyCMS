@@ -14,7 +14,7 @@ class Value
      */
     public function __construct($value)
     {
-        if ($value instanceof static) {
+        if (is_object($value) && $value instanceof static) {
             $value = $value->value();
         }
         $this->value = $value;

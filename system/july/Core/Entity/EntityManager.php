@@ -63,7 +63,7 @@ final class EntityManager
         $cachekey = 'core_entities';
 
         if ($force) {
-            Pocket::make(static::class)->clear($cachekey);
+            Pocket::apply(static::class)->clear($cachekey);
         }
 
         $path = base_path('july/Core');

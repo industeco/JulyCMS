@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use App\Contracts\PocketableInterface;
+use App\Contracts\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +12,7 @@ use Illuminate\Support\Str;
 class Pocket
 {
     /**
-     * @var string|object|null
+     * @var string|object
      */
     protected $subject;
 
@@ -41,6 +43,17 @@ class Pocket
     }
 
     /**
+     * 快捷创建
+     *
+     * @param  string|object $subject
+     * @return self
+     */
+    public static function apply($subject)
+    {
+        return new static($subject);
+    }
+
+    /**
      * 生成缓存键的前缀
      *
      * @param  string|object $subject
@@ -48,15 +61,19 @@ class Pocket
      */
     public static function generatePrefix($subject)
     {
+        $prefix = $subject;
         if (is_object($subject)) {
-            if ($subject instanceof PocketUserInterface) {
-                $subject = $subject->getPocketId();
+            if ($subject instanceof PocketableInterface) {
+                $prefix = $subject->getPocketId();
             } elseif ($subject instanceof Model) {
-                $subject = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
+                $prefix = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
+                if ($subject instanceof TranslatableInterface ) {
+                    $prefix .= '/'.$subject->getLangcode();
+                }
             }
         }
 
-        return short_md5(serialize($subject)).'/';
+        return short_md5(serialize($prefix)).'/';
     }
 
     /**

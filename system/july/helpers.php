@@ -32,16 +32,16 @@ if (! function_exists('july_path')) {
 //     }
 // }
 
-if (! function_exists('variablize')) {
-    function variablize(string $str, string $replacement = '_')
-    {
-        $str = preg_replace('/[^0-9a-z_]/', $replacement, Str::snake($str));
+// if (! function_exists('variablize')) {
+//     function variablize(string $str, string $replacement = '_')
+//     {
+//         $str = preg_replace('/[^0-9a-z_]/', $replacement, Str::snake($str));
 
-        $str = preg_replace('/[^0-9a-z_]/', '_', $str);
-        if (!preg_match('/^[a-z_]/', $str)) {
-            $str = '_'.$str;
-        }
+//         $str = preg_replace('/[^0-9a-z_]/', '_', $str);
+//         if (!preg_match('/^[a-z_]/', $str)) {
+//             $str = '_'.$str;
+//         }
 
-        return $str;
-    }
-}
+//         return $str;
+//     }
+// }

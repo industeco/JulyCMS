@@ -3,10 +3,12 @@
 namespace July\Core\Entity;
 
 use App\Model as AppModel;
+use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use July\Core\Config\PartialView;
 use July\Core\Config\PathAlias;
@@ -678,9 +680,12 @@ abstract class EntityBase extends AppModel implements EntityInterface
     {
         $saved = parent::save($options);
 
-        $this->updateLinks();
+        DB::transaction(function () {
+            $this->updateLinks();
+            $this->updateFields();
+        });
 
-        $this->updateFields();
+        $this->raw = [];
 
         return $saved;
     }
@@ -714,13 +719,13 @@ abstract class EntityBase extends AppModel implements EntityInterface
     }
 
     /**
-     * 渲染实体
+     * Get the evaluated contents of the object.
      *
-     * @return string|null
+     * @return string
      */
     public function render()
     {
-        return null;
+        return '';
     }
 
     /**
@@ -728,31 +733,19 @@ abstract class EntityBase extends AppModel implements EntityInterface
      *
      * @return string
      */
-    public function getHtml()
+    public function retrieveHtml()
     {
-        $cachekey = $this->getHtmlCacheKey();
+        $pocket = new Pocket($this);
+        $pokey = $pocket->key('html');
 
-        if ($html = Cache::get($cachekey)) {
-            return $html;
+        if ($html = $pocket->get($pokey)) {
+            return $html->value();
         }
 
-        if ($html = $this->render()) {
-            Cache::put($cachekey, $html);
+        $html = $this->render();
+        $pocket->put($pokey, $html);
 
-            return $html;
-        }
-
-        return '';
-    }
-
-    /**
-     * 实体渲染结果的缓存键
-     *
-     * @return string
-     */
-    public function getHtmlCacheKey()
-    {
-        return 'entity_html:'.$this->getEntityPath().'/'.$this->getLangcode();
+        return $html;
     }
 
     /**
@@ -791,7 +784,8 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function getPocketId()
     {
-        return str_replace('\\', '/', static::class).'/'.$this->getEntityId();
+        return 'entity::'.$this->getEntityPath().'/'.$this->getLangcode();
+        // return str_replace('\\', '/', static::class).'/'.$this->getEntityId();
     }
 
     public static function boot()

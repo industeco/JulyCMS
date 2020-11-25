@@ -2,10 +2,10 @@
 
 namespace July\Core\Entity;
 
-use App\Utils\PocketUserInterface;
-use Twig\Environment as Twig;
+use App\Contracts\PocketableInterface;
+use Illuminate\Contracts\Support\Renderable;
 
-interface EntityInterface extends PocketUserInterface
+interface EntityInterface extends PocketableInterface, Renderable
 {
     /**
      * 获取实体名
@@ -59,29 +59,6 @@ interface EntityInterface extends PocketUserInterface
      * @return bool
      */
     public function isTranslatable();
-
-    /**
-     * 设置当前实例语言版本
-     *
-     * @param  string $langcode 语言代码
-     * @return $this
-     */
-    public function translateTo(string $langcode);
-
-    /**
-     * 获取当前实例的语言版本（代码）
-     *
-     * @return string|null
-     */
-    public function getLangcode();
-
-    /**
-     * 渲染实体
-     *
-     * @param \Twig\Environment $twig
-     * @return string|null
-     */
-    public function render(Twig $twig = null);
 
     /**
      * 判断是否包含名为 {$key} 的实体属性

@@ -79,17 +79,13 @@ class AnyPage extends Controller
             return $url.'l';
         }
 
-        if (substr($url, -5) !== '.html') {
-            return $url.'/index.html';
-        }
-
         return $url;
     }
 
     protected function getHtml($url, $langcode)
     {
-        if ($entity = PathAlias::findEntityByAlias('/'.$url)) {
-            return $entity->translateTo($langcode)->getHtml();
+        if ($entity = PathAlias::findEntityByAlias($url)) {
+            return $entity->translateTo($langcode)->retrieveHtml();
         }
 
         return null;

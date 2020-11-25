@@ -2,15 +2,15 @@
 
 namespace July\Core\EntityField;
 
+use App\Contracts\PocketableInterface;
 use App\Utils\Pocket;
-use App\Utils\PocketUserInterface;
 use Illuminate\Support\Str;
 use July\Core\EntityField\Exceptions\FieldTypeNotFoundException;
 use July\Core\EntityField\EntityFieldBase;
 use July\Core\EntityField\FieldTypeDefinitions\DefinitionBase;
 use Symfony\Component\Finder\Finder;
 
-class FieldType implements PocketUserInterface
+class FieldType implements PocketableInterface
 {
     /**
      * 可用的字段类型定义
@@ -204,7 +204,6 @@ class FieldType implements PocketUserInterface
         if ($this->definition) {
             $key .= '/'.$this->definition->id;
         }
-
         return $key;
     }
 

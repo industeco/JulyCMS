@@ -237,41 +237,41 @@ class Node extends EntityBase
     }
 
 
-    public function searchableFields()
-    {
-        $fields = [];
-        foreach ($this->nodeType->cacheGetFields() as $field) {
-            if ($field['is_searchable']) {
-                $fields[$field['id']] = [
-                    'field_type' => $field['field_type'],
-                    'weight' => $field['weight'] ?? 1,
-                ];
-            }
-        }
+    // public function searchableFields()
+    // {
+    //     $fields = [];
+    //     foreach ($this->nodeType->cacheGetFields() as $field) {
+    //         if ($field['is_searchable']) {
+    //             $fields[$field['id']] = [
+    //                 'field_type' => $field['field_type'],
+    //                 'weight' => $field['weight'] ?? 1,
+    //             ];
+    //         }
+    //     }
 
-        return $fields;
-    }
+    //     return $fields;
+    // }
 
-    public function cacheGetValues($langcode = null)
-    {
-        $langcode = $langcode ?: $this->langcode;
-        $cachekey = $this->cacheKey([
-            'key' => 'values',
-            'langcode' => $langcode,
-        ]);
+    // public function cacheGetValues($langcode = null)
+    // {
+    //     $langcode = $langcode ?: $this->langcode;
+    //     $cachekey = $this->cacheKey([
+    //         'key' => 'values',
+    //         'langcode' => $langcode,
+    //     ]);
 
-        if ($values = $this->cacheGet($cachekey)) {
-            $values = $values['value'];
-        } else {
-            $values = [];
-            foreach ($this->fields() as $field) {
-                $values[$field->getKey()] = $field->getValue($this->getKey(), $langcode);
-            }
-            $this->cachePut($cachekey, $values);
-        }
+    //     if ($values = $this->cacheGet($cachekey)) {
+    //         $values = $values['value'];
+    //     } else {
+    //         $values = [];
+    //         foreach ($this->fields() as $field) {
+    //             $values[$field->getKey()] = $field->getValue($this->getKey(), $langcode);
+    //         }
+    //         $this->cachePut($cachekey, $values);
+    //     }
 
-        return $values;
-    }
+    //     return $values;
+    // }
 
     // /**
     //  * 获取内容标签
@@ -308,7 +308,7 @@ class Node extends EntityBase
     //  */
     // public function saveValues(array $values)
     // {
-    //     Pocket::make($this)->clear('values/'.$this->getLangcode());
+    //     Pocket::apply($this)->clear('values/'.$this->getLangcode());
     //     // $this->cacheClear(['key'=>'values', 'langcode'=>langcode('content')]);
     //     // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
@@ -368,24 +368,24 @@ class Node extends EntityBase
             foreach ($node->collectFields() as $field) {
                 $field->deleteValue();
             }
-            Cache::forget($node->getHtmlCacheKey());
+            Pocket::apply($node)->clear('html');
         });
 
         static::updated(function(Node $node) {
-            Cache::forget($node->getHtmlCacheKey());
+            Pocket::apply($node)->clear('html');
         });
     }
 
     /**
-     * 生成页面
+     * Get content as a string of HTML.
      *
-     * @return string|null
+     * @return string
      */
     public function render()
     {
         $tpl = $this->template();
         if (! $tpl) {
-            return null;
+            return '';
         }
 
         $data = $this->gather();
@@ -404,7 +404,10 @@ class Node extends EntityBase
 
         config()->set('render_langcode', null);
 
-        return preg_replace('/\n\s+/', "\n", $html);
+        $html = preg_replace('/\n\s+/', "\n", $html);
+        Pocket::apply($this)->put('html', $html);
+
+        return $html;
     }
 
     /**
@@ -432,7 +435,7 @@ class Node extends EntityBase
      */
     public function getTemplatesAttribute()
     {
-        return $this->suggestedTemplates();
+        return $this->getSuggestedTemplates();
     }
 
     /**
@@ -444,10 +447,8 @@ class Node extends EntityBase
     {
         $langcode = $this->getLangcode();
 
-        foreach ($this->suggestedTemplates() as $tpl) {
-            if (false !== strpos($tpl, '{langcode}')) {
-                $tpl = str_replace('{langcode}', $langcode, $tpl);
-            }
+        foreach ($this->getSuggestedTemplates() as $tpl) {
+            $tpl = str_replace('{langcode}', $langcode, $tpl);
             if (is_file(frontend_path('template/'.$tpl))) {
                 return $tpl;
             }
@@ -461,10 +462,8 @@ class Node extends EntityBase
      *
      * @return array
      */
-    public function suggestedTemplates()
+    public function getSuggestedTemplates()
     {
-        // $node = $this->gather();
-
         $templates = [];
 
         if ($template = $this->getPartialView()) {
@@ -497,7 +496,7 @@ class Node extends EntityBase
 
     public function findInvalidLinks($langcode)
     {
-        $html = $this->getHtml($langcode);
+        $html = $this->retrieveHtml($langcode);
         if (! $html) {
             return [];
         }

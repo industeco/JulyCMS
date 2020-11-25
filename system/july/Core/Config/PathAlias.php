@@ -44,6 +44,24 @@ class PathAlias extends EntityBase
         'langcode',
     ];
 
+    public function scopeAlias($query, $alias)
+    {
+        $alias = trim(str_replace('\\', '/', $alias), "/ \t\n\r\0\x0B");
+        $condition = [
+            ['alias', '=', '/'.$alias, 'or'],
+        ];
+
+        if (substr($alias, -5) !== '.html') {
+            $condition[] = ['alias', '=', ($alias ? '/'.$alias : '').'/index.html', 'or'];
+        }
+
+        if (config('jc.site.entity_path_accessible')) {
+            $condition[] = ['path', '=', $alias, 'or'];
+        }
+
+        return $query->where($condition);
+    }
+
     /**
      * 根据实体路径查找别名
      *
@@ -63,7 +81,7 @@ class PathAlias extends EntityBase
      */
     public static function findEntityByAlias(string $alias)
     {
-        if ($instance = static::query()->where('alias', trim($alias))->first()) {
+        if ($instance = static::alias($alias)->first()) {
             return EntityManager::resolvePath($instance->path);
         }
 

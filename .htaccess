@@ -16,7 +16,7 @@
 Options -Indexes
 
 # Set the default handler.
-DirectoryIndex index.php index.html index.htm
+DirectoryIndex index.html index.htm index.php
 
 # Add correct encoding for SVGZ.
 AddType image/svg+xml svg svgz

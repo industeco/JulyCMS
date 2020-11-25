@@ -272,9 +272,10 @@ class NodeController extends Controller
         foreach ($nodes as $node) {
             $result = [];
             foreach ($langs as $langcode) {
-                if ($node->render()) {
+                try {
+                    $node->translateTo($langcode)->render();
                     $result[$langcode] = true;
-                } else {
+                } catch (\Throwable $th) {
                     $result[$langcode] = false;
                 }
             }

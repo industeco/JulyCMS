@@ -5,6 +5,7 @@ namespace July\Utils;
 use App\Utils\Html;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
+use July\Core\Config\PathAlias;
 use July\Core\Node\Catalog;
 
 class GoogleSitemap
@@ -30,23 +31,23 @@ class GoogleSitemap
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>'.PHP_EOL;
 
-        $urls = Pocket::make(static::class)->takeout('urls');
+        $urls = Pocket::apply(static::class)->takeout('urls');
 
         // 生成 xml 内容
         foreach (Catalog::default()->get_nodes() as $node) {
-
-            $url = $urls[$node->id] ?? null;
-
-            if (!$url || $url === '/404.html') continue;
-
-            $html = $node->getHtml($langcode);
-            if (is_null($html)) {
+            $url = $urls[$node->getEntityPath()] ?? null;
+            if (!$url || $url === '/404.html') {
                 continue;
             }
+
+            $html = $node->translateTo($langcode)->retrieveHtml();
+            if (empty($html)) {
+                continue;
+            }
+
             $html = Html::make($html);
 
             $xml .= '<url><loc>'.$home.$url.'</loc>';
-
             foreach ($html->extractImageLinks() as $src) {
                 $xml .= '<image:image><image:loc>'.$home.$src."</image:loc></image:image>".PHP_EOL;
             }
@@ -66,12 +67,9 @@ class GoogleSitemap
 
     public static function takeoutUrls($langcode)
     {
-        $urls = DB::table('path_alias')
-                    ->where('langcode', $langcode)
-                    ->get()
-                    ->pluck('url_value', 'content_id')
-                    ->all();
-
-        return $urls;
+        return PathAlias::query()
+            ->where('langcode', $langcode)
+            ->pluck('alias', 'path')
+            ->all();
     }
 }
