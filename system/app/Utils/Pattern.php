@@ -23,6 +23,6 @@ class Pattern
      */
     public static function isTwig($twig)
     {
-        return is_string($twig) && preg_match('/^[a-z0-9\-_]+(\/[a-z0-9\-_]+)*\.twig$/', $twig);
+        return is_string($twig) && preg_match('/^(?:[a-z0-9\-_]+\/)*[a-z0-9\-_]+\.twig$/', $twig);
     }
 }

@@ -125,7 +125,7 @@ class Node extends EntityBase
                     ->orderBy('node_field_node_type.delta')
                     ->withPivot([
                         'delta',
-                        'weight',
+                        // 'weight',
                         'label',
                         'description',
                     ]);

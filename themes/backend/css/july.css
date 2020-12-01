@@ -742,12 +742,17 @@ h2.jc-form-info-item {
   z-index: 1;
 }
 
-.jc-tree .jc-tree-nodeinfo {
-  width: 180px;
+.jc-tree .jc-tree-node__id {
+  padding-right: .5em;
+}
+
+.jc-tree .jc-tree-node__type,
+.jc-tree .jc-tree-node__updated {
   padding: 0 15px;
 }
 
-.jc-tree .jc-tree-nodeinfo + .jc-tree-nodeinfo {
+.jc-tree .jc-tree-node__updated {
+  width: 180px;
   border-left: 1px solid #e0e0e0;
 }
 
@@ -1338,4 +1343,41 @@ h2.jc-form-info-item {
 .jc-form-item-group {
   display: flex;
   align-items: center;
+}
+
+.catalog-tree__recycle,
+.catalog-tree__recycle.center {
+  position: fixed;
+  top: 40%;
+  right: 30px;
+  width: 720px;
+  padding: 8px;
+  border-radius: 5px;
+  z-index: 20;
+  background-color: #ffffff;
+  box-shadow: 0 7px 8px -4px rgba(0,0,0,.2), 0 12px 17px 2px rgba(0,0,0,.14), 0 5px 22px 4px rgba(0,0,0,.12);
+  max-height: 480px;
+  overflow: auto;
+}
+
+.catalog-tree__recycle.top {
+  top: 120px;
+  bottom: auto;
+}
+
+.catalog-tree__recycle.bottom {
+  top: auto;
+  bottom: 120px;
+}
+
+.catalog-tree__recycle > .el-tree-node__children .jc-tree-node-inner {
+  padding-left: 10px;
+}
+
+.catalog-tree__recycle > .el-tree-node__children .el-tree-node__label > span {
+  display: block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

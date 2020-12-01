@@ -29,7 +29,7 @@
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">sort</i></div></div>
               </a>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                onclick="deleteCatalog(scope.row)" :disabled="scope.row.is_preset">
+                onclick="deleteCatalog(scope.row)" :disabled="scope.row.is_necessary">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
             </div>
@@ -99,7 +99,7 @@
         _tar.target = row;
         _tar.editUrl = this.editUrl.replace('#id#', row.id);
         _tar.sortUrl = this.sortUrl.replace('#id#', row.id);
-        _tar.deletable = !row.is_preset;
+        _tar.deletable = !row.is_necessary;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
@@ -115,7 +115,7 @@
       },
 
       deleteCatalog(catalog) {
-        if (catalog.is_preset) {
+        if (catalog.is_necessary) {
           return;
         }
         const id = catalog.id;

@@ -45,7 +45,7 @@ class CreateConfigsTable extends Migration
             $table->string('config_id', 128);
 
             // 语言
-            $table->string('langcode', 12)->default('und');
+            $table->string('langcode', 12)->default('zxx');
 
             // 配置值
             $table->binary('value');
@@ -98,7 +98,7 @@ class CreateConfigsTable extends Migration
             $table->string('path', 255);
 
             // 默认语言
-            $table->string('langcode', 12)->default('und');
+            $table->string('langcode', 12)->default('zxx');
 
             // 配置值
             $table->binary('config');

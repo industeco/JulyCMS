@@ -29,6 +29,7 @@ class JulyServiceProvider extends ServiceProvider
                 $twig = new \Twig\Environment($loader);
             }
 
+            $twig->addExtension(new \Twig\Extension\StringLoaderExtension());
             $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
 
             return $twig;
