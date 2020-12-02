@@ -127,7 +127,7 @@
     @if (is_null($value))
     {{ $key }}: null,
     @elseif (is_numeric($value))
-    {{ $key }}: $value,
+    {{ $key }}: {{ $value }},
     @elseif (is_string($value) && strlen($value) > 255)
     {{ $key }}: recieveFieldValue('{{ $value }}'),
     @else
