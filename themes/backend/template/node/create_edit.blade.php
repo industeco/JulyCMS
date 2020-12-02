@@ -24,7 +24,8 @@
     <div id="main_form_right">
       <h2 class="jc-form-info-item">通用非必填项</h2>
       <el-collapse :value="expanded" @change="handleCollapseChange">
-        {{-- <el-collapse-item title="标签" name="标签" id="node_tags_selector">
+        {{-- <el-collapse-item name="taxonomy" id="node_tags_selector"
+          title="{{ config('jc.form.global_field_groups.taxonomy.label') }}">
           <el-form-item size="small" class="has-helptext">
             <el-select v-model="node.tags" placeholder="选择标签"
               multiple
@@ -40,7 +41,8 @@
             <span class="jc-form-item-help"><i class="el-icon-info"></i> 新增时请留意当前语言版本</span>
           </el-form-item>
         </el-collapse-item> --}}
-        <el-collapse-item title="网址和模板" name="网址和模板">
+        <el-collapse-item name="page_present"
+          title="{{ config('jc.form.global_field_groups.page_present.label') }}">
           <el-form-item prop="url" size="small">
             <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="url" placement="right">
               <span>网址</span>
@@ -67,7 +69,8 @@
               <span class="jc-form-item-help"><i class="el-icon-info"></i> twig 模板，用于渲染页面</span>
           </el-form-item>
         </el-collapse-item>
-        <el-collapse-item title="META 信息" name="META 信息">
+        <el-collapse-item name="page_meta"
+          title="{{ config('jc.form.global_field_groups.page_meta.label') }}">
           {!! $fields['meta_title']['element'] !!}
           {!! $fields['meta_keywords']['element'] !!}
           {!! $fields['meta_description']['element'] !!}

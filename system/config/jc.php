@@ -127,16 +127,16 @@ return [
         // 全局字段分组
         'global_field_groups' => [
             'taxonomy' => [
-                'label' => '分类信息',   // 分组面板标题
-                'expanded' => false,    // 是否默认展开
+                'label' => '分类和标签',   // 分组面板标题
+                'expanded' => true,    // 是否默认展开
             ],
             'page_present' => [
-                'label' => '页面呈现',
-                'expanded' => false,
+                'label' => '网址和模板',
+                'expanded' => true,
             ],
             'page_meta' => [
-                'label' => '页面 META 信息',
-                'expanded' => false,
+                'label' => 'META 信息',
+                'expanded' => true,
             ],
         ],
     ],

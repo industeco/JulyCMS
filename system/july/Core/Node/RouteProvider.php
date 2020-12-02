@@ -13,7 +13,7 @@ class RouteProvider implements RouteProviderInterface
     public static function register()
     {
         Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
-            ->middleware(['web', 'admin', 'auth'])
+            ->middleware(['web','admin','auth'])
             ->group(function() {
                 // 字段
                 Route::get('node_fields/exists/{id}', [Controllers\NodeFieldController::class, 'isExist'])

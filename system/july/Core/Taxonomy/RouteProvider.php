@@ -13,7 +13,7 @@ class RouteProvider implements RouteProviderInterface
     public static function register()
     {
         Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
-            ->middleware(['web', 'admin', 'auth'])
+            ->middleware(['web','admin','auth'])
             ->group(function() {
                 Route::get('tags', [Controllers\TagController::class, 'index'])
                     ->name('tags.index');

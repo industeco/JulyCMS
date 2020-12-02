@@ -6,7 +6,7 @@
     v-model="node.{{ $id }}"
     @if ($parameters['maxlength'] > 200 || $parameters['maxlength'] === 0)
     type="textarea"
-    rows="3"
+    rows="2"
     @else
     native-size="{{ $parameters['maxlength'] <= 50 ? 60 : 100 }}"
     @endif

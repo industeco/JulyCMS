@@ -130,8 +130,8 @@ class Config extends EntityBase implements EntityInterface
         }
 
         $config = app('config');
-        foreach (static::all()->keyBy('id') as $key => $record) {
-            if (! is_null($value = $record->getValue())) {
+        foreach (static::query()->where('group', '!=', 'user_preferences')->get()->keyBy('id') as $key => $entry) {
+            if (! is_null($value = $entry->getValue())) {
                 $config->set($key, $value);
             }
         }
@@ -191,7 +191,7 @@ class Config extends EntityBase implements EntityInterface
      */
     public static function getConfigsByGroup($group)
     {
-        return static::query()->where('group', $group)->get()->map(function($record) {
+        return static::query()->where('group', $group)->get()->map(function(Config $record) {
             return $record->gather();
         })->keyBy('id')->all();
     }
@@ -224,6 +224,21 @@ class Config extends EntityBase implements EntityInterface
             return config($this->getKey());
         }
 
+        // 获取 UserPereferences
+        if ('user_preferences' === $this->group) {
+            if ($user = Auth::user()) {
+                $userId = $user->id;
+                $preferences = $this->preferences->first(function($p) use($userId) {
+                    return $p->user_id == $userId;
+                });
+
+                if ($preferences) {
+                    return $preferences->value;
+                }
+            }
+            return null;
+        }
+
         // 获取 ConfigValue
         $langcode = $langcode ?? $this->langcode;
         $value = $this->values->first(function($v) use($langcode) {
@@ -231,22 +246,10 @@ class Config extends EntityBase implements EntityInterface
         });
 
         if ($value) {
-            $value = $value->value;
+            return $value->value;
         }
 
-        // 获取 UserPereferences
-        if ('user_preferences' === $this->group && ($user = Auth::user())) {
-            $userId = $user->id;
-            $preferences = $this->preferences->first(function($p) use($userId) {
-                return $p->user_id == $userId;
-            });
-
-            if ($preferences) {
-                $value = $preferences->value;
-            }
-        }
-
-        return $value ?? config($this->getKey());
+        return null;
     }
 
     /**
