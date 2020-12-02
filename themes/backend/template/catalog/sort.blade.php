@@ -20,24 +20,36 @@
       :allow-drop="allowDrop"
       :allow-drag="allowDrag"
       :node-class="getNodeClass"
+      :default-expanded-keys="['recycle']"
       node-key="id">
       <div class="jc-tree-node-inner" slot-scope="{ node, data }">
-        <svg class="jc-svg-icon jc-drag-handle" v-if="data.id !== 'recycle'"><use xlink:href="#jcon_drag"></use></svg>
-        <span class="jc-tree-node__id" v-if="data.id !== 'recycle'">[@{{ data.id }}]</span>
+        <svg class="jc-svg-icon jc-drag-handle" v-if="!isRecycle(node)"><use xlink:href="#jcon_drag"></use></svg>
+        <span class="jc-tree-node__id" v-if="!isRecycle(node)">[@{{ data.id }}]</span>
         <span class="el-tree-node__label"><span :title="getNodeAttr(data.id, 'title')">@{{ getNodeAttr(data.id, 'title') }}</span></span>
-        <span class="jc-tree-node__type" v-if="data.id !== 'recycle'">类型：@{{ getNodeAttr(data.id, 'node_type_id') }}</span>
-        <span class="jc-tree-node__updated" v-if="data.id !== 'recycle'">更新：@{{ getNodeAttr(data.id, 'updated_at') }}</span>
+        <span class="jc-tree-node__type" v-if="!isRecycle(node)">类型：@{{ getNodeAttr(data.id, 'node_type_id') }}</span>
+        <span class="jc-tree-node__updated" v-if="!isRecycle(node)">更新：@{{ getNodeAttr(data.id, 'updated_at') }}</span>
         <button
-          type="button" v-if="data.id !== 'recycle'" :title="recycled[data.id] ? '移出回收站' : '移入回收站'"
+          type="button" v-if="!isRecycle(node)" :title="!settled[data.id] ? '移出回收站' : '移入回收站'"
           class="md-button md-fab md-mini md-accent md-theme-default jc-theme-light"
           @click.stop="remove(node)">
           <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
         </button>
+        <select v-if="isRecycle(node)" v-model="recycleOrderBy" @click.stop @change="sortRecycledNodes">
+          <option value="default">- 默认排序 -</option>
+          <option value="id,asc">id 升序</option>
+          <option value="id,desc">id 降序</option>
+          <option value="title,asc">标题 升序</option>
+          <option value="title,desc">标题 降序</option>
+          <option value="node_type_id,asc">类型 升序</option>
+          <option value="node_type_id,desc">类型 降序</option>
+          <option value="updated_at,desc">更新时间 最近</option>
+          <option value="updated_at,asc">更新时间 最远</option>
+        </select>
         <button
-          type="button" v-else title="切换位置" class="md-button md-mini md-primary md-theme-default"
-          @click.stop="switchRecyclePosition(node)">
+          type="button" v-if="isRecycle(node)" title="切换位置" class="md-button md-mini md-primary md-theme-default"
+          @click.stop="moveRecycle(node)">
           <div class="md-ripple">
-            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">swap_vertical_circle</i></div>
+            <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">push_pin</i></div>
           </div>
         </button>
       </div>
@@ -52,7 +64,6 @@
 
 @section('script')
 <script>
-
   let initialPositions = [
     @foreach ($positions as $position)
     {
@@ -70,16 +81,16 @@
         positions: [],
         nodes: @json($nodes, JSON_NUMERIC_CHECK|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         settled: {},
-        recycled: {},
-        currentRecyclePosition: 'center',
+        recyclePlace: 'center',
+        recycleOrderBy: 'default',
+        recycleDefaultOrders: null,
       }
     },
 
     created: function() {
-
       // 生成目录中已存在的节点的列表
       initialPositions.forEach(position => {
-        this.switchToCatalog(position.id);
+        this.settled[position.id] = true;
       });
 
       // 初始化目录数据
@@ -101,7 +112,6 @@
         children: [],
       };
       this.positions.unshift(recycle);
-      this.switchToRecycle('recycle');
 
       // 初始化回收站
       let last = null;
@@ -110,7 +120,6 @@
         if (this.settled[id]) {
           continue;
         }
-        this.switchToRecycle(id);
         current = {
           id: id,
           parent_id: 'recycle',
@@ -128,54 +137,57 @@
     methods: {
       getNodeClass(node, tree) {
         if (node.data.id === 'recycle') {
-          return ['catalog-tree__recycle', this.currentRecyclePosition];
+          return ['catalog-tree__recycle', this.recyclePlace];
         }
         return '';
       },
 
       getRecycle() {
-        for (let i = 0; i < this.positions.length; i++) {
-          const position = this.positions[i];
-          if (position.id === 'recycle') {
-            return position;
-          }
-        }
-        return null;
+        return this.positions[0];
       },
 
-      switchToRecycle(id) {
-        this.settled[id] = false;
-        this.recycled[id] = true;
-      },
-
-      switchToCatalog(id) {
-        this.recycled[id] = false;
-        this.settled[id] = true;
+      isRecycle(node) {
+        return node.data.id === 'recycle';
       },
 
       recycleNode(id) {
-        this.switchToRecycle(id);
-        const recycle = this.getRecycle();
-        const last = recycle.children[0];
-        recycle.children.unshift({
-          id: id,
-          parent_id: 'recycle',
-          prev_id: null,
-          next_id: last ? last.id : null,
-        });
+        this.settled[id] = false;
+        this.prependToPositions(this.getRecycle().children, id, 'recycle');
+        this.sortRecycledNodes();
+
+        this.syncToRecycleDefaultOrders(id);
       },
 
       appendNode(id) {
-        this.switchToCatalog(id);
-        const last = this.positions[this.positions.length - 1];
+        this.settled[id] = true;
+        this.appendToPositions(this.positions, id);
+
+        this.syncToRecycleDefaultOrders(id);
+      },
+
+      appendToPositions(positions, id, parent_id) {
+        const last = positions[positions.length - 1];
         if (last) {
           last.next_id = id;
         }
-        this.positions.push({
+        positions.push({
           id: id,
-          parent_id: null,
+          parent_id: parent_id || null,
           prev_id: last ? last.id : null,
           next_id: null,
+        });
+      },
+
+      prependToPositions(positions, id, parent_id) {
+        const first = positions[0];
+        if (first) {
+          first.prev_id = id;
+        }
+        positions.unshift({
+          id: id,
+          parent_id: parent_id || null,
+          prev_id: null,
+          next_id: first ? first.id : null,
         });
       },
 
@@ -183,13 +195,15 @@
         if (id === 'recycle') {
           return attr === 'title' ? '节点回收站' : '(未定义)';
         }
-
         const node = this.nodes[id];
-        if (node && (attr == 'updated_at' || attr == 'created_at')) {
+        if (!node || !node[attr]) {
+          return '(已删除)';
+        }
+        if (attr == 'updated_at' || attr == 'created_at') {
           const t = moment(node[attr]).fromNow();
           return t.replace('minutes', 'm').replace('seconds', 's');
         }
-        return (node && node[attr] || '(已删除)');
+        return node[attr];
       },
 
       allowDrag(draggingNode) {
@@ -197,11 +211,11 @@
       },
 
       allowDrop(draggingNode, dropNode, type) {
-        return !this.recycled[dropNode.data.id];
+        return this.settled[dropNode.data.id];
       },
 
       handleDrop(draggingNode, dropNode, dropType, ev) {
-        this.switchToCatalog(draggingNode.data.id);
+        this.settled[draggingNode.data.id] = true;
       },
 
       remove(node) {
@@ -234,18 +248,76 @@
         }
       },
 
-      switchRecyclePosition(node) {
-        const positions = ['top', 'center', 'bottom'];
-        const pos = positions.indexOf(this.currentRecyclePosition);
-        const newPosition = positions[(pos+1)%3];
+      syncToRecycleDefaultOrders(id) {
+        if (this.recycleDefaultOrders == null) {
+          return;
+        }
 
-        const el = node.treeNode.$el;
-        el.classList.remove(this.currentRecyclePosition);
-        el.classList.add(newPosition);
-        this.currentRecyclePosition = newPosition;
+        const orders = this.recycleDefaultOrders;
+        if (this.settled[id]) {
+          for (let i = 0, len = orders.length; i < len; i++) {
+            if (orders[i].id === id) {
+              orders.splice(i, 1);
+              break;
+            }
+          }
+        } else {
+          this.prependToPositions(orders, id, 'recycle');
+        }
       },
 
-      getPositionsWithoutRecycle() {
+      sortRecycledNodes() {
+        const recycle = this.getRecycle();
+
+        if (this.recycleOrderBy === 'default') {
+          if (this.recycleDefaultOrders) {
+            recycle.children.splice(0, recycle.children.length, ...this.recycleDefaultOrders);
+            this.recycleDefaultOrders = null;
+          }
+          return;
+        }
+
+        if (this.recycleDefaultOrders == null) {
+          this.recycleDefaultOrders = recycle.children.slice();
+        }
+
+        if (recycle.children.length <= 1) return;
+
+        const params = this.recycleOrderBy.split(',');
+        const attr = params[0];
+        const asc = params[1] === 'asc' ? 1 : -1;
+
+        const children = clone(recycle.children);
+        children.sort((a, b) => {
+          return this.nodes[a.id][attr] > this.nodes[b.id][attr] ? asc : -asc;
+        });
+
+        children[0].prev_id = null;
+        children[children.length - 1].next_id = null
+
+        let prev = null;
+        children.forEach(node => {
+          if (prev) {
+            node.prev_id = prev.id;
+            prev.next_id = node.id;
+          }
+          prev = node;
+        });
+
+        recycle.children.splice(0, children.length, ...children);
+      },
+
+      moveRecycle(recycleNode) {
+        const places = ['top', 'center', 'bottom'];
+        const newPlace = places[(places.indexOf(this.recyclePlace) + 1)%3];
+
+        const el = recycleNode.treeNode.$el;
+        el.classList.remove(this.recyclePlace);
+        el.classList.add(newPlace);
+        this.recyclePlace = newPlace;
+      },
+
+      getSettledPositions() {
         const positions = clone(this.positions);
         positions.shift();
         positions[0].prev_id = null;
@@ -260,7 +332,7 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        const positions = this.getPositionsWithoutRecycle();
+        const positions = this.getSettledPositions();
         if (app.initial_data === JSON.stringify(positions)) {
           window.location.href = "{{ short_url('catalogs.index') }}";
           return;

@@ -1352,7 +1352,7 @@ h2.jc-form-info-item {
   right: 30px;
   width: 720px;
   padding: 8px;
-  border-radius: 5px;
+  border-radius: 2px;
   z-index: 20;
   background-color: #ffffff;
   box-shadow: 0 7px 8px -4px rgba(0,0,0,.2), 0 12px 17px 2px rgba(0,0,0,.14), 0 5px 22px 4px rgba(0,0,0,.12);
