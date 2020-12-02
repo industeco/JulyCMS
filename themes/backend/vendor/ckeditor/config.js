@@ -21,6 +21,7 @@ CKEDITOR.editorConfig = function( config ) {
     element: 'b',
     overrides: 'strong',
   };
+  config.entities = false;
 
   config.toolbarGroups = [
     { name: 'styles', groups: [ 'styles' ] },
