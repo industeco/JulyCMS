@@ -2,12 +2,13 @@
 
 namespace July\Core\Config;
 
+use App\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use July\Core\Entity\EntityBase;
 use July\Core\Entity\EntityInterface;
 
-class Config extends EntityBase implements EntityInterface
+class Config extends Model
 {
     /**
      * 与模型关联的表名
@@ -47,8 +48,8 @@ class Config extends EntityBase implements EntityInterface
         'group',
         'label',
         'description',
-        'is_readonly',
-        'is_translatable',
+        // 'is_readonly',
+        // 'is_translatable',
         'langcode',
     ];
 
@@ -58,35 +59,35 @@ class Config extends EntityBase implements EntityInterface
      * @var array
      */
     protected $casts = [
-        'is_readonly' => 'boolean',
-        'is_translatable' => 'boolean',
+        // 'is_readonly' => 'boolean',
+        // 'is_translatable' => 'boolean',
     ];
 
-    /**
-     * 默认加载的关联
-     *
-     * @var array
-     */
-    protected $with = [
-        'values', 'preferences'
-    ];
+    // /**
+    //  * 默认加载的关联
+    //  *
+    //  * @var array
+    //  */
+    // protected $with = [
+    //     // 'values', 'preferences'
+    // ];
 
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'group',
-        'label',
-        'description',
-        'is_readonly',
-        'is_translatable',
-        'langcode',
-        'updated_at',
-        'created_at',
-    ];
+    // /**
+    //  * 内建属性登记处
+    //  *
+    //  * @var array
+    //  */
+    // protected static $columns = [
+    //     'id',
+    //     'group',
+    //     'label',
+    //     'description',
+    //     // 'is_readonly',
+    //     // 'is_translatable',
+    //     'langcode',
+    //     'updated_at',
+    //     'created_at',
+    // ];
 
     /**
      * 覆写时转换一些数据
@@ -97,25 +98,25 @@ class Config extends EntityBase implements EntityInterface
         'jc.form.editor.ckeditor.filebrowserImageBrowseUrl' => 'short_url',
     ];
 
-    /**
-     * 获取配置值
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function values()
-    {
-        return $this->hasMany(ConfigValue::class);
-    }
+    // /**
+    //  * 获取配置值
+    //  *
+    //  * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    //  */
+    // public function values()
+    // {
+    //     return $this->hasMany(ConfigValue::class);
+    // }
 
-    /**
-     * 获取偏好设置
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function preferences()
-    {
-        return $this->hasMany(UserPreferences::class);
-    }
+    // /**
+    //  * 获取偏好设置
+    //  *
+    //  * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    //  */
+    // public function preferences()
+    // {
+    //     return $this->hasMany(UserPreferences::class);
+    // }
 
     /**
      * 从数据库中加载配置数据，并覆写当前配置
@@ -226,8 +227,7 @@ class Config extends EntityBase implements EntityInterface
 
         // 获取 UserPereferences
         if ('user_preferences' === $this->group) {
-            if ($user = Auth::user()) {
-                $userId = $user->id;
+            if ($userId = Auth::id()) {
                 $preferences = $this->preferences->first(function($p) use($userId) {
                     return $p->user_id == $userId;
                 });
@@ -252,18 +252,18 @@ class Config extends EntityBase implements EntityInterface
         return null;
     }
 
-    /**
-     * 生成一个完整的配置数组，包括本地属性（id,group,label,...）+ value
-     *
-     * @param string|null $langcode
-     * @return array
-     */
-    public function gather($langcode = null)
-    {
-        return array_merge($this->getAttributes(), [
-            'value' => $this->getValue($langcode)
-        ]);
-    }
+    // /**
+    //  * 生成一个完整的配置数组，包括本地属性（id,group,label,...）+ value
+    //  *
+    //  * @param string|null $langcode
+    //  * @return array
+    //  */
+    // public function gather($langcode = null)
+    // {
+    //     return array_merge($this->attributesToArray(), [
+    //         'value' => $this->getValue($langcode)
+    //     ]);
+    // }
 
     /**
      * 更新配置
@@ -274,7 +274,7 @@ class Config extends EntityBase implements EntityInterface
     public static function updateConfigs(array $changed)
     {
         // 获取当前用户
-        $user = Auth::user();
+        $userId = Auth::id();
 
         // 保存变动数据
         foreach (static::findMany(array_keys($changed)) as $config) {
@@ -283,11 +283,11 @@ class Config extends EntityBase implements EntityInterface
             $value = $changed[$key];
 
             if ($config->group === 'user_preferences') {
-                if ($user) {
+                if ($userId) {
                     // 更新用户偏好设置
                     UserPreferences::query()->updateOrCreate([
                         'config_id' => $key,
-                        'user_id' => $user->id,
+                        'user_id' => $userId,
                     ], ['value' => $value]);
                 }
             } else {

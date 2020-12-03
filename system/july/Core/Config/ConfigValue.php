@@ -41,16 +41,4 @@ class ConfigValue extends Model
     protected $casts = [
         'value' => Serialized::class,
     ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'config_id',
-        'langcode',
-        'value',
-    ];
 }

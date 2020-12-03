@@ -28,42 +28,42 @@ class CreateConfigsTable extends Migration
             $table->string('description', 255)->nullable();
 
             // 是否只读
-            $table->boolean('is_readonly')->default(false);
+            // $table->boolean('is_readonly')->default(false);
 
             // 是否可翻译
-            $table->boolean('is_translatable')->default(false);
+            // $table->boolean('is_translatable')->default(false);
 
             // 默认语言
             $table->string('langcode', 12)->default('zxx');
         });
 
-        // 配置值表
-        Schema::create('config__value', function (Blueprint $table) {
-            $table->id();
+        // // 配置值表
+        // Schema::create('config__value', function (Blueprint $table) {
+        //     $table->id();
 
-            // 配置 id
-            $table->string('config_id', 128);
+        //     // 配置 id
+        //     $table->string('config_id', 128);
 
-            // 语言
-            $table->string('langcode', 12)->default('zxx');
+        //     // 语言
+        //     $table->string('langcode', 12)->default('zxx');
 
-            // 配置值
-            $table->binary('value');
-        });
+        //     // 配置值
+        //     $table->binary('value');
+        // });
 
-        // 用户偏好设置表
-        Schema::create('user_preferences', function (Blueprint $table) {
-            $table->id();
+        // // 用户偏好设置表
+        // Schema::create('user_preferences', function (Blueprint $table) {
+        //     $table->id();
 
-            // 配置 id
-            $table->string('config_id', 128);
+        //     // 配置 id
+        //     $table->string('config_id', 128);
 
-            // 用户 id
-            $table->unsignedBigInteger('user_id');
+        //     // 用户 id
+        //     $table->unsignedBigInteger('user_id');
 
-            // 配置值
-            $table->binary('value');
-        });
+        //     // 配置值
+        //     $table->binary('value');
+        // });
 
         Schema::create('path_alias', function (Blueprint $table) {
             $table->id();

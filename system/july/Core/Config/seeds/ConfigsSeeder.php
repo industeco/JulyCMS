@@ -52,7 +52,7 @@ class ConfigsSeeder extends SeederBase
                 'group' => 'site_information',
                 'label' => '首页网址',
                 'description' => '首页网址，只读（必要时可在 .env 文件中修改，键名：APP_URL）。',
-                'is_readonly' => true,
+                // 'is_readonly' => true,
             ],
             [
                 'id' => 'jc.site.subject',

@@ -44,23 +44,23 @@ class JulyServiceProvider extends ServiceProvider
     public function boot()
     {
         // 启动完成后从数据库中加载配置
-        $this->loadConfigFromDatabase();
+        // $this->loadConfigFromDatabase();
     }
 
-    /**
-     * 从数据库中加载配置
-     */
-    protected function loadConfigFromDatabase()
-    {
-        $this->app->booted(function() {
-            try {
-                // 加载数据库中的配置
-                JulyConfig::overwrite();
-            } catch (\Throwable $th) {
-                if (! $th instanceof QueryException) {
-                    throw $th;
-                }
-            }
-        });
-    }
+    // /**
+    //  * 从数据库中加载配置
+    //  */
+    // protected function loadConfigFromDatabase()
+    // {
+    //     $this->app->booted(function() {
+    //         try {
+    //             // 加载数据库中的配置
+    //             JulyConfig::overwrite();
+    //         } catch (\Throwable $th) {
+    //             if (! $th instanceof QueryException) {
+    //                 throw $th;
+    //             }
+    //         }
+    //     });
+    // }
 }
