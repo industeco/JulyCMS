@@ -2,13 +2,6 @@
 
 define('LARAVEL_START', microtime(true));
 
-/**
- * July CMS version 2.0.0
- *
- * @author   jchenk <jchenk@live.com>
- */
-define('JULY_VERSION', '2.0.0');
-
 /*
 |--------------------------------------------------------------------------
 | Register The Composer Auto Loader

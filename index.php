@@ -7,6 +7,13 @@
  * @author   Taylor Otwell <taylor@laravel.com>
  */
 
+/**
+ * July CMS version 3.0.0
+ *
+ * @author   jchenk <jchenk@live.com>
+ */
+define('JULY_VERSION', '3.0.0');
+
 /*
 |--------------------------------------------------------------------------
 | Register The Auto Loader

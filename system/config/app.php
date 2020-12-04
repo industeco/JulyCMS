@@ -230,4 +230,12 @@ return [
     'installed' => env('APP_INSTALLED', false),
 
     'demo' => env('APP_DEMO', false),
+
+    /**
+     * 可变配置项存储位置
+     */
+    'settings' => [
+        'configs' => 'configs.bin',
+        'preferences' => 'user_preferences.bin',
+    ],
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Bootstrap;
 
+use App\Utils\Settings;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
 use Illuminate\Contracts\Foundation\Application;
@@ -38,7 +39,7 @@ class LoadConfiguration extends LaravelLoadConfiguration
         }
 
         // 加载自定义配置
-        $this->loadCustomConfiguration($app, $config);
+        Settings::loadSettings($app, $config);
 
         // Finally, we will set the application's environment based on the configuration
         // values that were loaded. We will pass a callback which will be used to get
@@ -50,23 +51,5 @@ class LoadConfiguration extends LaravelLoadConfiguration
         date_default_timezone_set($config->get('app.timezone', 'UTC'));
 
         mb_internal_encoding('UTF-8');
-    }
-
-    /**
-     * 加载自定义配置
-     *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @param  \Illuminate\Contracts\Config\Repository  $repository
-     * @return void
-     */
-    protected function loadCustomConfiguration(Application $app, RepositoryContract $repository)
-    {
-        if (is_file($file = $app->configPath('custom_configs.ser'))) {
-            $configs = unserialize(file_get_contents($file));
-
-            foreach ($configs as $key => $value) {
-                $repository->set($key, $value);
-            }
-        }
     }
 }

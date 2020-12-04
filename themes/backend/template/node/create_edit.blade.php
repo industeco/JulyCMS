@@ -187,8 +187,6 @@
           ],
         },
 
-        editorConfig: @json($context['editor_config'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-
         db: {
           // {{-- tags: @json($context['tags'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), --}}
           templates: @json($context['templates'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),

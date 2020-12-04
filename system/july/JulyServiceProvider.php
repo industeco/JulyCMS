@@ -2,6 +2,7 @@
 
 namespace July;
 
+use App\Utils\Settings;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\App;
@@ -20,6 +21,7 @@ class JulyServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // 生成 twig 单例
         $this->app->singleton('twig', function () {
             $loader = new \Twig\Loader\FilesystemLoader('template', frontend_path());
             if (config('app.debug')) {

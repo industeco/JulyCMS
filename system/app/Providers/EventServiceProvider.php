@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Utils\Arr;
+use App\Utils\Settings;
 use App\Utils\State;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Registered;
@@ -35,14 +36,7 @@ class EventServiceProvider extends ServiceProvider
 
         Event::listen(Authenticated::class, function(Authenticated $event) {
             // Log::info($event->user);
-            if (! State::has('user_preferences_loaded')) {
-                if ($file = config_path('user_preferences.ser')) {
-                    if ($preferences = Arr::get(unserialize(file_get_contents($file)), $event->user->id)) {
-                        config($preferences);
-                    }
-                }
-                State::set('user_preferences_loaded', true);
-            }
+            Settings::loadPreferences(app(), config());
         });
     }
 }

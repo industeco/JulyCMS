@@ -92,7 +92,7 @@ class NodeController extends Controller
                 // 'nodes' => $nodes,
                 'templates' => $this->getTwigTemplates($langcode),
                 // 'catalog_nodes' => Catalog::allPositions(),
-                'editor_config' => Config::getEditorConfig(),
+                // 'editor_config' => Config::getEditorConfig(),
             ],
             'langcode' => $langcode,
             'mode' => 'create',
@@ -154,7 +154,7 @@ class NodeController extends Controller
                 // 'nodes' => $this->simpleNodes($langcode),
                 'templates' => $this->getTwigTemplates($langcode),
                 // 'catalog_nodes' => Catalog::allPositions(),
-                'editor_config' => Config::getEditorConfig(),
+                // 'editor_config' => Config::getEditorConfig(),
             ],
             'langcode' => $langcode,
             'mode' => ($translateTo && $translateTo !== $langcode) ? 'translate' : 'edit',
@@ -192,7 +192,7 @@ class NodeController extends Controller
      */
     public function destroy(Node $node)
     {
-        Log::info($node->id);
+        // Log::info($node->id);
         $node->delete();
 
         return response('');

@@ -50,6 +50,17 @@ class State
      */
     public static function has(string $key)
     {
+        return array_key_exists($key, static::$states);
+    }
+
+    /**
+     * 获取指定状态的最后更新时间
+     *
+     * @param  string $key 状态键
+     * @return mixed
+     */
+    public static function changed(string $key)
+    {
         return static::$changelog[$key] ?? null;
     }
 }
