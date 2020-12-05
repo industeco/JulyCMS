@@ -10,7 +10,7 @@
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
         :disabled="!selected.length"
-        @click="render()">
+        @click.stop="render()">
         <div class="md-ripple"><div class="md-button-content">生成 HTML</div></div>
       </button>
     </div>
@@ -22,7 +22,7 @@
           <el-option label="按标题" value="title"></el-option>
           <el-option label="按类型" value="node_type"></el-option>
           <el-option label="按网址" value="url"></el-option>
-          <el-option label="按标签" value="tags"></el-option>
+          <el-option label="按颜色" value="color"></el-option>
           @if (config('jc.language.multiple'))
           <el-option label="按语言" value="langcode"></el-option>
           @endif
@@ -36,7 +36,7 @@
           @input="filterNodes"></el-input>
         <el-select v-if="filterBy=='node_type'" v-model="filterValues.node_type" size="small" placeholder="选择内容类型" @change="filterNodes">
           <el-option
-            v-for="(label, id) in _t
+            v-for="(label, id) in nodeTypes"
             :key="id"
             :label="label"
             :value="id">
@@ -47,11 +47,12 @@
           <el-option label="没有 URL" :value="false"></el-option>
         </el-select>
         <el-select size="small"
-          v-if="filterBy=='tags'"
-          v-model="filterValues.tags"
-          multiple
+          v-if="filterBy=='color'"
+          v-model="filterValues.color"
           @change="filterNodes">
-          <el-option v-for="tag in tags" :key="tag" :value="tag">@{{ tag }}</el-option>
+          <el-option value="is_red">红</el-option>
+          <el-option value="is_green">绿</el-option>
+          <el-option value="is_blue">蓝</el-option>
         </el-select>
         @if (config('jc.language.multiple'))
         <el-select size="small"
@@ -94,9 +95,11 @@
             <span v-else>@{{ scope.row.title }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标签" prop="tags" width="auto">
+        <el-table-column label="颜色" prop="color" width="240">
           <template slot-scope="scope">
-            <el-tag type="primary" size="small" effect="dark" v-for="tag in scope.row.tags" :key="tag">@{{ tag }}</el-tag>
+            <el-switch style="margin-right: 1em" v-model="scope.row.is_red" active-color="#F44336" inactive-color="#FFCDD2"></el-switch>
+            <el-switch style="margin-right: 1em" v-model="scope.row.is_green" active-color="#4caf50" inactive-color="#C8E6C9"></el-switch>
+            <el-switch style="margin-right: 1em" v-model="scope.row.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
           </template>
         </el-table-column>
         <el-table-column label="建议模板" prop="templates" width="auto" v-if="showSuggestedTemplates">
@@ -206,10 +209,10 @@
           node_type: null,
           url: true,
           langcode: "{{ langcode('content') }}",
-          tags: [],
+          color: '',
         },
 
-        tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        // {{-- tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), --}}
         languages: @json($languages, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         editUrl: "{{ short_url('nodes.edit', '%id%') }}",
@@ -304,8 +307,8 @@
           case 'url':
             nodes = this.filterByUrl(value);
           break;
-          case 'tags':
-            nodes = this.filterByTags(value);
+          case 'color':
+            nodes = this.filterByColor(value);
           break;
           case 'langcode':
             nodes = this.filterByLangcode(value);
@@ -356,21 +359,11 @@
         return nodes;
       },
 
-      filterByTags() {
-        const tags = this.filterValues.tags;
-        if (! tags.length) {
-          return clone(this.initialData);
-        }
-
+      filterByColor(value) {
         const nodes = [];
         this.initialData.forEach(node => {
-          if (node.tags.length) {
-            for (let i = 0; i < tags.length; i++) {
-              if (node.tags.indexOf(tags[i]) >= 0) {
-                nodes.push(clone(node));
-                break;
-              }
-            }
+          if (node[value]) {
+            nodes.push(clone(node));
           }
         });
 

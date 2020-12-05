@@ -23,6 +23,11 @@ class CreateNodesTable extends Migration
             // 源语言（创建时的语言）
             $table->string('langcode', 12);
 
+            // 属性三原色
+            $table->boolean('is_red')->default(false);
+            $table->boolean('is_green')->default(false);
+            $table->boolean('is_blue')->default(false);
+
             // 时间戳
             $table->timestamps();
         });

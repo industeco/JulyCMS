@@ -55,15 +55,6 @@ class Config extends Model
     ];
 
     /**
-     * 覆写时转换一些数据
-     *
-     * @var array
-     */
-    protected static $mutators = [
-        'jc.form.editor.ckeditor.filebrowserImageBrowseUrl' => 'short_url',
-    ];
-
-    /**
      * 分组获取
      *
      * @param string $group

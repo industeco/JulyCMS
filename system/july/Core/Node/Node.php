@@ -34,6 +34,20 @@ class Node extends EntityBase
     protected $fillable = [
         'node_type_id',
         'langcode',
+        'is_red',
+        'is_green',
+        'is_blue',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'is_red' => 'bool',
+        'is_green' => 'bool',
+        'is_blue' => 'bool',
     ];
 
     /**
@@ -45,6 +59,9 @@ class Node extends EntityBase
         'id',
         'node_type_id',
         'langcode',
+        'is_red',
+        'is_green',
+        'is_blue',
         'created_at',
         'updated_at',
     ];
@@ -167,6 +184,26 @@ class Node extends EntityBase
     public function positions()
     {
         return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog_id')->toArray();
+    }
+
+    /**
+     * 组合属性：is_black
+     *
+     * @return bool
+     */
+    public function getIsBlackAttribute()
+    {
+        return !$this->is_red && !$this->is_green && !$this->is_blue;
+    }
+
+    /**
+     * 组合属性：is_white
+     *
+     * @return bool
+     */
+    public function getIsWhiteAttribute()
+    {
+        return $this->is_red && $this->is_green && $this->is_blue;
     }
 
     /**

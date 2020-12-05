@@ -15,6 +15,17 @@
           {!! $field['element'] !!}
         @endif
       @endforeach
+      <el-form-item size="small" label="红绿蓝">
+        <el-tooltip popper-class="jc-twig-output" effect="dark" content="is_red" placement="top">
+          <el-switch style="margin-right: 1em" v-model="node.is_red" active-color="#F44336" inactive-color="#FFCDD2"></el-switch>
+        </el-tooltip>
+        <el-tooltip popper-class="jc-twig-output" effect="dark" content="is_green" placement="top">
+          <el-switch style="margin-right: 1em" v-model="node.is_green" active-color="#4caf50" inactive-color="#C8E6C9"></el-switch>
+        </el-tooltip>
+        <el-tooltip popper-class="jc-twig-output" effect="dark" content="is_blue" placement="top">
+          <el-switch style="margin-right: 1em" v-model="node.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
+        </el-tooltip>
+      </el-form-item>
       <div id="main_form_bottom" class="is-button-item">
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="submitMainForm">
           <div class="md-button-content">保存</div>
