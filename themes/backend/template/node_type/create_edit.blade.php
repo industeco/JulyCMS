@@ -20,7 +20,7 @@
             <div class="jc-embeded-field__buttons">
               <button type="button" title="选择或新建字段"
                 class="md-button md-icon-button md-dense md-accent md-theme-default"
-                @click="fieldSelectorVisible = true">
+                @click.stop="fieldSelectorVisible = true">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">add</i></div></div>
               </button>
             </div>
@@ -55,7 +55,7 @@
                   <td>
                     <div class="jc-operators">
                       <button type="button" title="编辑" class="md-button md-icon-button md-primary md-theme-default"
-                        @click="editField(field)">
+                        @click.stop="editField(field)">
                         <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
                         {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
                       </button>
@@ -85,7 +85,7 @@
                         type="button"
                         class="md-button md-icon-button md-primary md-theme-default"
                         title="编辑"
-                        @click="editField(field)">
+                        @click.stop="editField(field)">
                         <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
                         {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
                       </button>
@@ -93,7 +93,7 @@
                         type="button"
                         class="md-button md-icon-button md-accent md-theme-default"
                         title="删除"
-                        @click="removeField(field)">
+                        @click.stop="removeField(field)">
                         <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
                       </button>
                     </div>

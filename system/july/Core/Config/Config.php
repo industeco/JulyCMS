@@ -100,16 +100,14 @@ class Config extends Model
         $settings = [];
         $preferences = [];
 
-        // 分拣变动数据
-        foreach (static::all()->pluck('group', 'id') as $key => $group) {
-            if (!isset($changed[$key])) {
-                continue;
-            }
+        $groups = static::all()->pluck('group', 'id');
 
-            if ($group === 'user_preferences') {
-                $preferences[$key] = $changed[$key];
+        // 分拣变动数据
+        foreach ($changed as $key => $value) {
+            if ('user_preferences' === ($groups[$key] ?? null)) {
+                $preferences[$key] = $value;
             } else {
-                $settings[$key] = $changed[$key];
+                $settings[$key] = $value;
             }
         }
 

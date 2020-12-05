@@ -108,6 +108,12 @@ return [
                             'route' => ['configs.edit', 'user_preferences'],
                             'children' => [],
                         ],
+                        [
+                            'title' => '网址',
+                            'icon' => null,
+                            'route' => ['configs.edit', 'url'],
+                            'children' => [],
+                        ],
                     ],
                 ],
             ],

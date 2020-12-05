@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use July\Core\Config\PathAlias;
 use July\Core\Entity\EntityManager;
 use July\Core\Node\Node;
@@ -20,9 +21,16 @@ class AnyPage extends Controller
      */
     public function __invoke(Request $request)
     {
-        $url = $request->getRequestUri();
+        if ($redirection = $this->getRedirectiton($request)) {
+            return Redirect::to($redirection['to'], $redirection['code'] ?? 302);
+        }
+
+        $url = $request->getPathInfo();
         if (preg_match('/[A-Z]/', $url)) {
-            return Redirect::to(strtolower($url));
+            if (null !== $qs = $this->getQueryString()) {
+                $qs = '?'.$qs;
+            }
+            return Redirect::to(strtolower($url).$qs);
         }
 
         $url = trim(str_replace('\\', '/', $url), '/');
@@ -53,6 +61,18 @@ class AnyPage extends Controller
         }
 
         abort(404);
+    }
+
+    protected function getRedirectiton(Request $request)
+    {
+        $redirection = config('redirections', [])[$request->getRequestUri()] ?? null;
+        if ($redirection && $redirection['to']) {
+            $host = $request->getSchemeAndHttpHost();
+            if (! Str::startsWith($redirection['to'], $host)) {
+                $redirection['to'] = $host.'/'.ltrim($redirection['to'], '\\/');
+            }
+        }
+        return $redirection;
     }
 
     protected function getGoogleSitemap($langcode)

@@ -41,7 +41,6 @@ class NodeController extends Controller
                 'catalogs' => Catalog::all()->pluck('label', 'id')->all(),
                 // 'catalogs' => ['main' => '默认目录'],
                 // 'tags' => Tag::allTags(),
-                'tags' => [],
                 'languages' => Lang::getTranslatableLanguages(),
             ]);
     }

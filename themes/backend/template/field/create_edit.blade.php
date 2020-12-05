@@ -111,14 +111,14 @@
                 <button
                   type="button"
                   class="md-button md-icon-button md-primary md-theme-default"
-                  @click="addOption(index, '{{ $formData }}')">
+                  @click.stop="addOption(index, '{{ $formData }}')">
                   <i class="md-icon md-icon-font md-theme-default">add_circle</i>
                 </button>
                 <button
                   type="button"
                   class="md-button md-icon-button md-accent md-theme-default"
                   :disabled="{{ $formData }}.parameters.options.length < 2"
-                  @click="removeOption(index, '{{ $formData }}')">
+                  @click.stop="removeOption(index, '{{ $formData }}')">
                   <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
                 </button>
               </div>
