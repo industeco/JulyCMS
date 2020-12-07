@@ -51,7 +51,7 @@ class Settings
         }
 
         if ($data = safe_get_contents($app->basePath(static::SETTINGS_CACHE))) {
-            static::mergeConfiguration($repository, unserialize($data));
+            static::mergeSettings($repository, unserialize($data));
         }
         static::$settingsLoaded = true;
     }
@@ -71,26 +71,9 @@ class Settings
         }
 
         if ($data = safe_get_contents($app->basePath(static::PREFERENCES_CACHE))) {
-            static::mergeConfiguration($repository, unserialize($data)[$user->getAuthIdentifier()] ?? []);
+            static::mergeSettings($repository, unserialize($data)[$user->getAuthIdentifier()] ?? []);
         }
         static::$preferencesLoaded = true;
-    }
-
-    /**
-     * 加载设置
-     *
-     * @param  \Illuminate\Contracts\Config\Repository  $repository
-     * @param  array $configs
-     * @return void
-     */
-    protected static function mergeConfiguration(RepositoryContract $repository, array $configs)
-    {
-        foreach ($configs as $key => $value) {
-            if (is_array($value) && is_array($repository->get($key))) {
-                $value = array_merge($repository->get($key), $value);
-            }
-            $repository->set($key, $value);
-        }
     }
 
     /**
@@ -102,7 +85,7 @@ class Settings
     public static function saveSettings(array $settings)
     {
         // 整合到当前配置数组中
-        config()->set($settings);
+        static::mergeSettings(config(), $settings);
 
         // 保存到缓存文件中
         $file = base_path(static::SETTINGS_CACHE);
@@ -121,7 +104,7 @@ class Settings
     public static function savePreferences(array $preferences)
     {
         // 整合到当前配置数组中
-        config()->set($preferences);
+        static::mergeSettings(config(), $preferences);
 
         // 保存到缓存文件中
         if ($userId = Auth::id()) {
@@ -134,6 +117,23 @@ class Settings
                 $preferences = [$userId => $preferences];
             }
             file_put_contents($file, serialize($preferences));
+        }
+    }
+
+    /**
+     * 整合配置数据到当前设置中
+     *
+     * @param  \Illuminate\Contracts\Config\Repository  $repository
+     * @param  array $settings
+     * @return void
+     */
+    public static function mergeSettings(RepositoryContract $repository, array $settings)
+    {
+        foreach ($settings as $key => $value) {
+            if (is_array($value) && is_array($repository->get($key))) {
+                $value = array_merge($repository->get($key), $value);
+            }
+            $repository->set($key, $value);
         }
     }
 }
