@@ -136,19 +136,23 @@
     return document.getElementById('field__'+id).innerHTML;
   }
 
-  const node = {
-    @foreach ($node as $key => $value)
-    @if (is_null($value))
-    {{ $key }}: null,
-    @elseif (is_numeric($value))
-    {{ $key }}: {{ $value }},
-    @elseif (is_string($value) && strlen($value) > 255)
-    {{ $key }}: recieveFieldValue('{{ $value }}'),
-    @else
-    {{ $key }}: Base64.decode("{{ base64_encode($value) }}"),
-    @endif
-    @endforeach
-  };
+  // {{--
+  // const _node = {
+  //   @foreach ($node as $key => $value)
+  //   @if (is_null($value))
+  //   {{ $key }}: null,
+  //   @elseif (is_bool($value))
+  //   {{ $key }}: {{ $value ? 'true' : 'false' }},
+  //   @elseif (is_numeric($value))
+  //   {{ $key }}: {{ $value }},
+  //   @elseif (is_string($value) && strlen($value) > 255)
+  //   {{ $key }}: recieveFieldValue('{{ $key }}'),
+  //   @else
+  //   {{ $key }}: Base64.decode("{{ base64_encode($value) }}"),
+  //   @endif
+  //   @endforeach
+  // };
+  // --}}
 
   let app = new Vue({
     el: '#main_content',
@@ -175,7 +179,7 @@
       };
 
       return {
-        node: node,
+        node: @json($node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         rules: {
           url: [
             { pattern:/^(\/[a-z0-9\-_]+)+\.html$/, message:'网址格式不正确', trigger:'blur' },
