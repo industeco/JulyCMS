@@ -36,7 +36,7 @@ class EventServiceProvider extends ServiceProvider
 
         Event::listen(Authenticated::class, function(Authenticated $event) {
             // Log::info($event->user);
-            Settings::loadPreferences(app(), config());
+            Settings::loadPreferences(app(), config(), $event->user);
         });
     }
 }

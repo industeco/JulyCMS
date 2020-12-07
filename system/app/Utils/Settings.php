@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +51,7 @@ class Settings
         }
 
         if ($data = safe_get_contents($app->configPath(static::SETTINGS_STORAGE))) {
-            $repository->set(unserialize($data));
+            static::mergeConfiguration($repository, unserialize($data));
         }
         static::$settingsLoaded = true;
     }
@@ -60,19 +61,35 @@ class Settings
      *
      * @param  \Illuminate\Contracts\Foundation\Application  $app
      * @param  \Illuminate\Contracts\Config\Repository  $repository
+     * @param  \Illuminate\Contracts\Auth\Authenticatable $user
      * @return void
      */
-    public static function loadPreferences(Application $app, RepositoryContract $repository)
+    public static function loadPreferences(Application $app, RepositoryContract $repository, Authenticatable $user)
     {
         if (static::$preferencesLoaded) {
             return;
         }
 
-        if ($userId = Auth::id()) {
-            if ($data = safe_get_contents($app->configPath(static::PREFERENCES_STORAGE))) {
-                $repository->set(Arr::get(unserialize($data), $userId, []));
+        if ($data = safe_get_contents($app->configPath(static::PREFERENCES_STORAGE))) {
+            static::mergeConfiguration($repository, unserialize($data)[$user->getAuthIdentifier()] ?? []);
+        }
+        static::$preferencesLoaded = true;
+    }
+
+    /**
+     * 加载设置
+     *
+     * @param  \Illuminate\Contracts\Config\Repository  $repository
+     * @param  array $configs
+     * @return void
+     */
+    protected static function mergeConfiguration(RepositoryContract $repository, array $configs)
+    {
+        foreach ($configs as $key => $value) {
+            if (is_array($value) && is_array($repository->get($key))) {
+                $value = array_merge($repository->get($key), $value);
             }
-            static::$preferencesLoaded = true;
+            $repository->set($key, $value);
         }
     }
 
