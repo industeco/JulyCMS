@@ -1,1 +1,0 @@
-a:2:{s:20:"jc.language.multiple";b:0;s:12:"redirections";a:3:{s:20:"/index.php?query=xxx";a:2:{s:2:"to";s:11:"/index.html";s:4:"code";i:301;}s:13:"/code?var=abc";a:2:{s:2:"to";s:11:"/index.html";s:4:"code";i:302;}s:17:"/code.php?abc=xxx";a:2:{s:2:"to";s:11:"/index.html";s:4:"code";i:301;}}}

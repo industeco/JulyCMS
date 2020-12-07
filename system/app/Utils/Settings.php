@@ -14,14 +14,14 @@ class Settings
      *
      * @var string
      */
-    const SETTINGS_STORAGE = 'settings.bin';
+    const SETTINGS_CACHE = 'bootstrap/cache/settings.bin';
 
     /**
      * 偏好设置存储位置
      *
      * @var string
      */
-    const PREFERENCES_STORAGE = 'preferences.bin';
+    const PREFERENCES_CACHE = 'bootstrap/cache/preferences.bin';
 
     /**
      * 标记常规设置是否已加载
@@ -50,7 +50,7 @@ class Settings
             return;
         }
 
-        if ($data = safe_get_contents($app->configPath(static::SETTINGS_STORAGE))) {
+        if ($data = safe_get_contents($app->basePath(static::SETTINGS_CACHE))) {
             static::mergeConfiguration($repository, unserialize($data));
         }
         static::$settingsLoaded = true;
@@ -70,7 +70,7 @@ class Settings
             return;
         }
 
-        if ($data = safe_get_contents($app->configPath(static::PREFERENCES_STORAGE))) {
+        if ($data = safe_get_contents($app->basePath(static::PREFERENCES_CACHE))) {
             static::mergeConfiguration($repository, unserialize($data)[$user->getAuthIdentifier()] ?? []);
         }
         static::$preferencesLoaded = true;
@@ -105,7 +105,7 @@ class Settings
         config()->set($settings);
 
         // 保存到缓存文件中
-        $file = config_path(static::SETTINGS_STORAGE);
+        $file = base_path(static::SETTINGS_CACHE);
         if ($data = safe_get_contents($file)) {
             $settings = array_merge(unserialize($data), $settings);
         }
@@ -125,7 +125,7 @@ class Settings
 
         // 保存到缓存文件中
         if ($userId = Auth::id()) {
-            $file = config_path(static::PREFERENCES_STORAGE);
+            $file = base_path(static::PREFERENCES_CACHE);
             if ($data = safe_get_contents($file)) {
                 $data = unserialize($data);
                 $data[$userId] = array_merge($data[$userId] ?? [], $preferences);
