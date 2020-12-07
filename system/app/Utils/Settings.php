@@ -51,7 +51,7 @@ class Settings
         }
 
         if ($data = safe_get_contents($app->basePath(static::SETTINGS_CACHE))) {
-            static::mergeSettings($repository, unserialize($data));
+            static::mergeSettings(unserialize($data), $repository);
         }
         static::$settingsLoaded = true;
     }
@@ -71,7 +71,7 @@ class Settings
         }
 
         if ($data = safe_get_contents($app->basePath(static::PREFERENCES_CACHE))) {
-            static::mergeSettings($repository, unserialize($data)[$user->getAuthIdentifier()] ?? []);
+            static::mergeSettings(unserialize($data)[$user->getAuthIdentifier()] ?? [], $repository);
         }
         static::$preferencesLoaded = true;
     }
@@ -85,7 +85,7 @@ class Settings
     public static function saveSettings(array $settings)
     {
         // 整合到当前配置数组中
-        static::mergeSettings(config(), $settings);
+        static::mergeSettings($settings);
 
         // 保存到缓存文件中
         $file = base_path(static::SETTINGS_CACHE);
@@ -104,7 +104,7 @@ class Settings
     public static function savePreferences(array $preferences)
     {
         // 整合到当前配置数组中
-        static::mergeSettings(config(), $preferences);
+        static::mergeSettings($preferences);
 
         // 保存到缓存文件中
         if ($userId = Auth::id()) {
@@ -123,12 +123,15 @@ class Settings
     /**
      * 整合配置数据到当前设置中
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $repository
      * @param  array $settings
+     * @param  \Illuminate\Contracts\Config\Repository  $repository
      * @return void
      */
-    public static function mergeSettings(RepositoryContract $repository, array $settings)
+    public static function mergeSettings(array $settings, RepositoryContract $repository = null)
     {
+        if ($repository === null) {
+            $repository = app('config');
+        }
         foreach ($settings as $key => $value) {
             if (is_array($value) && is_array($repository->get($key))) {
                 $value = array_merge($repository->get($key), $value);
