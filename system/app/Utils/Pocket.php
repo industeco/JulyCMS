@@ -12,45 +12,66 @@ use Illuminate\Support\Str;
 class Pocket
 {
     /**
+     * 调用 Pocket 的主体：类或类实例
+     *
      * @var string|object
      */
     protected $subject;
 
     /**
+     * 键名前缀
+     *
      * @var string
      */
     protected $prefix = '';
 
     /**
-     * @param  string|object $subject
+     * 默认的键名
+     *
+     * @var \App\Utils\Value
      */
-    public function __construct($subject)
+    protected $pockey;
+
+    // /**
+    //  * 执行 takeout 动作的实际方法
+    //  *
+    //  * @var string
+    //  */
+    // protected $takeoutMethod = '';
+
+    /**
+     * @param  string|object $subject 调用 Pocket 的主体：类或类实例
+     * @param  mixed $key 默认的键名
+     */
+    public function __construct($subject, $key = '')
     {
         $this->subject = $subject;
-
         $this->prefix = static::generatePrefix($subject);
+        $this->useKey($key);
     }
 
     /**
      * 快捷创建
      *
-     * @param  string|object $subject
+     * @param  string|object $subject 调用 Pocket 的主体：类或类实例
+     * @param  mixed $key 默认的键名
      * @return self
      */
-    public static function make($subject)
+    public static function make($subject, string $key = null)
     {
-        return new static($subject);
+        return new static($subject, $key);
     }
 
     /**
      * 快捷创建
      *
-     * @param  string|object $subject
+     * @param  string|object $subject 调用 Pocket 的主体：类或类实例
+     * @param  mixed $key 默认的键名
      * @return self
      */
-    public static function apply($subject)
+    public static function apply($subject, string $key = null)
     {
-        return new static($subject);
+        return new static($subject, $key);
     }
 
     /**
@@ -77,17 +98,24 @@ class Pocket
     }
 
     /**
+     * 获取缓存键
+     *
+     * @return \App\Utils\Value
+     */
+    public function getKey()
+    {
+        return $this->pockey;
+    }
+
+    /**
      * 生成 Cache Key
      *
      * @param mixed $key
-     * @return \App\Utils\Value
+     * @return $this
      */
-    public function key($key)
+    public function useKey($key)
     {
         if ($key instanceof Value) {
-            if ($this->isKey($key->value())) {
-                return $key;
-            }
             $key = $key->value();
         }
 
@@ -95,47 +123,34 @@ class Pocket
             asort($key);
         }
 
-        return new Value($this->prefix.short_md5(serialize($key)));
-    }
+        $this->pockey = new Value($this->prefix.short_md5(serialize($key)));
 
-    /**
-     * 判断是否 Pocket Key
-     *
-     * @param  mixed $key
-     * @return bool
-     */
-    protected function isKey($key)
-    {
-        return is_string($key) &&
-            preg_match('/^[a-f0-9]{16}\/[a-f0-9]{16}$/', $key) &&
-            Str::startsWith($key, $this->prefix);
+        return $this;
     }
 
     /**
      * 存储值到缓存中
      *
-     * @param mixed $key
      * @param mixed $value
-     * @return boolean
+     * @return bool
      */
-    public function put($key, $value)
+    public function put($value)
     {
         if ($value instanceof Value) {
             $value = $value->value();
         }
 
-        return Cache::put($this->key($key)->value(), $value);
+        return Cache::put($this->pockey->value(), $value);
     }
 
     /**
      * 从缓存中获取值
      *
-     * @param mixed $key
      * @return \App\Utils\Value|null
      */
-    public function get($key)
+    public function get()
     {
-        $value = Cache::get($this->key($key)->value(), $this);
+        $value = Cache::get($this->pockey->value(), $this);
         if ($value === $this) {
             return null;
         }
@@ -149,51 +164,78 @@ class Pocket
      * @param  mixed $key
      * @return boolean
      */
-    public function clear($key)
+    public function clear()
     {
-        return Cache::forget($this->key($key)->value());
+        return Cache::forget($this->pockey->value());
     }
 
-    /**
-     * 取出缓存的数据
-     *
-     * @param  string $key
-     * @param  array $parameters 其它参数
-     * @return \App\Utils\Value|null
-     */
-    public function takeout(string $key, ...$parameters)
-    {
-        if ($value = $this->get($key)) {
-            return $value;
-        }
+    // /**
+    //  * 判断是否 Pocket Key
+    //  *
+    //  * @param  mixed $key
+    //  * @return bool
+    //  */
+    // protected function isPockey($key)
+    // {
+    //     if (!is_object($key) || !($key instanceof Value)) {
+    //         return false;
+    //     }
 
-        $method = 'takeout'.Str::studly($key);
-        $parameters = normalize_args($parameters);
-        if (!is_null($value = $this->callSubject($method, $parameters))) {
-            $this->put($key, $value);
-            return new Value($value);
-        }
+    //     $key = $key->value();
+    //     return is_string($key) &&
+    //         preg_match('/^[a-f0-9]{16}\/[a-f0-9]{16}$/', $key) &&
+    //         Str::startsWith($key, $this->prefix);
+    // }
 
-        return null;
-    }
+    // /**
+    //  * 指定使用主体上的哪个方法执行 takeout
+    //  *
+    //  * @param  string $method
+    //  * @return $this
+    //  */
+    // public function takeoutUse(string $method)
+    // {
+    //     $this->takeoutMethod = $method;
 
-    /**
-     * 调用 subject 上的方法
-     *
-     * @param  string $method
-     * @param  array $parameters
-     * @return mixed
-     */
-    protected function callSubject(string $method, array $parameters)
-    {
-        if (is_object($this->subject)) {
-            return optional($this->subject)->$method(...$parameters);
-        }
+    //     return $this;
+    // }
 
-        if (is_string($this->subject) && class_exists($this->subject)) {
-            return optional(new $this->subject)->$method(...$parameters);
-        }
+    // /**
+    //  * 取出缓存的数据
+    //  *
+    //  * @param  string $key
+    //  * @param  array $parameters 其它参数
+    //  * @return mixed
+    //  */
+    // public function takeout(string $key, array $parameters = [])
+    // {
+    //     if ($value = $this->get($key)) {
+    //         return $value;
+    //     }
 
-        return null;
-    }
+    //     $method = $this->takeoutMethod ?: 'retrieve'.Str::studly($key);
+    //     return tap($this->callSubject($method, $parameters), function($value) use ($key) {
+    //         $this->put($key, $value);
+    //     });
+    // }
+
+    // /**
+    //  * 调用 subject 上的方法
+    //  *
+    //  * @param  string $method
+    //  * @param  array $parameters
+    //  * @return mixed
+    //  */
+    // protected function callSubject(string $method, array $parameters)
+    // {
+    //     if (is_object($this->subject)) {
+    //         return optional($this->subject)->$method(...$parameters);
+    //     }
+
+    //     if (is_string($this->subject) && class_exists($this->subject)) {
+    //         return optional(new $this->subject)->$method(...$parameters);
+    //     }
+
+    //     return null;
+    // }
 }

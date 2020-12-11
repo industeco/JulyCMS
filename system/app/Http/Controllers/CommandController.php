@@ -115,7 +115,7 @@ class CommandController extends Controller
      */
     public function updateAdminPassword(Request $request)
     {
-        if (config('app.demo')) {
+        if (config('app.is_demo')) {
             return response('');
         }
 

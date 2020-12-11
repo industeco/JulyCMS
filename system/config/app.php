@@ -227,15 +227,10 @@ return [
     /**
      * 安装标记
      */
-    'installed' => env('APP_INSTALLED', false),
-
-    'demo' => env('APP_DEMO', false),
+    'is_installed' => env('APP_INSTALLED', false),
 
     /**
-     * 可变配置项存储位置
+     * demo 模式
      */
-    'settings' => [
-        'configs' => 'configs.bin',
-        'preferences' => 'user_preferences.bin',
-    ],
+    'is_demo' => env('APP_DEMO', false),
 ];

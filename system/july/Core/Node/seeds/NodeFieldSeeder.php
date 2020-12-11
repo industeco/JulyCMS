@@ -220,19 +220,19 @@ class NodeFieldSeeder extends SeederBase
             ],
         ];
 
-        $shared = [
-            'entity_name' => 'node_field',
+        $share = [
+            // 'entity_name' => 'node_field',
             'langcode' => langcode('content.default'),
         ];
 
-        return array_map(function($record) use($shared) {
-            $record += $shared;
+        return array_map(function($record) use($share) {
+            $record += $share;
             $record['parameters'] = serialize($record['parameters'] ?? []);
             return $record;
         }, $records);
     }
 
-    public static function afterSeeding()
+    public static function postSeeding()
     {
         foreach (NodeField::all() as $field) {
             $field->tableUp();

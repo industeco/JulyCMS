@@ -86,7 +86,7 @@ class NewMessage
             $mailBody = $this->getMailBody();
             // Log::info(compact('to', 'subject', 'mailBody'));
 
-            if (config('app.demo')) {
+            if (config('app.is_demo')) {
                 return true;
             }
 

@@ -3,9 +3,9 @@
 namespace July\Core\Config;
 
 use Illuminate\Support\Facades\Route;
-use July\Base\RouteProviderInterface;
+use July\Base\RouteRegisterInterface;
 
-class RouteProvider implements RouteProviderInterface
+class RouteRegister implements RouteRegisterInterface
 {
     /**
      * {@inheritdoc}

@@ -65,30 +65,30 @@ abstract class Model extends EloquentModel
         return Arr::except($this->attributesToArray(), $columns);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function boot()
-    {
-        parent::boot();
+    // /**
+    //  * {@inheritdoc}
+    //  */
+    // public static function boot()
+    // {
+    //     parent::boot();
 
-        static::created(function(Model $model) {
-            events()->record(static::class.':created');
-            events()->record(static::class.':changed');
-        });
+    //     static::created(function(Model $model) {
+    //         events()->record(static::class.':created');
+    //         events()->record(static::class.':changed');
+    //     });
 
-        static::updated(function(Model $model) {
-            events()->record(static::class.':updated');
-            events()->record(static::class.':changed');
-        });
+    //     static::updated(function(Model $model) {
+    //         events()->record(static::class.':updated');
+    //         events()->record(static::class.':changed');
+    //     });
 
-        static::saved(function(Model $model) {
-            events()->record(static::class.':saved');
-        });
+    //     static::saved(function(Model $model) {
+    //         events()->record(static::class.':saved');
+    //     });
 
-        static::deleted(function(Model $model) {
-            events()->record(static::class.':deleted');
-            events()->record(static::class.':changed');
-        });
-    }
+    //     static::deleted(function(Model $model) {
+    //         events()->record(static::class.':deleted');
+    //         events()->record(static::class.':changed');
+    //     });
+    // }
 }

@@ -44,9 +44,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
-        // 核心组件路由
-        $this->mapJulyRoutes();
-
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
@@ -63,9 +60,14 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes()
     {
+        // 核心组件路由
+        $this->mapJulyRoutes();
+
         Route::middleware('web')
              ->namespace($this->namespace)
              ->group(base_path('routes/web.php'));
+
+        // Route::fallback();
     }
 
     /**
@@ -88,8 +90,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapJulyRoutes()
     {
-        foreach (July::discoverRoutes() as $routes) {
-            $routes::register();
+        foreach (July::takeout('routes') as $routeRegister) {
+            $routeRegister::register();
         }
     }
 }

@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $seeders = July::discoverSeeders();
+        $seeders = July::takeout('seeders');
 
         DB::beginTransaction();
 

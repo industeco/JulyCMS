@@ -3,10 +3,10 @@
 namespace July\Core\Installer;
 
 use Illuminate\Support\Facades\Route;
-use July\Base\RouteProviderInterface;
+use July\Base\RouteRegisterInterface;
 use July\Core\Installer\Controllers\InstallController;
 
-class RouteProvider implements RouteProviderInterface
+class RouteRegister implements RouteRegisterInterface
 {
     /**
      * {@inheritdoc}

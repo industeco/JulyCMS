@@ -16,7 +16,7 @@ class State
      *
      * @var array
      */
-    protected static $changelog = [];
+    protected static $log = [];
 
     /**
      * 设置状态值
@@ -28,7 +28,7 @@ class State
     public static function set(string $key, $value = true)
     {
         static::$states[$key] = $value;
-        static::$changelog[$key] = microtime(true);
+        static::$log[$key] = microtime(true);
     }
 
     /**
@@ -61,6 +61,6 @@ class State
      */
     public static function changed(string $key)
     {
-        return static::$changelog[$key] ?? null;
+        return static::$log[$key] ?? null;
     }
 }

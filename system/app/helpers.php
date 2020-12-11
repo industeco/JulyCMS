@@ -213,16 +213,6 @@ if (! function_exists('short_md5')) {
     }
 }
 
-if (! function_exists('events')) {
-    /**
-     * @return \App\Utils\EventsBook
-     */
-    function events()
-    {
-        return app('events_book');
-    }
-}
-
 if (! function_exists('state')) {
     /**
      * @param  string|array|null $key
@@ -255,6 +245,16 @@ if (! function_exists('safe_get_contents')) {
     }
 }
 
+
+// if (! function_exists('events')) {
+//     /**
+//      * @return \App\Utils\EventsBook
+//      */
+//     function events()
+//     {
+//         return app('events_book');
+//     }
+// }
 
 // if (! function_exists('html')) {
 //     /**

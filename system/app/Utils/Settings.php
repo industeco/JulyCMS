@@ -132,6 +132,7 @@ class Settings
         if ($repository === null) {
             $repository = app('config');
         }
+
         foreach ($settings as $key => $value) {
             if (is_array($value) && is_array($repository->get($key))) {
                 $value = array_merge($repository->get($key), $value);

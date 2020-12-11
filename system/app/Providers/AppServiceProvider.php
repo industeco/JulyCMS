@@ -16,13 +16,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('events_book', function() {
-            return new EventsBook();
-        });
+        // $this->app->singleton('events_book', function() {
+        //     return new EventsBook();
+        // });
 
-        $this->app->terminating(function() {
-            events()->store();
-        });
+        // $this->app->terminating(function() {
+        //     events()->store();
+        // });
     }
 
     /**
@@ -36,8 +36,8 @@ class AppServiceProvider extends ServiceProvider
         view()->addNamespace('backend', backend_path('template'));
 
         // 登记迁移文件的路径
-        if (!config('app.installed') || $this->app->runningInConsole()) {
-            $this->loadMigrationsFrom(July::discoverMigrationPaths());
+        if (!config('app.is_installed') || $this->app->runningInConsole()) {
+            $this->loadMigrationsFrom(July::takeout('migration_paths'));
         }
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace July\Base;
+namespace App\Plugin;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-abstract class SeederBase extends Seeder
+abstract class PluginSeederBase extends Seeder
 {
     /**
      * 待填充的数据库表
@@ -16,7 +16,9 @@ abstract class SeederBase extends Seeder
     protected $tables = [];
 
     /**
-     * {@inheritdoc}
+     * Seed the application's database.
+     *
+     * @return void
      */
     public function run()
     {
@@ -28,9 +30,12 @@ abstract class SeederBase extends Seeder
     }
 
     /**
-     * {@inheritdoc}
+     * 获取数据
+     *
+     * @param string $table
+     * @return array
      */
-    public function getRecords($table)
+    public function getRecords(string $table)
     {
         $method = 'get'. Str::studly($table).'Records';
         if ($method !== 'getRecords' && method_exists($this, $method)) {

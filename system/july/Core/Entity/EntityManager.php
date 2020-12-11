@@ -47,7 +47,7 @@ final class EntityManager
      */
     public static function registerEntitiesInPath(string $path, string $prefix)
     {
-        foreach (static::discoverEntitiesInPath($path, $prefix) as $entity) {
+        foreach (static::discoverEntities($path, $prefix) as $entity) {
             static::$entities[$entity::getEntityName()] = $entity;
         }
     }
@@ -60,26 +60,24 @@ final class EntityManager
      */
     public static function registerCoreEntities($force = false)
     {
-        $cachekey = 'core_entities';
+        $pocket = Pocket::apply(static::class)->useKey('core_entities');
 
         if ($force) {
-            Pocket::apply(static::class)->clear($cachekey);
+            $pocket->clear();
         }
 
         $path = base_path('july/Core');
         $prefix = 'July\\Core\\';
 
         if ('production' === config('app.env')) {
-            $pocket = new Pocket(static::class);
-
-            if ($result = $pocket->get($cachekey)) {
-                $entities = $result->value();
+            if ($entities = $pocket->get()) {
+                $entities = $entities->value();
             } else {
-                $entities = static::discoverEntitiesInPath($path, $prefix);
-                $pocket->put($cachekey, $entities);
+                $entities = static::discoverEntities($path, $prefix);
+                $pocket->put($entities);
             }
         } else {
-            $entities = static::discoverEntitiesInPath($path, $prefix);
+            $entities = static::discoverEntities($path, $prefix);
         }
 
         static::$coreEntities = [];
@@ -93,7 +91,7 @@ final class EntityManager
      *
      * @return array
      */
-    public static function discoverEntitiesInPath(string $path, string $prefix)
+    public static function discoverEntities(string $path, string $prefix)
     {
         if (! is_dir($path)) {
             return [];

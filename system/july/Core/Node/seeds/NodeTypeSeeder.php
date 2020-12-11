@@ -26,7 +26,7 @@ class NodeTypeSeeder extends SeederBase
                 'id' => 'basic',
                 'is_necessary' => true,
                 'label' => '基础页面',
-                'description' => '用于生成静态页面，如「关于我们」页；该类型为系统预设，不可删除。',
+                'description' => '可用于静态页面，如「关于我们」页等；该类型不可删除。',
             ],
             [
                 'id' => 'list',
@@ -45,13 +45,14 @@ class NodeTypeSeeder extends SeederBase
             ],
         ];
 
-        $langcode = langcode('content.default');
-        return array_map(function($record) use($langcode) {
-            return $record + [
-                'langcode' => $langcode,
-                'created_at' => Date::now(),
-                'updated_at' => Date::now(),
-            ];
+        $share = [
+            'langcode' => langcode('content.default'),
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
+        ];
+
+        return array_map(function($record) use($share) {
+            return $record + $share;
         }, $records);
     }
 
