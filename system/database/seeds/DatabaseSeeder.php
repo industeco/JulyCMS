@@ -1,11 +1,18 @@
 <?php
 
+use App\Database\SeederManager;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use July\July;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * 注册的数据填充器
+     *
+     * @var array
+     */
+    protected static $seeders = [];
+
     /**
      * Seed the application's database.
      *
@@ -13,20 +20,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $seeders = July::takeout('seeders');
-
         DB::beginTransaction();
-
-        foreach ($seeders as $seeder) {
-            $this->call($seeder);
-        }
-
+        $this->call(static::$seeders);
         DB::commit();
 
-        foreach ($seeders as $seeder) {
+        foreach (static::$seeders as $seeder) {
             if (method_exists($seeder, 'afterSeeding')) {
                 $seeder::afterSeeding();
             }
         }
+
+        static::$seeders = [];
+    }
+
+    public function registerSeeders(array $seeders)
+    {
+        static::$seeders = array_merge(static::$seeders, $seeders);
     }
 }

@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use July\Core\Config\PathAlias;
-use July\Core\Entity\EntityManager;
-use July\Core\Node\Node;
 use July\Utils\GoogleSitemap;
 
 class AnyPage extends Controller

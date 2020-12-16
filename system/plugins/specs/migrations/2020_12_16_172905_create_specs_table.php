@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNodeTypesTable extends Migration
+class CreateSpecsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,9 @@ class CreateNodeTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('node_types', function (Blueprint $table) {
+        Schema::create('specs', function (Blueprint $table) {
             // id
             $table->string('id', 32)->primary();
-
-            // 是否必要类型：必要类型不可删除
-            $table->boolean('is_necessary')->default(0);
 
             // 标签
             $table->string('label', 32);
@@ -26,10 +23,6 @@ class CreateNodeTypesTable extends Migration
             // 描述
             $table->string('description', 255)->nullable();
 
-            // 语言
-            $table->string('langcode', 12);
-
-            // 时间戳
             $table->timestamps();
         });
     }
@@ -41,6 +34,6 @@ class CreateNodeTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('node_types');
+        Schema::dropIfExists('specs');
     }
 }

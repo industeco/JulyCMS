@@ -52,7 +52,9 @@
         },
         "classmap": [
             "database/seeds",
-            "database/factories"
+            "database/factories",
+            "plugins/*/core",
+            "plugins/*/seeds"
         ]
     },
     "autoload-dev": {

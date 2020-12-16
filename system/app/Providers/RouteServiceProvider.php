@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\AnyPage;
+use App\Plugin\Plugin;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
-use July\July;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -48,7 +49,7 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->mapWebRoutes();
 
-        //
+        $this->loadPluginRoutes();
     }
 
     /**
@@ -60,14 +61,22 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes()
     {
-        // 核心组件路由
-        $this->mapJulyRoutes();
+        // 定义重定向路由
+        foreach (config('redirections', []) as $from => $redirection) {
+            if (false === strpos($from, '?')) {
+                Route::redirect($from, $redirection['to'], $redirection['code'] ?? 302);
+            }
+        }
 
+        // 定义默认路由
         Route::middleware('web')
              ->namespace($this->namespace)
              ->group(base_path('routes/web.php'));
 
-        // Route::fallback();
+        // 定义兜底路由
+        $this->app->booted(function() {
+            Route::fallback(AnyPage::class);
+        });
     }
 
     /**
@@ -86,12 +95,14 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
-     * 定义 JulyCMS 核心组件路由
+     * 定义插件路由
+     *
+     * @return void
      */
-    protected function mapJulyRoutes()
+    protected function loadPluginRoutes()
     {
-        foreach (July::takeout('routes') as $routeRegister) {
-            $routeRegister::register();
+        foreach (Plugin::all() as $plugin) {
+            $plugin->loadRoutes();
         }
     }
 }

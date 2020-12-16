@@ -1,8 +1,8 @@
 <?php
 
 return [
-    // '/index.php?query=xxx' => [
+    // '/abc?q=x' => [
     //     'to' => '/index.html',
-    //     'code' => 301,
+    //     'code' => 302,
     // ],
 ];

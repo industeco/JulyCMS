@@ -73,7 +73,7 @@ class July
         foreach ($finder as $file) {
             $class = static::normalizeClass($file->getRelativePathname());
             if (is_subclass_of($class, SeederProviderInterface::class)) {
-                $seeders[] = $class;
+                $seeders = array_merge($seeders, $class::getSeeders());
             }
         }
         return $seeders;

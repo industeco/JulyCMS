@@ -2,7 +2,7 @@
 
 namespace July\Core\Config\seeds;
 
-use July\Base\SeederBase;
+use App\Database\SeederBase;
 
 class ConfigsSeeder extends SeederBase
 {

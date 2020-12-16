@@ -2,8 +2,8 @@
 
 namespace July\Core\Node\seeds;
 
+use App\Database\SeederBase;
 use Illuminate\Support\Facades\Date;
-use July\Base\SeederBase;
 
 class CatalogSeeder extends SeederBase
 {
