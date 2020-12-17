@@ -77,29 +77,4 @@ abstract class SettingsBase
             $repository->set($key, $value);
         }
     }
-
-    /**
-     * 保存偏好设置
-     *
-     * @param  array $preferences
-     * @return void
-     */
-    public static function savePreferences(array $preferences)
-    {
-        // 整合到当前配置数组中
-        static::merge($preferences, config());
-
-        // 保存到缓存文件中
-        if ($userId = Auth::id()) {
-            $file = base_path(static::$file);
-            if ($data = safe_get_contents($file)) {
-                $data = unserialize($data);
-                $data[$userId] = array_merge($data[$userId] ?? [], $preferences);
-                $preferences = $data;
-            } else {
-                $preferences = [$userId => $preferences];
-            }
-            file_put_contents($file, serialize($preferences));
-        }
-    }
 }

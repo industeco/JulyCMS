@@ -73,28 +73,17 @@ class Spec extends Model
     public function getDataTableColumns()
     {
         $columns = [];
-
-        $fields = request('fields') ?: $this->fields->all();
-        foreach ($fields as $field) {
-            $columns[] = $this->makeDataTableColumn($field);
+        foreach (request('fields') ?: $this->fields as $field) {
+            if ($field instanceof SpecField) {
+                $field = $field->attributesToArray();
+            }
+            $columns = array_merge(
+                $columns,
+                FieldType::findOrFail($field['field_type_id'])->bind($field)->getColumns()
+            );
         }
 
         return $columns;
-    }
-
-    /**
-     * 根据字段信息生成列信息
-     *
-     * @param  array|\Specs\SpecField $field
-     * @return array
-     */
-    protected function makeDataTableColumn($field)
-    {
-        if ($field instanceof SpecField) {
-            $field = $field->attributesToArray();
-        }
-
-        return $field;
     }
 
     /**

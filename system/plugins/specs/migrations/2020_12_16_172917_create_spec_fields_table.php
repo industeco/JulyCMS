@@ -29,10 +29,19 @@ class CreateSpecsFieldsTable extends Migration
             $table->string('description', 255)->nullable();
 
             // 字段类型（规格字段的特有类型）
-            $table->string('field_type', 32);
+            $table->string('field_type_id', 32);
 
             // 默认值
-            $table->string('default');
+            $table->string('default')->nullable();
+
+            // 可选项
+            $table->string('options')->nullable();
+
+            // 固定小数位
+            $table->unsignedTinyInteger('places')->nullable();
+
+            // 唯一性
+            $table->boolean('is_unique')->default(false);
 
             // 可分组
             $table->boolean('is_groupable')->default(false);

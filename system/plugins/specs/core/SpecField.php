@@ -24,8 +24,11 @@ class SpecField extends Model
         'spec_id',
         'label',
         'description',
-        'field_type',
+        'field_type_id',
         'default',
+        'options',
+        'places',
+        'is_unique',
         'is_groupable',
         'is_searchable',
         'is_deleted',
@@ -39,6 +42,8 @@ class SpecField extends Model
      */
     protected $casts = [
         'default' => Serialized::class,
+        'options' => Serialized::class,
+        'is_unique' => 'bool',
         'is_groupable' => 'bool',
         'is_searchable' => 'bool',
         'is_deleted' => 'bool',
