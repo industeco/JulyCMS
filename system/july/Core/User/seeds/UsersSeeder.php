@@ -5,6 +5,7 @@ namespace July\Core\User\seeds;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 use App\Database\SeederBase;
+use Illuminate\Support\Facades\Log;
 
 class UsersSeeder extends SeederBase
 {

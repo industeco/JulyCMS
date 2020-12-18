@@ -6,6 +6,9 @@ use App\Database\SeederManager;
 use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
+use Closure;
+use DatabaseSeeder;
+use Symfony\Component\Finder\Finder;
 
 class JulyServiceProvider extends ServiceProvider
 {
@@ -43,15 +46,34 @@ class JulyServiceProvider extends ServiceProvider
             $this->loadRoutes();
         }
 
-        if (!config('app.is_installed') || $this->app->runningInConsole()) {
-            // 注册数据填充器类
-            SeederManager::registerSeeders(function() {
-                return July::takeout('seeders');
-            });
+        // 登记迁移文件的路径
+        $this->loadMigrationsFrom(July::takeout('migration_paths'));
 
-            // 登记迁移文件的路径
-            $this->loadMigrationsFrom(July::takeout('migration_paths'));
-        }
+        // 注册数据填充器类
+        $this->loadSeedersFrom(function() {
+            return July::takeout('seeders');
+        });
+    }
+
+    /**
+     * 登记数据填充器路径
+     */
+    protected function loadSeedersFrom($path, string $namespace = '')
+    {
+        $this->callAfterResolving(DatabaseSeeder::class, function(DatabaseSeeder $seeder) use($path, $namespace) {
+            $seeders = [];
+            if (is_string($path)) {
+                foreach (Finder::create()->files()->name('*.php')->in($path)->depth(0) as $file) {
+                    if (class_exists($class = $namespace.$file->getBasename('.php'))) {
+                        $seeders[] = $class;
+                    }
+                }
+            } elseif ($path instanceof Closure) {
+                $seeders = $path();
+            }
+
+            $seeder->registerSeeders($seeders);
+        });
     }
 
     /**

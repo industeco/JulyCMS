@@ -221,7 +221,7 @@ class NodeFieldSeeder extends SeederBase
         ];
 
         $share = [
-            // 'entity_name' => 'node_field',
+            'entity_name' => 'node_field',
             'langcode' => langcode('content.default'),
         ];
 
@@ -232,7 +232,7 @@ class NodeFieldSeeder extends SeederBase
         }, $records);
     }
 
-    public static function postSeeding()
+    public static function afterSeeding()
     {
         foreach (NodeField::all() as $field) {
             $field->tableUp();
