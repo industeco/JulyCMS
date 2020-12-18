@@ -3,7 +3,7 @@
 namespace Specs;
 
 use App\Casts\Serialized;
-use Illuminate\Database\Eloquent\Model;
+use App\Model;
 
 class SpecField extends Model
 {
@@ -48,4 +48,36 @@ class SpecField extends Model
         'is_searchable' => 'bool',
         'is_deleted' => 'bool',
     ];
+
+    /**
+     * 属性及默认值
+     *
+     * @return array
+     */
+    public static function defaultAttributes()
+    {
+        return [
+            'field_id' => null,
+            'spec_id' => null,
+            'label' => null,
+            'description' => null,
+            'field_type_id' => 'text',
+            'default' => null,
+            'options' => [],
+            'places' => null,
+            'is_unique' => false,
+            'is_groupable' => false,
+            'is_searchable' => true,
+            'is_deleted' => false,
+            'delta' => 0,
+        ];
+    }
+
+    /**
+     * @return \Specs\FieldTypeDefinitions\DefinitionInterface
+     */
+    public function getFieldType()
+    {
+        return FieldType::findOrFail($this->attributes['field_type_id'])->bind($this->attributesToArray());
+    }
 }

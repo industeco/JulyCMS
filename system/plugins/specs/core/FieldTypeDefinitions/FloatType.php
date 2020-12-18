@@ -11,7 +11,7 @@ class FloatType extends DefinitionBase
      *
      * @var string
      */
-    protected $id = 'integer';
+    protected $id = 'float';
 
     /**
      * 字段类型标题

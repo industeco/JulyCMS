@@ -23,6 +23,30 @@ abstract class Model extends EloquentModel
     protected $updateExcept = [];
 
     /**
+     * 快捷创建实例
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public static function make(array $attributes = [])
+    {
+        return (new static)->newQuery()->make($attributes);
+    }
+
+    /**
+     * Save a new model and return the instance.
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public static function create(array $attributes = [])
+    {
+        return tap((new static)->newQuery()->make($attributes), function ($instance) {
+            $instance->save();
+        });
+    }
+
+    /**
      * Update the model in the database.
      *
      * @param  array  $attributes
@@ -42,16 +66,6 @@ abstract class Model extends EloquentModel
         }
 
         return $this->fill($attributes)->save($options);
-    }
-
-    /**
-     * 快捷创建实例
-     *
-     * @return static
-     */
-    public static function make(array $attributes = [])
-    {
-        return new static($attributes);
     }
 
     /**

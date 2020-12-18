@@ -80,6 +80,19 @@ return [
                     ],
                 ],
                 [
+                    'title' => '数据',
+                    'icon' => 'view_column',
+                    'route' => null,
+                    'children' => [
+                        [
+                            'title' => '规格',
+                            'icon' => null,
+                            'route' => 'specs.index',
+                            'children' => [],
+                        ],
+                    ],
+                ],
+                [
                     'title' => '文件',
                     'icon' => 'folder',
                     'route' => 'media.index',

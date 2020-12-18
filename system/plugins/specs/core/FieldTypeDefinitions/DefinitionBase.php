@@ -103,6 +103,18 @@ abstract class DefinitionBase implements DefinitionInterface
     /**
      * {@inheritdoc}
      */
+    public function attributesToArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'label' => $this->getLabel(),
+            'description' => $this->getDescription(),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getParameters()
     {
         $parameters = [];

@@ -82,6 +82,16 @@ body {
   line-height: 22px;
 }
 
+.jc-table.jc-data-table td {
+  padding: 0;
+  border-width: 0 1px 1px;
+}
+
+.jc-table.jc-data-table td .cell,
+.jc-table.jc-data-table th .cell {
+  justify-content: center;
+}
+
 .jc-table th>.cell, .jc-table td>.cell {
   display: flex;
   align-items: center;
@@ -875,6 +885,11 @@ h2.jc-form-info-item {
 .jc-dense .jc-input-intable {
   height: 32px;
   line-height: 32px;
+}
+
+.jc-data-table .jc-input-intable {
+  height: 36px;
+  line-height: 36px;
 }
 
 .jc-operators {

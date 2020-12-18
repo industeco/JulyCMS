@@ -26,6 +26,13 @@ interface DefinitionInterface
     public function getDescription();
 
     /**
+     * 获取 id, label, description 三属性
+     *
+     * @return array
+     */
+    public function attributesToArray();
+
+    /**
      * 获取列参数
      *
      * @return array
