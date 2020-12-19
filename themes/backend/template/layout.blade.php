@@ -198,7 +198,7 @@
     </div>
   </div>
 
-  <script src="/themes/backend/vendor/js-base64/base64.min.js"></script>
+  {{-- <script src="/themes/backend/vendor/js-base64/base64.min.js"></script> --}}
   <script src="/themes/backend/vendor/moment/moment.min.js"></script>
   <script src="/themes/backend/vendor/ckeditor/ckeditor.js"></script>
   <script src="/themes/backend/js/app.js"></script>

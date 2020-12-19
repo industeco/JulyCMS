@@ -4,6 +4,7 @@ namespace Specs;
 
 use App\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -97,6 +98,16 @@ class Spec extends Model
     }
 
     /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function getFields()
+    {
+        return $this->fields->map(function(SpecField $field) {
+            return Arr::except($field->attributesToArray(), ['id', 'created_at', 'updated_at']);
+        })->keyBy('field_id');
+    }
+
+    /**
      * 获取规格数据
      *
      * @return array
@@ -110,6 +121,43 @@ class Spec extends Model
                 return (array) $record;
             })
             ->all();
+    }
+
+    public function search(string $keywords, array $fields)
+    {
+        /** @var \Illuminate\Support\Collection */
+        $fieldsInfo = $this->getFields();
+        if (empty($fields)) {
+            $fields = $fieldsInfo->keys()->all();
+        }
+
+        $conditions = [];
+        foreach ($fields as $field_id) {
+            if ($fieldsInfo->get($field_id)['is_searchable'] ?? false) {
+                $conditions[] = [
+                    $field_id, 'like', '%'.$keywords.'%', 'or'
+                ];
+            }
+        }
+
+        $results = DB::table($this->getDataTable())
+            ->where($conditions)
+            ->get()
+            ->map(function($record) {
+                return (array) $record;
+            });
+
+        $groups = [];
+        foreach ($fieldsInfo as $field_id => $field) {
+            if ($field['is_groupable']) {
+                $groups[$field_id] = $results->countBy($field_id)->all();
+            }
+        }
+
+        return [
+            'groups' => $groups,
+            'records' => $results->all(),
+        ];
     }
 
     /**
@@ -186,7 +234,7 @@ class Spec extends Model
         $columns = [];
         foreach (request('fields') as $field) {
             if (!($field['id'] ?? null)) {
-                $columns[] = array_merge(
+                $columns = array_merge(
                     $columns,
                     FieldType::findOrFail($field['field_type_id'])->bind($field)->getColumns()
                 );

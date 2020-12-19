@@ -146,6 +146,7 @@
           show-word-limit></el-input>
         <span class="jc-form-item-help"><i class="el-icon-info"></i> 默认值</span>
       </el-form-item>
+      {{--
       <el-form-item label="预设值" size="small" class="has-helptext">
         <div class="jc-table-wrapper">
           <table class="jc-table jc-dense is-editable with-operators with-line-number">
@@ -199,6 +200,7 @@
       <el-form-item label="数值唯一" size="small">
         <el-switch v-model="currentField.is_unique" :disabled="!isEditable"></el-switch>
       </el-form-item>
+      --}}
       <el-form-item label="可分组" size="small">
         <el-switch v-model="currentField.is_groupable"></el-switch>
       </el-form-item>
@@ -390,10 +392,10 @@
           const spec = clone(app.spec);
 
           let delta = 0;
-          spec.fields = app.fields.map(function(field) {
-            if (field.field_type_id == 'text' && field.options) {
-              field.spec_id = spec.id;
-              field.delta = delta++;
+          spec.fields = clone(app.fields).map(field => {
+            field.spec_id = spec.id;
+            field.delta = delta++;
+            if (field.options.length) {
               field.options = field.options
                 .map(option => option.value)
                 .filter(option => option != null && option.length > 0);

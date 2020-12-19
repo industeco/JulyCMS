@@ -14,7 +14,23 @@ Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
     Route::get('specs/exists/{id}', [Controllers\SpecController::class, 'isExist'])
         ->name('specs.is_exist');
 
+    // 浏览数据
+    Route::get('specs/{spec}/records', [Controllers\SpecController::class, 'records'])
+        ->name('specs.records');
+
     // 数据导入
-    Route::get('specs/{spec}/insert', [Controllers\SpecController::class, 'insert'])
+    Route::post('specs/{spec}/records', [Controllers\SpecController::class, 'insert'])
         ->name('specs.insert');
+
+});
+
+Route::middleware(['web'])
+->group(function() {
+    // 搜索规格
+    Route::get('specs/{spec}/search', [Controllers\SpecController::class, 'showSearch'])
+        ->name('specs.show_search');
+
+    // 搜索规格
+    Route::post('specs/{spec}/search', [Controllers\SpecController::class, 'search'])
+        ->name('specs.search');
 });

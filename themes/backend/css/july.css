@@ -82,6 +82,22 @@ body {
   line-height: 22px;
 }
 
+.jc-table th>.cell, .jc-table td>.cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0;
+  line-height: inherit;
+}
+
+.jc-table.jc-data-table.el-table--border {
+  border-width: 0;
+}
+
+.jc-table.jc-data-table th {
+  border-width: 1px;
+}
+
 .jc-table.jc-data-table td {
   padding: 0;
   border-width: 0 1px 1px;
@@ -92,12 +108,9 @@ body {
   justify-content: center;
 }
 
-.jc-table th>.cell, .jc-table td>.cell {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 0;
-  line-height: inherit;
+.jc-table.jc-data-table th .cell {
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .jc-table th {
@@ -873,13 +886,14 @@ h2.jc-form-info-item {
   height: 36px;
   line-height: 36px;
   color: #595959;
-  background-color: #ffffff;
   border: none;
+  background: transparent;
 }
 
 .jc-input-intable:focus {
   outline: rgba(77,144,254,.5) solid 2px;
   outline-offset: -2px;
+  background-color: #ffffff;
 }
 
 .jc-dense .jc-input-intable {

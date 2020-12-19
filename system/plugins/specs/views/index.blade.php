@@ -50,7 +50,7 @@
         </a>
       </li>
       <li class="md-list-item">
-        <a :href="contextmenu.insertUrl" class="md-list-item-link md-list-item-container md-button-clean">
+        <a :href="contextmenu.recordsUrl" class="md-list-item-link md-list-item-container md-button-clean">
           <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-primary md-theme-default">storage</i>
             <span class="md-list-item-text">数据录入</span>
@@ -58,7 +58,7 @@
         </a>
       </li>
       <li class="md-list-item">
-        <div class="md-list-item-container md-button-clean" :disabled="true" @click.stop="deleteSpec(contextmenu.target)">
+        <div class="md-list-item-container md-button-clean" @click.stop="deleteSpec(contextmenu.target)">
           <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
             <span class="md-list-item-text">删除</span>
@@ -80,12 +80,12 @@
         contextmenu: {
           target: null,
           editUrl: null,
-          insertUrl: null,
+          recordsUrl: null,
         },
 
         editUrl: "{{ short_url('specs.edit', '_ID_') }}",
         deleteUrl: "{{ short_url('specs.destroy', '_ID_') }}",
-        insertUrl: "{{ short_url('specs.insert', '_ID_') }}",
+        recordsUrl: "{{ short_url('specs.records', '_ID_') }}",
       };
     },
 
@@ -98,7 +98,7 @@
         const _tar = this.contextmenu;
         _tar.target = row;
         _tar.editUrl = this.editUrl.replace('_ID_', row.id);
-        _tar.insertUrl = this.insertUrl.replace('_ID_', row.id);
+        _tar.recordsUrl = this.recordsUrl.replace('_ID_', row.id);
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);
@@ -109,7 +109,7 @@
           case 'edit':
             return this.editUrl.replace('_ID_', key);
           case 'insert':
-            return this.insertUrl.replace('_ID_', key);
+            return this.recordsUrl.replace('_ID_', key);
         }
       },
 

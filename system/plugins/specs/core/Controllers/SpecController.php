@@ -4,6 +4,8 @@ namespace Specs\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Specs\FieldType;
 use Specs\FieldTypeDefinitions\DefinitionInterface;
 use Specs\Spec;
@@ -120,20 +122,68 @@ class SpecController extends Controller
     }
 
     /**
-     * 录入数据
+     * 浏览/编辑数据
      *
      * @param  \Specs\Spec  $spec
      * @return \Illuminate\Http\Response
      */
-    public function insert(Spec $spec)
+    public function records(Spec $spec)
     {
         $data = [
-            'specs' => $spec->getRecords(),
-            'fields' => $spec->fields->toArray(),
+            'spec_id' => $spec->getKey(),
+            'records' => $spec->getRecords(),
+            'fields' => $spec->getFields()->all(),
             'template' => $spec->getTemplate(),
         ];
 
-        return view('specs::insert', $data);
+        return view('specs::records', $data);
+    }
+
+    /**
+     * 保存数据
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Specs\Spec  $spec
+     * @return \Illuminate\Http\Response
+     */
+    public function insert(Request $request, Spec $spec)
+    {
+        $table = $spec->getDataTable();
+
+        DB::beginTransaction();
+        DB::table($table)->delete();
+        foreach (array_reverse($request->input('records')) as $record) {
+            DB::table($table)->insert(Arr::except($record, ['id', 'created_at', 'updated_at']));
+        }
+        DB::commit();
+
+        return response('');
+    }
+
+    /**
+     * 规格搜索界面
+     */
+    public function showSearch(Spec $spec)
+    {
+        return view('specs::search', [
+            'fields' => $spec->getFields()->all(),
+            'spec_id' => $spec->id,
+        ]);
+    }
+
+    /**
+     * 检索规格
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Specs\Spec  $spec
+     * @return \Illuminate\Http\Response
+     */
+    public function search(Request $request, Spec $spec)
+    {
+        return response([
+            'fields' => $spec->getFields()->all(),
+            'results' => $spec->search($request->input('keywords', ''), $request->input('fields', [])),
+        ]);
     }
 
     /**
