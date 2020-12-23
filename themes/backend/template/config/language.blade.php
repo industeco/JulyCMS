@@ -38,7 +38,7 @@
               </el-option>
             </el-select>
             <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-              @click="addLanguage" :disabled="!isLangcodeSelectable">
+              @click.stop="addLanguage" :disabled="!isLangcodeSelectable">
               <div class="md-ripple">
                 <div class="md-button-content">添加到列表</div>
               </div>
@@ -73,7 +73,7 @@
                       class="md-button md-icon-button md-accent md-theme-default"
                       title="删除"
                       :disabled="isPreset(langcode)"
-                      @click="removeLanguage(langcode)">
+                      @click.stop="removeLanguage(langcode)">
                       <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
                     </button>
                   </div>
@@ -124,13 +124,10 @@
       @endif
     </el-form-item>
     <div id="main_form_bottom" class="is-button-item">
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="submit">
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="submit">
         <div class="md-button-content">保存</div>
       </button>
     </div>
-  </div>
-  <div id="main_form_right">
-    <h2 class="jc-form-info-item">通用非必填项</h2>
   </div>
 </el-form>
 @endsection

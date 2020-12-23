@@ -241,7 +241,7 @@ abstract class EntityFieldBase extends EntityBase
 
         // 清除字段值缓存
         $cachekey = join('/', [$entityId, $langcode, 'value']);
-        Pocket::apply($this)->clear($cachekey);
+        Pocket::make($this)->useKey($cachekey)->clear();
 
         DB::beginTransaction();
 
@@ -276,9 +276,9 @@ abstract class EntityFieldBase extends EntityBase
         list($table, $foreignKey, $entityId, $langcode) = $this->sharedVariables();
 
         // 尝试从缓存获取值
-        $pocket = new Pocket($this);
         $cachekey = join('/', [$entityId, $langcode, 'value']);
-        if ($value = $pocket->get($cachekey)) {
+        $pocket = Pocket::make($this)->useKey($cachekey);
+        if ($value = $pocket->get()) {
             return $value->value();
         }
 
@@ -294,7 +294,7 @@ abstract class EntityFieldBase extends EntityBase
         }
 
         // 缓存字段值
-        $pocket->put($cachekey, $value);
+        $pocket->put($value);
 
         return $value;
     }
@@ -310,7 +310,7 @@ abstract class EntityFieldBase extends EntityBase
 
         // 清除字段值缓存
         $cachekey = join('/', [$entityId, $langcode, 'value']);
-        Pocket::apply($this)->clear($cachekey);
+        Pocket::make($this)->useKey($cachekey)->clear();
 
         DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityId, $langcode]);
     }

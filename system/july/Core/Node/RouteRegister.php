@@ -27,12 +27,6 @@ class RouteRegister implements RouteRegisterInterface
                 Route::get('node_types/exists/{id}', [Controllers\NodeTypeController::class, 'isExist'])
                     ->name('node_types.is_exist');
 
-                // Route::get('node_types/{nodeType}/translate', [Controllers\NodeTypeController::class, 'translate'])
-                //     ->name('node_types.translate');
-
-                // Route::get('node_types/{nodeType}/translate/{langcode}', [Controllers\NodeTypeController::class, 'edit'])
-                //     ->name('node_types.translate_to');
-
                 Route::resource('node_types', Controllers\NodeTypeController::class)
                     ->parameters(['node_types' => 'nodeType'])
                     ->names('node_types');

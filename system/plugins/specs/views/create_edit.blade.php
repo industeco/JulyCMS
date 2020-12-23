@@ -33,7 +33,9 @@
                 <col width="120px">
                 <col width="auto">
                 <col width="100px">
-                <col width="120px">
+                <col width="100px">
+                <col width="100px">
+                <col width="100px">
               </colgroup>
               <thead>
                 <tr>
@@ -41,6 +43,8 @@
                   <th>ID</th>
                   <th>标题</th>
                   <th>描述</th>
+                  <th>可分组</th>
+                  <th>可搜索</th>
                   <th>类型</th>
                   <th>操作</th>
                 </tr>
@@ -57,7 +61,9 @@
                   <td><span>@{{ field.field_id }}</span></td>
                   <td><span>@{{ field.label }}</span></td>
                   <td><span>@{{ field.description }}</span></td>
-                  <td><span>@{{ field.field_type_id }}</span></td>
+                  <td><el-switch v-model="field['is_groupable']"></td>
+                  <td><el-switch v-model="field['is_searchable']"></td>
+                  <td><span>@{{ getFieldTypeLabel(field.field_type_id) }}</span></td>
                   <td>
                     <div class="jc-operators">
                       <button
@@ -88,9 +94,6 @@
           <div class="md-button-content">保存</div>
         </button>
       </div>
-    </div>
-    <div id="main_form_right">
-      <h2 class="jc-form-info-item">通用非必填项</h2>
     </div>
   </el-form>
   <el-dialog
@@ -134,9 +137,9 @@
           size="small"
           controls-position="right"
           :min="0"
-          :max="4"
+          :max="6"
           :disabled="!isEditable"></el-input-number>
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> 范围：0-4；0 表示不限制</span>
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> 范围：0-6；0 表示不限制</span>
       </el-form-item>
       <el-form-item label="默认值" size="small" class="has-helptext">
         <el-input
@@ -233,7 +236,7 @@
 
         specRules: {
           @if (!$spec['id'])
-          id: [
+          "id": [
             { required: true, message: '『ID』不能为空', trigger: 'submit' },
             { max: 32, message: '最多 32 个字符', trigger: 'change' },
             { pattern: /^[a-z0-9_]+$/, message: '『ID』只能包含小写字母、数字和下划线', trigger: 'change' },
@@ -258,11 +261,11 @@
             }
           ],
           @endif
-          label: [
+          "label": [
             { required: true, message: '『标题』不能为空', trigger: 'submit' },
             { max: 64, message: '最多 64 个字符', trigger: 'change' }
           ],
-          description: [
+          "description": [
             { max: 255, message: '最多 255 个字符', trigger: 'change' }
           ],
         },
@@ -278,6 +281,10 @@
             {
               validator: (rule, value, callback) => {
                 if (value && value.length) {
+                  if (['id', 'updated_at', 'created_at'].indexOf(value) >= 0) {
+                    callback(new Error('字段 id 已存在'));
+                    return;
+                  }
                   for (let i = 0, len = this.fields.length; i < len; i++) {
                     const field = this.fields[i];
                     if (field.field_id === value && field !== this.currentField) {
@@ -326,6 +333,13 @@
     },
 
     methods: {
+      getFieldTypeLabel(fieldTypeId) {
+        if (fieldTypeId && this.fieldTypes[fieldTypeId]) {
+          return this.fieldTypes[fieldTypeId].label;
+        }
+        return '';
+      },
+
       removeField(field) {
         for (let i = 0, len = this.fields.length; i < len; i++) {
           if (this.fields[i].field_id === field.field_id) {

@@ -103,7 +103,7 @@ class Spec extends Model
     public function getFields()
     {
         return $this->fields->map(function(SpecField $field) {
-            return Arr::except($field->attributesToArray(), ['id', 'created_at', 'updated_at']);
+            return $field->attributesToArray();
         })->keyBy('field_id');
     }
 
@@ -123,24 +123,46 @@ class Spec extends Model
             ->all();
     }
 
-    public function search(string $keywords, array $fields)
+    /**
+     * 查找指定 id 的规格记录
+     *
+     * @param  string|int $id 规格记录的 id
+     * @return array|null
+     */
+    public function getRecord($id)
     {
-        /** @var \Illuminate\Support\Collection */
-        $fieldsInfo = $this->getFields();
-        if (empty($fields)) {
-            $fields = $fieldsInfo->keys()->all();
+        if ($record = DB::table($this->getDataTable())->where('id', $id)->first()) {
+            return (array) $record;
         }
+        return null;
+    }
+
+    /**
+     * 搜索规格数据
+     *
+     * @param  string $keywords
+     * @return array $result
+     *
+     * $result 结构：
+     *  [
+     *      'groups' => array
+     *      'records' => array
+     *  ]
+     */
+    public function search(string $keywords)
+    {
+        $fields = $this->getFields();
 
         $conditions = [];
-        foreach ($fields as $field_id) {
-            if ($fieldsInfo->get($field_id)['is_searchable'] ?? false) {
+        foreach ($fields as $field_id => $field) {
+            if ($field['is_searchable'] ?? false) {
                 $conditions[] = [
                     $field_id, 'like', '%'.$keywords.'%', 'or'
                 ];
             }
         }
 
-        $results = DB::table($this->getDataTable())
+        $records = DB::table($this->getDataTable())
             ->where($conditions)
             ->get()
             ->map(function($record) {
@@ -148,15 +170,17 @@ class Spec extends Model
             });
 
         $groups = [];
-        foreach ($fieldsInfo as $field_id => $field) {
-            if ($field['is_groupable']) {
-                $groups[$field_id] = $results->countBy($field_id)->all();
+        if (! $records->isEmpty()) {
+            foreach ($fields as $field_id => $field) {
+                if ($field['is_groupable']) {
+                    $groups[$field_id] = $records->countBy($field_id)->all();
+                }
             }
         }
 
         return [
             'groups' => $groups,
-            'records' => $results->all(),
+            'records' => $records->all(),
         ];
     }
 
@@ -180,15 +204,13 @@ class Spec extends Model
         // 获取表名，判断是否存在
         $tableName = $this->getDataTable();
         if (Schema::hasTable($tableName)) {
+            $this->tableUpdate();
             return;
         }
 
         // 数据表列参数
         $columns = [];
-        foreach (request('fields') ?: $this->fields as $field) {
-            if ($field instanceof SpecField) {
-                $field = $field->attributesToArray();
-            }
+        foreach (request('fields') ?: $this->getFields() as $field) {
             $columns = array_merge(
                 $columns,
                 FieldType::findOrFail($field['field_type_id'])->bind($field)->getColumns()
@@ -208,16 +230,6 @@ class Spec extends Model
     }
 
     /**
-     * 移除规格存储表
-     *
-     * @return void
-     */
-    public function tableDown()
-    {
-        Schema::dropIfExists($this->getDataTable());
-    }
-
-    /**
      * 修改规格存储表
      *
      * @return void
@@ -233,7 +245,7 @@ class Spec extends Model
 
         $columns = [];
         foreach (request('fields') as $field) {
-            if (!($field['id'] ?? null)) {
+            if (!isset($field['id'])) {
                 $columns = array_merge(
                     $columns,
                     FieldType::findOrFail($field['field_type_id'])->bind($field)->getColumns()
@@ -249,6 +261,16 @@ class Spec extends Model
     }
 
     /**
+     * 移除规格存储表
+     *
+     * @return void
+     */
+    public function tableDown()
+    {
+        Schema::dropIfExists($this->getDataTable());
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function boot()
@@ -258,7 +280,7 @@ class Spec extends Model
         static::saved(function(Spec $spec) {
             $spec->fields()->delete();
             $spec->fields()->createMany(request('fields'));
-            $spec->tableUpdate();
+            $spec->tableUp();
         });
 
         static::deleted(function(Spec $spec) {

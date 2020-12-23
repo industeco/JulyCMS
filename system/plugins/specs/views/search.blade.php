@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', '七月 CMS')</title>
+  <title>搜索规格</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
   <link rel="stylesheet" href="/themes/backend/vendor/normalize.css/normalize.min.css">
   <link rel="stylesheet" href="/themes/backend/vendor/element-ui/theme-chalk/index.min.css">
@@ -16,26 +16,49 @@
       margin: 40px auto;
       padding: 20px;
     }
+    #search {
+      display: flex;
+      justify-content: center;
+    }
+    #groups, #records {
+      margin: 20px 0;
+      padding: 20px 40px;
+      border: 1px solid #ebebeb;
+    }
+    #records {
+      padding-left: 60px;
+    }
+    .record {
+      margin-bottom: 20px;
+    }
+    .record_data {
+      padding: 5px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
-  <script src="/themes/backend/js/svg.js"></script>
-
   <div id="main">
-    <el-form id="search_form" ref="specsSearchForm" label-width="100px">
-      <el-form-item label="查找规格" size="small">
-        <el-input type="text" v-model="keywords" autocomplete="off" native-size="60"></el-input>
-        <el-button type="primary" @click.stop="submit()">提交</el-button>
-      </el-form-item>
-    </el-form>
-    <div class="groups">
+    <div id="search">
+      <el-form id="search_form" ref="search_form">
+        <el-form-item size="small">
+          <el-input type="text" v-model="keywords" autocomplete="off" native-size="60" @keyup.enter.native="submit()"></el-input>
+          <el-button type="primary" @click.stop="submit()">搜索</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div id="groups">
       <div class="group" v-for="(group,field) in groups">
         <h3>@{{ field }}</h3>
         <el-checkbox v-for="(cnt, val) in group">@{{ val+'('+cnt+')' }}</el-checkbox>
       </div>
     </div>
     <ol id="records">
-      <li class="record" v-for="record in records">@{{ record }}</li>
+      <li class="record" v-for="record in records">
+        <div class="record_data">@{{ record }}</div>
+        <div><a :href="'/specs/{{ $spec_id }}/records/'+record.id" target="_blank" rel="noopener noreferrer">详情</a></div>
+      </li>
     </ol>
   </div>
 
@@ -54,8 +77,12 @@
         };
       },
 
+      mounted() {
+        this.$refs.search_form.$el.onsubmit = () => {return false}
+      },
+
       methods: {
-        submit() {
+        submit(e) {
           const keywords = this.keywords.trim();
           if (!keywords.length) {
             return;

@@ -6,10 +6,16 @@
   <div id="main_tools">
     <div class="jc-btn-group">
       <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="addSpec()">
-        <div class="md-button-content">新增规格</div>
+        <div class="md-button-content">新增</div>
       </button>
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="importSpecs()">
-        <div class="md-button-content">批量导入</div>
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="importData()">
+        <div class="md-button-content">导入</div>
+      </button>
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="exportData()">
+        <div class="md-button-content">导出</div>
+      </button>
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="massAssign()">
+        <div class="md-button-content">批量赋值</div>
       </button>
     </div>
     {{-- <div class="jc-translate"></div> --}}
@@ -59,7 +65,7 @@
   </div>
   <el-dialog
     id="data_collector"
-    title="粘贴数据"
+    title="原始数据"
     top="-5vh"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -91,8 +97,20 @@
     },
 
     methods: {
-      importSpecs() {
+      importData() {
         this.rawData = null;
+        this.collectorVisible = true;
+      },
+
+      exportData() {
+        let rawData = '';
+        this.records.forEach(record => {
+          @foreach ($fields as $field)
+          rawData += record["{{ $field['field_id'] }}"].trim() + '|';
+          @endforeach
+          rawData += '\n';
+        });
+        this.rawData = rawData;
         this.collectorVisible = true;
       },
 

@@ -41,7 +41,7 @@ class SpecController extends Controller
             'fields' => [],
             'fieldTypes' => FieldType::all()->map(function(DefinitionInterface $fieldType) {
                 return $fieldType->attributesToArray();
-            }),
+            })->keyBy('id')->all(),
             'emptyField' => SpecField::defaultAttributes(),
         ];
 
@@ -84,10 +84,10 @@ class SpecController extends Controller
     {
         $data = [
             'spec' => $spec->attributesToArray(),
-            'fields' => $spec->fields->toArray(),
+            'fields' => $spec->getFields()->values()->all(),
             'fieldTypes' => FieldType::all()->map(function(DefinitionInterface $fieldType) {
                 return $fieldType->attributesToArray();
-            }),
+            })->keyBy('id')->all(),
             'emptyField' => SpecField::defaultAttributes(),
         ];
 
@@ -183,6 +183,21 @@ class SpecController extends Controller
         return response([
             'fields' => $spec->getFields()->all(),
             'results' => $spec->search($request->input('keywords', ''), $request->input('fields', [])),
+        ]);
+    }
+
+    /**
+     * 检索规格
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Specs\Spec  $spec
+     * @param  string  $recordId
+     * @return \Illuminate\Http\Response
+     */
+    public function showRecord(Spec $spec, string $recordId)
+    {
+        return view('specs::record', [
+            'record' => $spec->getRecord($recordId),
         ]);
     }
 

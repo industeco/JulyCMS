@@ -21,7 +21,6 @@ Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
     // 数据导入
     Route::post('specs/{spec}/records', [Controllers\SpecController::class, 'insert'])
         ->name('specs.insert');
-
 });
 
 Route::middleware(['web'])
@@ -33,4 +32,8 @@ Route::middleware(['web'])
     // 搜索规格
     Route::post('specs/{spec}/search', [Controllers\SpecController::class, 'search'])
         ->name('specs.search');
+
+    // 规格展示
+    Route::get('specs/{spec}/records/{record_id}', [Controllers\SpecController::class, 'showRecord'])
+        ->name('specs.show_record');
 });
