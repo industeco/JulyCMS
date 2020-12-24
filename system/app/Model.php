@@ -23,7 +23,7 @@ abstract class Model extends EloquentModel
     protected $updateExcept = [];
 
     /**
-     * 快捷创建实例
+     * Create and return an un-saved model instance.
      *
      * @param  array  $attributes
      * @return \Illuminate\Database\Eloquent\Model|static

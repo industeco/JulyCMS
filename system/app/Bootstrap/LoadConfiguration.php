@@ -39,7 +39,7 @@ class LoadConfiguration extends LaravelLoadConfiguration
         }
 
         // 加载自定义配置
-        Settings::loadSettings($app, $config);
+        $this->loadSettings($app, $config);
 
         // Finally, we will set the application's environment based on the configuration
         // values that were loaded. We will pass a callback which will be used to get
@@ -51,5 +51,17 @@ class LoadConfiguration extends LaravelLoadConfiguration
         date_default_timezone_set($config->get('app.timezone', 'UTC'));
 
         mb_internal_encoding('UTF-8');
+    }
+
+    /**
+     * 加载自定义配置
+     *
+     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param  \Illuminate\Contracts\Config\Repository  $repository
+     * @return void
+     */
+    protected function loadSettings(Application $app, RepositoryContract $repository)
+    {
+        Settings::loadSettings($app, $repository);
     }
 }

@@ -91,7 +91,7 @@ if (! function_exists('cast')) {
     }
 }
 
-if (! function_exists('short_route')) {
+if (! function_exists('short_url')) {
     /**
      * 生成一个短 url （不带域名）
      *
@@ -112,8 +112,8 @@ if (! function_exists('short_route')) {
 if (! function_exists('under_route')) {
     function under_route($route, $path)
     {
-        $route = short_url($route);
-        return $path == $route || strpos($path, $route.'/') === 0;
+        $url = short_url($route);
+        return $path == $url || strpos($path, $url.'/') === 0;
     }
 }
 
@@ -244,27 +244,3 @@ if (! function_exists('safe_get_contents')) {
         return is_file($file) ? file_get_contents($file) : '';
     }
 }
-
-
-// if (! function_exists('events')) {
-//     /**
-//      * @return \App\Utils\EventsBook
-//      */
-//     function events()
-//     {
-//         return app('events_book');
-//     }
-// }
-
-// if (! function_exists('html')) {
-//     /**
-//      * 获取 Html 对象
-//      *
-//      * @param string $html
-//      * @return \App\Utils\Html
-//      */
-//     function html($html)
-//     {
-//         return new Html($html);
-//     }
-// }

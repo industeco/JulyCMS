@@ -130,7 +130,7 @@
               </a>
               @endif
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click="deleteNode(scope.row)">
+                @click.stop="deleteNode(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
             </div>
