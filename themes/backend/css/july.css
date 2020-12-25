@@ -185,6 +185,10 @@ body {
   z-index: 1;
 }
 
+.jc-btn-group .md-button {
+  min-width: auto;
+}
+
 .jc-options, .jc-option {
   display: flex;
   align-items: center;
@@ -195,7 +199,7 @@ body {
 }
 
 .jc-option + .jc-option {
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
 .el-dialog__footer .md-button {

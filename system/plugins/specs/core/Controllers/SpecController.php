@@ -146,14 +146,20 @@ class SpecController extends Controller
      * @param  \Specs\Spec  $spec
      * @return \Illuminate\Http\Response
      */
-    public function insert(Request $request, Spec $spec)
+    public function upsertRecords(Request $request, Spec $spec)
     {
         $table = $spec->getDataTable();
+        $fields = $spec->fields()->get('field_id')->pluck('field_id')->all();
 
         DB::beginTransaction();
-        DB::table($table)->delete();
         foreach (array_reverse($request->input('records')) as $record) {
-            DB::table($table)->insert(Arr::except($record, ['id', 'created_at', 'updated_at']));
+            $id = $record['id'] ?? false;
+            $record = Arr::only($record, $fields);
+            if ($id) {
+                DB::table($table)->updateOrInsert(['id' => $id], $record);
+            } else {
+                DB::table($table)->insert($record);
+            }
         }
         DB::commit();
 
@@ -161,7 +167,35 @@ class SpecController extends Controller
     }
 
     /**
+     * 删除指定的规格数据
+     *
+     * @param  \Specs\Spec  $spec
+     * @param  string|int $record_id
+     * @return \Illuminate\Http\Response
+     */
+    public function removeRecord(Spec $spec, $record_id)
+    {
+        DB::table($spec->getDataTable())->where('id', $record_id)->delete();
+        return response('');
+    }
+
+    /**
+     * 清空规格数据
+     *
+     * @param  \Specs\Spec  $spec
+     * @return \Illuminate\Http\Response
+     */
+    public function clearRecords(Spec $spec)
+    {
+        DB::table($spec->getDataTable())->delete();
+        return response('');
+    }
+
+    /**
      * 规格搜索界面
+     *
+     * @param  \Specs\Spec  $spec
+     * @return \Illuminate\Http\Response
      */
     public function showSearch(Spec $spec)
     {

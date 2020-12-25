@@ -18,9 +18,17 @@ Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
     Route::get('specs/{spec}/records', [Controllers\SpecController::class, 'records'])
         ->name('specs.records');
 
-    // 数据导入
-    Route::post('specs/{spec}/records', [Controllers\SpecController::class, 'insert'])
-        ->name('specs.insert');
+    // 插入或更新数据
+    Route::post('specs/{spec}/records', [Controllers\SpecController::class, 'upsertRecords'])
+        ->name('specs.records.upsert');
+
+    // 删除数据
+    Route::delete('specs/{spec}/records/{record_id}', [Controllers\SpecController::class, 'removeRecord'])
+        ->name('specs.records.remove');
+
+    // 清空数据
+    Route::delete('specs/{spec}/records/clear', [Controllers\SpecController::class, 'clearRecords'])
+        ->name('specs.records.clear');
 });
 
 Route::middleware(['web'])

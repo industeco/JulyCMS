@@ -14,9 +14,7 @@
       <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="exportRecords()">
         <div class="md-button-content">导出</div>
       </button>
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-        :disabled="!selected.length"
-        @click.stop="assign.dialogVisible = true">
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="assign.dialogVisible = true">
         <div class="md-button-content">批量赋值</div>
       </button>
     </div>
@@ -30,7 +28,7 @@
         </el-select>
       </div>
       <div class="jc-option">
-        <el-select v-model="filter.method" size="small" class="jc-filterby">
+        <el-select v-model="filter.method" size="small" class="jc-filterby" style="width: 130px">
           <el-option label="-- 比较方式 --" value=""></el-option>
           <el-option label="等于" value="eq"></el-option>
           <el-option label="不等于" value="not_eq"></el-option>
@@ -44,11 +42,18 @@
         </el-select>
       </div>
       <div class="jc-option">
-        <el-input v-model="filter.value" size="small" native-size="30" @keyup.enter.native="applyFilter()"></el-input>
+        <el-input v-model="filter.value" size="small" native-size="25" @keyup.enter.native="applyFilter()"></el-input>
       </div>
       <div class="jc-option">
-        <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="applyFilter()">
+        <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+          :disabled="!canFilter"
+          @click.stop="applyFilter()">
           <div class="md-button-content">筛选</div>
+        </button>
+        <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
+          :disabled="!filter.filtered"
+          @click.stop="clearFilter()">
+          <div class="md-button-content">清除</div>
         </button>
       </div>
     </div>
@@ -59,29 +64,14 @@
       <el-table class="jc-table jc-dense jc-data-table with-operators"
         :data="slicedRecords"
         :border="true"
+        @row-contextmenu="handleContextmenu"
         @selection-change="handleSelectionChange"
         style="width: 100%">
+        <el-table-column type="index" label="行号" width="60" fixed></el-table-column>
         <el-table-column type="selection" width="50"></el-table-column>
-        <el-table-column type="index" label="行号" width="80" fixed></el-table-column>
         @foreach ($fields as $field)
-        <el-table-column label="{{ $field['label'] }}" prop="{{ $field['field_id'] }}" sortable>
-          <template slot-scope="scope">
-            <input type="text" class="jc-input-intable" v-model="scope.row.{{ $field['field_id'] }}">
-          </template>
-        </el-table-column>
+        <el-table-column label="{{ $field['label'] }}" prop="{{ $field['field_id'] }}" sortable></el-table-column>
         @endforeach
-        <el-table-column label="操作" width="80" fixed="right">
-          <template slot-scope="scope">
-            <div class="jc-operators">
-              <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click.stop="removeRecord(scope.row)">
-                <div class="md-ripple">
-                  <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div>
-                </div>
-              </button>
-            </div>
-          </template>
-        </el-table-column>
       </el-table>
     </div>
     <div style="text-align: right;margin: 10px 0 -20px;">
@@ -89,16 +79,11 @@
         background
         layout="sizes, prev, pager, next"
         :total="total"
-        :page-sizes="[10, 20, 50, 100, 200]"
+        :page-sizes="[10, 20, 50, 100]"
         :page-size="perPage"
         @current-change="handlePageChange"
         @size-change="handleSizeChange">
       </el-pagination>
-    </div>
-    <div id="main_form_bottom" class="is-button-item">
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="save">
-        <div class="md-button-content">保存</div>
-      </button>
     </div>
   </div>
   <el-dialog
@@ -111,7 +96,7 @@
     <el-input v-model="rawData" type="textarea" rows="9"></el-input>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click.stop="collectorVisible = false">取 消</el-button>
-      <el-button size="small" type="primary" @click.stop="handleDataImportConfirm">确 定</el-button>
+      <el-button size="small" type="primary" @click.stop="handleImportingConfirm">确 定</el-button>
     </span>
   </el-dialog>
   <el-dialog
@@ -138,6 +123,41 @@
       <el-button size="small" type="primary" @click.stop="massAssign()">确 定</el-button>
     </span>
   </el-dialog>
+  <el-dialog
+    title="编辑/新增记录"
+    top="-5vh"
+    :close-on-click-modal="false"
+    :visible.sync="record.dialogVisible">
+    <el-form :inline="true">
+      @foreach ($fields as $field)
+      <el-form-item label="{{ $field['label'] }}">
+        <el-input v-model="record.data.{{ $field['field_id'] }}" type="text" size="small" native-size="40"></el-input>
+      </el-form-item>
+      @endforeach
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+      <el-button size="small" @click.stop="record.dialogVisible = false">取 消</el-button>
+      <el-button size="small" type="primary" @click.stop="handleRecordConfirm()">确 定</el-button>
+    </span>
+  </el-dialog>
+  <jc-contextmenu ref="contextmenu">
+    <li class="md-list-item">
+      <div class="md-list-item-container md-button-clean" @click.stop="editRecord(contextmenu.target)">
+        <div class="md-list-item-content md-ripple">
+          <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
+          <span class="md-list-item-text">编辑</span>
+        </div>
+      </div>
+    </li>
+    <li class="md-list-item">
+      <div class="md-list-item-container md-button-clean" @click.stop="removeRecord(contextmenu.target)">
+        <div class="md-list-item-content md-ripple">
+          <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
+          <span class="md-list-item-text">删除</span>
+        </div>
+      </div>
+    </li>
+  </jc-contextmenu>
 @endsection
 
 @section('script')
@@ -148,23 +168,34 @@
     data() {
       return {
         records: @json(array_values($records), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        filteredRecords: [],
+
         template: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         collectorVisible: false,
         rawData: null,
 
         selected: [],
 
-        filter: {
-          field: '',
-          method: '',
-          value: '',
-          filtered: false,
-        },
-
         assign: {
           field: '',
           value: '',
           dialogVisible: false,
+        },
+
+        filter: {
+          field: '',
+          method: '',
+          value: '',
+          filtered: true,
+        },
+
+        record: {
+          data: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          dialogVisible: false,
+        },
+
+        contextmenu: {
+          target: null,
         },
 
         total: {{ count($records) }},
@@ -174,21 +205,32 @@
     },
 
     created() {
-      this.initial_records = clone(this.records);
+      this._map = {};
+      this.records.forEach(rec => {
+        this.addRecordToMap(rec);
+      });
+      this.clearFilter();
+      this._template_md5 = this.getRecordMd5(@json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     },
 
     computed: {
       slicedRecords() {
-        return this.records.slice((this.currentPage-1)*this.perPage,this.currentPage*this.perPage);
+        return this.filteredRecords.slice((this.currentPage-1)*this.perPage,this.currentPage*this.perPage);
+      },
+      canFilter() {
+        const f = this.filter;
+        return f.field && f.method && (f.value.length || f.method === 'eq' || f.method === 'not_eq');
       },
     },
 
     methods: {
+      // 打开数据导入界面
       importRecords() {
         this.rawData = null;
         this.collectorVisible = true;
       },
 
+      // 生成导出数据，并打开数据导出界面
       exportRecords() {
         let rawData = '';
         this.records.forEach(record => {
@@ -201,24 +243,64 @@
         this.collectorVisible = true;
       },
 
+      // 打开新增记录界面
       addRecord() {
-        this.records.unshift(clone(this.template));
-        this.total++;
+        this.record = {
+          @foreach ($fields as $field)
+          {{ $field['field_id'] }}: null,
+          @endforeach
+        };
+
+        // this.records.unshift(clone(this.template));
+        // this.total++;
       },
 
+      // 删除指定记录
       removeRecord(rec) {
-        const id = rec.id;
+        const rec_id = rec.id;
+        console.log(rec_id)
         this.$confirm(`要删除该规格吗？`, '删除规格', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
           type: 'warning',
         }).then(() => {
-          this.records.splice(this.records.indexOf(rec), 1);
-          this.total--;
+          const loading = this.$loading({
+            lock: true,
+            text: '正在删除……',
+            background: 'rgba(255, 255, 255, 0.7)',
+          });
+
+          const action = "{{ short_url('specs.records.remove', [$spec_id, '_ID_']) }}".replace('_ID_', rec_id);
+          console.log(action)
+          axios.delete(action).then(response => {
+            this.filteredRecords.splice(this.filteredRecords.indexOf(rec), 1);
+            this.records.splice(this.records.indexOf(rec), 1);
+            const md5key = rec.md5 || this.getRecordMd5(rec);
+            this._map[md5key] = null;
+            this.total--;
+            loading.close();
+            this.$message.success('已删除');
+          }).catch(error => {
+            loading.close();
+            console.error(error);
+            this.$message.error('删除失败，请查看后台日志');
+          });
+
         }).catch((err) => {});
       },
 
-      handleDataImportConfirm() {
+      // 编辑指定记录
+      editRecord(row) {
+        if (row.md5 == null) {
+          row.md5 = this.getRecordMd5(row);
+        }
+
+        this.$set(this.$data.record, 'data', clone(row));
+        this.record.dialogVisible = true;
+      },
+
+      // 导入数据
+      handleImportingConfirm() {
         this.collectorVisible = false;
 
         const loading = this.$loading({
@@ -251,19 +333,23 @@
         }, 100);
       },
 
+      // 展示右键菜单
+      handleContextmenu(row, column, event) {
+        this.contextmenu.target = row;
+        this.$refs.contextmenu.show(event);
+      },
+
+      // 列选择改变
       handleSelectionChange(selected) {
-        this.$set(this.$data, 'selected', selected);
+        this.selected = selected;
       },
 
       // 批量赋值
       massAssign() {
         this.assign.dialogVisible = false;
-        if (! this.selected.length) {
-          return;
-        }
 
         const field = this.assign.field;
-        if (! field) {
+        if (!this.selected.length || !field) {
           return;
         }
 
@@ -272,44 +358,41 @@
           rec[field] = value;
         });
 
-        this.$set(this.$data, 'selected', []);
+        this.selected = [];
       },
 
+      // 清除筛选
+      clearFilter() {
+        if (this.filter.filtered) {
+          this.filter.filtered = false;
+          this.selected = [];
+          this.$set(this.$data, 'filteredRecords', this.records);
+          this.total = this.filteredRecords.length;
+        }
+      },
+
+      // 应用筛选
       applyFilter() {
-        const recs = this.getFilteredRecords();
-        if (recs) {
-          this.$set(this.$data, 'selected', []);
-          this.$set(this.$data, 'records', recs);
-          this.total = recs.length;
+        if (!this.canFilter) return;
+
+        this.selected = [];
+
+        const recs = this.filterRecords(this.filter.field, this.filter.method, this.filter.value);
+        if (recs.length !== this.filteredRecords.length) {
+          if (rec.length === this.records.length) {
+            this.clearFilter();
+            return;
+          }
+          this.filter.filtered = true;
+          this.$set(this.$data, 'filteredRecords', clone(recs));
+          this.total = this.filteredRecords.length;
         }
       },
 
-      getFilteredRecords() {
-        if (!this.filter.field || !this.filter.method) {
-          if (this.filtered) {
-            this.filtered = false;
-            return clone(this.initial_records);
-          }
-        } else {
-          const recs = this.filterRecords();
-          if (recs) {
-            this.filtered = true;
-            return recs;
-          }
-        }
-        return null;
-      },
-
-      filterRecords() {
-        let value = this.filter.value.trim();
-        const method = this.filter.method;
-        if (!value.length && method !== 'eq' && method !== 'not_eq') {
-          return null;
-        }
-        const field = this.filter.field;
-
+      // 筛选记录集
+      filterRecords(field, method, value) {
         let filter = () => true;
-        switch (this.filter.method) {
+        switch (method) {
           case 'eq':
             filter = rec => rec[field] === value;
             break;
@@ -359,33 +442,97 @@
           default: break;
         }
 
-        return clone(this.initial_records.filter(filter));
+        return this.records.filter(filter);
       },
 
+      // 当前页改变
       handlePageChange(page) {
         this.currentPage = page;
-        this.$set(this.$data, 'selected', []);
+        this.selected = [];
       },
 
+      // 每页显示量改变
       handleSizeChange(size) {
         this.perPage = size;
       },
 
-      save() {
+      // 将指定记录加入到 _map
+      addRecordToMap(rec) {
+        if (rec.md5 != null) {
+          this._map[rec.md5] = null;
+        }
+        const md5key = this.getRecordMd5(rec);
+        rec.md5 = md5key;
+        this._map[md5key] = rec;
+      },
+
+      // 获取一条记录的 md5 值作为唯一键
+      getRecordMd5(rec) {
+        let key = '';
+        @foreach ($fields as $field)
+        key += "{{ $field['field_id'] }}:" + (rec["{{ $field['field_id'] }}"] == null ? '' : rec["{{ $field['field_id'] }}"]) + ',';
+        @endforeach
+        return md5(key);
+      },
+
+      // 判断一条记录是否有效：
+      //  1. 不为空
+      //  2. 不存在
+      isValidRecord(rec) {
+        const key = this.getRecordMd5(rec);
+        return key !== this._template_md5 && this._map[key] == null;
+      },
+
+      // 保存新增或编辑后的记录
+      handleRecordConfirm() {
+        // 关闭编辑面板
+        this.record.dialogVisible = false;
+
+        // 更新
+        this.upsertRecords([this.record.data]);
+      },
+
+      syncRecord(rec) {
+        if (rec.md5) {
+          const _rec = this._map[rec.md5];
+          if (_rec) {
+            @foreach ($fields as $field)
+            _rec["{{ $field['field_id'] }}"] = rec["{{ $field['field_id'] }}"];
+            @endforeach
+          }
+        }
+      },
+
+      // 更新或新建记录集
+      upsertRecords(records) {
+        const validRecords = [];
+        records.forEach(rec => {
+          if (this.isValidRecord(rec)) {
+            this.syncRecord(rec);
+            validRecords.push(rec);
+          }
+        });
+
+        if (! validRecords.length) {
+          this.$message.warning('没有要更新的数据');
+          return;
+        }
+
         const loading = app.$loading({
           lock: true,
-          text: '正在提交数据……',
+          text: '正在保存……',
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        const data = {records: this.records};
-
-        axios.post("{{ short_url('specs.insert', $spec_id) }}", data).then(function(response) {
-          window.location.href = "{{ short_url('specs.index') }}";
-        }).catch(function(error) {
+        axios.post("{{ short_url('specs.records.upsert', $spec_id) }}", {
+          records: validRecords,
+        }).then(response => {
+          loading.close();
+          this.$message.success('保存成功');
+        }).catch(error => {
           loading.close();
           console.error(error);
-          app.$message.error('保存失败，可能是数据格式不正确');
+          this.$message.error('保存失败，可能是数据格式不正确');
         });
       },
     },
