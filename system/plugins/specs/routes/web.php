@@ -23,7 +23,7 @@ Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
         ->name('specs.records.upsert');
 
     // 删除数据
-    Route::delete('specs/{spec}/records/{record_id}', [Controllers\SpecController::class, 'removeRecord'])
+    Route::post('specs/{spec}/records/remove', [Controllers\SpecController::class, 'removeRecords'])
         ->name('specs.records.remove');
 
     // 清空数据

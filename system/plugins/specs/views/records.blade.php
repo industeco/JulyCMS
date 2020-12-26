@@ -52,8 +52,8 @@
         </button>
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
           :disabled="!filter.filtered"
-          @click.stop="clearFilter()">
-          <div class="md-button-content">清除</div>
+          @click.stop="resetFilter()">
+          <div class="md-button-content">重置</div>
         </button>
       </div>
     </div>
@@ -62,7 +62,7 @@
   <div id="main_list">
     <div class="jc-table-wrapper">
       <el-table class="jc-table jc-dense jc-data-table with-operators"
-        :data="slicedRecords"
+        :data="pageRecords"
         :border="true"
         @row-contextmenu="handleContextmenu"
         @selection-change="handleSelectionChange"
@@ -74,39 +74,37 @@
         @endforeach
       </el-table>
     </div>
-    <div style="text-align: right;margin: 10px 0 -20px;">
+    <div style="text-align: right; margin: 20px 0;">
       <el-pagination
         background
         layout="sizes, prev, pager, next"
-        :total="total"
         :page-sizes="[10, 20, 50, 100]"
-        :page-size="perPage"
+        :total="pagination.total"
+        :page-size="pagination.perPage"
         @current-change="handlePageChange"
         @size-change="handleSizeChange">
       </el-pagination>
     </div>
   </div>
   <el-dialog
-    id="data_collector"
-    title="原始数据"
+    title="导入导出"
     top="-5vh"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    :visible.sync="collectorVisible">
-    <el-input v-model="rawData" type="textarea" rows="9"></el-input>
+    :visible.sync="port.dialogVisible">
+    <el-input v-model="port.raw" type="textarea" rows="10"></el-input>
     <span slot="footer" class="dialog-footer">
-      <el-button size="small" @click.stop="collectorVisible = false">取 消</el-button>
-      <el-button size="small" type="primary" @click.stop="handleImportingConfirm">确 定</el-button>
+      <el-button size="small" @click.stop="port.dialogVisible = false">取 消</el-button>
+      <el-button size="small" type="primary" @click.stop="handlePortDialogConfirm">确 定</el-button>
     </span>
   </el-dialog>
   <el-dialog
-    id="mass_assign"
     title="批量赋值"
     top="-5vh"
     :close-on-click-modal="false"
     :visible.sync="assign.dialogVisible">
-    <el-form label-width="60px" label-position="left">
-      <el-form-item label="字段">
+    <el-form label-width="60px" label-position="top">
+      <el-form-item label="字段:">
         <el-select v-model="assign.field" size="small" class="jc-filterby">
           <el-option label="-- 选择字段 --" value=""></el-option>
           @foreach ($fields as $field)
@@ -114,8 +112,8 @@
           @endforeach
         </el-select>
       </el-form-item>
-      <el-form-item label="值">
-        <el-input v-model="assign.value" type="textarea" rows="1"></el-input>
+      <el-form-item label="值:">
+        <el-input v-model="assign.value" type="textarea" rows="3"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -131,13 +129,13 @@
     <el-form :inline="true">
       @foreach ($fields as $field)
       <el-form-item label="{{ $field['label'] }}">
-        <el-input v-model="record.data.{{ $field['field_id'] }}" type="text" size="small" native-size="40"></el-input>
+        <el-input v-model="record.data.{{ $field['field_id'] }}" type="text" size="small" native-size="32"></el-input>
       </el-form-item>
       @endforeach
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click.stop="record.dialogVisible = false">取 消</el-button>
-      <el-button size="small" type="primary" @click.stop="handleRecordConfirm()">确 定</el-button>
+      <el-button size="small" type="primary" @click.stop="handleRecordDialogConfirm()">确 定</el-button>
     </span>
   </el-dialog>
   <jc-contextmenu ref="contextmenu">
@@ -167,56 +165,57 @@
 
     data() {
       return {
-        records: @json(array_values($records), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        filteredRecords: [],
+        allRecords: @json(array_values($records), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        presentRecords: [],
+        selectedRecords: [],
 
-        template: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        collectorVisible: false,
-        rawData: null,
-
-        selected: [],
-
+        record: {
+          data: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          dialogVisible: false,
+        },
+        port: {
+          raw: '',
+          import: false,
+          dialogVisible: false,
+          delimiter: '|',
+        },
         assign: {
           field: '',
           value: '',
           dialogVisible: false,
         },
-
         filter: {
           field: '',
           method: '',
           value: '',
           filtered: true,
         },
-
-        record: {
-          data: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-          dialogVisible: false,
+        pagination: {
+          total: 0,
+          perPage: 20,
+          currentPage: 1,
         },
-
         contextmenu: {
           target: null,
         },
-
-        total: {{ count($records) }},
-        perPage: 20,
-        currentPage: 1,
       };
     },
 
     created() {
-      this._map = {};
-      this.records.forEach(rec => {
-        this.addRecordToMap(rec);
-      });
-      this.clearFilter();
-      this._template_md5 = this.getRecordMd5(@json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      this.allRecordsMap = this.mapRecords(this.allRecords);
+      this.resetFilter();
+      this.pagination.total = this.presentRecords.length;
+      this._templateMd5 = this.getRecordMd5(@json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     },
 
     computed: {
-      slicedRecords() {
-        return this.filteredRecords.slice((this.currentPage-1)*this.perPage,this.currentPage*this.perPage);
+      // 当前页分展示的记录
+      pageRecords() {
+        const start = (this.pagination.currentPage-1)*this.pagination.perPage;
+        return this.presentRecords.slice(start, start + this.pagination.perPage);
       },
+
+      // 筛选按钮是否可用
       canFilter() {
         const f = this.filter;
         return f.field && f.method && (f.value.length || f.method === 'eq' || f.method === 'not_eq');
@@ -226,40 +225,30 @@
     methods: {
       // 打开数据导入界面
       importRecords() {
-        this.rawData = null;
-        this.collectorVisible = true;
+        this.port.raw = null;
+        this.port.import = true;
+        this.port.dialogVisible = true;
       },
 
       // 生成导出数据，并打开数据导出界面
       exportRecords() {
-        let rawData = '';
-        this.records.forEach(record => {
-          @foreach ($fields as $field)
-          rawData += record["{{ $field['field_id'] }}"].trim() + '|';
-          @endforeach
-          rawData += '\n';
-        });
-        this.rawData = rawData;
-        this.collectorVisible = true;
+        this.port.raw = this.getRawFromRecords();
+        this.port.import = false;
+        this.port.dialogVisible = true;
       },
 
-      // 打开新增记录界面
-      addRecord() {
-        this.record = {
-          @foreach ($fields as $field)
-          {{ $field['field_id'] }}: null,
-          @endforeach
-        };
+      // 导入数据
+      handlePortDialogConfirm() {
+        this.port.dialogVisible = false;
+        if (! this.port.import) return;
 
-        // this.records.unshift(clone(this.template));
-        // this.total++;
+        // 更新数据
+        this.upsertRecords(this.getRecordsFromRaw(this.port.raw, this.port.delimiter), '正在导入……');
       },
 
       // 删除指定记录
-      removeRecord(rec) {
-        const rec_id = rec.id;
-        console.log(rec_id)
-        this.$confirm(`要删除该规格吗？`, '删除规格', {
+      removeRecord(row) {
+        this.$confirm(`要删除选定规格吗？`, '删除规格', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
           type: 'warning',
@@ -270,14 +259,20 @@
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          const action = "{{ short_url('specs.records.remove', [$spec_id, '_ID_']) }}".replace('_ID_', rec_id);
-          console.log(action)
-          axios.delete(action).then(response => {
-            this.filteredRecords.splice(this.filteredRecords.indexOf(rec), 1);
-            this.records.splice(this.records.indexOf(rec), 1);
-            const md5key = rec.md5 || this.getRecordMd5(rec);
-            this._map[md5key] = null;
-            this.total--;
+          let records = [row];
+          if (this.selectedRecords.length) {
+            records = this.selectedRecords.slice();
+          }
+
+          axios.post("{{ short_url('specs.records.remove', $spec_id) }}", {
+            records: records.map(rec => rec.id),
+          }).then(response => {
+            records.forEach(rec => {
+              this.presentRecords.splice(this.presentRecords.indexOf(rec), 1);
+              this.allRecords.splice(this.allRecords.indexOf(rec), 1);
+              this.allRecordsMap[rec.md5 || this.getRecordMd5(rec)] = null;
+            });
+            this.total -= records.length;
             loading.close();
             this.$message.success('已删除');
           }).catch(error => {
@@ -289,48 +284,156 @@
         }).catch((err) => {});
       },
 
-      // 编辑指定记录
+      // 批量赋值
+      massAssign() {
+        this.assign.dialogVisible = false;
+
+        const field = this.assign.field;
+        if (!this.selectedRecords.length || !field) return;
+
+        const value = this.assign.value.trim();
+        const records = this.selectedRecords.slice();
+        this.selectedRecords = [];
+
+        records.forEach(rec => {
+          rec[field] = value;
+        });
+        this.upsertRecords(records);
+      },
+
+      // 打开新增记录界面
+      addRecord() {
+        this.$set(this.$data.record, 'data', @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+        this.record.dialogVisible = true;
+      },
+
+      // 打开编辑记录界面
       editRecord(row) {
         if (row.md5 == null) {
           row.md5 = this.getRecordMd5(row);
         }
-
         this.$set(this.$data.record, 'data', clone(row));
         this.record.dialogVisible = true;
       },
 
-      // 导入数据
-      handleImportingConfirm() {
-        this.collectorVisible = false;
+      // 保存新增或编辑后的记录
+      handleRecordDialogConfirm() {
+        // 关闭编辑面板
+        this.record.dialogVisible = false;
 
-        const loading = this.$loading({
+        // 判断记录格式是否合法
+        if (! this.isValidRecord(this.record.data)) {
+          this.$message.warning('空数据，或已存在');
+          return;
+        }
+
+        // 更新
+        this.upsertRecords([this.record.data]);
+      },
+
+      // 更新或插入记录数据到后台
+      upsertRecords(records, msg) {
+        const loading = app.$loading({
           lock: true,
-          text: '正在导入……',
-          background: 'rgba(0, 0, 0, 0.7)',
+          text: msg || '正在保存数据到数据库……',
+          background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        setTimeout(() => {
-          const records = [];
-          this.rawData.split(/[\r\n]+/).forEach(line => {
-            line = line.replace(/,\s*$/, '').replace(/^\s*,/, '');
-            if (line.length) {
-              const record = line.split(',');
-              records.unshift({
-                @foreach (array_values($fields) as $index => $field)
-                {{ $field['field_id'] }}: record[{{ $index }}],
-                @endforeach
-              });
+        return axios.post("{{ short_url('specs.records.upsert', $spec_id) }}", {
+          records: records,
+        }).then(response => {
+          this.syncRecords(records, this.mapRecords(Array.isArray(response.data) ? response.data : []));
+          loading.close();
+          this.$message.success('保存成功');
+        }).catch(error => {
+          loading.close();
+          console.error(error);
+          this.$message.error('保存失败，可能是数据格式不正确');
+        });
+      },
+
+      // 更新本地数据
+      syncRecords(records, responseRecordsMap) {
+        responseRecordsMap = responseRecordsMap || {};
+        records.forEach(record => {
+          const oldMd5 = record.md5;
+          record.md5 = this.getRecordMd5(record);
+          record.id = responseRecordsMap[record.md5] && responseRecordsMap[record.md5].id || null;
+
+          const _record = this.allRecordsMap[oldMd5];
+          // 更新现有记录
+          if (_record) {
+            @foreach ($fields as $field)
+            _record["{{ $field['field_id'] }}"] = record["{{ $field['field_id'] }}"];
+            @endforeach
+            _record.md5 = record.md5;
+            _record.id = record.id || _record.id;
+            this.allRecordsMap[oldMd5] = null;
+            this.allRecordsMap[_record.md5] = _record;
+          }
+
+          // 插入新记录
+          else {
+            this.allRecordsMap[record.md5] = record;
+            this.allRecords.unshift(record);
+            if (! this.filter.filtered) {
+              this.presentRecords.unshift(record);
             }
-          });
-          this.rawData = null;
+            this.total++;
+          }
+        });
 
-          Vue.nextTick(() => {
-            loading.close();
-          });
+        if (this.filter.filtered) {
+          this.applyFilter();
+        }
+      },
 
-          this.total += records.length;
-          this.$set(this.$data, 'records', records.concat(this.records));
-        }, 100);
+      // 从记录数据生成文本
+      getRawFromRecords() {
+        let raw = '';
+        this.allRecords.forEach(record => {
+          @foreach ($fields as $field)
+          raw += record["{{ $field['field_id'] }}"].trim() + '|';
+          @endforeach
+          raw += '\n';
+        });
+        return raw;
+      },
+
+      // 从文本数据批量生成记录
+      getRecordsFromRaw(raw, delimiter) {
+        delimiter = delimiter || '|';
+        if (delimiter !== '|') {
+          raw = raw.replaceAll(delimiter, '|');
+        }
+
+        const records = {};
+        raw.split(/[\n\r]+/).forEach(line => {
+          line = line.replace(/^\s*\|/, '').replace(/\|\s*$/, '');
+          if (line.length) {
+            const data = line.split('|');
+            const record = {
+              @foreach (array_keys($fields) as $index => $field_id)
+              {{ $field_id }}: data[{{ $index }}],
+              @endforeach
+            };
+            if (this.isValidRecord(record)) {
+              records[this.getRecordMd5(record)] = record;
+            }
+          }
+        });
+
+        return Object.values(records);
+      },
+
+      // 为记录集生成 MD5 键
+      mapRecords(records) {
+        const _map = {};
+        records.forEach(record => {
+          record.md5 = this.getRecordMd5(record);
+          _map[record.md5] = record;
+        });
+        return _map;
       },
 
       // 展示右键菜单
@@ -339,54 +442,37 @@
         this.$refs.contextmenu.show(event);
       },
 
-      // 列选择改变
+      // 响应列选择改变
       handleSelectionChange(selected) {
-        this.selected = selected;
-      },
-
-      // 批量赋值
-      massAssign() {
-        this.assign.dialogVisible = false;
-
-        const field = this.assign.field;
-        if (!this.selected.length || !field) {
-          return;
-        }
-
-        const value = this.assign.value.trim();
-        this.selected.forEach(rec => {
-          rec[field] = value;
-        });
-
-        this.selected = [];
+        this.selectedRecords = selected;
       },
 
       // 清除筛选
-      clearFilter() {
+      resetFilter() {
         if (this.filter.filtered) {
           this.filter.filtered = false;
-          this.selected = [];
-          this.$set(this.$data, 'filteredRecords', this.records);
-          this.total = this.filteredRecords.length;
+          this.selectedRecords = [];
+          this.$set(this.$data, 'presentRecords', this.allRecords.slice());
+          this.total = this.presentRecords.length;
         }
       },
 
-      // 应用筛选
+      // 执行筛选动作
       applyFilter() {
         if (!this.canFilter) return;
 
-        this.selected = [];
+        // 清空已选择的记录
+        this.selectedRecords = [];
 
-        const recs = this.filterRecords(this.filter.field, this.filter.method, this.filter.value);
-        if (recs.length !== this.filteredRecords.length) {
-          if (rec.length === this.records.length) {
-            this.clearFilter();
-            return;
-          }
-          this.filter.filtered = true;
-          this.$set(this.$data, 'filteredRecords', clone(recs));
-          this.total = this.filteredRecords.length;
+        // 筛选记录
+        const records = this.filterRecords(this.filter.field, this.filter.method, this.filter.value);
+        if (records.length === this.allRecords.length) {
+          this.resetFilter();
+          return;
         }
+        this.filter.filtered = true;
+        this.$set(this.$data, 'presentRecords', records);
+        this.total = this.presentRecords.length;
       },
 
       // 筛选记录集
@@ -442,35 +528,25 @@
           default: break;
         }
 
-        return this.records.filter(filter);
+        return this.allRecords.filter(filter);
       },
 
       // 当前页改变
       handlePageChange(page) {
-        this.currentPage = page;
-        this.selected = [];
+        this.pagination.currentPage = page;
+        this.selectedRecords = [];
       },
 
       // 每页显示量改变
       handleSizeChange(size) {
-        this.perPage = size;
-      },
-
-      // 将指定记录加入到 _map
-      addRecordToMap(rec) {
-        if (rec.md5 != null) {
-          this._map[rec.md5] = null;
-        }
-        const md5key = this.getRecordMd5(rec);
-        rec.md5 = md5key;
-        this._map[md5key] = rec;
+        this.pagination.perPage = size;
       },
 
       // 获取一条记录的 md5 值作为唯一键
       getRecordMd5(rec) {
         let key = '';
-        @foreach ($fields as $field)
-        key += "{{ $field['field_id'] }}:" + (rec["{{ $field['field_id'] }}"] == null ? '' : rec["{{ $field['field_id'] }}"]) + ',';
+        @foreach (array_keys($fields) as $field_id)
+        key += "{{ $field_id }}:" + (rec["{{ $field_id }}"] == null ? '' : rec["{{ $field_id }}"]) + ',';
         @endforeach
         return md5(key);
       },
@@ -479,61 +555,8 @@
       //  1. 不为空
       //  2. 不存在
       isValidRecord(rec) {
-        const key = this.getRecordMd5(rec);
-        return key !== this._template_md5 && this._map[key] == null;
-      },
-
-      // 保存新增或编辑后的记录
-      handleRecordConfirm() {
-        // 关闭编辑面板
-        this.record.dialogVisible = false;
-
-        // 更新
-        this.upsertRecords([this.record.data]);
-      },
-
-      syncRecord(rec) {
-        if (rec.md5) {
-          const _rec = this._map[rec.md5];
-          if (_rec) {
-            @foreach ($fields as $field)
-            _rec["{{ $field['field_id'] }}"] = rec["{{ $field['field_id'] }}"];
-            @endforeach
-          }
-        }
-      },
-
-      // 更新或新建记录集
-      upsertRecords(records) {
-        const validRecords = [];
-        records.forEach(rec => {
-          if (this.isValidRecord(rec)) {
-            this.syncRecord(rec);
-            validRecords.push(rec);
-          }
-        });
-
-        if (! validRecords.length) {
-          this.$message.warning('没有要更新的数据');
-          return;
-        }
-
-        const loading = app.$loading({
-          lock: true,
-          text: '正在保存……',
-          background: 'rgba(255, 255, 255, 0.7)',
-        });
-
-        axios.post("{{ short_url('specs.records.upsert', $spec_id) }}", {
-          records: validRecords,
-        }).then(response => {
-          loading.close();
-          this.$message.success('保存成功');
-        }).catch(error => {
-          loading.close();
-          console.error(error);
-          this.$message.error('保存失败，可能是数据格式不正确');
-        });
+        const md5 = this.getRecordMd5(rec);
+        return md5 !== this._templateMd5 && this.allRecordsMap[md5] == null;
       },
     },
   });

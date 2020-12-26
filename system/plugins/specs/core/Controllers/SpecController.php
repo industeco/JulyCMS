@@ -3,6 +3,7 @@
 namespace Specs\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -129,11 +130,17 @@ class SpecController extends Controller
      */
     public function records(Spec $spec)
     {
+        $records = DB::table($spec->getDataTable())
+            ->orderByDesc('id')->get()
+            ->map(function($record) {
+                return (array) $record;
+            })->all();
+
         $data = [
             'spec_id' => $spec->getKey(),
-            'records' => $spec->getRecords(),
+            'records' => $records,
             'fields' => $spec->getFields()->all(),
-            'template' => $spec->getTemplate(),
+            'template' => $spec->getRecordTemplate(),
         ];
 
         return view('specs::records', $data);
@@ -148,34 +155,20 @@ class SpecController extends Controller
      */
     public function upsertRecords(Request $request, Spec $spec)
     {
-        $table = $spec->getDataTable();
-        $fields = $spec->fields()->get('field_id')->pluck('field_id')->all();
-
-        DB::beginTransaction();
-        foreach (array_reverse($request->input('records')) as $record) {
-            $id = $record['id'] ?? false;
-            $record = Arr::only($record, $fields);
-            if ($id) {
-                DB::table($table)->updateOrInsert(['id' => $id], $record);
-            } else {
-                DB::table($table)->insert($record);
-            }
-        }
-        DB::commit();
-
-        return response('');
+        $records = $spec->upsertRecords(array_reverse($request->input('records')));
+        return response($records);
     }
 
     /**
      * 删除指定的规格数据
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  \Specs\Spec  $spec
-     * @param  string|int $record_id
      * @return \Illuminate\Http\Response
      */
-    public function removeRecord(Spec $spec, $record_id)
+    public function removeRecords(Request $request, Spec $spec)
     {
-        DB::table($spec->getDataTable())->where('id', $record_id)->delete();
+        DB::table($spec->getDataTable())->whereIn('id', $request->input('records'))->delete();
         return response('');
     }
 

@@ -3,6 +3,7 @@
 namespace Specs;
 
 use App\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -80,11 +81,43 @@ class Spec extends Model
     }
 
     /**
+     * 批量更新/插入记录
+     *
+     * @param  array $records
+     * @return array
+     */
+    public function upsertRecords(array $records)
+    {
+        $now = Carbon::now();
+        $table = $this->getDataTable();
+        $fields = $this->fields()->get('field_id')->pluck('field_id')->all();
+
+        DB::beginTransaction();
+        foreach ($records as $record) {
+            $id = $record['id'] ?? null;
+            $record = Arr::only($record, $fields);
+            if ($id) {
+                $record['updated_at'] = $now;
+                DB::table($table)->updateOrInsert(['id' => $id], $record);
+            } else {
+                $record['created_at'] = $now;
+                $record['updated_at'] = $now;
+                DB::table($table)->insert($record);
+            }
+        }
+        DB::commit();
+
+        return DB::table($table)->where('updated_at', $now)->get()->map(function($record) {
+            return (array) $record;
+        })->all();
+    }
+
+    /**
      * 获取模板数据
      *
      * @return array
      */
-    public function getTemplate()
+    public function getRecordTemplate()
     {
         $template = [];
         foreach ($this->fields as $field) {
@@ -110,17 +143,14 @@ class Spec extends Model
     /**
      * 获取规格数据
      *
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
     public function getRecords()
     {
-        return DB::table($this->getDataTable())
-            ->orderByDesc('created_at')
-            ->get()
+        return DB::table($this->getDataTable())->get()
             ->map(function($record) {
                 return (array) $record;
-            })
-            ->all();
+            });
     }
 
     /**
