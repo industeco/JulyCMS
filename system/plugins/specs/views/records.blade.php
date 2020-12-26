@@ -293,13 +293,25 @@
         if (!this.selectedRecords.length || !field) return;
 
         const value = this.assign.value.trim();
-        const records = this.selectedRecords.slice();
+        const records = clone(this.selectedRecords);
         this.selectedRecords = [];
 
-        records.forEach(rec => {
-          rec[field] = value;
-        });
-        this.upsertRecords(records);
+        const _map = {};
+        for (let i = 0, len = records.length; i < len; i++) {
+          records[i][field] = value;
+          const newMd5 = this.getRecordMd5(records[i]);
+          if (newMd5 === this._templateMd5) {
+            this.$message.error('批量赋值无法完成，会产生空记录');
+            return;
+          }
+          if ((newMd5 !== records[i].md5 && this.allRecordsMap[newMd5]) || _map[newMd5]) {
+            this.$message.error('批量赋值无法完成，会产生重复记录');
+            return;
+          }
+          _map[newMd5] = true;
+        }
+
+        this.upsertRecords(records, '正在批量赋值……');
       },
 
       // 打开新增记录界面
@@ -345,11 +357,11 @@
         }).then(response => {
           this.syncRecords(records, this.mapRecords(Array.isArray(response.data) ? response.data : []));
           loading.close();
-          this.$message.success('保存成功');
+          this.$message.success('成功');
         }).catch(error => {
           loading.close();
           console.error(error);
-          this.$message.error('保存失败，可能是数据格式不正确');
+          this.$message.error('失败，请查看后台日志');
         });
       },
 
