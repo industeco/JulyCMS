@@ -262,6 +262,7 @@
           let records = [row];
           if (this.selectedRecords.length) {
             records = this.selectedRecords.slice();
+            this.selectedRecords = [];
           }
 
           axios.post("{{ short_url('specs.records.remove', $spec_id) }}", {
