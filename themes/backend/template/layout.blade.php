@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', '七月 CMS')</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
+  <link rel="stylesheet" href="/themes/backend/fonts/fonts.css">
   <link rel="stylesheet" href="/themes/backend/vendor/normalize.css/normalize.min.css">
   <link rel="stylesheet" href="/themes/backend/vendor/element-ui/theme-chalk/index.min.css">
   <link rel="stylesheet" href="/themes/backend/vendor/vue-material/vue-material.min.css">
@@ -69,25 +69,25 @@
       <div id="navbar_left">
         <!-- 展开 / 折叠左侧菜单 -->
         <button type="button" title="折叠/展开" class="md-button md-icon-button md-theme-default"
-          @click="toggleSidebar">
+          @click.stop="toggleSidebar">
           <div class="md-ripple">
             <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">menu</i></div>
           </div>
         </button>
         <button type="button" class="md-button md-small md-primary md-theme-default"
-          @click="rebuildIndex">
+          @click.stop="rebuildIndex">
           <div class="md-ripple">
             <div class="md-button-content">重建索引</div>
           </div>
         </button>
         <button type="button" class="md-button md-small md-primary md-theme-default"
-          @click="clearCache">
+          @click.stop="clearCache">
           <div class="md-ripple">
             <div class="md-button-content">清除缓存</div>
           </div>
         </button>
         <button type="button" class="md-button md-small md-primary md-theme-default"
-          @click="buildGoogleSitemap">
+          @click.stop="buildGoogleSitemap">
           <div class="md-ripple">
             <div class="md-button-content">生成谷歌站点地图</div>
           </div>
@@ -169,13 +169,13 @@
         </el-form>
         <span slot="footer" class="dialog-footer">
           <button type="button" class="md-button md-raised md-dense md-theme-default"
-            @click="pwd.dialogVisible = false">
+            @click.stop="pwd.dialogVisible = false">
             <div class="md-ripple">
               <div class="md-button-content">取 消</div>
             </div>
           </button>
           <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-            @click="changePwd">
+            @click.stop="changePwd">
             <div class="md-ripple">
               <div class="md-button-content">确 定</div>
             </div>

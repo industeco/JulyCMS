@@ -99,7 +99,7 @@ body {
 }
 
 .jc-table.jc-data-table td {
-  padding: 0;
+  /* padding: 0; */
   border-width: 0 1px 1px;
 }
 

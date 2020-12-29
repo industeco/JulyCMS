@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>安装 JulyCMS</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
+  <link rel="stylesheet" href="/themes/backend/fonts/fonts.css">
   <link rel="stylesheet" href="/themes/backend/vendor/normalize.css/normalize.css">
   <link rel="stylesheet" href="/themes/backend/vendor/vue-material/vue-material.css">
   <link rel="stylesheet" href="/themes/backend/vendor/vue-material/theme/default.css">
@@ -32,7 +32,7 @@
         <div class="jc-install-step-footer">
           <button type="button" class="md-button md-raised md-primary md-theme-default"
             :disabled="!environmentsOk"
-            @click="stepToSettings">
+            @click.stop="stepToSettings">
             <div class="md-ripple">
               <div class="md-button-content">下一步</div>
             </div>

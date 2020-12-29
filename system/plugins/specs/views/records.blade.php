@@ -126,10 +126,10 @@
     top="-5vh"
     :close-on-click-modal="false"
     :visible.sync="record.dialogVisible">
-    <el-form :inline="true">
+    <el-form class="md-layout md-gutter" label-position="top">
       @foreach ($fields as $field)
-      <el-form-item label="{{ $field['label'] }}">
-        <el-input v-model="record.data.{{ $field['field_id'] }}" type="text" size="small" native-size="32"></el-input>
+      <el-form-item class="md-layout-item md-size-50" label="{{ $field['label'] }}:" class="el-form-item">
+        <el-input v-model="record.data.{{ $field['field_id'] }}" type="text" size="small" style="width: 100%"></el-input>
       </el-form-item>
       @endforeach
     </el-form>
@@ -232,7 +232,7 @@
 
       // 生成导出数据，并打开数据导出界面
       exportRecords() {
-        this.port.raw = this.getRawFromRecords();
+        this.port.raw = this.recordsToText();
         this.port.import = false;
         this.port.dialogVisible = true;
       },
@@ -243,7 +243,7 @@
         if (! this.port.import) return;
 
         // 更新数据
-        this.upsertRecords(this.getRecordsFromRaw(this.port.raw, this.port.delimiter), '正在导入……');
+        this.upsertRecords(this.textToRecords(this.port.raw, this.port.delimiter), '正在导入……');
       },
 
       // 删除指定记录
@@ -273,9 +273,15 @@
               this.allRecords.splice(this.allRecords.indexOf(rec), 1);
               this.allRecordsMap[rec.md5 || this.getRecordMd5(rec)] = null;
             });
-            this.total -= records.length;
+
+            const p = this.pagination;
+            p.total = this.presentRecords.length;
+            if (p.currentPage > Math.ceil(p.total/p.perPage)) {
+              p.currentPage = Math.ceil(p.total/p.perPage);
+            }
+
             loading.close();
-            this.$message.success('已删除');
+            this.$message.success('已删除 '+records.length+' 条记录');
           }).catch(error => {
             loading.close();
             console.error(error);
@@ -293,7 +299,7 @@
         if (!this.selectedRecords.length || !field) return;
 
         const value = this.assign.value.trim();
-        const records = clone(this.selectedRecords);
+        const records = _.cloneDeep(this.selectedRecords);
         this.selectedRecords = [];
 
         const _map = {};
@@ -325,7 +331,7 @@
         if (row.md5 == null) {
           row.md5 = this.getRecordMd5(row);
         }
-        this.$set(this.$data.record, 'data', clone(row));
+        this.$set(this.$data.record, 'data', _.cloneDeep(row));
         this.record.dialogVisible = true;
       },
 
@@ -352,12 +358,18 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
+        if (!records.length) {
+          loading.close();
+          this.$message.success('成功更新 0 个记录');
+          return;
+        }
+
         return axios.post("{{ short_url('specs.records.upsert', $spec_id) }}", {
           records: records,
         }).then(response => {
           this.syncRecords(records, this.mapRecords(Array.isArray(response.data) ? response.data : []));
           loading.close();
-          this.$message.success('成功');
+          this.$message.success('成功更新 '+records.length+' 个记录');
         }).catch(error => {
           loading.close();
           console.error(error);
@@ -376,8 +388,8 @@
           const _record = this.allRecordsMap[oldMd5];
           // 更新现有记录
           if (_record) {
-            @foreach ($fields as $field)
-            _record["{{ $field['field_id'] }}"] = record["{{ $field['field_id'] }}"];
+            @foreach (array_keys($fields) as $field_id)
+            _record["{{ $field_id }}"] = record["{{ $field_id }}"];
             @endforeach
             _record.md5 = record.md5;
             _record.id = record.id || _record.id;
@@ -392,9 +404,9 @@
             if (! this.filter.filtered) {
               this.presentRecords.unshift(record);
             }
-            this.total++;
           }
         });
+        this.pagination.total = this.presentRecords.length;
 
         if (this.filter.filtered) {
           this.applyFilter();
@@ -402,26 +414,27 @@
       },
 
       // 从记录数据生成文本
-      getRawFromRecords() {
-        let raw = '';
-        this.allRecords.forEach(record => {
-          @foreach ($fields as $field)
-          raw += record["{{ $field['field_id'] }}"].trim() + '|';
+      recordsToText() {
+        let text = '';
+        const records = this.selectedRecords.length ? this.selectedRecords : this.allRecords;
+        records.forEach(record => {
+          @foreach (array_keys($fields) as $field_id)
+          text += (record["{{ $field_id }}"] == null ? '' : record["{{ $field_id }}"]) + '|';
           @endforeach
-          raw += '\n';
+          text += '\n';
         });
-        return raw;
+        return text;
       },
 
       // 从文本数据批量生成记录
-      getRecordsFromRaw(raw, delimiter) {
+      textToRecords(text, delimiter) {
         delimiter = delimiter || '|';
         if (delimiter !== '|') {
-          raw = raw.replaceAll(delimiter, '|');
+          text = text.replaceAll(delimiter, '|');
         }
 
         const records = {};
-        raw.split(/[\n\r]+/).forEach(line => {
+        text.split(/[\n\r]+/).forEach(line => {
           line = line.replace(/^\s*\|/, '').replace(/\|\s*$/, '');
           if (line.length) {
             const data = line.split('|');
@@ -462,11 +475,16 @@
 
       // 清除筛选
       resetFilter() {
+        this.filter.field = '';
+        this.filter.method = '';
+        this.filter.value = '';
+
         if (this.filter.filtered) {
-          this.filter.filtered = false;
           this.selectedRecords = [];
+          this.pagination.currentPage = 1;
+          this.filter.filtered = false;
           this.$set(this.$data, 'presentRecords', this.allRecords.slice());
-          this.total = this.presentRecords.length;
+          this.pagination.total = this.allRecords.length;
         }
       },
 
@@ -476,6 +494,7 @@
 
         // 清空已选择的记录
         this.selectedRecords = [];
+        this.pagination.currentPage = 1;
 
         // 筛选记录
         const records = this.filterRecords(this.filter.field, this.filter.method, this.filter.value);
@@ -485,7 +504,7 @@
         }
         this.filter.filtered = true;
         this.$set(this.$data, 'presentRecords', records);
-        this.total = this.presentRecords.length;
+        this.pagination.total = this.presentRecords.length;
       },
 
       // 筛选记录集

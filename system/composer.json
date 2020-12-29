@@ -7,6 +7,12 @@
         "laravel"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Jianhui Chen",
+            "email": "jchenk@live.com"
+        }
+    ],
     "require": {
         "php": "^7.2.5",
         "doctrine/dbal": "^2.10",
