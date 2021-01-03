@@ -1,18 +1,14 @@
 body {
   background-color: #0a3f70;
   background-color: #0074bd;
+  height: auto;
 }
 
 #install {
   display: block;
-  max-width: 720px;
-  margin: auto;
+  width: 720px;
+  margin: 40px auto;
   padding: 0;
-  position: absolute;
-  top: 40px;
-  bottom: 40px;
-  left: 40px;
-  right: 40px;
   background-color: #ffffff;
   border-radius: 2px;
 }
@@ -54,10 +50,13 @@ body {
   line-height: 20px;
   padding: 10px 16px;
   border: 1px solid #bfbfbf;
-  margin-top: -1px;
-  min-width: 360px;
+  width: 360px;
   font-size: 13px;
   color: #333;
+}
+
+.jc-env + .jc-env {
+  border-top: none;
 }
 
 .jc-env::after {
