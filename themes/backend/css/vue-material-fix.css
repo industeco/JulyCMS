@@ -184,3 +184,7 @@ a.md-button {
   height: 28px;
   min-width: 60px;
 }
+
+#app_sidebar .md-list-item {
+  margin-top: -1px;
+}
