@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Http\Controllers\AnyPage;
-use App\Plugin\Plugin;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -48,8 +47,6 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
-
-        $this->loadPluginRoutes();
     }
 
     /**
@@ -92,17 +89,5 @@ class RouteServiceProvider extends ServiceProvider
              ->middleware('api')
              ->namespace($this->namespace)
              ->group(base_path('routes/api.php'));
-    }
-
-    /**
-     * 定义插件路由
-     *
-     * @return void
-     */
-    protected function loadPluginRoutes()
-    {
-        foreach (Plugin::all() as $plugin) {
-            $plugin->loadRoutes();
-        }
     }
 }
