@@ -24,9 +24,11 @@
       <div class="jc-install-step" v-if="currentStep===0">
         <div class="jc-install-step-content">
           <ul class="jc-env-list">
-            <li v-for="(isok, requirement) in requirements" :key="requirement" :class="{'jc-env':true, 'is-ok':isok}">
-              <span>@{{ requirement }}</span>
+            @foreach ($requirements as $requirement => $ok)
+            <li class="jc-env{{ $ok ? ' is-ok' : '' }}">
+              <span>{{ $requirement }}</span>
             </li>
+            @endforeach
           </ul>
         </div>
         <div class="jc-install-step-footer">
@@ -68,7 +70,7 @@
                   v-model="settings.admin_password">
                 </el-input>
                 <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-                  @click="randomPassword">
+                  @click.stop="randomPassword">
                   <div class="md-ripple"><div class="md-button-content">随机</div></div>
                 </button>
               </div>
@@ -82,7 +84,7 @@
                   placeholder="database.db3">
                 </el-input>
                 <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
-                  @click="randomDatabase">
+                  @click.stop="randomDatabase">
                   <div class="md-ripple"><div class="md-button-content">随机</div></div>
                 </button>
               </div>
@@ -109,7 +111,7 @@
         </div>
         <div class="jc-install-step-footer">
           <button type="button" class="md-button md-raised md-primary md-theme-default"
-            @click="install">
+            @click.stop="install">
             <div class="md-ripple">
               <div class="md-button-content">安装</div>
             </div>
@@ -125,7 +127,7 @@
         </div>
         <div class="jc-install-step-footer">
           <button type="button" class="md-button md-raised md-primary md-theme-default"
-            :disabled="lastStepStatus!=='finish'" @click="login">
+            :disabled="lastStepStatus!=='finish'" @click.stop="login">
             <div class="md-ripple">
               <div class="md-button-content">转到登录</div>
             </div>
@@ -141,50 +143,9 @@
     const app = new Vue({
       el: '#install',
       data() {
-        let validateUrl = (rule, value, callback) => {
-          if (!value.trim().length || /^\s*https?:\/\/(127\.0\.0\.1\s*$|localhost\s*$|www\.)/i.test(value)) {
-            callback();
-          } else {
-            callback(new Error('网址格式错误'));
-          }
-        };
-
-        let validateDatabase = (rule, value, callback) => {
-          value = value.trim();
-          if (!(/\.db3$/.test(value))) {
-            callback(new Error('数据文件必须以 .db3 结尾'));
-          } else {
-            value = value.replace(/\.db3$/, '');
-            if (/[^a-z0-9_]/.test(value)) {
-              callback(new Error('数据文件只能包含小写字母、数字和下划线'));
-            } else {
-              callback();
-            }
-          }
-        };
-
-        let validateOwner = (rule, value, callback) => {
-          if (/[\\"']/.test(value)) {
-            callback(new Error('企业名不能包含 \\ 和 "'));
-          } else {
-            callback();
-          }
-        };
-
-        let validateAdminName = (rule, value, callback) => {
-          if (/[^a-zA-Z0-9\-_ ]/.test(value)) {
-            callback(new Error('管理账号不能含有特殊字符'));
-          } else if (/^\s+$/.test(value)) {
-            callback(new Error('管理账号不能全是空格'));
-          } else {
-            callback();
-          }
-        };
-
         return {
           currentStep: 0,
-          requirements: @json($requirements, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-          environmentsOk: false,
+          environmentsOk: true,
           settings: {
             app_url: 'http://127.0.0.1',
             admin_name: 'admin',
@@ -196,12 +157,13 @@
           rules: {
             app_url: [
               { required: true, message: '网址不能为空', trigger: 'blur' },
-              { validator: validateUrl, trigger: 'change' },
+              { pattern: /^\s*https?:\/\/(127\.0\.0\.1\s*$|localhost\s*$|www\.)/i, trigger: 'change' },
               { type: 'url', message: '网址格式错误', trigger: 'change' },
             ],
             admin_name: [
               { required: true, message: '管理账号不能为空', trigger: 'blur' },
-              { validator: validateAdminName, trigger: ['change', 'blur'] },
+              { pattern: /^[a-zA-Z0-9\-_ ]+$/, message: '管理账号只能使用大小写字母、数字，连字符（-），下划线（_）或空格', trigger: ['change', 'blur'] },
+              { pattern: /[a-zA-Z0-9\-_]/, message: '管理账号不能全是空格', trigger: ['change', 'blur'] },
             ],
             admin_password: [
               { required: true, message: '管理密码不能为空', trigger: 'blur' },
@@ -209,11 +171,11 @@
             ],
             db_database: [
               { required: true, message: '数据文件不能为空', trigger: 'blur' },
-              { validator: validateDatabase, trigger: 'blur' },
+              { pattern: /^[a-z0-9_]+\.db3$/, message: '数据文件只能包含小写字母、数字和下划线，且后缀名必须是 .db3', trigger: 'blur' },
             ],
             site_subject: [
               { required: true, message: '企业名不能为空', trigger: 'blur' },
-              { validator: validateOwner, trigger: 'blur' },
+              { pattern: /^[^\\"']+$/, message: '企业名不能包含 \\ 和 "', trigger: 'blur' },
             ],
             mail_to_address: [
               { required: true, message: '邮箱不能为空', trigger: 'blur' },
@@ -229,13 +191,12 @@
       created() {
         this.randomDatabase();
 
-        this.environmentsOk = true;
-        for (const key in this.requirements) {
-          if (!this.requirements[key]) {
+        @foreach ($requirements as $requirement => $ok)
+          @if(! $ok)
             this.environmentsOk = false;
-            break;
-          }
-        }
+            @break
+          @endif
+        @endforeach
       },
 
       mounted() {
@@ -260,7 +221,7 @@
         },
 
         randomPassword() {
-          const chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678~!#$%^&*_-+=?;,.';
+          const chars = 'ABDEFGHJKMNQRTXYabdefhijkmnrtxy34678~!#$%^&*_-+=?;,.';
           const maxPos = chars.length;
           let admin_password = '';
           for (let i=0; i<10; i++) {

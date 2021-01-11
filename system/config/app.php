@@ -172,6 +172,10 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         July\JulyServiceProvider::class,
+
+        // Modules
+        Installer\InstallerServiceProvider::class,
+        Specs\SpecsServiceProvider::class,
     ],
 
     /*

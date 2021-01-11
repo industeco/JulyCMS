@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Specs\Controllers;
 
 Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
-->middleware(['web','admin','auth'])
+->middleware(['admin','auth'])
 ->group(function() {
     Route::resource('specs', Controllers\SpecController::class)
         ->parameters(['specs' => 'spec'])
@@ -31,17 +31,14 @@ Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
         ->name('specs.records.clear');
 });
 
-Route::middleware(['web'])
-->group(function() {
-    // 搜索规格
-    Route::get('specs/{spec}/search', [Controllers\SpecController::class, 'showSearch'])
-        ->name('specs.show_search');
+// 搜索规格
+Route::get('specs/{spec}/search', [Controllers\SpecController::class, 'showSearch'])
+    ->name('specs.show_search');
 
-    // 搜索规格
-    Route::post('specs/{spec}/search', [Controllers\SpecController::class, 'search'])
-        ->name('specs.search');
+// 搜索规格
+Route::post('specs/{spec}/search', [Controllers\SpecController::class, 'search'])
+    ->name('specs.search');
 
-    // 规格展示
-    Route::get('specs/{spec}/records/{record_id}', [Controllers\SpecController::class, 'showRecord'])
-        ->name('specs.show_record');
-});
+// 规格展示
+Route::get('specs/{spec}/records/{record_id}', [Controllers\SpecController::class, 'showRecord'])
+    ->name('specs.show_record');

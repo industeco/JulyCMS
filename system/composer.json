@@ -54,13 +54,12 @@
         "psr-4": {
             "App\\": "app/",
             "July\\": "july/",
-            "Installer\\": "modules/installer/src/"
+            "Installer\\": "modules/installer/src/",
+            "Specs\\": "modules/specs/src/"
         },
         "classmap": [
             "database/seeds",
-            "database/factories",
-            "plugins/*/core",
-            "plugins/*/seeds"
+            "database/factories"
         ]
     },
     "autoload-dev": {

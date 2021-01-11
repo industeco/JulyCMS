@@ -17,7 +17,7 @@ class InstallController extends Controller
      */
     public function home()
     {
-        return view('backend::install', [
+        return view('installer::install', [
             'requirements' => $this->checkRequirements(),
         ]);
     }
@@ -33,7 +33,7 @@ class InstallController extends Controller
         if (! is_file($database = database_path($request->input('db_database')))) {
             touch($database);
         }
-        Storage::disk('system')->put('.env', $this->getEnv($request));
+        Storage::disk('system')->put('.env', $this->generateEnv($request));
 
         return response('');
     }
@@ -85,7 +85,7 @@ class InstallController extends Controller
         ];
 
         foreach ($phpRequirements as $requirement) {
-            $results[$requirement . ' PHP 扩展'] = extension_loaded($requirement);
+            $results[$requirement] = extension_loaded($requirement);
         }
 
         return $results;
@@ -97,17 +97,17 @@ class InstallController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return string
      */
-    protected function getEnv($request)
+    protected function generateEnv($request)
     {
         return implode("\n", [
-            'APP_ENV=' . config('app.env'),
+            'APP_ENV='.config('app.env'),
             'APP_DEBUG=false',
-            'APP_KEY=' . $this->generateRandomKey(),
-            'APP_URL=' . $request->input('app_url'),
-            'SITE_SUBJECT=' . '"'.$request->input('site_subject').'"',
-            'DB_DATABASE=' . $request->input('db_database'),
-            'MAIL_TO_ADDRESS=' . $request->input('mail_to_address'),
-            'MAIL_TO_NAME=' . preg_replace('/@.*$/', '', $request->input('mail_to_address')),
+            'APP_KEY='.$this->generateRandomKey(),
+            'APP_URL='.$request->input('app_url'),
+            'SITE_SUBJECT='.'"'.$request->input('site_subject').'"',
+            'DB_DATABASE='.$request->input('db_database'),
+            'MAIL_TO_ADDRESS='.$request->input('mail_to_address'),
+            'MAIL_TO_NAME='.preg_replace('/@.*$/', '', $request->input('mail_to_address')),
             '',
         ]);
     }

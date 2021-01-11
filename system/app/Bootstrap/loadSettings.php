@@ -16,6 +16,6 @@ class loadSettings
     public function bootstrap(Application $app)
     {
         // dd($app->make('request'));
-        Settings::loadSettings($app, $app->make('config'));
+        // Settings::loadSettings($app, $app->make('config'));
     }
 }
