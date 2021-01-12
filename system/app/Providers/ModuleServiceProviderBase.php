@@ -5,9 +5,24 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use ReflectionClass;
 
 abstract class ModuleServiceProviderBase extends ServiceProvider
 {
+    /**
+     * 组件基础路径
+     *
+     * @var string|null
+     */
+    protected $moduleRoot = null;
+
+    /**
+     * 组件名
+     *
+     * @var string|null
+     */
+    protected $moduleName = null;
+
     /**
      * Register any application services.
      *
@@ -28,20 +43,21 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
         // 加载组件路由
         $this->loadModuleRoutes();
 
+        $namespace = $this->getModuleName();
+
         // 融合插件设置
         if (is_file($file = $this->getModulePath('config/config.php'))) {
-            $this->mergeConfigFrom($file, $this->getModuleName());
+            $this->mergeConfigFrom($file, str_replace('/', '.', $namespace));
         }
 
         // 登记视图目录
         if (is_dir($path = $this->getModulePath('views'))) {
-            $this->loadViewsFrom($path, $this->getModuleName());
-            // View::addNamespace($this->getModuleName(), $path);
+            $this->loadViewsFrom($path, $namespace);
         }
 
         // 登记翻译文本目录
         if (is_dir($path = $this->getModulePath('lang'))) {
-            $this->loadTranslationsFrom($path, $this->getModuleName());
+            $this->loadTranslationsFrom($path, $namespace);
         }
 
         // 登记迁移目录
@@ -68,7 +84,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function getModulePath(?string $path = null)
     {
-        return $this->getModuleBasePath().(is_null($path) ? '' : '/'.$path);
+        return $this->getModuleRoot().(is_null($path) ? '' : '/'.$path);
     }
 
     /**
@@ -76,9 +92,12 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      *
      * @return string
      */
-    protected function getModuleBasePath()
+    protected function getModuleRoot()
     {
-        return base_path('modules/'.$this->getModuleName());
+        if (! $this->moduleRoot) {
+            $this->moduleRoot = dirname(dirname((new ReflectionClass(static::class))->getFileName()));
+        }
+        return $this->moduleRoot;
     }
 
     /**
@@ -88,6 +107,10 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function getModuleName()
     {
-        return strtolower(basename(static::class, 'ServiceProvider'));
+        if (! $this->moduleName) {
+            $relativePath = substr($this->getModuleRoot(), strlen(base_path('modules/')));
+            $this->moduleName = str_replace('\\', '/', $relativePath);
+        }
+        return $this->moduleName;
     }
 }

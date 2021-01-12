@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Entity;
+namespace App\Entity;
 
 use App\Model as AppModel;
 use App\Utils\Pocket;
@@ -10,53 +10,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use July\Core\Config\PartialView;
-use July\Core\Config\PathAlias;
-use July\Core\Entity\Linkage\LinkageBase;
-use July\Core\EntityField\EntityFieldBase;
+use App\EntityField\PathView;
+use App\EntityField\PathAlias;
+use App\Entity\Linkage\LinkageBase;
+use App\EntityField\EntityFieldBase;
 use Twig\Environment as Twig;
 
-abstract class EntityBase extends AppModel implements EntityInterface
+abstract class EntityBase extends AppModel
 {
-    // use EntityTrait, HasMutatorTrait;
-    use CarryEntityTrait;
-
-    /**
-     * 实体属性名册缓存
-     *
-     * @var array
-     */
-    protected static $keysCache = [
-        'columns' => [],    // 固有属性
-        'fields' => [],     // 实体字段
-        'links' => [],      // 外联属性
-    ];
-
-    /**
-     * 实体属性值缓存
-     *
-     * @var array
-     */
-    protected static $attributesCache = [
-        'columns' => [],    // 固有属性
-        'fields' => [],     // 实体字段
-        'links' => [],      // 外联属性
-    ];
-
-    /**
-     * 已登记的外联属性
-     *
-     * @var array
-     */
-    protected static $registeredLinks = [];
-
-    /**
-     * 外联属性本地登记处
-     *
-     * @var array
-     */
-    protected static $links = [];
-
     /**
      * 内建属性登记处
      *
@@ -139,7 +100,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
      * @param  array  $columns
      * @return static
      *
-     * @throws \July\Core\Entity\Exceptions\EntityNotFoundException
+     * @throws \App\Entity\Exceptions\EntityNotFoundException
      */
     public static function findOrFail($id, array $columns = ['*'])
     {
@@ -155,25 +116,25 @@ abstract class EntityBase extends AppModel implements EntityInterface
         }
     }
 
-    /**
-     * 是否可翻译
-     *
-     * @return bool
-     */
-    public function isTranslatable()
-    {
-        return $this->hasColumn('langcode');
-    }
+    // /**
+    //  * 是否可翻译
+    //  *
+    //  * @return bool
+    //  */
+    // public function isTranslatable()
+    // {
+    //     return $this->hasColumn('langcode');
+    // }
 
-    /**
-     * 判断是否已翻译
-     *
-     * @return bool
-     */
-    public function isTranslated()
-    {
-        return $this->isTranslatable() && $this->contentLangcode !== $this->getColumnValue('langcode');
-    }
+    // /**
+    //  * 判断是否已翻译
+    //  *
+    //  * @return bool
+    //  */
+    // public function isTranslated()
+    // {
+    //     return $this->isTranslatable() && $this->contentLangcode !== $this->getColumnValue('langcode');
+    // }
 
     /**
      * 设置当前实例语言版本
@@ -195,11 +156,29 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function getLangcode()
     {
-        if ($this->isTranslatable()) {
-            return $this->contentLangcode ?: $this->contentLangcode = $this->getColumnValue('langcode');
-        }
+        return $this->contentLangcode;
 
-        return null;
+        // if ($this->isTranslatable()) {
+        //     return $this->contentLangcode ?: $this->contentLangcode = $this->getColumnValue('langcode');
+        // }
+
+        // return null;
+    }
+
+    /**
+     * 获取当前实例的语言
+     *
+     * @return string|null
+     */
+    public function getDefaultLangcode()
+    {
+        return $this->attributes['langcode'] ?? 'zxx';
+
+        // if ($this->isTranslatable()) {
+        //     return $this->contentLangcode ?: $this->contentLangcode = $this->getColumnValue('langcode');
+        // }
+
+        // return null;
     }
 
     /**
@@ -243,7 +222,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
     /**
      * 获取实体类型
      *
-     * @return \July\Core\Entity\EntityBundleBase|null
+     * @return \App\Entity\EntityBundleBase|null
      */
     public function getBundle()
     {
@@ -413,7 +392,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
     /**
      * 获取实体字段对象集
      *
-     * @return \Illuminate\Support\Collection|\July\Core\EntityField\EntityFieldBase[]
+     * @return \Illuminate\Support\Collection|\App\EntityField\EntityFieldBase[]
      */
     public function collectFields()
     {
@@ -484,7 +463,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function getLinkValue(string $key)
     {
-        /** @var \July\Core\Entity\Linkage\LinkageBase */
+        /** @var \App\Entity\Linkage\LinkageBase */
         $linkage = $this->collectLinks()->get($key);
 
         return $this->transformAttributeValue($key, $linkage->getValue());
@@ -498,7 +477,7 @@ abstract class EntityBase extends AppModel implements EntityInterface
      */
     public function getFieldValue(string $key)
     {
-        /** @var \July\Core\EntityField\EntityFieldBase */
+        /** @var \App\EntityField\EntityFieldBase */
         $field = $this->collectFields()->get($key);
 
         return $this->transformAttributeValue($key, $field->getValue());

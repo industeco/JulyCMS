@@ -32,7 +32,7 @@ class NewMessage
      *
      * @var string
      */
-    protected $eol = "\n";
+    protected $eol = PHP_EOL;
 
     /**
      * 可用字段
@@ -69,13 +69,6 @@ class NewMessage
 
         $ua = $request->userAgent();
         $this->data['user_agent'] = $request->input('user_agent') ?: $this->getUserAgent($ua);
-
-        $os = strtoupper(substr(PHP_OS,0,3));
-        if ($os === 'WIN') {
-            $this->eol = "\r\n";
-        } elseif ($os === 'MAC') {
-            $this->eol = "\r";
-        }
     }
 
     public function send()

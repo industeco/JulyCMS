@@ -174,8 +174,8 @@ return [
         July\JulyServiceProvider::class,
 
         // Modules
-        Installer\InstallerServiceProvider::class,
-        Specs\SpecsServiceProvider::class,
+        Installer\ModuleServiceProvider::class,
+        Specs\ModuleServiceProvider::class,
     ],
 
     /*
