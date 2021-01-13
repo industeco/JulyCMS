@@ -99,7 +99,9 @@ class JulyServiceProvider extends ServiceProvider
     {
         // 注册核心组件路由
         foreach (July::takeout('routes') as $routes) {
-            $routes::register();
+            if (class_exists($routes)) {
+                $routes::register();
+            }
         }
     }
 

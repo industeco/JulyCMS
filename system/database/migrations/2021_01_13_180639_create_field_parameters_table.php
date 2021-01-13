@@ -17,13 +17,13 @@ class CreateFieldParametersTable extends Migration
             $table->id();
 
             // 字段 id
-            $table->string('field_id', 32);
+            $table->string('field_id');
 
             // 实体名
-            $table->string('entity_name', 32);
+            $table->string('entity_name');
 
             // 实体类型名
-            $table->string('bundle_name', 32)->nullable();
+            $table->string('entity_mold_name')->nullable();
 
             // 语言
             $table->string('langcode', 12);

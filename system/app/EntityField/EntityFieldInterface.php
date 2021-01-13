@@ -1,9 +1,9 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace App\EntityField;
 
-use July\Core\Entity\EntityBase;
-use July\Core\Entity\EntityInterface;
+use App\Entity\EntityBase;
+use App\Entity\EntityInterface;
 
 interface EntityFieldInterface extends EntityInterface
 {
@@ -17,7 +17,7 @@ interface EntityFieldInterface extends EntityInterface
     /**
      * 获取字段类型对象
      *
-     * @return \July\Core\EntityField\FieldType
+     * @return \App\EntityField\FieldType
      */
     public function getFieldType();
 
@@ -32,7 +32,7 @@ interface EntityFieldInterface extends EntityInterface
     /**
      * 绑定实体
      *
-     * @param  \July\Core\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase $entity
      * @return static
      */
     public function bindEntity(EntityBase $entity);
@@ -40,7 +40,7 @@ interface EntityFieldInterface extends EntityInterface
     /**
      * 获取绑定的实体
      *
-     * @return \July\Core\Entity\EntityBase
+     * @return \App\Entity\EntityBase
      */
     public function getBoundEntity();
 

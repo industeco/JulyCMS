@@ -23,7 +23,7 @@ class CreateEntityFieldsTable extends Migration
             $table->string('field_type');
 
             // 字段所属实体
-            $table->string('entity_name')->nullable();
+            $table->string('entity_name');
 
             // 是否默认字段：新建实体类型时，默认字段将被自动添加到字段列表中
             $table->boolean('is_default')->default(false);
@@ -45,6 +45,18 @@ class CreateEntityFieldsTable extends Migration
 
             // 描述
             $table->string('description')->nullable();
+
+            // 最大长度（仅对部分类型有效）
+            $table->unsignedSmallInteger('maxlength')->nullable();
+
+            // 字段提示
+            $table->string('helpertext')->nullable();
+
+            // 是否必填项
+            $table->boolean('is_required')->default(false);
+
+            // 初始语言版本
+            $table->string('langcode', 12);
 
             // 时间戳
             $table->timestamps();

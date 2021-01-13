@@ -1,11 +1,11 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace App\EntityField;
 
 use App\Casts\Serialized;
-use July\Core\Entity\EntityBase;
+use App\Model;
 
-class FieldParameters extends EntityBase
+class FieldParameters extends Model
 {
     /**
      * 与模型关联的表名

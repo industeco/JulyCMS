@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Entity;
+namespace App\Entity;
 
 use App\Contracts\PocketableInterface;
 use Illuminate\Contracts\Support\Renderable;
@@ -39,7 +39,7 @@ interface EntityInterface extends PocketableInterface, Renderable
      * 获取实体对象
      *
      * @param  mixed $id
-     * @return \July\Core\Entity\EntityInterface|null
+     * @return \App\Entity\EntityInterface|null
      */
     public static function find($id);
 
@@ -47,7 +47,7 @@ interface EntityInterface extends PocketableInterface, Renderable
      * 获取实体对象，失败则抛出错误
      *
      * @param  mixed $id
-     * @return \July\Core\Entity\EntityInterface
+     * @return \App\Entity\EntityInterface
      *
      * @throws \July\Base\Exceptions\EntityNotFoundException
      */

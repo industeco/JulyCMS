@@ -1,13 +1,12 @@
 <?php
 
-namespace July\Core\EntityField;
+namespace App\EntityField;
 
 use App\Contracts\PocketableInterface;
 use App\Utils\Pocket;
 use Illuminate\Support\Str;
-use July\Core\EntityField\Exceptions\FieldTypeNotFoundException;
-use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\FieldTypeDefinitions\DefinitionBase;
+use App\EntityField\Exceptions\FieldTypeNotFoundException;
+use App\EntityField\FieldTypeDefinitions\DefinitionBase;
 use Symfony\Component\Finder\Finder;
 
 class FieldType implements PocketableInterface
@@ -22,12 +21,12 @@ class FieldType implements PocketableInterface
     /**
      * 绑定的字段类型定义
      *
-     * @var \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null
+     * @var \App\EntityField\FieldTypeDefinitions\DefinitionBase|null
      */
     protected $definition;
 
     /**
-     * @param  \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null $definition
+     * @param  \App\EntityField\FieldTypeDefinitions\DefinitionBase|null $definition
      */
     public function __construct(DefinitionBase $definition = null)
     {
@@ -37,7 +36,7 @@ class FieldType implements PocketableInterface
     /**
      * 获取字段类型定义类实例
      *
-     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
+     * @param  \App\EntityField\FieldBase|string $id 类型定义 id
      * @return self
      */
     public static function find($id)
@@ -52,10 +51,10 @@ class FieldType implements PocketableInterface
     /**
      * 获取字段类型定义类实例，失败则抛出错误
      *
-     * @param  \July\Core\EntityField\EntityFieldBase|string $id 类型定义 id
+     * @param  \App\EntityField\FieldBase|string $id 类型定义 id
      * @return static
      *
-     * @throws \July\Core\EntityField\Exceptions\FieldTypeNotFoundException
+     * @throws \App\EntityField\Exceptions\FieldTypeNotFoundException
      */
     public static function findOrFail($id)
     {
@@ -93,8 +92,8 @@ class FieldType implements PocketableInterface
     /**
      * 根据字段类型别名获取字段类型定义类
      *
-     * @param  \July\Core\EntityField\EntityFieldBase|string $id 字段类型 id 或字段类型定义对象
-     * @return \July\Core\EntityField\FieldTypeDefinitions\DefinitionBase|null
+     * @param  \App\EntityField\FieldBase|string $id 字段类型 id 或字段类型定义对象
+     * @return \App\EntityField\FieldTypeDefinitions\DefinitionBase|null
      */
     public static function getDefinition($id)
     {
@@ -103,7 +102,7 @@ class FieldType implements PocketableInterface
         }
 
         $field = null;
-        if ($id instanceof EntityFieldBase) {
+        if ($id instanceof FieldBase) {
             $field = $id;
             $id = $field->getAttributeValue('field_type_id');
         }

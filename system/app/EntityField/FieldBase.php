@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Schema;
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 use App\EntityField\Exceptions\InvalidHostEntityException;
+use App\Model;
 
-abstract class EntityFieldBase extends EntityBase
+abstract class FieldBase extends Model
 {
     /**
      * 宿主实体的实体名
