@@ -34,7 +34,7 @@ class AnyPage extends Controller
         $url = trim(str_replace('\\', '/', $url), '/');
 
         $langcode = langcode('frontend');
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             if (!lang($langcode)->isAccessible()) {
                 abort(404);
             }
@@ -63,7 +63,7 @@ class AnyPage extends Controller
 
     protected function getRedirectiton(Request $request)
     {
-        $redirection = config('redirections', [])[$request->getRequestUri()] ?? null;
+        $redirection = config('route.redirections', [])[$request->getRequestUri()] ?? null;
         if ($redirection && $redirection['to']) {
             $host = $request->getSchemeAndHttpHost();
             if (! Str::startsWith($redirection['to'], $host)) {

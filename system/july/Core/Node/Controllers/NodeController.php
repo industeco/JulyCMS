@@ -205,7 +205,7 @@ class NodeController extends Controller
      */
     public function chooseLanguage(Node $node)
     {
-        if (!config('jc.language.multiple')) {
+        if (!config('language.multiple')) {
             abort(404);
         }
 
@@ -246,7 +246,7 @@ class NodeController extends Controller
         }
 
         // 多语言生成
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
         } else {
             $langs = [langcode('frontend')];

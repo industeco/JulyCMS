@@ -24,7 +24,7 @@ class ConfigsSeeder extends SeederBase
     {
         return [
             [
-                'id' => 'jc.language.multiple',
+                'id' => 'language.multiple',
                 'group' => 'language',
                 'label' => '多语言开关',
                 'description' => '启用后可对内容进行翻译，可访问多语言页面。',
@@ -36,13 +36,13 @@ class ConfigsSeeder extends SeederBase
                 'description' => '可用语言及其配置',
             ],
             [
-                'id' => 'jc.language.content',
+                'id' => 'language.content',
                 'group' => 'language',
                 'label' => '内容默认语言',
                 'description' => '后台添加内容的默认语言。',
             ],
             [
-                'id' => 'jc.language.frontend',
+                'id' => 'language.frontend',
                 'group' => 'language',
                 'label' => '前端默认语言',
                 'description' => '前端页面的默认语言。',

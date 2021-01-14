@@ -7,22 +7,22 @@
   :model="configs"
   label-position="top">
   <div id="main_form_left">
-    <el-form-item prop="jc.language.multiple" size="small"
-      class="{{ $configs['jc.language.multiple']['description']?'has-helptext':'' }}">
-      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('jc.language.multiple')" placement="right">
-        <span>{{ $configs['jc.language.multiple']['label'] }}</span>
+    <el-form-item prop="language.multiple" size="small"
+      class="{{ $configs['language.multiple']['description']?'has-helptext':'' }}">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('language.multiple')" placement="right">
+        <span>{{ $configs['language.multiple']['label'] }}</span>
       </el-tooltip>
       <el-switch
-        v-model="configs['jc.language.multiple']"
+        v-model="configs['language.multiple']"
         active-text="启用"
         inactive-text="不启用">
       </el-switch>
-      @if ($configs['jc.language.multiple']['description'])
-      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['jc.language.multiple']['description'] }}</span>
+      @if ($configs['language.multiple']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['language.multiple']['description'] }}</span>
       @endif
     </el-form-item>
     <div class="el-form-item el-form-item--small jc-embeded-field {{ $configs['jc.language.list']['description']?'has-helptext':'' }}"
-      v-if="configs['jc.language.multiple']">
+      v-if="configs['language.multiple']">
       <div class="el-form-item__content">
         <div class="jc-embeded-field__header">
           <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('jc.language.list')" placement="right">
@@ -88,12 +88,12 @@
       </div>
     </div>
     <el-form-item size="small"
-      class="{{ $configs['jc.language.content']['description']?'has-helptext':'' }}"
-      v-if="configs['jc.language.multiple']">
-      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('jc.language.content')" placement="right">
-        <span>{{ $configs['jc.language.content']['label'] }}</span>
+      class="{{ $configs['language.content']['description']?'has-helptext':'' }}"
+      v-if="configs['language.multiple']">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('language.content')" placement="right">
+        <span>{{ $configs['language.content']['label'] }}</span>
       </el-tooltip>
-      <el-select v-model="configs['jc.language.content']">
+      <el-select v-model="configs['language.content']">
         <el-option
           v-for="langcode in translatableLangcodes"
           :key="langcode"
@@ -101,17 +101,17 @@
           :value="langcode">
         </el-option>
       </el-select>
-      @if ($configs['jc.language.content']['description'])
-      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['jc.language.content']['description'] }}</span>
+      @if ($configs['language.content']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['language.content']['description'] }}</span>
       @endif
     </el-form-item>
     <el-form-item size="small"
-      class="{{ $configs['jc.language.frontend']['description']?'has-helptext':'' }}"
-      v-if="configs['jc.language.multiple']">
-      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('jc.language.frontend')" placement="right">
-        <span>{{ $configs['jc.language.frontend']['label'] }}</span>
+      class="{{ $configs['language.frontend']['description']?'has-helptext':'' }}"
+      v-if="configs['language.multiple']">
+      <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" :content="useInTwig('language.frontend')" placement="right">
+        <span>{{ $configs['language.frontend']['label'] }}</span>
       </el-tooltip>
-      <el-select v-model="configs['jc.language.frontend']">
+      <el-select v-model="configs['language.frontend']">
         <el-option
           v-for="langcode in accessibleLangcodes"
           :key="langcode"
@@ -119,8 +119,8 @@
           :value="langcode">
         </el-option>
       </el-select>
-      @if ($configs['jc.language.frontend']['description'])
-      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['jc.language.frontend']['description'] }}</span>
+      @if ($configs['language.frontend']['description'])
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['language.frontend']['description'] }}</span>
       @endif
     </el-form-item>
     <div id="main_form_bottom" class="is-button-item">
@@ -139,10 +139,10 @@
     data() {
       return {
         configs: {
-          'jc.language.multiple': {{ $configs['jc.language.multiple']['value'] ? 'true' : 'false' }},
+          'language.multiple': {{ $configs['language.multiple']['value'] ? 'true' : 'false' }},
           'jc.language.list': @json($configs['jc.language.list']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-          'jc.language.content': "{{ $configs['jc.language.content']['value'] }}",
-          'jc.language.frontend': "{{ $configs['jc.language.frontend']['value'] }}",
+          'language.content': "{{ $configs['language.content']['value'] }}",
+          'language.frontend': "{{ $configs['language.frontend']['value'] }}",
         },
         selected: null,
         languageList: @json(lang()->getLanguageList(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
@@ -218,8 +218,8 @@
           this.$set(this.configs, 'jc.language.list', list);
         }
 
-        this.resetDefaultLangcode('jc.language.content', langcode);
-        this.resetDefaultLangcode('jc.language.frontend', langcode);
+        this.resetDefaultLangcode('language.content', langcode);
+        this.resetDefaultLangcode('language.frontend', langcode);
       },
 
       resetDefaultLangcode(key, langcode) {
@@ -235,10 +235,10 @@
         }
 
         if (!status['accessible']) {
-          this.resetDefaultLangcode('jc.language.frontend', langcode);
+          this.resetDefaultLangcode('language.frontend', langcode);
         }
         if (!status['translatable']) {
-          this.resetDefaultLangcode('jc.language.content', langcode);
+          this.resetDefaultLangcode('language.content', langcode);
         }
       },
 
@@ -248,7 +248,7 @@
           status['translatable'] = true;
         }
         if (!status['accessible']) {
-          this.resetDefaultLangcode('jc.language.frontend', langcode);
+          this.resetDefaultLangcode('language.frontend', langcode);
         }
       },
 

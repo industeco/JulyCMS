@@ -16,7 +16,7 @@ class TermController extends Controller
      */
     public function index()
     {
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             $tags = Term::all();
         } else {
             $tags = Term::query()->where('langcode', langcode('content'))->get();

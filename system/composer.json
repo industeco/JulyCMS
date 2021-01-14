@@ -53,9 +53,13 @@
         ],
         "psr-4": {
             "App\\": "app/",
-            "July\\": "july/",
+            "Database\\Seeds\\": "database/seeds/",
             "Installer\\": "modules/installer/src/",
-            "Specs\\": "modules/specs/src/"
+            "Specs\\": "modules/specs/src/",
+            "July\\Node\\": "modules/july/node/src/",
+            "July\\Node\\Seeds\\": "modules/july/node/seeds/",
+            "July\\Taxonomy\\": "modules/july/taxonomy/src/",
+            "July\\Taxonomy\\Seeds\\": "modules/july/taxonomy/seeds/"
         },
         "classmap": [
             "database/seeds",

@@ -32,30 +32,30 @@ class Lang
         switch ($alias) {
             // 内容语言
             case 'content':
-                return config('request.language.content') ?: config('jc.language.content');
+                return config('request.language.content') ?: config('language.content');
 
             // 默认的内容语言
             case 'content.default':
-                return config('jc.language.content');
+                return config('language.content');
 
             // 前台页面语言
             case 'frontend':
             case 'page.frontend':
             case 'page':
-                return config('request.language.frontend') ?: config('jc.language.frontend');
+                return config('request.language.frontend') ?: config('language.frontend');
 
             // 默认的前台页面语言
             case 'frontend.default':
             case 'page.frontend.default':
             case 'page.default':
-                return config('jc.language.frontend');
+                return config('language.frontend');
 
             // 后台页面语言
             case 'backend':
             case 'page.backend':
             case 'backend.default':
             case 'page.backend.default':
-                return config('jc.language.backend');
+                return config('language.backend');
 
             // 请求语言数组
             case 'request':

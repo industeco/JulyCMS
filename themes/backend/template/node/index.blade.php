@@ -23,7 +23,7 @@
           <el-option label="按类型" value="node_type"></el-option>
           <el-option label="按网址" value="url"></el-option>
           <el-option label="按颜色" value="color"></el-option>
-          @if (config('jc.language.multiple'))
+          @if (config('language.multiple'))
           <el-option label="按语言" value="langcode"></el-option>
           @endif
         </el-select>
@@ -54,7 +54,7 @@
           <el-option value="is_green">绿</el-option>
           <el-option value="is_blue">蓝</el-option>
         </el-select>
-        @if (config('jc.language.multiple'))
+        @if (config('language.multiple'))
         <el-select size="small"
           v-if="filterBy=='langcode'"
           v-model="filterValues.langcode"
@@ -124,7 +124,7 @@
               <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              @if (config('jc.language.multiple'))
+              @if (config('language.multiple'))
               <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
@@ -147,7 +147,7 @@
           </div>
         </a>
       </li>
-      @if (config('jc.language.multiple'))
+      @if (config('language.multiple'))
       <li class="md-list-item">
         <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean">
           <div class="md-list-item-content">

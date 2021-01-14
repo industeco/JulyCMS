@@ -1,6 +1,6 @@
 <?php
 
-use App\Database\SeederManager;
+use Database\Seeds;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         DB::beginTransaction();
+        $this->call(Seeds\UserSeeder::class);
         $this->call(static::$seeders);
         DB::commit();
 

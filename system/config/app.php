@@ -171,7 +171,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        July\JulyServiceProvider::class,
+        // July\JulyServiceProvider::class,
 
         // Modules
         Installer\ModuleServiceProvider::class,

@@ -27,7 +27,7 @@
                 :disabled="scope.row.id === 'default'">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              {{-- @if (config('jc.language.multiple'))
+              {{-- @if (config('language.multiple'))
               <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default" disabled>
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
@@ -58,7 +58,7 @@
           </div>
         </div>
       </li>
-      {{-- @if (config('jc.language.multiple'))
+      {{-- @if (config('language.multiple'))
       <li class="md-list-item">
         <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
           <div class="md-list-item-content">

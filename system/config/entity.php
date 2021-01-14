@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // 是否允许通过实体路径访问
+    'path_accessible' => false,
+
     // 登记实体
     'entities' => [
         //

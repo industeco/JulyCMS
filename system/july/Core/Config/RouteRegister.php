@@ -12,7 +12,7 @@ class RouteRegister implements RouteRegisterInterface
      */
     public static function register()
     {
-        Route::prefix(config('jc.site.backend_route_prefix', 'admin'))
+        Route::prefix(config('route.prefix', 'admin'))
             ->middleware(['web','admin','auth'])
             ->group(function() {
                 Route::get('configs/{group}', [Controllers\ConfigController::class, 'edit'])
