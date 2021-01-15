@@ -9,16 +9,21 @@ class Lang
      */
     protected $langcode = null;
 
-    public function __construct($langcode = null)
+    public function __construct(?string $langcode = null)
     {
         if ($langcode) {
             $this->langcode = static::findLangcode($langcode);
         }
     }
 
-    public static function make($langcode = null)
+    public static function make(?string $langcode = null)
     {
         return new static($langcode);
+    }
+
+    public static function findLangcode(string $alias)
+    {
+        return static::resolve($alias);
     }
 
     /**
@@ -27,12 +32,12 @@ class Lang
      * @param string $alias
      * @return string
      */
-    public static function findLangcode(string $alias)
+    public static function resolve(string $alias)
     {
         switch ($alias) {
             // 内容语言
             case 'content':
-                return config('request.language.content') ?: config('language.content');
+                return config('language.request_content') ?: config('language.content');
 
             // 默认的内容语言
             case 'content.default':
@@ -40,26 +45,24 @@ class Lang
 
             // 前台页面语言
             case 'frontend':
-            case 'page.frontend':
-            case 'page':
-                return config('request.language.frontend') ?: config('language.frontend');
+                if (config('states.is_backend')) {
+                    return config('language.request') ?: config('language.frontend');
+                } else {
+                    return config('language.frontend');
+                }
 
             // 默认的前台页面语言
             case 'frontend.default':
-            case 'page.frontend.default':
-            case 'page.default':
                 return config('language.frontend');
 
             // 后台页面语言
             case 'backend':
-            case 'page.backend':
             case 'backend.default':
-            case 'page.backend.default':
                 return config('language.backend');
 
             // 请求语言数组
             case 'request':
-                return config('request.language');
+                return config('language.request');
         }
 
         return static::isLangcode($alias) ? $alias : null;
@@ -72,6 +75,17 @@ class Lang
      * @return boolean
      */
     public static function isLangcode($langcode)
+    {
+        return $langcode && array_key_exists($langcode, static::getLanguageList());
+    }
+
+    /**
+     * 判断是否有效的语言代码
+     *
+     * @param string $langcode
+     * @return boolean
+     */
+    public static function isAvailableLangcode(string $langcode)
     {
         return $langcode && array_key_exists($langcode, static::getLanguageList());
     }
@@ -108,7 +122,7 @@ class Lang
      */
     public function isAvailable()
     {
-        return $this->langcode && array_key_exists($this->langcode, config('jc.language.list'));
+        return $this->langcode && array_key_exists($this->langcode, config('language.available'));
     }
 
     /**
@@ -118,7 +132,7 @@ class Lang
      */
     public function isAccessible()
     {
-        return $this->langcode && config('jc.language.list.'.$this->langcode.'.accessible', false);
+        return $this->langcode && config('language.available.'.$this->langcode.'.accessible', false);
     }
 
     /**
@@ -128,7 +142,7 @@ class Lang
      */
     public function isTranslatable()
     {
-        return $this->langcode && config('jc.language.list.'.$this->langcode.'.translatable', false);
+        return $this->langcode && config('language.available.'.$this->langcode.'.translatable', false);
     }
 
     /**
@@ -137,7 +151,7 @@ class Lang
      * @param string|null 列表的语言版本
      * @return array
      */
-    public static function getLanguageList($langcode = null)
+    public static function getLanguageList(?string $langcode = null)
     {
         $langcode = $langcode ?: static::findLangcode('backend');
 
@@ -161,7 +175,7 @@ class Lang
      */
     public static function getAvailableLangcodes()
     {
-        return array_keys(config('jc.language.list'));
+        return array_keys(config('language.available'));
     }
 
     /**
@@ -172,7 +186,7 @@ class Lang
     public static function getAccessibleLangcodes()
     {
         $langcodes = [];
-        foreach (config('jc.language.list') as $code => $settings) {
+        foreach (config('language.available') as $code => $settings) {
             if ($settings['accessible'] ?? false) {
                 $langcodes[] = $code;
             }
@@ -188,7 +202,7 @@ class Lang
     public static function getTranslatableLangcodes()
     {
         $langcodes = [];
-        foreach (config('jc.language.list') as $code => $settings) {
+        foreach (config('language.available') as $code => $settings) {
             if ($settings['translatable'] ?? false) {
                 $langcodes[] = $code;
             }

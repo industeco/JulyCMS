@@ -14,12 +14,14 @@ class DetectLanguage
      */
     public function bootstrap(Application $app)
     {
-        $request = $app->make('request');
-        $uri = trim(str_replace('\\', '/', $request->getRequestUri()), '/');
-        if (strpos($uri, config('app.route_prefix', 'admin').'/') === 0) {
-            config()->set('request.is_backend', true);
-            return config('language.backend');
+        $uri = trim(str_replace('\\', '/', $app->make('request')->getRequestUri()), '/');
+        $prefix = config('app.route_prefix', 'admin').'/';
+        if (strncasecmp($uri, $prefix, strlen($prefix)) == 0) {
+            config(['states.is_backend' => true]);
+            $uri = substr($uri, strlen($prefix));
         }
 
+        $slugs = explode('/', $uri);
+        $langcode = $slugs[0];
     }
 }
