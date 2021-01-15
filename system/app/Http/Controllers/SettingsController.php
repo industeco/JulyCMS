@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Settings\Settings;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
-use July\Core\Config\Config as JulyConfig;
 
 class SettingsController extends Controller
 {
@@ -50,10 +49,10 @@ class SettingsController extends Controller
      */
     public function edit(string $group)
     {
-        $settings = $this->findSettings($group);
-        return view_with_langcode('backend::config.'.$group, [
-            'configs' => JulyConfig::getConfigsByGroup($group),
-        ]);
+        if ($settings = Settings::find($group)) {
+            return $settings->render();
+        }
+        abort(404);
     }
 
     /**
@@ -65,8 +64,11 @@ class SettingsController extends Controller
      */
     public function update(Request $request, string $group)
     {
-        $this->findSettings($group)->save($request->all());
-        return response('');
+        if ($settings = Settings::find($group)) {
+            $settings->save($request->all());
+            return response('');
+        }
+        abort(404);
     }
 
     /**
@@ -78,26 +80,5 @@ class SettingsController extends Controller
     public function destroy(string $group)
     {
         //
-    }
-
-    /**
-     * 根据配置组名称查找配置组
-     *
-     * @param  string $name
-     * @return \App\Settings\SettingsBase|null
-     */
-    public function findSettings(string $name)
-    {
-        foreach (config('app.settings') as $class) {
-            if (class_exists($class)) {
-                # code...
-                $settings = new $class;
-                if ($settings->getName() === $name) {
-                    return $settings;
-                }
-            }
-        }
-
-        return null;
     }
 }
