@@ -55,7 +55,7 @@ class ConfigsSeeder extends SeederBase
                 // 'is_readonly' => true,
             ],
             [
-                'id' => 'jc.site.subject',
+                'id' => 'site.subject',
                 'group' => 'site_information',
                 'label' => '企业（个人）名称',
                 'description' => '网站所服务的主体（企业或个人）的名称',
@@ -67,7 +67,7 @@ class ConfigsSeeder extends SeederBase
                 'description' => '联系表单的默认接收邮箱',
             ],
             [
-                'id' => 'jc.form.global_field_groups',
+                'id' => 'app.field_groups',
                 'group' => 'user_preferences',
                 'label' => '字段分组',
                 'description' => '配置全局字段分组面板（位于表单右侧，用于分组管理全局字段）',

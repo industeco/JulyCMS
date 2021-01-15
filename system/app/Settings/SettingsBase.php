@@ -2,79 +2,85 @@
 
 namespace App\Settings;
 
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Config\Repository as RepositoryContract;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 
 abstract class SettingsBase
 {
     /**
-     * 标记设置是否已加载
-     *
-     * @var bool
-     */
-    protected static $isLoaded = false;
-
-    /**
-     * 配置文件
+     * 配置组名称
      *
      * @var string
      */
-    protected static $file;
+    protected $name = '';
 
     /**
-     * 加载设置
+     * 配置组标题
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @param  \Illuminate\Contracts\Config\Repository  $repository
-     * @return void
+     * @var string
      */
-    public static function load(Application $app, RepositoryContract $repository)
-    {
-        if (static::$isLoaded) {
-            return;
-        }
+    protected $title = '';
 
-        if ($data = safe_get_contents($app->basePath(static::$file))) {
-            static::merge(unserialize($data), $repository);
-        }
-        static::$isLoaded = true;
+    /**
+     * 配置项
+     *
+     * @var array
+     */
+    protected $items = [];
+
+    /**
+     * 获取配置组名称
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
-     * 保存常规设置
+     * 获取配置文件路径
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return base_path('settings/'.$this->name.'.php');
+    }
+
+    /**
+     * 加载配置
+     *
+     * @return void
+     */
+    public function load()
+    {
+        if (is_file($file = $this->getPath())) {
+            config(require $file);
+        }
+    }
+
+    /**
+     * 保存配置到文件
      *
      * @param  array $settings
      * @return void
      */
-    public static function save(array $settings)
+    public function save(array $settings)
     {
-        // 整合到当前配置数组中
-        static::merge($settings, config());
+        $keys = array_keys($this->items);
 
-        // 保存到缓存文件中
-        $file = base_path(static::$file);
-        if ($data = safe_get_contents($file)) {
-            $settings = array_merge(unserialize($data), $settings);
-        }
-        file_put_contents($file, serialize($settings));
+        // 过滤配置，并合并到当前配置环境
+        $default = array_fill_keys($keys, null);
+        $settings = array_merge($default, Arr::only($settings, $keys));
+        config($settings);
+
+        // 将配置保存到文件
+        $content = '<?php'.PHP_EOL.PHP_EOL.'return '.trim(var_export($settings, TRUE)).';'.PHP_EOL;
+        file_put_contents($this->getPath(), $content);
     }
 
-    /**
-     * 整合配置数据到当前设置中
-     *
-     * @param  array $settings
-     * @param  \Illuminate\Contracts\Config\Repository  $repository
-     * @return void
-     */
-    public static function merge(array $settings, RepositoryContract $repository)
+    public static function render()
     {
-        foreach ($settings as $key => $value) {
-            if (is_array($value) && is_array($repository->get($key))) {
-                $value = array_merge($repository->get($key), $value);
-            }
-            $repository->set($key, $value);
-        }
+        return view('settings.'.static::$name)->render();
     }
 }

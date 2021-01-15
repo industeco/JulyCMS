@@ -7,11 +7,11 @@
   :model="configs"
   label-position="top">
   <div id="main_form_left">
-    <div class="el-form-item el-form-item--small jc-embeded-field {{ $configs['jc.form.global_field_groups']['description']?'has-helptext':'' }}">
+    <div class="el-form-item el-form-item--small jc-embeded-field {{ $configs['app.field_groups']['description']?'has-helptext':'' }}">
       <div class="el-form-item__content">
         <div class="jc-embeded-field__header">
-          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('jc.form.global_field_groups')" placement="right">
-            <label class="el-form-item__label">{{ $configs['jc.form.global_field_groups']['label'] }}</label>
+          <el-tooltip popper-class="jc-twig-output" effect="dark" :content="useInTwig('app.field_groups')" placement="right">
+            <label class="el-form-item__label">{{ $configs['app.field_groups']['label'] }}</label>
           </el-tooltip>
         </div>
         <div class="jc-table-wrapper">
@@ -28,7 +28,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(data, key) in configs['jc.form.global_field_groups']" :key="key">
+              <tr v-for="(data, key) in configs['app.field_groups']" :key="key">
                 <td>@{{ key }}</td>
                 <td>@{{ data['label'] }}</td>
                 <td><el-switch v-model="data['expanded']"></el-switch></td>
@@ -36,8 +36,8 @@
             </tbody>
           </table>
         </div>
-        @if ($configs['jc.form.global_field_groups']['description'])
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['jc.form.global_field_groups']['description'] }}</span>
+        @if ($configs['app.field_groups']['description'])
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $configs['app.field_groups']['description'] }}</span>
         @endif
       </div>
     </div>
@@ -60,7 +60,7 @@
     data() {
       return {
         configs: {
-          'jc.form.global_field_groups': @json($configs['jc.form.global_field_groups']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          'app.field_groups': @json($configs['app.field_groups']['value'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         },
       };
     },

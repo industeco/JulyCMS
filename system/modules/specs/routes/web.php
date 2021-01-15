@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Specs\Controllers;
 
-Route::prefix(config('route.prefix', 'admin'))
+Route::prefix(config('app.route_prefix', 'admin'))
 ->middleware(['admin','auth'])
 ->group(function() {
     Route::resource('specs', Controllers\SpecController::class)

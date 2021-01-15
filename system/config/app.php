@@ -228,13 +228,157 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
-    /**
-     * 安装标记
-     */
+    // 登记配置管理类
+    'settings' => [
+        \App\Settings\Language::class,
+        \App\Settings\SiteInformation::class,
+        \App\Settings\UserInterface::class,
+    ],
+
+    // 登记实体
+    'entities' => [
+        //
+    ],
+
+    // 登记实体字段类型
+    'field_types' => [
+        //
+    ],
+
+    // 全局字段分组
+    'field_groups' => [
+        'taxonomy' => [
+            'label' => '分类和标签',   // 分组面板标题
+            'expanded' => true,    // 是否默认展开
+        ],
+        'page_present' => [
+            'label' => '网址和模板',
+            'expanded' => true,
+        ],
+        'page_meta' => [
+            'label' => 'META 信息',
+            'expanded' => true,
+        ],
+    ],
+
+    // 是否允许通过实体路径访问
+    'entity_path_accessible' => false,
+
+    // 安装标记
     'is_installed' => env('APP_INSTALLED', false),
 
-    /**
-     * demo 模式
-     */
+    // demo 模式
     'is_demo' => env('APP_DEMO', false),
+
+    // 指定主题
+    'theme' => 'backend',
+
+    // 后端路由前缀
+    'route_prefix' => 'backend',
+
+    // 侧边栏菜单
+    'sidebar_menu' => [
+        'items' => [
+            [
+                'title' => '内容',
+                'icon' => 'create',
+                'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+                'children' => [],
+            ],
+            [
+                'title' => '类型',
+                'icon' => 'category',
+                'route' => 'node_types.index',
+                'children' => [],
+            ],
+            [
+                'title' => '结构',
+                'icon' => 'device_hub',
+                'route' => null,
+                'children' => [
+                    [
+                        'title' => '目录',
+                        'icon' => null,
+                        'route' => 'catalogs.index',
+                        'children' => [],
+                    ],
+                    // [
+                    //     'title' => '标签',
+                    //     'icon' => null,
+                    //     'route' => 'tags.index',
+                    //     'children' => [],
+                    // ],
+                ],
+            ],
+            [
+                'title' => '数据',
+                'icon' => 'view_column',
+                'route' => null,
+                'children' => [
+                    [
+                        'title' => '规格',
+                        'icon' => null,
+                        'route' => 'specs.index',
+                        'children' => [],
+                    ],
+                ],
+            ],
+            [
+                'title' => '文件',
+                'icon' => 'folder',
+                'route' => 'media.index',
+                'children' => [],
+            ],
+            [
+                'title' => '配置',
+                'icon' => 'settings',
+                'route' => null,
+                'children' => [
+                    // [
+                    //     'title' => '基本设置',
+                    //     'icon' => null,
+                    //     'route' => ['configs.edit', 'site_information'],
+                    //     'children' => [],
+                    // ],
+                    // [
+                    //     'title' => '语言',
+                    //     'icon' => null,
+                    //     'route' => ['configs.edit', 'language'],
+                    //     'children' => [],
+                    // ],
+                    // [
+                    //     'title' => '偏好',
+                    //     'icon' => null,
+                    //     'route' => ['configs.edit', 'user_preferences'],
+                    //     'children' => [],
+                    // ],
+                    // [
+                    //     'title' => '网址',
+                    //     'icon' => null,
+                    //     'route' => ['configs.edit', 'url'],
+                    //     'children' => [],
+                    // ],
+                ],
+            ],
+        ],
+    ],
+
+    // 表单验证
+    'validation' => [
+        'file_bundles' => [
+            'image' => [
+                'png','jpg','jpeg','webp','bmp','svg','gif','ico',
+            ],
+
+            'file' => [
+                'pdf', 'doc', 'ppt', 'xls', 'dwg',
+            ],
+        ],
+
+        'patterns' => [
+            'url' => '/^(\\/[a-z0-9\\-_]+)+\\.html$/',
+            'twig' => '/^(\\/[a-z0-9\\-_]+)+(\\.html)?\\.twig$/',
+            'email' => '\'email\'',
+        ],
+    ],
 ];

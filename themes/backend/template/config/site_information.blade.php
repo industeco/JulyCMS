@@ -54,7 +54,7 @@
             {required:true, message:'不能为空', trigger:'submit'},
             {type:'email', message:'格式错误', trigger:'blur'},
           ],
-          'jc.site.subject': [
+          'site.subject': [
             {required:true, message:'不能为空', trigger:'submit'},
           ],
         },

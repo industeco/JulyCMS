@@ -63,7 +63,7 @@ class AnyPage extends Controller
 
     protected function getRedirectiton(Request $request)
     {
-        $redirection = config('route.redirections', [])[$request->getRequestUri()] ?? null;
+        $redirection = config('site.redirections', [])[$request->getRequestUri()] ?? null;
         if ($redirection && $redirection['to']) {
             $host = $request->getSchemeAndHttpHost();
             if (! Str::startsWith($redirection['to'], $host)) {

@@ -284,7 +284,7 @@
       });
       this.db.templates = templates;
 
-      @foreach(config('jc.form.global_field_groups') as $group => $info)
+      @foreach(config('app.field_groups') as $group => $info)
       @if ($info['expanded'])
       this.expanded.push('{{ $group }}');
       @endif

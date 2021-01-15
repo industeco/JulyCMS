@@ -17,7 +17,7 @@ use App\Http\Controllers\SettingsController;
 |
 */
 Route::group([
-    'prefix' => config('route.prefix', 'admin'),
+    'prefix' => config('app.route_prefix', 'admin'),
     'middleware' => ['admin'],
 ], function() {
     Route::get('login',  [LoginController::class, 'showLoginForm'])->name('admin.login');
@@ -27,7 +27,7 @@ Route::group([
 
 // 后台
 Route::group([
-    'prefix' => config('route.prefix', 'admin'),
+    'prefix' => config('app.route_prefix', 'admin'),
     'middleware' => ['admin', 'auth'],
 ], function() {
     // 后台首页
@@ -37,7 +37,7 @@ Route::group([
     Route::get('settings/{group}', [SettingsController::class, 'edit'])
         ->name('settings.edit');
 
-    Route::post('settings', [SettingsController::class, 'update'])
+    Route::post('settings/{group}', [SettingsController::class, 'update'])
         ->name('settings.update');
 
     // 文件管理

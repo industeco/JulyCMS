@@ -34,10 +34,10 @@ class SettingsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Core\Config\Config  $config
+     * @param  string $group
      * @return \Illuminate\Http\Response
      */
-    public function show(JulyConfig $config)
+    public function show(string $group)
     {
         //
     }
@@ -48,10 +48,9 @@ class SettingsController extends Controller
      * @param  string  $group
      * @return \Illuminate\Http\Response
      */
-    public function edit($group)
+    public function edit(string $group)
     {
-        // dd(Auth::guard('admin')->user());
-        // dd(JulyConfig::getConfigsByGroup($group));
+        $settings = $this->findSettings($group);
         return view_with_langcode('backend::config.'.$group, [
             'configs' => JulyConfig::getConfigsByGroup($group),
         ]);
@@ -61,24 +60,44 @@ class SettingsController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  string  $group
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, string $group)
     {
-        $changed = Arr::only($request->all(), array_values($request->input('_changed')));
-        JulyConfig::updateConfigs($changed);
-
+        $this->findSettings($group)->save($request->all());
         return response('');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Core\Config\Config  $config
+     * @param  string  $group
      * @return \Illuminate\Http\Response
      */
-    public function destroy(JulyConfig $config)
+    public function destroy(string $group)
     {
         //
+    }
+
+    /**
+     * 根据配置组名称查找配置组
+     *
+     * @param  string $name
+     * @return \App\Settings\SettingsBase|null
+     */
+    public function findSettings(string $name)
+    {
+        foreach (config('app.settings') as $class) {
+            if (class_exists($class)) {
+                # code...
+                $settings = new $class;
+                if ($settings->getName() === $name) {
+                    return $settings;
+                }
+            }
+        }
+
+        return null;
     }
 }

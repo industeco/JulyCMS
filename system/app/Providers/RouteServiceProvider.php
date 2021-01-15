@@ -59,7 +59,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes()
     {
         // 定义重定向路由
-        foreach (config('route.redirections', []) as $from => $redirection) {
+        foreach (config('site.redirections', []) as $from => $redirection) {
             if (false === strpos($from, '?')) {
                 Route::redirect($from, $redirection['to'], $redirection['code'] ?? 302);
             }

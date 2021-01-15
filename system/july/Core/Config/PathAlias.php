@@ -55,7 +55,7 @@ class PathAlias extends EntityBase
             $condition[] = ['alias', '=', ($alias ? '/'.$alias : '').'/index.html', 'or'];
         }
 
-        if (config('entity.path_accessible')) {
+        if (config('app.entity_path_accessible')) {
             $condition[] = ['path', '=', $alias, 'or'];
         }
 

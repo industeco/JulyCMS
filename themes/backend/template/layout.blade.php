@@ -24,7 +24,7 @@
         </a>
       </div>
       <ul class="md-list md-theme-default">
-        @foreach (config('jc.ui.sidebar.menu_items') as $item)
+        @foreach (config('app.sidebar_menu.items') as $item)
         @if ($item['route'])
         <li class="md-list-item{{ under_route($item['route'], Request::getPathInfo())?' is-active':'' }}">
           <a href="{{ short_url($item['route']) }}" class="md-list-item-link md-list-item-container md-button-clean">
