@@ -22,13 +22,13 @@ class CatalogTree
         $this->catalog = $catalog;
 
         $pocket = new Pocket($catalog);
-        $key = $pocket->key('treeNodes');
+        $pocket->useKey('treeNodes');
 
-        if ($treeNodes = $pocket->get($key)) {
+        if ($treeNodes = $pocket->get()) {
             $treeNodes = $treeNodes->value;
         }else {
             $treeNodes = $this->getTreeNodes();
-            $pocket->put($key, $treeNodes);
+            $pocket->put($treeNodes);
         }
         $this->nodes = collect($treeNodes);
     }

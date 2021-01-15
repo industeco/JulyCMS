@@ -736,14 +736,14 @@ abstract class EntityBase extends AppModel implements EntityInterface
     public function retrieveHtml()
     {
         $pocket = new Pocket($this);
-        $pokey = $pocket->key('html');
+        $pocket->useKey('html');
 
-        if ($html = $pocket->get($pokey)) {
+        if ($html = $pocket->get()) {
             return $html->value();
         }
 
         $html = $this->render();
-        $pocket->put($pokey, $html);
+        $pocket->put($html);
 
         return $html;
     }
