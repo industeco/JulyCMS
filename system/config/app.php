@@ -228,6 +228,21 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
+    // 安装标记
+    'is_installed' => env('APP_INSTALLED', false),
+
+    // demo 模式
+    'is_demo' => env('APP_DEMO', false),
+
+    // 指定主题
+    'theme' => 'backend',
+
+    // 后端路由前缀
+    'management_prefix' => 'manage',
+
+    // 是否允许通过实体路径访问
+    'entity_path_accessible' => false,
+
     // 登记配置管理类
     'settings' => [
         \App\Settings\Language::class,
@@ -260,21 +275,6 @@ return [
             'expanded' => true,
         ],
     ],
-
-    // 是否允许通过实体路径访问
-    'entity_path_accessible' => false,
-
-    // 安装标记
-    'is_installed' => env('APP_INSTALLED', false),
-
-    // demo 模式
-    'is_demo' => env('APP_DEMO', false),
-
-    // 指定主题
-    'theme' => 'backend',
-
-    // 后端路由前缀
-    'route_prefix' => 'backend',
 
     // 侧边栏菜单
     'sidebar_menu' => [

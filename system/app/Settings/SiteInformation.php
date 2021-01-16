@@ -2,7 +2,7 @@
 
 namespace App\Settings;
 
-class SiteInformation extends SettingsBase
+class SiteInformation extends SettingGroupBase
 {
     /**
      * 配置组名称

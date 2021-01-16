@@ -2,7 +2,7 @@
 
 namespace App\Settings;
 
-class UserInterface extends PreferencesBase
+class UserInterface extends PreferenceGroupBase
 {
     /**
      * 配置组名称

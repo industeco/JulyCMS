@@ -6,7 +6,7 @@ use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
-abstract class PreferencesBase extends SettingsBase
+abstract class PreferenceGroupBase extends SettingGroupBase
 {
     /**
      * 加载配置

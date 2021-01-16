@@ -12,7 +12,7 @@ class RouteRegister implements RouteRegisterInterface
      */
     public static function register()
     {
-        // Route::prefix(config('app.route_prefix', 'admin'))
+        // Route::prefix(config('app.management_prefix', 'admin'))
         //     ->middleware(['web','admin','auth'])
         //     ->group(function() {
         //         Route::get('tags', [Controllers\TagController::class, 'index'])

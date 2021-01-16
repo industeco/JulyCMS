@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Bootstrap;
+namespace App\Settings\Bootstrap;
 
-use App\Settings\Settings;
+use App\Settings\SettingGroup;
 use Illuminate\Contracts\Foundation\Application;
 
 class LoadSettings
@@ -17,8 +17,8 @@ class LoadSettings
     {
         foreach (config('app.settings') as $class) {
             if (class_exists($class)) {
-                Settings::register($settings = new $class);
-                $settings->load();
+                SettingGroup::register($group = new $class);
+                $group->load();
             }
         }
     }

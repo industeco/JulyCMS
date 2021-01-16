@@ -1,7 +1,7 @@
 <?php
 
+use App\Language\Lang;
 use App\Utils\Types;
-use App\Utils\Lang;
 use App\Utils\State;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Str;
@@ -68,19 +68,39 @@ if (! function_exists('lang')) {
     /**
      * 获取语言操作对象
      *
-     * @param string|null $langcode
-     * @return \App\Utils\Lang
+     * @param  string|null $alias
+     * @return \App\Language\Lang
      */
-    function lang(?string $langcode = null)
+    function lang(?string $alias = null)
     {
-        return new Lang($langcode);
+        return new Lang($alias);
     }
 }
 
 if (! function_exists('langcode')) {
-    function langcode($alias = null)
+    /**
+     * 获取语言代码
+     *
+     * @param  string  $alias
+     * @return string|null
+     */
+    function langcode(string $alias)
     {
-        return lang()->findLangcode($alias);
+        return (new Lang($alias))->getCode();
+    }
+}
+
+if (! function_exists('langname')) {
+    /**
+     * 获取语言名称
+     *
+     * @param  string  $alias
+     * @param  string|null  $langcode 名称的语言版本
+     * @return string|null
+     */
+    function langname(string $alias, ?string $langcode = null)
+    {
+        return (new Lang($alias))->getName($langcode);
     }
 }
 
@@ -213,27 +233,6 @@ if (! function_exists('short_md5')) {
     }
 }
 
-if (! function_exists('state')) {
-    /**
-     * @param  string|array|null $key
-     * @return mixed
-     */
-    function state($key = null)
-    {
-        if (is_null($key)) {
-            return new State;
-        }
-
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                State::set($k, $v);
-            }
-        }
-
-        return State::get($key);;
-    }
-}
-
 if (! function_exists('safe_get_contents')) {
     /**
      * @param  string $file
@@ -244,3 +243,24 @@ if (! function_exists('safe_get_contents')) {
         return is_file($file) ? file_get_contents($file) : '';
     }
 }
+
+// if (! function_exists('state')) {
+//     /**
+//      * @param  string|array|null $key
+//      * @return mixed
+//      */
+//     function state($key = null)
+//     {
+//         if (is_null($key)) {
+//             return new State;
+//         }
+
+//         if (is_array($key)) {
+//             foreach ($key as $k => $v) {
+//                 State::set($k, $v);
+//             }
+//         }
+
+//         return State::get($key);;
+//     }
+// }

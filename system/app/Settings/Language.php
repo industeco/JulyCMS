@@ -2,7 +2,7 @@
 
 namespace App\Settings;
 
-class Language extends SettingsBase
+class Language extends SettingGroupBase
 {
     /**
      * 配置组名称

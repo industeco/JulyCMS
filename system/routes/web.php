@@ -17,7 +17,7 @@ use App\Http\Controllers\SettingsController;
 |
 */
 Route::group([
-    'prefix' => config('app.route_prefix', 'admin'),
+    'prefix' => config('app.management_prefix', 'admin'),
     'middleware' => ['admin'],
 ], function() {
     Route::get('login',  [LoginController::class, 'showLoginForm'])->name('admin.login');
@@ -27,7 +27,7 @@ Route::group([
 
 // 后台
 Route::group([
-    'prefix' => config('app.route_prefix', 'admin'),
+    'prefix' => config('app.management_prefix', 'admin'),
     'middleware' => ['admin', 'auth'],
 ], function() {
     // 后台首页

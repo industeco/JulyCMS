@@ -4,7 +4,7 @@ namespace App\Settings;
 
 use Illuminate\Support\Arr;
 
-abstract class SettingsBase
+abstract class SettingGroupBase
 {
     /**
      * 配置组名称
