@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Settings\SettingGroup;
+use App\Settings\SettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -49,7 +49,7 @@ class SettingsController extends Controller
      */
     public function edit(string $group)
     {
-        if ($settings = SettingGroup::find($group)) {
+        if ($settings = SettingsManager::find($group)) {
             return $settings->render();
         }
         abort(404);
@@ -64,7 +64,7 @@ class SettingsController extends Controller
      */
     public function update(Request $request, string $group)
     {
-        if ($settings = SettingGroup::find($group)) {
+        if ($settings = SettingsManager::find($group)) {
             $settings->save($request->all());
             return response('');
         }

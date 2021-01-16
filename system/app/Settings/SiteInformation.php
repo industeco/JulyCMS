@@ -12,6 +12,13 @@ class SiteInformation extends SettingGroupBase
     protected $name = 'site_information';
 
     /**
+     * 配置组标题
+     *
+     * @var string
+     */
+    protected $title = '站点信息';
+
+    /**
      * 配置项
      *
      * @var array
@@ -25,13 +32,13 @@ class SiteInformation extends SettingGroupBase
 
         'site.subject' => [
             'key' => 'site.subject',
-            'label' => '企业（个人）名称',
+            'label' => '主体名称',
             'description' => '网站所服务的主体（企业或个人）的名称',
         ],
 
         'mail.to.address' => [
             'key' => 'mail.to.address',
-            'label' => '网站邮箱',
+            'label' => '邮箱',
             'description' => '联系表单的默认接收邮箱',
         ],
     ];

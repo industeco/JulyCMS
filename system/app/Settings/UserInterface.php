@@ -12,6 +12,13 @@ class UserInterface extends PreferenceGroupBase
     protected $name = 'user_interface';
 
     /**
+     * 配置组标题
+     *
+     * @var string
+     */
+    protected $title = '偏好设置';
+
+    /**
      * 配置项
      *
      * @var array

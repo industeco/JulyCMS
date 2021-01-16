@@ -12,6 +12,13 @@ class Language extends SettingGroupBase
     protected $name = 'language';
 
     /**
+     * 配置组标题
+     *
+     * @var string
+     */
+    protected $title = '语言设置';
+
+    /**
      * 配置项
      *
      * @var array

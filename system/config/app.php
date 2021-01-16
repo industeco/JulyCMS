@@ -279,50 +279,50 @@ return [
     // 侧边栏菜单
     'sidebar_menu' => [
         'items' => [
-            [
-                'title' => '内容',
-                'icon' => 'create',
-                'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
-                'children' => [],
-            ],
-            [
-                'title' => '类型',
-                'icon' => 'category',
-                'route' => 'node_types.index',
-                'children' => [],
-            ],
-            [
-                'title' => '结构',
-                'icon' => 'device_hub',
-                'route' => null,
-                'children' => [
-                    [
-                        'title' => '目录',
-                        'icon' => null,
-                        'route' => 'catalogs.index',
-                        'children' => [],
-                    ],
-                    // [
-                    //     'title' => '标签',
-                    //     'icon' => null,
-                    //     'route' => 'tags.index',
-                    //     'children' => [],
-                    // ],
-                ],
-            ],
-            [
-                'title' => '数据',
-                'icon' => 'view_column',
-                'route' => null,
-                'children' => [
-                    [
-                        'title' => '规格',
-                        'icon' => null,
-                        'route' => 'specs.index',
-                        'children' => [],
-                    ],
-                ],
-            ],
+            // [
+            //     'title' => '内容',
+            //     'icon' => 'create',
+            //     'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+            //     'children' => [],
+            // ],
+            // [
+            //     'title' => '类型',
+            //     'icon' => 'category',
+            //     'route' => 'node_types.index',
+            //     'children' => [],
+            // ],
+            // [
+            //     'title' => '结构',
+            //     'icon' => 'device_hub',
+            //     'route' => null,
+            //     'children' => [
+            //         [
+            //             'title' => '目录',
+            //             'icon' => null,
+            //             'route' => 'catalogs.index',
+            //             'children' => [],
+            //         ],
+            //         // [
+            //         //     'title' => '标签',
+            //         //     'icon' => null,
+            //         //     'route' => 'tags.index',
+            //         //     'children' => [],
+            //         // ],
+            //     ],
+            // ],
+            // [
+            //     'title' => '数据',
+            //     'icon' => 'view_column',
+            //     'route' => null,
+            //     'children' => [
+            //         [
+            //             'title' => '规格',
+            //             'icon' => null,
+            //             'route' => 'specs.index',
+            //             'children' => [],
+            //         ],
+            //     ],
+            // ],
             [
                 'title' => '文件',
                 'icon' => 'folder',
@@ -333,32 +333,7 @@ return [
                 'title' => '配置',
                 'icon' => 'settings',
                 'route' => null,
-                'children' => [
-                    // [
-                    //     'title' => '基本设置',
-                    //     'icon' => null,
-                    //     'route' => ['configs.edit', 'site_information'],
-                    //     'children' => [],
-                    // ],
-                    // [
-                    //     'title' => '语言',
-                    //     'icon' => null,
-                    //     'route' => ['configs.edit', 'language'],
-                    //     'children' => [],
-                    // ],
-                    // [
-                    //     'title' => '偏好',
-                    //     'icon' => null,
-                    //     'route' => ['configs.edit', 'user_preferences'],
-                    //     'children' => [],
-                    // ],
-                    // [
-                    //     'title' => '网址',
-                    //     'icon' => null,
-                    //     'route' => ['configs.edit', 'url'],
-                    //     'children' => [],
-                    // ],
-                ],
+                'children' => \App\Settings\SettingsManager::toMenuItems(),
             ],
         ],
     ],

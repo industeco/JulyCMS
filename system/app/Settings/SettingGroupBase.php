@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\View;
 
 abstract class SettingGroupBase
 {
@@ -28,14 +29,11 @@ abstract class SettingGroupBase
     protected $items = [];
 
     /**
-     * 获取配置组名称
+     * 配置组菜单项图标
      *
-     * @return string
+     * @var string
      */
-    public function getName()
-    {
-        return $this->name;
-    }
+    protected $icon = null;
 
     /**
      * 获取配置文件路径
@@ -79,8 +77,41 @@ abstract class SettingGroupBase
         file_put_contents($this->getPath(), $content);
     }
 
-    public static function render()
+    /**
+     * @return \Illuminate\View\View
+     */
+    public function render()
     {
-        return view('settings.'.static::$name)->render();
+        $data = [
+            'name' => $this->name,
+            'title' => $this->title,
+            'items' => $this->items,
+            'settings' => [],
+        ];
+
+        foreach ($this->items as $key => $item) {
+            $data['settings'][$key] = config($key);
+        }
+
+        /** @var \Illuminate\View\Factory */
+        $view = view();
+
+        if ($view->exists('settings.'.$this->name)) {
+            return $view->make('settings.'.$this->name, $data);
+        }
+
+        $views = ['', 'settings.item'];
+        foreach ($data['items'] as $key => $item) {
+            // settings.{group_name}.{item_key}
+            $views[0] = join('.', ['settings', $this->name, str_replace('.','-',$item['key'])]);
+            $$data['items'][$key]['html'] = $view->first($views, $item)->render();
+        }
+
+        return $view->first(['settings.'.$this->name.'.group', 'settings.group'], $data);
+    }
+
+    public function __get($name)
+    {
+        return $this->$name ?? null;
     }
 }
