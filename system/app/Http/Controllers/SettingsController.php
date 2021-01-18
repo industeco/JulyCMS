@@ -49,8 +49,8 @@ class SettingsController extends Controller
      */
     public function edit(string $group)
     {
-        if ($settings = SettingsManager::find($group)) {
-            return $settings->render();
+        if ($group = SettingsManager::resolve($group)) {
+            return $group->view();
         }
         abort(404);
     }
@@ -64,8 +64,8 @@ class SettingsController extends Controller
      */
     public function update(Request $request, string $group)
     {
-        if ($settings = SettingsManager::find($group)) {
-            $settings->save($request->all());
+        if ($group = SettingsManager::resolve($group)) {
+            $group->save($request->all());
             return response('');
         }
         abort(404);

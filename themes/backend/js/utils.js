@@ -97,5 +97,6 @@ function isEqual(v1, v2) {
     }
     return false;
   }
-  return v1 == v2 || stringify(v1) == stringify(v2);
+  // return v1 == v2 || stringify(v1) == stringify(v2);
+  return _.isEqual(v1, v2);
 }

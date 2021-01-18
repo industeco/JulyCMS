@@ -237,18 +237,19 @@ return [
     // 指定主题
     'theme' => 'backend',
 
-    // 后端路由前缀
+    // 管理前缀
     'management_prefix' => 'manage',
-
-    // 是否允许通过实体路径访问
-    'entity_path_accessible' => false,
 
     // 登记配置管理类
     'settings' => [
         \App\Settings\Language::class,
         \App\Settings\SiteInformation::class,
         \App\Settings\UserInterface::class,
+        \App\Settings\Redirections::class,
     ],
+
+    // 是否允许通过实体路径访问
+    'entity_path_accessible' => false,
 
     // 登记实体
     'entities' => [
@@ -276,65 +277,79 @@ return [
         ],
     ],
 
-    // 侧边栏菜单
-    'sidebar_menu' => [
-        'items' => [
-            // [
-            //     'title' => '内容',
-            //     'icon' => 'create',
-            //     'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
-            //     'children' => [],
-            // ],
-            // [
-            //     'title' => '类型',
-            //     'icon' => 'category',
-            //     'route' => 'node_types.index',
-            //     'children' => [],
-            // ],
-            // [
-            //     'title' => '结构',
-            //     'icon' => 'device_hub',
-            //     'route' => null,
-            //     'children' => [
-            //         [
-            //             'title' => '目录',
-            //             'icon' => null,
-            //             'route' => 'catalogs.index',
-            //             'children' => [],
-            //         ],
-            //         // [
-            //         //     'title' => '标签',
-            //         //     'icon' => null,
-            //         //     'route' => 'tags.index',
-            //         //     'children' => [],
-            //         // ],
-            //     ],
-            // ],
-            // [
-            //     'title' => '数据',
-            //     'icon' => 'view_column',
-            //     'route' => null,
-            //     'children' => [
-            //         [
-            //             'title' => '规格',
-            //             'icon' => null,
-            //             'route' => 'specs.index',
-            //             'children' => [],
-            //         ],
-            //     ],
-            // ],
-            [
-                'title' => '文件',
-                'icon' => 'folder',
-                'route' => 'media.index',
-                'children' => [],
+    // 主菜单
+    'main_menu' => [
+        // 内容
+        'content' => [
+            'title' => '内容',
+            'icon' => 'create',
+            'route' => null,
+            'children' => [
+                // [
+                //     'title' => '内容',
+                //     'icon' => null,
+                //     'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+                //     'children' => [],
+                // ],
             ],
-            [
-                'title' => '配置',
-                'icon' => 'settings',
-                'route' => null,
-                'children' => \App\Settings\SettingsManager::toMenuItems(),
+        ],
+
+        // 结构
+        'structure' => [
+            'title' => '结构',
+            'icon' => 'device_hub',
+            'route' => null,
+            'children' => [
+                // [
+                //     'title' => '类型',
+                //     'icon' => null,
+                //     'route' => 'node_types.index',
+                //     'children' => [],
+                // ],
+                // [
+                //     'title' => '目录',
+                //     'icon' => null,
+                //     'route' => 'catalogs.index',
+                //     'children' => [],
+                // ],
+                // [
+                //     'title' => '标签',
+                //     'icon' => null,
+                //     'route' => 'tags.index',
+                //     'children' => [],
+                // ],
             ],
+        ],
+
+        // 组件
+        'modules' => [
+            'title' => '组件',
+            'icon' => 'view_column',
+            'route' => null,
+            'children' => [
+                [
+                    'title' => '规格',
+                    'icon' => null,
+                    'route' => 'specs.index',
+                    'children' => [],
+                ],
+            ],
+        ],
+
+        // 文件管理
+        'file_manager' => [
+            'title' => '文件',
+            'icon' => 'folder',
+            'route' => 'media.index',
+            'children' => [],
+        ],
+
+        // 配置管理
+        'settings' => [
+            'title' => '配置',
+            'icon' => 'settings',
+            'route' => null,
+            'children' => [],
         ],
     ],
 

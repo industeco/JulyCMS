@@ -28,18 +28,49 @@ class SiteInformation extends SettingGroupBase
             'key' => 'app.url',
             'label' => '网址',
             'description' => '首页网址',
+            // 'rules' => [
+            //     [
+            //         'required' => true,
+            //         'message' => '不能为空',
+            //         'trigger' => 'submit',
+            //     ],
+            //     [
+            //         'type' => 'url',
+            //         'message' => '格式错误',
+            //         'trigger' => 'blur',
+            //     ],
+            // ],
         ],
 
         'site.subject' => [
             'key' => 'site.subject',
             'label' => '主体名称',
             'description' => '网站所服务的主体（企业或个人）的名称',
+            // 'rules' => [
+            //     [
+            //         'required' => true,
+            //         'message' => '不能为空',
+            //         'trigger' => 'submit',
+            //     ],
+            // ],
         ],
 
         'mail.to.address' => [
             'key' => 'mail.to.address',
             'label' => '邮箱',
             'description' => '联系表单的默认接收邮箱',
+            // 'rules' => [
+            //     [
+            //         'required' => true,
+            //         'message' => '不能为空',
+            //         'trigger' => 'submit',
+            //     ],
+            //     [
+            //         'type' => 'email',
+            //         'message' => '格式错误',
+            //         'trigger' => 'blur',
+            //     ],
+            // ],
         ],
     ];
 }

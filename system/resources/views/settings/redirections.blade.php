@@ -1,10 +1,10 @@
-@extends('backend::layout')
+@extends('layout')
 
-@section('h1', '语言设置')
+@section('h1', $title)
 
 @section('main_content')
 <el-form id="main_form" ref="main_form"
-  :model="configs"
+  :model="settings"
   label-position="top">
   <div id="main_form_left">
     <div class="el-form-item el-form-item--small jc-embeded-field has-helptext">
@@ -39,7 +39,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(redirection, index) in configs.redirections" :key="index">
+              <tr v-for="(redirection, index) in settings.redirections" :key="index">
                 <th>@{{ index + 1 }}</th>
                 <td>
                   <input type="text" class="jc-input-intable" v-model="redirection.from">
@@ -84,33 +84,44 @@
 
 @section('script')
 <script>
-  const redirections = [
-    @foreach(config('redirections', []) as $from => $to)
-    {
-      from: `{{ $from }}`,
-      to: `{{ $to['to'] }}`,
-      code: {{ $to['code'] ?? 302 }},
-    },
-    @endforeach
-  ];
+  const _redirections = @json($settings, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+  const _redirectionsArray = [];
+  _.forEach(redirectionsMap, (item, key) => {
+    _redirectionsArray.push({
+      from: key.trim(),
+      to: item.to.trim(),
+      code: this.parseCode(item.code),
+    });
+  });
 
   const app = new Vue({
     el: '#main_content',
     data() {
       return {
-        configs: {
-          redirections: redirections,
-        },
+        settings: _redirectionsArray,
       };
     },
 
     created() {
-      this.initial_data = clone(this.configs);
+      this.original_settings = _.cloneDeep(this.settings);
     },
 
     methods: {
+      arrayToMap(redirectionsArray) {
+        const redirections = {};
+        _.forEach(redirectionsArray, item => {
+          if (item.from.trim() && item.to.trim()) {
+            redirections[item.from.trim()] = {
+              to: item.to.trim(),
+              code: this.parseCode(item.code),
+            };
+          }
+        });
+        return redirections;
+      },
+
       addRedirection() {
-        this.configs.redirections.push({
+        this.settings.redirections.push({
           from: '',
           to: '',
           code: 302,
@@ -118,50 +129,22 @@
       },
 
       removeRedirection(index) {
-        this.configs.redirections.splice(index, 1);
+        this.settings.redirections.splice(index, 1);
       },
 
-      getChanged() {
-        this.cleanRedirections();
-        const changed = [];
-        for (const key in this.configs) {
-          if (! isEqual(this.configs[key], this.initial_data[key])) {
-            changed.push(key);
-          }
+      parseCode(code) {
+        const code = parseInt(code);
+        if (code === 301 || code === 302) {
+          return code;
         }
-        return changed;
-      },
-
-      cleanRedirections() {
-        const redirections = [];
-        this.configs.redirections.forEach(item => {
-          if (item.from.trim() && item.to.trim()) {
-            redirections.push({
-              from: item.from.trim(),
-              to: item.to.trim(),
-              code: parseInt(item.code) || 302,
-            });
-          }
-        });
-
-        this.$set(this.$data.configs, 'redirections', redirections);
-      },
-
-      transformRedirections() {
-        const redirections = {};
-        this.configs.redirections.forEach(item => {
-          if (item.from.trim() && item.to.trim()) {
-            redirections[item.from.trim()] = {
-              to: item.to.trim(),
-              code: parseInt(item.code) || 302,
-            };
-          }
-        });
-        return redirections;
-      },
+        return 302;
+      }
 
       submit() {
-        let form = this.$refs.main_form;
+        if (_.isEqual(this.settings, this.original_settings)) {
+          this.$message.info('未作任何更改');
+          return;
+        }
 
         const loading = this.$loading({
           lock: true,
@@ -169,32 +152,22 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        form.validate().then(() => {
-
-          const changed = this.getChanged();
-          if (! changed.length) {
+        this.$refs.main_form.validate().then(() => {
+          axios.post("{{ short_url('settings.update', $name) }}", {
+            redirections: this.arrayToMap(this.settings.redirections)
+          }).then(response => {
             loading.close();
-            this.$message.info('未作任何更改');
-            return;
-          }
-
-          const configs = clone(this.configs);
-          configs._changed = changed;
-          configs.redirections = this.transformRedirections();
-
-          axios.post("{{ short_url('configs.update') }}", configs).then(response => {
-            loading.close();
-            this.initial_data = clone(this.configs);
+            this.original_settings = _.cloneDeep(this.settings);
             // console.log(response);
             this.$message.success('设置已更新');
           }).catch(err => {
             loading.close();
             console.error(err);
-            this.$message.error('发生错误，可查看控制台');
+            this.$message.error('发生错误，请检查后台日志');
           });
         }).catch(() => {
           loading.close();
-        })
+        });
       },
     },
   });

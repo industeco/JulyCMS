@@ -12,14 +12,30 @@ class SettingsManager
     protected static $groups = [];
 
     /**
-     * 登记配置组实例
+     * 加载配置
      *
-     * @param  \App\Settings\SettingGroupBase $group
-     * @return \App\Settings\SettingGroupBase
+     * @param  string $class
+     * @return void
      */
-    public static function register(SettingGroupBase $group)
+    public static function load(string $class)
     {
-        return static::$groups[$group->name] = $group;
+        if (class_exists($class)) {
+            /** @var \App\Settings\SettingGroupBase */
+            $group = new $class;
+
+            // 加载配置组
+            $group->load();
+
+            // 关联配置组别名
+            static::$groups[$group->name] = $class;
+
+            // 添加菜单项
+            if ($item = $group->getMenuItem()) {
+                $children = config('app.main_menu.settings.children');
+                $children[] = $item;
+                config(['app.main_menu.settings.children' => $children]);
+            }
+        }
     }
 
     /**
@@ -28,37 +44,8 @@ class SettingsManager
      * @param  string $name
      * @return \App\Settings\SettingGroupBase|null
      */
-    public static function find(string $name)
+    public static function resolve(string $name)
     {
-        return static::$groups[$name] ?? null;
-    }
-
-    /**
-     * 获取所有配置组实例
-     *
-     * @return \App\Settings\SettingGroupBase[]
-     */
-    public static function all()
-    {
-        return static::$groups;
-    }
-
-    /**
-     * 生成菜单项
-     *
-     * @return array[]
-     */
-    public static function toMenuItems()
-    {
-        $items = [];
-        foreach (static::$groups as $key => $group) {
-            $items[] = [
-                'title' => $group->title,
-                'icon' => null,
-                'route' => ['settings.edit', $group->name],
-                'children' => [],
-            ];
-        }
-        return $items;
+        return isset(static::$groups[$name]) ? new static::$groups[$name] : null;
     }
 }

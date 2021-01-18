@@ -16,7 +16,7 @@ class UserInterface extends PreferenceGroupBase
      *
      * @var string
      */
-    protected $title = '偏好设置';
+    protected $title = '界面偏好';
 
     /**
      * 配置项

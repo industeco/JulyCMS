@@ -16,10 +16,7 @@ class LoadSettings
     public function bootstrap(Application $app)
     {
         foreach (config('app.settings') as $class) {
-            if (class_exists($class)) {
-                SettingsManager::register($group = new $class);
-                $group->load();
-            }
+            SettingsManager::load($class);
         }
     }
 }
