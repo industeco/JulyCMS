@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\EntityPathAlias;
+use App\Models\PathAlias;
 
-class EntityPathAliasController extends Controller
+class PathAliasController extends Controller
 {
     /**
      * Show the form for creating a new resource.
@@ -33,10 +33,10 @@ class EntityPathAliasController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\EntityPathAlias  $url
+     * @param  \App\Models\PathAlias  $url
      * @return \Illuminate\Http\Response
      */
-    public function show(EntityPathAlias $url)
+    public function show(PathAlias $url)
     {
         //
     }
@@ -66,10 +66,10 @@ class EntityPathAliasController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\EntityPathAlias  $url
+     * @param  \App\Models\PathAlias  $url
      * @return \Illuminate\Http\Response
      */
-    public function destroy(EntityPathAlias $url)
+    public function destroy(PathAlias $url)
     {
         //
     }
@@ -82,7 +82,7 @@ class EntityPathAliasController extends Controller
      */
     public function exists(Request $request)
     {
-        $item = EntityPathAlias::query()->where('alias',$request->input('url'))->first();
+        $item = PathAlias::query()->where('alias',$request->input('url'))->first();
         $path = $item ? $item->path : '';
         return response([
             'exists' => $path && $path !== $request->input('path'),

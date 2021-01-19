@@ -1,13 +1,13 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 interface GetNodesInterface
 {
     /**
      * 返回节点集
      *
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_nodes();
 }

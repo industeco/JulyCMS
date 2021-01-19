@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\DB;

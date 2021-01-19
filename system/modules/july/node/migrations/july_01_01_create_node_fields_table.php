@@ -2,8 +2,10 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use July\Node\NodeField;
+use July\Node\Seeds\NodeFieldSeeder;
 
 class CreateNodeFieldsTable extends Migration
 {
@@ -19,25 +21,25 @@ class CreateNodeFieldsTable extends Migration
             $table->string('id')->primary();
 
             // 字段类型
-            $table->string('field_type');
+            $table->string('field_type_id');
 
-            // 是否默认字段：新建实体类型时，默认字段将被自动添加到字段列表中
-            $table->boolean('is_default')->default(false);
+            // 是否预设：
+            //  - 不可删除
+            //  - 只能通过程序添加，如安装或更新
+            //  - 预设的字段会在新建模型时默认出现在字段列表中，且不可移除
+            $table->boolean('is_reserved')->default(false);
 
-            // 取消预设类型，简化为全局字段
+            // 是否全局字段：全局字段会在新建模型时默认出现在全局字段列表
             $table->boolean('is_global')->default(false);
 
-            // 全局字段所属分组
-            $table->string('global_group')->nullable();
-
-            // 是否可检索：可检索字段的内容会被 NodeIndex 索引
-            $table->boolean('is_searchable')->default(true);
+            // 分组标题
+            $table->string('group_title')->nullable();
 
             // 搜索权重
-            $table->unsignedDecimal('search_weight')->default(1.0);
+            $table->unsignedTinyInteger('search_weight')->default(0);
 
-            // 最大长度（仅对部分类型有效）
-            $table->unsignedSmallInteger('maxlength')->nullable();
+            // 建议长度
+            $table->unsignedSmallInteger('maxlength')->default(0);
 
             $table->string('label');
             $table->string('description')->nullable();
@@ -54,6 +56,9 @@ class CreateNodeFieldsTable extends Migration
             // 时间戳
             $table->timestamps();
         });
+
+        // 填充数据
+        $this->seed();
     }
 
     /**
@@ -68,5 +73,19 @@ class CreateNodeFieldsTable extends Migration
         }
 
         Schema::dropIfExists('node_fields');
+    }
+
+    /**
+     * 填充数据
+     *
+     * @return void
+     */
+    protected function seed()
+    {
+        DB::beginTransaction();
+        NodeFieldSeeder::seed();
+        DB::commit();
+
+        NodeFieldSeeder::afterSeeding();
     }
 }

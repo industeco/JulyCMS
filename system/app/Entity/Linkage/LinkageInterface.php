@@ -1,8 +1,8 @@
 <?php
 
-namespace July\Core\Entity\Linkage;
+namespace App\Entity\Linkage;
 
-use July\Core\Entity\EntityBase;
+use App\Entity\EntityBase;
 
 /**
  * 字段存取器
@@ -12,7 +12,7 @@ interface LinkageInterface
     /**
      * 字段存取器构造函数
      *
-     * @param  \July\Core\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase $entity
      * @return void
      */
     public function __construct(EntityBase $entity);
@@ -20,7 +20,7 @@ interface LinkageInterface
     /**
      * 快捷构造
      *
-     * @param  \July\Core\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase $entity
      * @return static
      */
     public static function make(EntityBase $entity);

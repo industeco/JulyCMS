@@ -244,7 +244,7 @@ return [
     'settings' => [
         \App\Settings\Language::class,
         \App\Settings\SiteInformation::class,
-        \App\Settings\UserInterface::class,
+        // \App\Settings\UserInterface::class,
         \App\Settings\Redirections::class,
     ],
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Model;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +57,7 @@ class NodeIndex extends Model
     /**
      * 将指定字段的值转化为索引记录
      *
-     * @param  \July\Core\Node\NodeField $field
+     * @param  \July\Node\NodeField $field
      * @return array
      */
     protected static function extractValueIndex(NodeField $field)

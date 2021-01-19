@@ -1,11 +1,11 @@
 <?php
 
-namespace July\Core\Node\Controllers;
+namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
-use July\Core\Node\Node;
-use July\Core\Node\NodeField;
-use July\Core\Node\NodeType;
+use July\Node\Node;
+use July\Node\NodeField;
+use July\Node\NodeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -85,7 +85,7 @@ class NodeTypeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Core\Node\NodeType  $nodeType
+     * @param  \July\Node\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
     public function show(NodeType $nodeType)
@@ -96,7 +96,7 @@ class NodeTypeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \July\Core\Node\NodeType  $nodeType
+     * @param  \July\Node\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
     public function edit(NodeType $nodeType)
@@ -124,7 +124,7 @@ class NodeTypeController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \July\Core\Node\NodeType  $nodeType
+     * @param  \July\Node\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, NodeType $nodeType)
@@ -137,7 +137,7 @@ class NodeTypeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Core\Node\NodeType  $nodeType
+     * @param  \July\Node\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
     public function destroy(NodeType $nodeType)
@@ -153,10 +153,10 @@ class NodeTypeController extends Controller
      * @param  string|int  $id
      * @return \Illuminate\Http\Response
      */
-    public function isExist($id)
+    public function exists($id)
     {
         return response([
-            'is_exist' => !empty(NodeType::find($id)),
+            'exists' => !empty(NodeType::find($id)),
         ]);
     }
 }

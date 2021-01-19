@@ -1,14 +1,14 @@
 <?php
 
-namespace July\Core\Node\Controllers;
+namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Utils\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use July\Core\Node\Catalog;
-use July\Core\Node\Node;
-use July\Core\Node\NodeField;
+use July\Node\Catalog;
+use July\Node\Node;
+use July\Node\NodeField;
 
 class CatalogController extends Controller
 {

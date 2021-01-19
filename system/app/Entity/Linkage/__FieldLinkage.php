@@ -1,12 +1,12 @@
 <?php
 
-namespace July\Core\Entity\Linkage;
+namespace App\Entity\Linkage;
 
 use App\Utils\Arr;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use July\Core\Entity\Exceptions\InvalidEntityException;
+use App\Entity\Exceptions\InvalidEntityException;
 
 // class FieldLinkage extends LinkageBase
 // {
@@ -70,7 +70,7 @@ use July\Core\Entity\Exceptions\InvalidEntityException;
 //      *
 //      * @return array
 //      *
-//      * @throws \July\Core\Entity\Exceptions\InvalidEntityException
+//      * @throws \App\Entity\Exceptions\InvalidEntityException
 //      */
 //     protected function getVariables()
 //     {

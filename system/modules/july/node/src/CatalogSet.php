@@ -1,9 +1,9 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Utils\Arr;
-use July\Core\Entity\EntitySetBase;
+use App\Entity\EntitySetBase;
 
 class CatalogSet extends EntitySetBase
 {
@@ -117,7 +117,7 @@ class CatalogSet extends EntitySetBase
      * 在指定的树中，获取当前节点的前一个节点
      *
      * @param int $id
-     * @return \July\Core\Node\Node
+     * @return \July\Node\Node
      */
     public function get_prev($id)
     {
@@ -128,7 +128,7 @@ class CatalogSet extends EntitySetBase
      * 在指定的树中，获取当前节点的后一个节点
      *
      * @param int $id
-     * @return \July\Core\Node\Node
+     * @return \July\Node\Node
      */
     public function get_next($id)
     {

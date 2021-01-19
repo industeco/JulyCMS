@@ -1,11 +1,11 @@
 <?php
 
-namespace July\Core\Node\Controllers;
+namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
-use July\Core\Node\NodeField;
-use July\Core\EntityField\FieldType;
-use July\Core\EntityField\FieldParameters;
+use July\Node\NodeField;
+use App\EntityField\FieldType;
+use App\EntityField\FieldParameters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -63,7 +63,7 @@ class NodeFieldController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Core\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $contentField
      * @return \Illuminate\Http\Response
      */
     public function show(NodeField $contentField)
@@ -74,7 +74,7 @@ class NodeFieldController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \July\Core\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $contentField
      * @return \Illuminate\Http\Response
      */
     public function edit(NodeField $contentField)
@@ -86,7 +86,7 @@ class NodeFieldController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \July\Core\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $contentField
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, NodeField $contentField)
@@ -97,7 +97,7 @@ class NodeFieldController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Core\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $contentField
      * @return \Illuminate\Http\Response
      */
     public function destroy(NodeField $contentField)
@@ -111,7 +111,7 @@ class NodeFieldController extends Controller
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function isExist(string $id)
+    public function exists(string $id)
     {
         // 保留的字段名
         $reserved = [
@@ -123,31 +123,7 @@ class NodeFieldController extends Controller
         ];
 
         return response([
-            'is_exist' => in_array($id, $reserved) || !empty(NodeField::find($id)),
-        ]);
-    }
-
-    /**
-     * 检查 url 是否已存在
-     *
-     * @param  string  $url
-     * @return \Illuminate\Http\Response
-     */
-    public function uniqueUrl(Request $request)
-    {
-        $url = $request->input('url');
-
-        $condition = [
-            ['url_value', '=', $url],
-            ['langcode', '=', langcode('content')],
-        ];
-        if ($id = (int) $request->input('id')) {
-            $condition[] = ['content_id', '!=', $id];
-        }
-
-        $result = DB::table('content__url')->where($condition)->first();
-        return response([
-            'exists' => !empty($result),
+            'exists' => in_array($id, $reserved) || !empty(NodeField::find($id)),
         ]);
     }
 }

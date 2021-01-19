@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Entity;
+namespace App\Entity;
 
 use Illuminate\Support\Collection;
 

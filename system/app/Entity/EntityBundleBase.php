@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Entity;
+namespace App\Entity;
 
 abstract class EntityBundleBase extends EntityBase implements EntityBundleInterface
 {

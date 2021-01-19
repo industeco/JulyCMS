@@ -1,24 +1,15 @@
 <?php
 
-namespace July\Core\Config;
+namespace App\EntityField;
 
-use July\Core\Entity\EntityBase;
-
-class PartialView extends EntityBase
+class EntityView extends FieldBase
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'partial_view';
-
-    /**
-     * 是否自动维护时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    protected $table = 'entity_views';
 
     /**
      * 可批量赋值的属性。
@@ -26,21 +17,10 @@ class PartialView extends EntityBase
      * @var array
      */
     protected $fillable = [
-        'path',
-        'view',
+        'entity_name',
+        'entity_id',
         'langcode',
-    ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'path',
         'view',
-        'langcode',
     ];
 
     /**

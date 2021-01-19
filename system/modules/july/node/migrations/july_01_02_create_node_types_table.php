@@ -2,7 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use July\Node\Seeds\NodeTypeSeeder;
 
 class CreateNodeTypesTable extends Migration
 {
@@ -19,11 +21,15 @@ class CreateNodeTypesTable extends Migration
             $table->string('description')->nullable();
             $table->string('langcode', 12);
 
-            // 是否预设：预设记录不可删除
-            $table->boolean('is_reserved')->default(0);
+            // 是否预设：
+            //  - 不可删除
+            //  - 只能通过程序添加，如安装或更新
+            $table->boolean('is_reserved')->default(false);
 
             $table->timestamps();
         });
+
+        $this->seed();
     }
 
     /**
@@ -34,5 +40,19 @@ class CreateNodeTypesTable extends Migration
     public function down()
     {
         Schema::dropIfExists('node_types');
+    }
+
+    /**
+     * 填充数据
+     *
+     * @return void
+     */
+    protected function seed()
+    {
+        DB::beginTransaction();
+        NodeTypeSeeder::seed();
+        DB::commit();
+
+        NodeTypeSeeder::afterSeeding();
     }
 }

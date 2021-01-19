@@ -27,6 +27,8 @@ class CreateEntityViewsTable extends Migration
 
             // 路径别名
             $table->string('view');
+
+            $table->timestamps();
         });
     }
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
-use July\Core\Entity\EntitySetBase;
-use July\Core\Node\Node;
+use App\Entity\EntitySetBase;
+use July\Node\Node;
 
 class NodeTypeSet extends EntitySetBase
 {

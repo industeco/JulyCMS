@@ -1,8 +1,8 @@
 <?php
 
-namespace July\Core\Node\seeds;
+namespace July\Node\Seeds;
 
-use App\Database\SeederBase;
+use Database\Seeds\SeederBase;
 use Illuminate\Support\Facades\Date;
 
 class CatalogSeeder extends SeederBase
@@ -24,7 +24,7 @@ class CatalogSeeder extends SeederBase
         $records = [
             [
                 'id' => 'main',
-                'is_necessary' => true,
+                'is_reserved' => true,
                 'label' => '默认目录',
             ],
         ];

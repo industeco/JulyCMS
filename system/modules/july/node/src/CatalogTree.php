@@ -1,6 +1,6 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Utils\Pocket;
 use Illuminate\Support\Collection;
@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 class CatalogTree
 {
     /**
-     * @var \July\Core\Node\Catalog
+     * @var \July\Node\Catalog
      */
     protected $catalog = null;
 

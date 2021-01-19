@@ -1,9 +1,9 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use Illuminate\Support\Facades\DB;
-use July\Core\Entity\EntitySetBase;
+use App\Entity\EntitySetBase;
 
 class NodeSet extends EntitySetBase
 {
@@ -42,7 +42,7 @@ class NodeSet extends EntitySetBase
      * 在指定的树中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_children($catalog = null)
     {
@@ -59,7 +59,7 @@ class NodeSet extends EntitySetBase
      * 在指定的树中，获取当前节点集的所有子节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_descendants($catalog = null)
     {
@@ -76,7 +76,7 @@ class NodeSet extends EntitySetBase
      * 在指定的树中，获取当前节点集的直接父节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_parent($catalog = null)
     {
@@ -93,7 +93,7 @@ class NodeSet extends EntitySetBase
      * 在指定的树中，获取当前节点集的所有上级节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_ancestors($catalog = null)
     {
@@ -110,7 +110,7 @@ class NodeSet extends EntitySetBase
      * 在指定的树中，获取当前节点的相邻节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_siblings($catalog = null)
     {
@@ -158,7 +158,7 @@ class NodeSet extends EntitySetBase
     //  * 在指定的树中，获取当前节点的相邻节点
     //  *
     //  * @param Tree|TreeCollection|null $tree
-    //  * @return \July\Core\Node\NodeSet
+    //  * @return \July\Node\NodeSet
     //  */
     // public function get_path($tree = null)
     // {
@@ -170,7 +170,7 @@ class NodeSet extends EntitySetBase
     //  * 在指定的引用空间中，获取所有引用过当前节点集节点的主节点
     //  *
     //  * @param string $field 字段机读名
-    //  * @return \July\Core\Node\NodeSet
+    //  * @return \July\Node\NodeSet
     //  */
     // public function get_hosts($field = null)
     // {

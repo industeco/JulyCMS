@@ -1,25 +1,17 @@
 <?php
 
-namespace July\Core\Config;
+namespace App\EntityField;
 
-use July\Core\Entity\EntityBase;
-use July\Core\Entity\EntityManager;
+use App\Entity\EntityManager;
 
-class PathAlias extends EntityBase
+class EntityPathAlias extends FieldBase
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'path_alias';
-
-    /**
-     * 是否自动维护时间戳
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    protected $table = 'entity_path_aliases';
 
     /**
      * 可批量赋值的属性。
@@ -27,21 +19,10 @@ class PathAlias extends EntityBase
      * @var array
      */
     protected $fillable = [
-        'path',
-        'alias',
+        'entity_name',
+        'entity_id',
         'langcode',
-    ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'path',
         'alias',
-        'langcode',
     ];
 
     public function scopeAlias($query, $alias)
@@ -77,7 +58,7 @@ class PathAlias extends EntityBase
      * 根据别名查找实体
      *
      * @param string $alias
-     * @return \July\Core\Entity\EntityBase|null
+     * @return \App\Entity\EntityBase|null
      */
     public static function findEntityByAlias(string $alias)
     {

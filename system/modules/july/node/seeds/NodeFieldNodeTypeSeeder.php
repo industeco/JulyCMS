@@ -1,67 +1,24 @@
 <?php
 
-namespace July\Core\Node\seeds;
+namespace July\Node\Seeds;
 
-use App\Database\SeederBase;
-use Illuminate\Support\Facades\Date;
+use Database\Seeds\SeederBase;
 
-class NodeTypeSeeder extends SeederBase
+class NodeFieldNodeTypeSeeder extends SeederBase
 {
     /**
      * 待填充的数据库表
      *
      * @var array
      */
-    protected $tables = ['node_types', 'node_field_node_type'];
-
-    /**
-     * 获取 node_types 表数据
-     *
-     * @return array
-     */
-    protected function getNodeTypesRecords()
-    {
-        $records = [
-            [
-                'id' => 'basic',
-                'is_necessary' => true,
-                'label' => '基础页面',
-                'description' => '可用于静态页面，如「关于我们」页等；该类型不可删除。',
-            ],
-            [
-                'id' => 'list',
-                'label' => '列表页',
-                'description' => '用于生成列表页面。',
-            ],
-            [
-                'id' => 'product',
-                'label' => '产品页',
-                'description' => '用于生成产品页面。',
-            ],
-            [
-                'id' => 'article',
-                'label' => '文章页',
-                'description' => '用于生成文章页面。',
-            ],
-        ];
-
-        $share = [
-            'langcode' => langcode('content.default'),
-            'created_at' => Date::now(),
-            'updated_at' => Date::now(),
-        ];
-
-        return array_map(function($record) use($share) {
-            return $record + $share;
-        }, $records);
-    }
+    protected $tables = ['node_field_node_type'];
 
     /**
      * 获取 node_field_node_type 表数据
      *
      * @return array
      */
-    protected function getNodeFieldNodeTypeRecords()
+    protected function getNodeFieldNodeTypeTableRecords()
     {
         return [
             [

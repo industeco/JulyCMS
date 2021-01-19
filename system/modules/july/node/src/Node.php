@@ -1,19 +1,17 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
-use App\Utils\Arr;
+use App\Entity\EntityBase;
 use App\Utils\Html;
 use App\Utils\Pocket;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Core\Config\PartialViewLinkage;
 use July\Core\Config\PathAliasLinkage;
-use July\Core\Entity\EntityBase;
-use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\FieldType;
-use July\Core\Node\CatalogSet;
+use App\EntityField\EntityFieldBase;
+use App\EntityField\FieldType;
+use July\Node\CatalogSet;
 use July\Core\Taxonomy\Term;
 use July\Core\Taxonomy\TermSet;
 
@@ -582,7 +580,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_children($catalog = null)
     {
@@ -598,7 +596,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的所有子节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_descendants($catalog = null)
     {
@@ -614,7 +612,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的直接父节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_parent($catalog = null)
     {
@@ -630,7 +628,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的所有上级节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_ancestors($catalog = null)
     {
@@ -646,7 +644,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的相邻节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_siblings($catalog = null)
     {
@@ -662,7 +660,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的前一个节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_prev($catalog = null)
     {
@@ -673,7 +671,7 @@ class Node extends EntityBase
      * 在指定的目录中，获取当前节点的后一个节点
      *
      * @param mixed $catalog
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_next($catalog = null)
     {
@@ -694,7 +692,7 @@ class Node extends EntityBase
     /**
      * 获取内容标签
      *
-     * @return \July\Core\Node\NodeType
+     * @return \July\Node\NodeType
      */
     public function get_type()
     {
@@ -704,7 +702,7 @@ class Node extends EntityBase
     /**
      * 获取内容标签
      *
-     * @return \July\Core\Node\CatalogSet
+     * @return \July\Node\CatalogSet
      */
     public function get_catalogs()
     {

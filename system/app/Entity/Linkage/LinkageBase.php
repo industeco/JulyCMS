@@ -1,9 +1,9 @@
 <?php
 
-namespace July\Core\Entity\Linkage;
+namespace App\Entity\Linkage;
 
-use July\Core\Entity\EntityBase;
-use July\Core\Entity\Exceptions\InvalidBoundEntityException;
+use App\Entity\EntityBase;
+use App\Entity\Exceptions\InvalidBoundEntityException;
 
 /**
  * 字段存取器
@@ -20,14 +20,14 @@ abstract class LinkageBase implements LinkageInterface
     /**
      * 请求的实体
      *
-     * @var \July\Core\Entity\EntityBase
+     * @var \App\Entity\EntityBase
      */
     protected $entity;
 
     /**
      * 字段存取器构造函数
      *
-     * @param  \July\Core\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase $entity
      * @return void
      */
     public function __construct(EntityBase $entity)
@@ -38,7 +38,7 @@ abstract class LinkageBase implements LinkageInterface
     /**
      * 快捷构造
      *
-     * @param  \July\Core\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase $entity
      * @return static
      */
     public static function make(EntityBase $entity)

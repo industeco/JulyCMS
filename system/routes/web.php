@@ -66,8 +66,8 @@ Route::group([
     //     ->name('media.move');
 
     // 实体路径别名查重
-    Route::post('entity_path_aliases/exists', [EntityPathAliasController::class, 'exists'])
-        ->name('entity_path_aliases.exists');
+    Route::post('path_alias/exists', [PathAliasController::class, 'exists'])
+        ->name('path_alias.exists');
 
 
     // 执行命令

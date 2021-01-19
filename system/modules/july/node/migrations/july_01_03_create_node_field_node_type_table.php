@@ -2,7 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use July\Node\Seeds\NodeFieldNodeTypeSeeder;
 
 class CreateNodeFieldNodeTypeTable extends Migration
 {
@@ -37,6 +39,8 @@ class CreateNodeFieldNodeTypeTable extends Migration
             // 同一个字段在同一个类型中最多出现一次
             $table->unique(['node_type_id', 'node_field_id']);
         });
+
+        $this->seed();
     }
 
     /**
@@ -47,5 +51,19 @@ class CreateNodeFieldNodeTypeTable extends Migration
     public function down()
     {
         Schema::dropIfExists('node_field_node_type');
+    }
+
+    /**
+     * 填充数据
+     *
+     * @return void
+     */
+    protected function seed()
+    {
+        DB::beginTransaction();
+        NodeFieldNodeTypeSeeder::seed();
+        DB::commit();
+
+        NodeFieldNodeTypeSeeder::afterSeeding();
     }
 }

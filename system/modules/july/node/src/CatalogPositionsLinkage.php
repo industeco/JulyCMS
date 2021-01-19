@@ -1,8 +1,8 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
-use July\Core\Entity\Linkage\LinkageBase;
+use App\Entity\Linkage\LinkageBase;
 
 class CatalogPositionsLinkage extends LinkageBase
 {

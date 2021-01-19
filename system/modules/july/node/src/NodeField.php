@@ -1,22 +1,15 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
-use July\Core\Entity\EntityBase;
-use July\Core\EntityField\EntityFieldBase;
-use July\Core\EntityField\FieldParameters;
-use July\Core\EntityField\FieldType;
+use App\EntityField\FieldBase as EntityFieldBase;
+use App\EntityField\FieldParameters;
+use App\EntityField\FieldType;
 
 class NodeField extends EntityFieldBase
 {
-    const PRESET_TYPE = [
-        'normal' => 0,
-        'preset' => 1,
-        'global' => 2,
-    ];
-
     /**
      * 宿主实体的实体名
      */
@@ -58,14 +51,16 @@ class NodeField extends EntityFieldBase
     protected $fillable = [
         'id',
         'field_type_id',
-        'is_necessary',
-        'is_searchable',
-        'weight',
-        'preset_type',
-        'global_group',
+        'is_reserved',
+        'is_global',
+        'group_title',
+        'search_weight',
+        'maxlength',
         'label',
         'description',
-        // 'langcode',
+        'helpertext',
+        'is_required',
+        'langcode',
     ];
 
     /**
@@ -74,29 +69,11 @@ class NodeField extends EntityFieldBase
      * @var array
      */
     protected $casts = [
-        'is_necessary' => 'boolean',
-        'is_searchable' => 'boolean',
-        'preset_type' => 'int',
-        'weight' => 'decimal:2',
-    ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'field_type_id',
-        'is_necessary',
-        'is_searchable',
-        'weight',
-        'preset_type',
-        'global_group',
-        'label',
-        'description',
-        'created_at',
-        'updated_at',
+        'is_reserved' => 'boolean',
+        'is_global' => 'boolean',
+        'search_weight' => 'int',
+        'maxlength' => 'int',
+        'is_required' => 'boolean',
     ];
 
     /**
@@ -182,31 +159,6 @@ class NodeField extends EntityFieldBase
             ->map(function(NodeField $field) {
                 return $field->gather();
             });
-
-        // $pocket = new Pocket(static::class);
-        // $key = 'field_infos';
-        // $event = static::class.'/'.$key.':created';
-
-        // if ($data = $pocket->get($key)) {
-        //     $events = [
-        //         static::class.':changed',
-        //         FieldParameters::class.':changed',
-        //     ];
-        //     if (! events()->hasHappenedAfter($events, $event)) {
-        //         return collect($data->value());
-        //     }
-        // }
-
-        // $data = static::query()->with('fieldParameters')->get()
-        //     ->map(function(NodeField $field) {
-        //         return $field->gather();
-        //     })->all();
-
-        // $pocket->put($key, $data);
-
-        // events()->record($event);
-
-        // return collect($data);
     }
 
     /**

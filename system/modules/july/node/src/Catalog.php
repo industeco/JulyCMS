@@ -1,11 +1,11 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Utils\Arr;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
-use July\Core\Entity\EntityBase;
+use App\Entity\EntityBase;
 
 class Catalog extends EntityBase implements GetNodesInterface
 {
@@ -75,7 +75,7 @@ class Catalog extends EntityBase implements GetNodesInterface
     /**
      * 排序后的目录内容
      *
-     * @var \July\Core\Node\CatalogTree
+     * @var \July\Node\CatalogTree
      */
     protected $catalogTree = null;
 
@@ -226,7 +226,7 @@ class Catalog extends EntityBase implements GetNodesInterface
     }
 
     /**
-     * @return \July\Core\Node\CatalogTree
+     * @return \July\Node\CatalogTree
      */
     public function tree()
     {
@@ -241,7 +241,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 获取指定节点的直接子节点
      *
      * @param array $args 指定节点
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_children(...$args)
     {
@@ -268,7 +268,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 获取指定节点的所有子节点
      *
      * @param array $args 指定节点
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_descendants(...$args)
     {
@@ -298,7 +298,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 获取指定节点的所有上级节点
      *
      * @param array $args 指定节点
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_parent(...$args)
     {
@@ -325,7 +325,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 获取指定节点的所有上级节点
      *
      * @param array $args 指定节点
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_ancestors(...$args)
     {
@@ -352,7 +352,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 获取指定节点的相邻节点
      *
      * @param array $args 指定节点
-     * @return \July\Core\Node\NodeSet
+     * @return \July\Node\NodeSet
      */
     public function get_siblings(...$args)
     {
@@ -379,7 +379,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 在指定的树中，获取当前节点的前一个节点
      *
      * @param int $id
-     * @return \July\Core\Node\Node|null
+     * @return \July\Node\Node|null
      */
     public function get_prev($id)
     {
@@ -398,7 +398,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * 在指定的树中，获取当前节点的后一个节点
      *
      * @param int $id
-     * @return \July\Core\Node\Node|null
+     * @return \July\Node\Node|null
      */
     public function get_next($id)
     {

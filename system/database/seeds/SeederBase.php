@@ -16,6 +16,14 @@ abstract class SeederBase extends Seeder
     protected $tables = [];
 
     /**
+     * 静态执行数据填充
+     */
+    public static function seed()
+    {
+        (new static)->run();
+    }
+
+    /**
      * Seed the application's database.
      *
      * @return void
@@ -42,5 +50,13 @@ abstract class SeederBase extends Seeder
             return $this->$method();
         }
         return [];
+    }
+
+    /**
+     * 数据填充后执行
+     */
+    public static function afterSeeding()
+    {
+        //
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
-namespace July\Core\Node;
+namespace July\Node;
 
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use July\Core\Entity\EntityBundleBase;
-use July\Core\EntityField\FieldType;
-use July\Core\EntityField\FieldParameters;
+use App\Entity\EntityBundleBase;
+use App\EntityField\FieldType;
+use App\EntityField\FieldParameters;
 
 class NodeType extends EntityBundleBase implements GetNodesInterface
 {

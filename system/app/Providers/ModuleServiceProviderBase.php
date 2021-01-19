@@ -10,20 +10,6 @@ use ReflectionClass;
 abstract class ModuleServiceProviderBase extends ServiceProvider
 {
     /**
-     * 组件基础路径
-     *
-     * @var string|null
-     */
-    protected $moduleRoot = null;
-
-    /**
-     * 组件名
-     *
-     * @var string|null
-     */
-    protected $moduleName = null;
-
-    /**
      * Register any application services.
      *
      * @return void
@@ -84,7 +70,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function getModulePath(?string $path = null)
     {
-        return $this->getModuleRoot().(is_null($path) ? '' : '/'.$path);
+        return $this->getModuleRoot().($path ? '/'.$path : '');
     }
 
     /**
@@ -94,10 +80,8 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function getModuleRoot()
     {
-        if (! $this->moduleRoot) {
-            $this->moduleRoot = dirname(dirname((new ReflectionClass(static::class))->getFileName()));
-        }
-        return $this->moduleRoot;
+        $ref = new ReflectionClass(static::class);
+        return dirname(dirname($ref->getFileName()));
     }
 
     /**
@@ -107,10 +91,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function getModuleName()
     {
-        if (! $this->moduleName) {
-            $relativePath = substr($this->getModuleRoot(), strlen(base_path('modules/')));
-            $this->moduleName = str_replace('\\', '/', $relativePath);
-        }
-        return $this->moduleName;
+        $relativePath = substr($this->getModuleRoot(), strlen(base_path('modules/')));
+        return str_replace('\\', '/', $relativePath);
     }
 }

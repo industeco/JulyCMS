@@ -27,6 +27,8 @@ class CreateEntityPathAliasesTable extends Migration
 
             // 路径别名
             $table->string('alias')->unique();
+
+            $table->timestamps();
         });
     }
 
