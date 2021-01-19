@@ -2,7 +2,7 @@
 
 namespace App\EntityField\FieldTypeDefinitions;
 
-use App\EntityField\EntityFieldBase;
+use App\EntityField\FieldBase;
 
 interface DefinitionInterface
 {
@@ -21,7 +21,7 @@ interface DefinitionInterface
      * @param  array $field
      * @return self
      */
-    public function bindField(EntityFieldBase $field);
+    public function bindField(FieldBase $field);
 
     /**
      * 设置字段参数读取语言

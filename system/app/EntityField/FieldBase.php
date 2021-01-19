@@ -9,33 +9,39 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
-use App\EntityField\Exceptions\InvalidHostEntityException;
+use App\Entity\Exceptions\InvalidEntityException;
+use App\EntityField\Exceptions\InvalidBoundEntityException;
 use App\Model;
 
 abstract class FieldBase extends Model
 {
     /**
-     * 宿主实体的实体名
+     * 绑定实体的实体名
      *
      * @var string|null
      */
-    protected static $hostEntityName;
+    protected $boundEntityName = null;
 
     /**
-     * 字段宿主实体
+     * 绑定实体
      *
      * @var \App\Entity\EntityBase
      */
-    protected $hostEntity;
+    protected $boundEntity;
 
     /**
-     * 获取字段宿主实体的实体名
+     * 获取字段绑定实体的实体名
      *
-     * @return string
+     * @return string|null
      */
-    public static function getHostEntityName()
+    public function getBoundEntityName()
     {
-        return static::$hostEntityName ?: preg_replace('/_field$/', '', static::getEntityName());
+        if ($this->boundEntityName) {
+            return $this->boundEntityName;
+        } elseif ($this->boundEntity) {
+            return $this->boundEntity->getEntityName();
+        }
+        return null;
     }
 
     /**
@@ -43,19 +49,19 @@ abstract class FieldBase extends Model
      *
      * @return \App\Entity\EntityBase
      *
-     * @throws \App\EntityField\Exceptions\InvalidHostEntityException
+     * @throws \App\EntityField\Exceptions\InvalidBoundEntityException
      */
-    public function getHostEntity()
+    public function getBoundEntity()
     {
-        if ($this->hostEntity) {
-            return $this->hostEntity;
+        if ($this->boundEntity) {
+            return $this->boundEntity;
         }
 
-        if ($class = EntityManager::resolveName(static::getHostEntityName())) {
-            return $this->hostEntity = new $class;
+        if ($class = EntityManager::resolveName($this->getBoundEntityName())) {
+            return $this->boundEntity = new $class;
         }
 
-        throw new InvalidHostEntityException;
+        return null;
     }
 
     /**
@@ -64,17 +70,17 @@ abstract class FieldBase extends Model
      * @param  \App\Entity\EntityBase $entity
      * @return $this
      *
-     * @throws \App\EntityField\Exceptions\InvalidHostEntityException
+     * @throws \App\Entity\Exceptions\InvalidEntityException
      */
     public function bindEntity(EntityBase $entity)
     {
-        $class = EntityManager::resolveName(static::getHostEntityName());
-        if ($class && $entity instanceof $class) {
-            $this->hostEntity = $entity;
+        $class = $this->boundEntityName ? EntityManager::resolveName($this->boundEntityName) : null;
+        if (!$class || $entity instanceof $class) {
+            $this->boundEntity = $entity;
             return $this;
+        } else {
+            throw new InvalidEntityException('无法绑定到实体 '.get_class($entity));
         }
-
-        throw new InvalidHostEntityException;
     }
 
     /**
@@ -92,9 +98,9 @@ abstract class FieldBase extends Model
      */
     public function getLangcode()
     {
-        $host = $this->getHostEntity();
-        if ($host->getLangcode()) {
-            $this->contentLangcode = $host->getLangcode();
+        $entity = $this->getBoundEntity();
+        if ($entity->getLangcode()) {
+            $this->contentLangcode = $entity->getLangcode();
         }
 
         return $this->contentLangcode ?: langcode('content');
@@ -214,7 +220,7 @@ abstract class FieldBase extends Model
      *
      * @return array
      *
-     * @throws \App\EntityField\Exceptions\InvalidHostEntityException
+     * @throws \App\EntityField\Exceptions\InvalidBoundEntityException
      */
     protected function sharedVariables()
     {
@@ -226,7 +232,7 @@ abstract class FieldBase extends Model
                 $this->hostEntity->getLangcode(),
             ];
         } catch (\Throwable $th) {
-            throw new InvalidHostEntityException($th->getMessage());
+            throw new InvalidBoundEntityException($th->getMessage());
         }
     }
 
@@ -404,11 +410,11 @@ abstract class FieldBase extends Model
     {
         parent::boot();
 
-        static::created(function(EntityFieldBase $field) {
+        static::created(function(FieldBase $field) {
             $field->tableUp();
         });
 
-        static::deleted(function(EntityFieldBase $field) {
+        static::deleted(function(FieldBase $field) {
             $field->tableDown();
         });
     }

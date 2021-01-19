@@ -6,7 +6,7 @@ use App\Traits\HasAttributesTrait;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\EntityField\EntityFieldBase;
+use App\EntityField\FieldBase;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -22,7 +22,7 @@ abstract class DefinitionBase implements DefinitionInterface
     /**
      * 字段对象
      *
-     * @var \App\EntityField\EntityFieldBase
+     * @var \App\EntityField\FieldBase
      */
     protected $field = null;
 
@@ -41,9 +41,9 @@ abstract class DefinitionBase implements DefinitionInterface
     protected $translated = false;
 
     /**
-     * @param \App\EntityField\EntityFieldBase|null $field
+     * @param \App\EntityField\FieldBase|null $field
      */
-    public function __construct(EntityFieldBase $field = null)
+    public function __construct(FieldBase $field = null)
     {
         $this->field = $field;
     }
@@ -67,7 +67,7 @@ abstract class DefinitionBase implements DefinitionInterface
      */
     public static function get(string $key, $default = null)
     {
-        return (new static)->getAttribute($key) ?? null;
+        return (new static)->getAttribute($key) ?? $default;
     }
 
     /**
@@ -76,7 +76,7 @@ abstract class DefinitionBase implements DefinitionInterface
      * @param  array $field
      * @return self
      */
-    public function bindField(EntityFieldBase $field)
+    public function bindField(FieldBase $field)
     {
         $this->field = $field;
 

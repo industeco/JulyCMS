@@ -1,73 +1,88 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录后台</title>
+  <link rel="stylesheet" href="/themes/backend/vendor/element-ui/theme-chalk/index.css">
+  <style>
+    .el-form-item {
+      margin-bottom: 0;
+    }
+    .el-form-item + .el-form-item {
+      margin-top: 20px;
+    }
+    .el-dialog {
+      padding: 20px 30px;
+    }
+    .el-dialog__header, .el-dialog__body, .el-dialog__footer {
+      padding: 0;
+      margin: 0;
+    }
+    .el-dialog__header + .el-dialog__body {
+      margin-top: 30px;
+    }
+    .el-dialog__body + .el-dialog__footer {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-dialog title="登录后台" width="400px" :visible="true" :show-close="false">
+      <el-form label-width="80px" method="POST" action="{{ short_url('admin.auth') }}" ref="form">
+        @csrf
+        <el-form-item label="用户名：" size="medium">
+          {{-- <el-input name="truename" v-model="truename"></el-input> --}}
+          <div class="el-input el-input--medium">
+            <input autocomplete="off" name="name" class="el-input__inner"
+              v-model="name" @keyup.enter="focusPassword">
+          </div>
+        </el-form-item>
+        <el-form-item label="密码：" size="medium">
+          {{-- <el-input type="password" name="password" v-model="password" @keyup="handleChange"></el-input> --}}
+          <div class="el-input el-input--medium">
+            <input type="password" autocomplete="off" name="password" class="el-input__inner"
+              ref="password" v-model="password" @keyup.enter="submit">
+          </div>
+        </el-form-item>
+        @error('name')
+        <el-form-item size="medium" error="{{ $message }}"></el-form-item>
+        @enderror
+        <el-form-item size="medium">
+          <el-checkbox name="remember" v-model="remember">记住我</el-checkbox>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="medium" type="primary" :loading="loading" @click.stop="submit">登 录</el-button>
+      </div>
+    </el-dialog>
+  </div>
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+  <script src="/themes/backend/js/app.js"></script>
+  <script src="/themes/backend/vendor/element-ui/index.js"></script>
+  <script>
+    let dialog = new Vue({
+      el: '#app',
+      data() {
+        return {
+          name: "{{ old('name') }}",
+          password: "{{ old('password') }}",
+          remember: false,
+          loading: false,
+        };
+      },
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-
-                        <div class="form-group row">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
+      methods: {
+        focusPassword() {
+          this.$refs.password.focus();
+        },
+        submit() {
+          this.loading = true;
+          this.$refs.form.$el.submit();
+        },
+      },
+    });
+  </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 namespace App\EntityField\Exceptions;
 
-class InvalidHostEntityException extends \RuntimeException
+class InvalidBoundEntityException extends \InvalidArgumentException
 {
-    protected $message = '字段的宿主实体不可用';
+    protected $message = '字段绑定实体无效';
 }
