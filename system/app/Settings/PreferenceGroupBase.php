@@ -34,7 +34,7 @@ abstract class PreferenceGroupBase extends SettingGroupBase
     public function save(array $settings)
     {
         // 过滤并整合配置数据到当前配置环境
-        $this->merge($settings);
+        $settings = $this->merge($settings);
 
         $file = $this->getPath();
         $preferences = [];
@@ -44,7 +44,7 @@ abstract class PreferenceGroupBase extends SettingGroupBase
         $preferences[Auth::id()] = $settings;
 
         // 保存配置数据到文件
-        $content = '<?php'.PHP_EOL.PHP_EOL.'return '.trim(var_export($preferences, TRUE)).';'.PHP_EOL;
+        $content = "<?php\n\nreturn ".trim(var_export($preferences, TRUE)).";\n";
         file_put_contents($file, $content);
     }
 }

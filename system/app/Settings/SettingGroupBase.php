@@ -29,23 +29,6 @@ abstract class SettingGroupBase
     protected $items = [];
 
     /**
-     * 配置组菜单项图标
-     *
-     * @var string
-     */
-    protected $icon = null;
-
-    /**
-     * 获取配置文件路径
-     *
-     * @return string
-     */
-    public function getPath()
-    {
-        return base_path('settings/'.$this->name.'.php');
-    }
-
-    /**
      * 加载配置
      *
      * @return void
@@ -66,10 +49,10 @@ abstract class SettingGroupBase
     public function save(array $settings)
     {
         // 过滤并整合配置数据到当前配置环境
-        $this->merge($settings);
+        $settings = $this->merge($settings);
 
         // 保存配置数据到文件
-        $content = '<?php'.PHP_EOL.PHP_EOL.'return '.trim(var_export($settings, TRUE)).';'.PHP_EOL;
+        $content = "<?php\n\nreturn ".trim(var_export($settings, TRUE)).";\n";
         file_put_contents($this->getPath(), $content);
     }
 
@@ -90,51 +73,53 @@ abstract class SettingGroupBase
             $data['settings'][$key] = config($key);
         }
 
-        /** @var \Illuminate\View\Factory */
-        $view = view();
+        return view()->make('settings.'.$this->name, $data);
 
-        if ($view->exists('settings.'.$this->name)) {
-            return $view->make('settings.'.$this->name, $data);
-        }
+        // /** @var \Illuminate\View\Factory */
+        // $view = view();
 
-        $views = ['', 'settings.item'];
-        foreach ($data['items'] as $key => $item) {
-            // settings.{group_name}.{item_key}
-            $views[0] = join('.', ['settings', $this->name, str_replace('.','-',$item['key'])]);
-            $$data['items'][$key]['html'] = $view->first($views, $item)->render();
-        }
+        // if ($view->exists('settings.'.$this->name)) {
+        //     return $view->make('settings.'.$this->name, $data);
+        // }
 
-        return $view->first(['settings.'.$this->name.'.group', 'settings.group'], $data);
+        // $views = ['', 'settings.item'];
+        // foreach ($data['items'] as $key => $item) {
+        //     // settings.{group_name}.{item_key}
+        //     $views[0] = join('.', ['settings', $this->name, str_replace('.','-',$item['key'])]);
+        //     $$data['items'][$key]['html'] = $view->first($views, $item)->render();
+        // }
+
+        // return $view->first(['settings.'.$this->name.'.group', 'settings.group'], $data);
     }
 
     /**
      * 过滤配置数据，然后整合到当前配置环境
      *
-     * @param  array $settings
+     * @param  array $data
+     * @return array
      */
-    protected function merge(array $settings)
+    protected function merge(array $data)
     {
-        $keys = array_keys($this->items);
+        // 过滤配置
+        $settings = [];
+        foreach (array_keys($this->items) as $key) {
+            $settings[$key] = $data[$key] ?? null;
+        }
 
-        // 过滤配置，并合并到当前配置环境
-        $default = array_fill_keys($keys, null);
-        $settings = array_merge($default, Arr::only($settings, $keys));
+        // 合并到当前配置环境
         config($settings);
+
+        return $settings;
     }
 
     /**
-     * 生成菜单项
+     * 获取配置文件路径
      *
-     * @return array
+     * @return string
      */
-    public function getMenuItem()
+    protected function getPath()
     {
-        return [
-            'title' => $this->title,
-            'icon' => null,
-            'route' => ['settings.edit', $this->name],
-            'children' => [],
-        ];
+        return base_path('settings/'.$this->name.'.php');
     }
 
     public function __get($name)

@@ -30,9 +30,14 @@ class SettingsManager
             static::$groups[$group->name] = $class;
 
             // 添加菜单项
-            if ($item = $group->getMenuItem()) {
+            if ($group->title) {
                 $children = config('app.main_menu.settings.children');
-                $children[] = $item;
+                $children[] = [
+                    'title' => $group->title,
+                    'icon' => null,
+                    'route' => ['settings.edit', $group->name],
+                    'children' => [],
+                ];
                 config(['app.main_menu.settings.children' => $children]);
             }
         }
@@ -46,6 +51,9 @@ class SettingsManager
      */
     public static function resolve(string $name)
     {
-        return isset(static::$groups[$name]) ? new static::$groups[$name] : null;
+        if ($class = static::$groups[$name] ?? null) {
+            return new $class;
+        }
+        return null;
     }
 }
