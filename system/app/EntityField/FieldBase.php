@@ -11,10 +11,15 @@ use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 use App\Entity\Exceptions\InvalidEntityException;
 use App\EntityField\Exceptions\InvalidBoundEntityException;
+use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Modules\Translation\TranslatableInterface;
+use App\Modules\Translation\TranslatableTrait;
 use App\Model;
 
-abstract class FieldBase extends Model
+abstract class FieldBase extends Model implements TranslatableInterface
 {
+    use TranslatableTrait;
+
     /**
      * 绑定实体的实体名
      *
@@ -28,6 +33,13 @@ abstract class FieldBase extends Model
      * @var \App\Entity\EntityBase
      */
     protected $boundEntity;
+
+    /**
+     * 字段类型
+     *
+     * @var \App\EntityField\FieldTypes\FieldTypeBase
+     */
+    protected $fieldType = null;
 
     /**
      * 获取字段绑定实体的实体名
@@ -47,21 +59,11 @@ abstract class FieldBase extends Model
     /**
      * 获取绑定的实体
      *
-     * @return \App\Entity\EntityBase
-     *
-     * @throws \App\EntityField\Exceptions\InvalidBoundEntityException
+     * @return \App\Entity\EntityBase|null
      */
     public function getBoundEntity()
     {
-        if ($this->boundEntity) {
-            return $this->boundEntity;
-        }
-
-        if ($class = EntityManager::resolveName($this->getBoundEntityName())) {
-            return $this->boundEntity = new $class;
-        }
-
-        return null;
+        return $this->boundEntity;
     }
 
     /**
@@ -79,18 +81,21 @@ abstract class FieldBase extends Model
             $this->boundEntity = $entity;
             return $this;
         } else {
-            throw new InvalidEntityException('无法绑定到实体 '.get_class($entity));
+            throw new InvalidEntityException('当前字段无法绑定到实体：'.get_class($entity));
         }
     }
 
     /**
      * 获取字段类型对象
      *
-     * @return \App\EntityField\FieldType
+     * @return \App\EntityField\FieldTypes\FieldTypeBase
      */
     public function getFieldType()
     {
-        return FieldType::findOrFail($this);
+        if (! $this->fieldType) {
+            $this->fieldType = FieldTypeManager::findOrFail($this->attributes['field_type_id'])->bindField($this);
+        }
+        return $this->fieldType;
     }
 
     /**
@@ -98,12 +103,10 @@ abstract class FieldBase extends Model
      */
     public function getLangcode()
     {
-        $entity = $this->getBoundEntity();
-        if ($entity->getLangcode()) {
-            $this->contentLangcode = $entity->getLangcode();
+        if (!$this->contentLangcode && $this->boundEntity) {
+            return $this->boundEntity->getLangcode();
         }
-
-        return $this->contentLangcode ?: langcode('content');
+        return $this->contentLangcode;
     }
 
     /**
@@ -124,18 +127,19 @@ abstract class FieldBase extends Model
     public function getParameters()
     {
         // 实体类型 id
-        $bundleName = null;
+        $moldId = null;
         if ($pivot = $this->pivot) {
-            $bundleName = $pivot->{$pivot->getForeignKey()};
+            $moldId = $pivot->{$pivot->getForeignKey()};
         }
 
-        // 语言版本
-        $langcode = $this->getLangcode();
-
-        // 可能的键名（语言版本 + 实体类型名），按匹配度降序排列
+        // 当前内容语言,当前类型 id
+        // 实体类型源语言,当前类型 id
+        // 字段源语言
+        // 可能的键名（语言版本 + 实体类型 id），按匹配度降序排列
         $keys = [
-            $langcode.'|'.$bundleName,
-            $langcode.'|',
+            $this->boundEntity->getLangcode().','.$moldId,
+            $this->boundEntity->getMold()->getOriginalLangcode().','.$moldId,
+            $this->attributes['langcode'].',',
         ];
 
         /**
@@ -144,7 +148,7 @@ abstract class FieldBase extends Model
          * @var \Illuminate\Database\Eloquent\Collection
          */
         $fieldParameters = $this->fieldParameters->keyBy(function(FieldParameters $item) {
-            return $item->langcode.'|'.$item->bundle_name;
+            return $item->langcode.','.$item->mold_id;
         });
 
         // return $fieldParameters;
@@ -190,9 +194,9 @@ abstract class FieldBase extends Model
      *
      * @return string
      */
-    public function getValueTable()
+    public function getFieldTable()
     {
-        return static::getHostEntityName().'__'.$this->getEntityId();
+        return $this->getBoundEntityName().'__'.$this->getEntityId();
     }
 
     /**
@@ -200,7 +204,7 @@ abstract class FieldBase extends Model
      *
      * @return array
      */
-    public function getValueColumns()
+    public function getFieldColumns()
     {
         return $this->getFieldType()->getColumns();
     }
@@ -210,9 +214,9 @@ abstract class FieldBase extends Model
      *
      * @return string
      */
-    public function getHostForeignKey()
+    public function getEntityForeignKey()
     {
-        return static::getHostEntityName().'_id';
+        return $this->getBoundEntityName().'_id';
     }
 
     /**
@@ -226,8 +230,8 @@ abstract class FieldBase extends Model
     {
         try {
             return [
-                $this->getValueTable(),
-                $this->getHostForeignKey(),
+                $this->getFieldTable(),
+                $this->getEntityForeignKey(),
                 $this->hostEntity->getEntityId(),
                 $this->hostEntity->getLangcode(),
             ];
@@ -276,7 +280,7 @@ abstract class FieldBase extends Model
      */
     public function getValue()
     {
-        if ($this->hostEntity && !$this->hostEntity->exists) {
+        if ($this->boundEntity && !$this->boundEntity->exists) {
             return $this->getFieldType()->getDefaultValue();
         }
 
@@ -331,17 +335,17 @@ abstract class FieldBase extends Model
     public function searchValue(string $needle)
     {
         $conditions = [];
-        foreach ($this->getValueColumns() as $column) {
+        foreach ($this->getFieldColumns() as $column) {
             $conditions[] = [$column['name'], 'like', '%'.$needle.'%', 'or'];
         }
 
         $field = $this->gather(['id', 'field_type_id', 'label', 'description']);
 
         // 实体在存储表中的外键名
-        $foreignKey = $this->getHostForeignKey();
+        $foreignKey = $this->getEntityForeignKey();
 
         $results = [];
-        foreach (DB::table($this->getValueTable())->where($conditions)->get() as $record) {
+        foreach (DB::table($this->getFieldTable())->where($conditions)->get() as $record) {
             $record = (array) $record;
             $key = join('/', [$record[$foreignKey], $field['id'], $record['langcode'] ?? 'und']);
             if (! isset($results[$key])) {
@@ -363,16 +367,16 @@ abstract class FieldBase extends Model
     public function tableUp()
     {
         // 获取独立表表名，并判断是否已存在
-        $tableName = $this->getValueTable();
+        $tableName = $this->getFieldTable();
         if (Schema::hasTable($tableName)) {
             return;
         }
 
         // 宿主实体的外键名
-        $foreignKey = $this->getHostForeignKey();
+        $foreignKey = $this->getEntityForeignKey();
 
         // 获取用于创建数据表列的参数
-        $columns = $this->getValueColumns();
+        $columns = $this->getFieldColumns();
 
         // 创建数据表
         Schema::create($tableName, function (Blueprint $table) use ($columns, $foreignKey) {
@@ -383,7 +387,7 @@ abstract class FieldBase extends Model
                 $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
             }
 
-            $table->unsignedTinyInteger('delta')->default(0);
+            // $table->unsignedTinyInteger('delta')->default(0);
             $table->string('langcode', 12);
             $table->timestamps();
 
@@ -400,7 +404,7 @@ abstract class FieldBase extends Model
      */
     public function tableDown()
     {
-        Schema::dropIfExists($this->getValueTable());
+        Schema::dropIfExists($this->getFieldTable());
     }
 
     /**
@@ -436,9 +440,9 @@ abstract class FieldBase extends Model
     /**
      * @return array[]
      */
-    public function getValueRecords()
+    public function getFieldRecords()
     {
-        return DB::table($this->getValueTable())->get()->map(function ($record) {
+        return DB::table($this->getFieldTable())->get()->map(function ($record) {
             return (array) $record;
         })->all();
     }

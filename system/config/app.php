@@ -191,7 +191,7 @@ return [
 
     'aliases' => [
         'App' => Illuminate\Support\Facades\App::class,
-        'Arr' => App\Utils\Arr::class,
+        'Arr' => Illuminate\Support\Arr::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
         'Auth' => Illuminate\Support\Facades\Auth::class,
         'Blade' => Illuminate\Support\Facades\Blade::class,
@@ -248,9 +248,6 @@ return [
         \App\Settings\Redirections::class,
     ],
 
-    // 是否允许通过实体路径访问
-    'entity_path_accessible' => false,
-
     // 登记实体
     'entities' => [
         //
@@ -258,8 +255,14 @@ return [
 
     // 登记实体字段类型
     'field_types' => [
-        //
+        \App\EntityField\FieldTypes\File::class,
+        \App\EntityField\FieldTypes\Html::class,
+        \App\EntityField\FieldTypes\Text::class,
+        \App\EntityField\FieldTypes\Any::class,
     ],
+
+    // 是否允许通过实体路径访问
+    'entity_path_accessible' => false,
 
     // 全局字段分组
     'field_groups' => [
@@ -275,6 +278,59 @@ return [
             'label' => 'META 信息',
             'expanded' => true,
         ],
+    ],
+
+    'field_parameters_schema' => [
+        'default',
+        'options',
+        'placeholder',
+
+        // 改为在字段类型中设置
+        // 'type' => [
+        //     'cast' => 'string',
+        //     'translatable' => false,
+        //     'overwritable' => false,
+        //     'default' => 'string',
+        // ],
+
+        // 改为在字段表中设置
+        // 'maxlength' => [
+        //     'cast' => 'int',
+        //     'translatable' => false,
+        //     'overwritable' => false,
+        // ],
+
+        // 改为在字段表和铸模表中设置
+        // 'required' => [
+        //     'cast' => 'boolean',
+        //     'translatable' => false,
+        //     'overwritable' => true,
+        //     'default' => false,
+        // ],
+        // 'helpertext' => [
+        //     'cast' => 'string',
+        //     'translatable' => false,
+        //     'overwritable' => true,
+        // ],
+
+        // 取消以下设置
+        // 'pattern' => [
+        //     'cast' => 'string',
+        //     'translatable' => false,
+        //     'overwritable' => false,
+        // ],
+        // 'file_bundle' => [
+        //     'cast' => 'string',
+        //     'translatable' => false,
+        //     'overwritable' => false,
+        //     // 'enumerators' => ['image', 'file'],
+        // ],
+        // 'multiple' => [
+        //     'cast' => 'boolean',
+        //     'translatable' => false,
+        //     'overwritable' => false,
+        //     'default' => false,
+        // ],
     ],
 
     // 主菜单

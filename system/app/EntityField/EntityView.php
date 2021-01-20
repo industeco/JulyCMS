@@ -2,7 +2,9 @@
 
 namespace App\EntityField;
 
-class EntityView extends FieldBase
+use App\Model;
+
+class EntityView extends Model
 {
     /**
      * 与模型关联的表名

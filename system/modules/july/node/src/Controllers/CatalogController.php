@@ -3,7 +3,7 @@
 namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Utils\Arr;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use July\Node\Catalog;

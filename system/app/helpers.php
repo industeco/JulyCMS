@@ -1,8 +1,7 @@
 <?php
 
-use App\Language\Lang;
+use App\Utils\Lang;
 use App\Utils\Types;
-use App\Utils\State;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Str;
 
@@ -69,7 +68,7 @@ if (! function_exists('lang')) {
      * 获取语言操作对象
      *
      * @param  string|null $alias
-     * @return \App\Language\Lang
+     * @return \App\Utils\Lang
      */
     function lang(?string $alias = null)
     {
@@ -243,24 +242,3 @@ if (! function_exists('safe_get_contents')) {
         return is_file($file) ? file_get_contents($file) : '';
     }
 }
-
-// if (! function_exists('state')) {
-//     /**
-//      * @param  string|array|null $key
-//      * @return mixed
-//      */
-//     function state($key = null)
-//     {
-//         if (is_null($key)) {
-//             return new State;
-//         }
-
-//         if (is_array($key)) {
-//             foreach ($key as $k => $v) {
-//                 State::set($k, $v);
-//             }
-//         }
-
-//         return State::get($key);;
-//     }
-// }

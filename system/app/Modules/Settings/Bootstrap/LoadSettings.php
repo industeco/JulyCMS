@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Settings\Bootstrap;
+namespace App\Modules\Settings\Bootstrap;
 
-use App\Settings\SettingsManager;
+use App\Modules\Settings\SettingsManager;
 use Illuminate\Contracts\Foundation\Application;
 
 class LoadSettings

@@ -15,13 +15,13 @@ return [
 
     // 可用语言（代码）列表
     'available' => [
-        'zh-Hans' => [
-            'accessible' => false,   // 前端可访问该语言页面
-            'translatable' => false, // 内容可翻译为该语言
-        ],
         'en' => [
             'accessible' => true,   // 前端可访问该语言页面
             'translatable' => true, // 内容可翻译为该语言
+        ],
+        'zh-Hans' => [
+            'accessible' => false,
+            'translatable' => false,
         ],
     ],
 

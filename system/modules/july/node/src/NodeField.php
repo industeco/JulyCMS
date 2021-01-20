@@ -6,14 +6,16 @@ use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use App\EntityField\FieldBase as EntityFieldBase;
 use App\EntityField\FieldParameters;
-use App\EntityField\FieldType;
+use App\EntityField\FieldTypes\FieldTypeManager;
 
 class NodeField extends EntityFieldBase
 {
     /**
-     * 宿主实体的实体名
+     * 绑定实体的实体名
+     *
+     * @var string|null
      */
-    protected static $hostEntityName = 'node';
+    protected $boundEntityName = 'node';
 
     /**
      * 与模型关联的表名
@@ -93,49 +95,49 @@ class NodeField extends EntityFieldBase
                     ]);
     }
 
-    /**
-     * 将预设类型转换为文字
-     *
-     * @param  string|int
-     * @return string
-     */
-    public function getPresetTypeAttribute($presetType)
-    {
-        return array_flip(static::PRESET_TYPE)[$presetType] ?? 'normal';
-    }
+    // /**
+    //  * 将预设类型转换为文字
+    //  *
+    //  * @param  string|int
+    //  * @return string
+    //  */
+    // public function getPresetTypeAttribute($presetType)
+    // {
+    //     return array_flip(static::PRESET_TYPE)[$presetType] ?? 'normal';
+    // }
 
-    /**
-     * 限定仅查询常规字段
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeNormalFields($query)
-    {
-        return $query->where('preset_type', static::PRESET_TYPE['normal']);
-    }
+    // /**
+    //  * 限定仅查询常规字段
+    //  *
+    //  * @param  \Illuminate\Database\Eloquent\Builder  $query
+    //  * @return \Illuminate\Database\Eloquent\Builder
+    //  */
+    // public function scopeNormalFields($query)
+    // {
+    //     return $query->where('preset_type', static::PRESET_TYPE['normal']);
+    // }
 
-    /**
-     * 限定仅查询预设字段
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopePresetFields($query)
-    {
-        return $query->where('preset_type', static::PRESET_TYPE['preset']);
-    }
+    // /**
+    //  * 限定仅查询预设字段
+    //  *
+    //  * @param  \Illuminate\Database\Eloquent\Builder  $query
+    //  * @return \Illuminate\Database\Eloquent\Builder
+    //  */
+    // public function scopePresetFields($query)
+    // {
+    //     return $query->where('preset_type', static::PRESET_TYPE['preset']);
+    // }
 
-    /**
-     * 限定仅查询全局预设字段
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeGlobalFields($query)
-    {
-        return $query->where('preset_type', static::PRESET_TYPE['global']);
-    }
+    // /**
+    //  * 限定仅查询全局预设字段
+    //  *
+    //  * @param  \Illuminate\Database\Eloquent\Builder  $query
+    //  * @return \Illuminate\Database\Eloquent\Builder
+    //  */
+    // public function scopeGlobalFields($query)
+    // {
+    //     return $query->where('preset_type', static::PRESET_TYPE['global']);
+    // }
 
     /**
      * 限定仅查询全局预设字段
@@ -225,7 +227,8 @@ class NodeField extends EntityFieldBase
         if (!$materials || $materials['created_at'] < $lastModified) {
             $materials = [];
             foreach (static::takeGlobalFieldsInfo() as $field) {
-                $materials[$field['id']] = FieldType::findOrFail($field['field_type_id'])->getMaterials($field);
+                $field = NodeField::make($field);
+                $materials[$field['id']] = FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials();
             }
             $materials = [
                 'created_at' => time(),

@@ -3,8 +3,9 @@
 namespace App\EntityField;
 
 use App\Entity\EntityManager;
+use App\Model;
 
-class EntityPathAlias extends FieldBase
+class EntityPathAlias extends Model
 {
     /**
      * 与模型关联的表名

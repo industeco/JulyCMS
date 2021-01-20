@@ -1,10 +1,10 @@
 <?php
 
-namespace App\EntityField\FieldTypeDefinitions;
+namespace App\EntityField\FieldTypes;
 
 use App\EntityField\FieldBase;
 
-interface DefinitionInterface
+interface FieldTypeInterface
 {
     /**
      * 获取指定属性

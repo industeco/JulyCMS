@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Language;
+namespace App\Utils;
 
 class Lang
 {
@@ -26,7 +26,7 @@ class Lang
      * 快捷创建 Lang 对象
      *
      * @param  string|null $alias
-     * @return \App\Language\Lang
+     * @return \App\Utils\Lang
      */
     public static function make(?string $alias = null)
     {
@@ -37,7 +37,7 @@ class Lang
      * 更换缺省语言代码
      *
      * @param  string $alias
-     * @return \App\Language\Lang
+     * @return \App\Utils\Lang
      */
     public function wrap(string $alias)
     {

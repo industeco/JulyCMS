@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Settings;
+namespace App\Modules\Settings;
 
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Support\Arr;

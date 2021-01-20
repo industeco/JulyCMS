@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Language\Bootstrap;
+namespace App\Bootstrap;
 
 use Illuminate\Contracts\Foundation\Application;
 

@@ -2,7 +2,6 @@
 
 namespace Specs;
 
-use App\Contracts\PocketableInterface;
 use App\Utils\Pocket;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;

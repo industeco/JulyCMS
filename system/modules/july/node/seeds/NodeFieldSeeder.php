@@ -145,7 +145,7 @@ class NodeFieldSeeder extends SeederBase
             [
                 'field_id' => 'template',
                 'parameters' => [
-                    'placeholder' => '/home.twig',
+                    'placeholder' => 'home.twig',
                 ],
             ],
         ];

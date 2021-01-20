@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Modules\Translation\TranslatableInterface;
 use App\Model as AppModel;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -14,23 +15,18 @@ use App\EntityField\PathView;
 use App\EntityField\PathAlias;
 use App\Entity\Linkage\LinkageBase;
 use App\EntityField\EntityFieldBase;
-use Twig\Environment as Twig;
+use App\Modules\Translation\TranslatableTrait;
 
-abstract class EntityBase extends AppModel
+abstract class EntityBase extends AppModel implements TranslatableInterface
 {
+    use TranslatableTrait;
+
     /**
      * 内建属性登记处
      *
      * @var array
      */
     protected static $columns = [];
-
-    /**
-     * 实体的当前语言版本
-     *
-     * @var string|null
-     */
-    protected $contentLangcode = null;
 
     /**
      * 新建或更新时传入的原始数据
@@ -137,51 +133,6 @@ abstract class EntityBase extends AppModel
     // }
 
     /**
-     * 设置当前实例语言版本
-     *
-     * @param  string $langcode 语言代码
-     * @return $this
-     */
-    public function translateTo(string $langcode)
-    {
-        $this->contentLangcode = $langcode;
-
-        return $this;
-    }
-
-    /**
-     * 获取当前实例的语言
-     *
-     * @return string|null
-     */
-    public function getLangcode()
-    {
-        return $this->contentLangcode;
-
-        // if ($this->isTranslatable()) {
-        //     return $this->contentLangcode ?: $this->contentLangcode = $this->getColumnValue('langcode');
-        // }
-
-        // return null;
-    }
-
-    /**
-     * 获取当前实例的语言
-     *
-     * @return string|null
-     */
-    public function getDefaultLangcode()
-    {
-        return $this->attributes['langcode'] ?? 'zxx';
-
-        // if ($this->isTranslatable()) {
-        //     return $this->contentLangcode ?: $this->contentLangcode = $this->getColumnValue('langcode');
-        // }
-
-        // return null;
-    }
-
-    /**
      * 获取实体路径别名（网址）
      *
      * @param  string|null $langcode 语言版本
@@ -222,9 +173,9 @@ abstract class EntityBase extends AppModel
     /**
      * 获取实体类型
      *
-     * @return \App\Entity\EntityBundleBase|null
+     * @return \App\Entity\EntityMoldBase|null
      */
-    public function getBundle()
+    public function getMold()
     {
         return null;
     }

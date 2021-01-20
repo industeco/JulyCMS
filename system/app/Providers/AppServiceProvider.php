@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\EntityField\FieldTypes\FieldTypeManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -15,8 +16,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // 注册 twig 单例
         $this->registerTwig();
+
+        // 登记字段类型
+        $this->registerFieldTypes();
     }
 
     /**
@@ -47,5 +51,15 @@ class AppServiceProvider extends ServiceProvider
 
             return $twig;
         });
+    }
+
+    /**
+     * 登记字段类型
+     */
+    protected function registerFieldTypes()
+    {
+        foreach (config('app.field_types') as $class) {
+            FieldTypeManager::register($class);
+        }
     }
 }

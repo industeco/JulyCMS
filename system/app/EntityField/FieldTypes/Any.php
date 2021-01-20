@@ -1,15 +1,29 @@
 <?php
 
-namespace App\EntityField\FieldTypeDefinitions;
+namespace App\EntityField\FieldTypes;
 
-class Any extends DefinitionBase
+class Any extends FieldTypeBase
 {
-    protected $attributes = [
-        'id' => 'any',
-        'label' => '空类型',
-        'description' => '不预设任何参数，需要在模板中具体设置',
-        'schema' => [],
-    ];
+    /**
+     * 字段类型 id
+     *
+     * @var string
+     */
+    protected $id = 'any';
+
+    /**
+     * 字段类型标签
+     *
+     * @var string
+     */
+    protected $label = '空类型';
+
+    /**
+     * 字段类型描述
+     *
+     * @var string|null
+     */
+    protected $description = '不预设任何参数，需要在模板中具体设置';
 
     /**
      * {@inheritdoc}

@@ -1,26 +1,31 @@
 <?php
 
-namespace App\EntityField\FieldTypeDefinitions;
+namespace App\EntityField\FieldTypes;
 
 use Illuminate\Support\Facades\Log;
 
-class Text extends DefinitionBase
+class Text extends FieldTypeBase
 {
-    protected $attributes = [
-        'id' => 'text',
-        'label' => '文字',
-        'description' => '适用于无格式内容',
-        'schema' => [
-            'maxlength' => [
-                'default' => 200,
-            ],
-            'pattern',
-            'placeholder',
-            'default',
-            'options',
-            'helptext',
-        ],
-    ];
+    /**
+     * 字段类型 id
+     *
+     * @var string
+     */
+    protected $id = 'text';
+
+    /**
+     * 字段类型标签
+     *
+     * @var string
+     */
+    protected $label = '文字';
+
+    /**
+     * 字段类型描述
+     *
+     * @var string|null
+     */
+    protected $description = '适用于无格式内容';
 
     /**
      * {@inheritdoc}

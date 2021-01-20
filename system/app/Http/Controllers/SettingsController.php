@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Settings\SettingsManager;
+use App\Modules\Settings\SettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

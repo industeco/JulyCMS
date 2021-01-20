@@ -2,7 +2,7 @@
 
 namespace July\Node;
 
-use App\Utils\Arr;
+use Illuminate\Support\Arr;
 use App\Entity\EntitySetBase;
 
 class CatalogSet extends EntitySetBase

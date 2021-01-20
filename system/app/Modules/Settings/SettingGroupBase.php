@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Settings;
+namespace App\Modules\Settings;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\View;

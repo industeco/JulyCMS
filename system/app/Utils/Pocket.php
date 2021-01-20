@@ -2,8 +2,9 @@
 
 namespace App\Utils;
 
-use App\Contracts\PocketableInterface;
-use App\Contracts\TranslatableInterface;
+use App\Entity\EntityBase;
+use App\Utils\PocketableInterface;
+use App\Modules\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -86,10 +87,15 @@ class Pocket
         if (is_object($subject)) {
             if ($subject instanceof PocketableInterface) {
                 $prefix = $subject->getPocketId();
+            } elseif ($subject instanceof EntityBase) {
+                $prefix = str_replace('\\', '/', $subject->getEntityPath());
             } elseif ($subject instanceof Model) {
                 $prefix = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
-                if ($subject instanceof TranslatableInterface ) {
-                    $prefix .= '/'.$subject->getLangcode();
+            }
+            if ($subject instanceof TranslatableInterface) {
+                $langcode = '/'.$subject->getLangcode();
+                if (! Str::endsWith($prefix, $langcode)) {
+                    $prefix .= $langcode;
                 }
             }
         }
@@ -168,74 +174,4 @@ class Pocket
     {
         return Cache::forget($this->pockey->value());
     }
-
-    // /**
-    //  * 判断是否 Pocket Key
-    //  *
-    //  * @param  mixed $key
-    //  * @return bool
-    //  */
-    // protected function isPockey($key)
-    // {
-    //     if (!is_object($key) || !($key instanceof Value)) {
-    //         return false;
-    //     }
-
-    //     $key = $key->value();
-    //     return is_string($key) &&
-    //         preg_match('/^[a-f0-9]{16}\/[a-f0-9]{16}$/', $key) &&
-    //         Str::startsWith($key, $this->prefix);
-    // }
-
-    // /**
-    //  * 指定使用主体上的哪个方法执行 takeout
-    //  *
-    //  * @param  string $method
-    //  * @return $this
-    //  */
-    // public function takeoutUse(string $method)
-    // {
-    //     $this->takeoutMethod = $method;
-
-    //     return $this;
-    // }
-
-    // /**
-    //  * 取出缓存的数据
-    //  *
-    //  * @param  string $key
-    //  * @param  array $parameters 其它参数
-    //  * @return mixed
-    //  */
-    // public function takeout(string $key, array $parameters = [])
-    // {
-    //     if ($value = $this->get($key)) {
-    //         return $value;
-    //     }
-
-    //     $method = $this->takeoutMethod ?: 'retrieve'.Str::studly($key);
-    //     return tap($this->callSubject($method, $parameters), function($value) use ($key) {
-    //         $this->put($key, $value);
-    //     });
-    // }
-
-    // /**
-    //  * 调用 subject 上的方法
-    //  *
-    //  * @param  string $method
-    //  * @param  array $parameters
-    //  * @return mixed
-    //  */
-    // protected function callSubject(string $method, array $parameters)
-    // {
-    //     if (is_object($this->subject)) {
-    //         return optional($this->subject)->$method(...$parameters);
-    //     }
-
-    //     if (is_string($this->subject) && class_exists($this->subject)) {
-    //         return optional(new $this->subject)->$method(...$parameters);
-    //     }
-
-    //     return null;
-    // }
 }

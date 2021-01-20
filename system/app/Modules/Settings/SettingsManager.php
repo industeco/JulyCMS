@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Settings;
+namespace App\Modules\Settings;
 
 class SettingsManager
 {
     /**
      * 登记的配置组
      *
-     * @var \App\Settings\SettingGroupBase[]
+     * @var \App\Modules\Settings\SettingGroupBase[]
      */
     protected static $groups = [];
 
@@ -20,7 +20,7 @@ class SettingsManager
     public static function load(string $class)
     {
         if (class_exists($class)) {
-            /** @var \App\Settings\SettingGroupBase */
+            /** @var \App\Modules\Settings\SettingGroupBase */
             $group = new $class;
 
             // 加载配置组
@@ -47,7 +47,7 @@ class SettingsManager
      * 查找配置组
      *
      * @param  string $name
-     * @return \App\Settings\SettingGroupBase|null
+     * @return \App\Modules\Settings\SettingGroupBase|null
      */
     public static function resolve(string $name)
     {

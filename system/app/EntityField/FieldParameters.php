@@ -20,9 +20,9 @@ class FieldParameters extends Model
      * @var array
      */
     protected $fillable = [
-        'field_id',
         'entity_name',
-        'bundle_name',
+        'field_id',
+        'mold_id',
         'langcode',
         'parameters',
     ];

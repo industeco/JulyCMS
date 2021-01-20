@@ -65,17 +65,6 @@ class Node extends EntityBase
     ];
 
     /**
-     * 外联属性登记处
-     *
-     * @var array
-     */
-    protected static $links = [
-        'url' => PathAliasLinkage::class,
-        'template' => PartialViewLinkage::class,
-        // 'catalog_positions' => CatalogPositionsLinkage::class,
-    ];
-
-    /**
      * {@inheritdoc}
      */
     public static function getBundleName()

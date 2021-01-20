@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Settings;
+namespace App\Modules\Settings;
 
 class SiteInformation extends SettingGroupBase
 {

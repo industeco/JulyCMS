@@ -16,7 +16,7 @@ class CreateFieldParametersTable extends Migration
         Schema::create('field_parameters', function (Blueprint $table) {
             $table->id();
 
-            // 字段/铸模所属的实体名
+            // 字段/铸模所绑定实体的实体名
             $table->string('entity_name');
 
             // 字段 id
