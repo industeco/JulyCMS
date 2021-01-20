@@ -3,21 +3,19 @@
 namespace App\Entity;
 
 use App\Modules\Translation\TranslatableInterface;
-use App\Model as AppModel;
+use App\Model;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\EntityField\PathView;
 use App\EntityField\PathAlias;
-use App\Entity\Linkage\LinkageBase;
-use App\EntityField\EntityFieldBase;
+use App\EntityField\FieldBase;
 use App\Modules\Translation\TranslatableTrait;
 
-abstract class EntityBase extends AppModel implements TranslatableInterface
+abstract class EntityBase extends Model implements TranslatableInterface
 {
     use TranslatableTrait;
 
@@ -43,16 +41,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     public static function getEntityName()
     {
         return Str::snake(class_basename(static::class));
-    }
-
-    /**
-     * 获取实体类型的实体名
-     *
-     * @return string|null
-     */
-    public static function getBundleName()
-    {
-        return null;
     }
 
     /**
@@ -112,26 +100,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
         }
     }
 
-    // /**
-    //  * 是否可翻译
-    //  *
-    //  * @return bool
-    //  */
-    // public function isTranslatable()
-    // {
-    //     return $this->hasColumn('langcode');
-    // }
-
-    // /**
-    //  * 判断是否已翻译
-    //  *
-    //  * @return bool
-    //  */
-    // public function isTranslated()
-    // {
-    //     return $this->isTranslatable() && $this->contentLangcode !== $this->getColumnValue('langcode');
-    // }
-
     /**
      * 获取实体路径别名（网址）
      *
@@ -173,12 +141,9 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     /**
      * 获取实体类型
      *
-     * @return \App\Entity\EntityMoldBase|null
+     * @return \App\Entity\EntityMoldBase
      */
-    public function getMold()
-    {
-        return null;
-    }
+    abstract public function getMold();
 
     /**
      * 判断是否包含名为 {$key} 的实体属性
@@ -188,7 +153,7 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
      */
     public function hasEntityAttribute(string $key)
     {
-        return $this->hasColumn($key) || $this->hasLink($key) || $this->hasField($key);
+        return $this->hasColumn($key) || $this->hasField($key);
     }
 
     /**
@@ -208,11 +173,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
             return $this->getColumnValue($key);
         }
 
-        // 尝试外联属性
-        elseif ($this->hasLink($key)) {
-            return $this->getLinkValue($key);
-        }
-
         // 尝试实体字段
         elseif ($this->hasField($key)) {
             return $this->getFieldValue($key);
@@ -230,7 +190,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     {
         return array_merge(
             $this->columnsToArray(),
-            $this->linksToArray(),
             $this->fieldsToArray()
         );
     }
@@ -273,37 +232,14 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     }
 
     /**
-     * 获取外联属性名表
-     *
-     * @return array
-     */
-    public function getLinkKeys()
-    {
-        if (is_array($keys = self::$keysCache['links'][static::class] ?? null)) {
-            return $keys;
-        }
-
-        $keys = array_keys(self::$registeredLinks[static::class] ?? []);
-
-        return self::$keysCache['links'][static::class] = $keys;;
-    }
-
-    /**
      * 获取字段属性名表
      *
      * @return array
      */
     public function getFieldKeys()
     {
-        if (! static::getBundleName()) {
-            return [];
-        }
-
-        if ($bundle = $this->getBundle()) {
-            $key = $bundle->getEntityPath();
-        } else {
-            $key = static::class;
-        }
+        $mold = $this->getMold();
+        $key = str_replace('\\', '/', get_class($mold)).'/'.$mold->getKey();
 
         if (is_array($keys = self::$keysCache['fields'][$key] ?? null)) {
             return $keys;
@@ -326,40 +262,18 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
      */
     public function collectColumns()
     {
-        // $attributes = collect([$this->getKeyName(), 'langcode']);
-        // if ($this->timestamps) {
-        //     $attributes = $attributes->merge([
-        //         $this->getUpdatedAtColumn(),
-        //         $this->getCreatedAtColumn(),
-        //     ]);
-        // }
-
         $columns = $this->getColumnKeys();
-        // static::$columns ?: $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-
         return collect($columns)->combine($columns);
     }
 
     /**
      * 获取实体字段对象集
      *
-     * @return \Illuminate\Support\Collection|\App\EntityField\EntityFieldBase[]
+     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
      */
     public function collectFields()
     {
         return collect();
-    }
-
-    /**
-     * 获取外联属性集
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    final public function collectLinks()
-    {
-        return collect(self::$registeredLinks[static::class] ?? [])->map(function ($linkageClass) {
-            return $linkageClass::make($this);
-        });
     }
 
     /**
@@ -385,17 +299,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     }
 
     /**
-     * 判断是否包含名为 {$key} 的外联属性
-     *
-     * @param  string $key 属性名
-     * @return bool
-     */
-    public function hasLink(string $key)
-    {
-        return in_array($key, $this->getLinkKeys());
-    }
-
-    /**
      * 获取内建属性的值
      *
      * @param  string $key
@@ -404,20 +307,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     public function getColumnValue(string $key)
     {
         return $this->transformAttributeValue($key, $this->attributes[$key] ?? null);
-    }
-
-    /**
-     * 获取附加属性的值
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function getLinkValue(string $key)
-    {
-        /** @var \App\Entity\Linkage\LinkageBase */
-        $linkage = $this->collectLinks()->get($key);
-
-        return $this->transformAttributeValue($key, $linkage->getValue());
     }
 
     /**
@@ -454,25 +343,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     }
 
     /**
-     * 获取所有附加属性的值
-     *
-     * @return array
-     */
-    public function linksToArray()
-    {
-        if (is_array($attributes = $this->cacheGetAttributes('links'))) {
-            return $attributes;
-        }
-
-        $attributes = [];
-        foreach ($this->collectLinks() as $key => $linkAccessor) {
-            $attributes[$key] = $linkAccessor::make($this)->getValue();
-        }
-
-        return $this->cachePutAttributes('links', $this->transformAttributesArray($attributes));
-    }
-
-    /**
      * 收集所有字段属性并化为数组
      *
      * @return array
@@ -489,17 +359,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
         }
 
         return $this->cachePutAttributes('fields', $this->transformAttributesArray($attributes));
-    }
-
-    /**
-     * 登记外联属性
-     *
-     * @param  array $links
-     * @return void
-     */
-    final public static function registerLinks(array $links)
-    {
-        self::$registeredLinks[static::class] = array_merge(self::$registeredLinks[static::class] ?? [], $links);
     }
 
     /**
@@ -621,20 +480,6 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
     }
 
     /**
-     * 更新外联属性
-     *
-     * @return void
-     */
-    protected function updateLinks()
-    {
-        foreach ($this->collectLinks() as $key => $accessor) {
-            if (array_key_exists($key, $this->raw)) {
-                $accessor::make($this)->setValue($this->raw[$key]);
-            }
-        }
-    }
-
-    /**
      * 更新实体字段
      *
      * @return void
@@ -665,8 +510,7 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
      */
     public function retrieveHtml()
     {
-        $pocket = new Pocket($this);
-        $pocket->useKey('html');
+        $pocket = new Pocket($this, 'html');
 
         if ($html = $pocket->get()) {
             return $html->value();
@@ -709,29 +553,13 @@ abstract class EntityBase extends AppModel implements TranslatableInterface
         return EntityManager::resolveName($class) ?? $class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPocketId()
-    {
-        return 'entity::'.$this->getEntityPath().'/'.$this->getLangcode();
-        // return str_replace('\\', '/', static::class).'/'.$this->getEntityId();
-    }
-
     public static function boot()
     {
         parent::boot();
 
-        // 将实体本地的外联属性登记到 $registeredLinks
-        static::registerLinks(static::$links);
-
         static::deleting(function(EntityBase $entity) {
-            $entity->collectFields()->each(function (EntityFieldBase $field) {
+            $entity->collectFields()->each(function (FieldBase $field) {
                 $field->deleteValue();
-            });
-
-            $entity->collectLinks()->each(function (LinkageBase $linkage) {
-                $linkage->deleteValue();
             });
         });
     }

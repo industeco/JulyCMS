@@ -3,7 +3,6 @@
 namespace App\Utils;
 
 use App\Entity\EntityBase;
-use App\Utils\PocketableInterface;
 use App\Modules\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -31,7 +30,7 @@ class Pocket
      *
      * @var \App\Utils\Value
      */
-    protected $pockey;
+    protected $key;
 
     // /**
     //  * 执行 takeout 动作的实际方法
@@ -85,21 +84,17 @@ class Pocket
     {
         $prefix = $subject;
         if (is_object($subject)) {
-            if ($subject instanceof PocketableInterface) {
-                $prefix = $subject->getPocketId();
-            } elseif ($subject instanceof EntityBase) {
+            if ($subject instanceof EntityBase) {
                 $prefix = str_replace('\\', '/', $subject->getEntityPath());
             } elseif ($subject instanceof Model) {
                 $prefix = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
+            } else {
+                $prefix = str_replace('\\', '/', get_class($subject));
             }
             if ($subject instanceof TranslatableInterface) {
-                $langcode = '/'.$subject->getLangcode();
-                if (! Str::endsWith($prefix, $langcode)) {
-                    $prefix .= $langcode;
-                }
+                $prefix .= '/'.$subject->getLangcode();
             }
         }
-
         return short_md5(serialize($prefix)).'/';
     }
 
@@ -110,7 +105,7 @@ class Pocket
      */
     public function getKey()
     {
-        return $this->pockey;
+        return $this->key;
     }
 
     /**
@@ -129,9 +124,20 @@ class Pocket
             asort($key);
         }
 
-        $this->pockey = new Value($this->prefix.short_md5(serialize($key)));
+        $this->key = new Value($this->prefix.short_md5(serialize($key)));
 
         return $this;
+    }
+
+    /**
+     * 生成 Cache Key
+     *
+     * @param mixed $key
+     * @return $this
+     */
+    public function keyBy($key)
+    {
+        return $this->useKey($key);
     }
 
     /**
@@ -146,7 +152,7 @@ class Pocket
             $value = $value->value();
         }
 
-        return Cache::put($this->pockey->value(), $value);
+        return Cache::put($this->key->value(), $value);
     }
 
     /**
@@ -156,7 +162,7 @@ class Pocket
      */
     public function get()
     {
-        $value = Cache::get($this->pockey->value(), $this);
+        $value = Cache::get($this->key->value(), $this);
         if ($value === $this) {
             return null;
         }
@@ -172,6 +178,6 @@ class Pocket
      */
     public function clear()
     {
-        return Cache::forget($this->pockey->value());
+        return Cache::forget($this->key->value());
     }
 }
