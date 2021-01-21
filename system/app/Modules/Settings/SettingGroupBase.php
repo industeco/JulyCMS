@@ -2,9 +2,6 @@
 
 namespace App\Modules\Settings;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\View;
-
 abstract class SettingGroupBase
 {
     /**
@@ -119,7 +116,7 @@ abstract class SettingGroupBase
      */
     protected function getPath()
     {
-        return base_path('settings/'.$this->name.'.php');
+        return storage_path('settings/'.$this->name.'.php');
     }
 
     public function __get($name)

@@ -217,7 +217,7 @@ class NodeField extends EntityFieldBase
     public static function takeGlobalFieldMaterials(?string $langcode = null)
     {
         $langcode = $langcode ?? langcode('content');
-        $pocket = Pocket::make(static::class)->useKey('global_field_materials/'.$langcode);
+        $pocket = Pocket::make(static::class)->setKey('global_field_materials/'.$langcode);
 
         if ($materials = $pocket->get()) {
             $materials = $materials->value();

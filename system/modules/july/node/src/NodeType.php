@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Log;
 use App\Entity\EntityBundleBase;
 use App\EntityField\FieldType;
 use App\EntityField\FieldParameters;
+use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Model;
 
-class NodeType extends EntityBundleBase implements GetNodesInterface
+class NodeType extends Model implements GetNodesInterface
 {
     /**
      * 与模型关联的表名
@@ -125,10 +127,9 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
     {
         $langcode = $langcode ?: langcode('content');
 
-        $pocket = new Pocket($this);
-        $key = 'field_materials/'.$langcode;
+        $pocket = new Pocket($this, 'field_materials');
 
-        if ($materials = $pocket->get($key)) {
+        if ($materials = $pocket->get()) {
             $materials = $materials->value();
         }
 
@@ -136,7 +137,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
         if (!$materials || $materials['created_at'] < $modified) {
             $materials = [];
             foreach ($this->fields as $field) {
-                $materials[$field->id] = FieldType::findOrFail($field)->translateTo($langcode)->getMaterials();
+                $materials[$field->id] = FieldTypeManager::findOrFail($field->translateTo($langcode))->getMaterials();
             }
 
             $materials = [
@@ -144,7 +145,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
                 'materials' => $materials,
             ];
 
-            $pocket->put($key, $materials);
+            $pocket->put($materials);
         }
 
         return $materials['materials'];
@@ -161,14 +162,7 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
         // Log::info($data);
         $langcode = langcode('content');
 
-        $pocket = new Pocket($this);
-
-        $pocket->clear('field_ids');
-        // $pocket->clear('fields_info/'.$langcode);
-
-        // 清除碎片缓存
-        // $this->cacheClear(['key'=>'fields', 'langcode'=>$langcode]);
-        // $this->cacheClear(['key'=>'fieldJigsaws', 'langcode'=>$langcode]);
+        Pocket::make($this, 'field_ids')->clear();
 
         DB::beginTransaction();
 
@@ -182,14 +176,15 @@ class NodeType extends EntityBundleBase implements GetNodesInterface
         foreach ($data as $index => $field) {
             $fields[$field['id']] = [
                 'delta' => $index,
-                // 'weight' => $field['weight'] ?? 1,
                 'label' => $field['label'] ?? null,
                 'description' => $field['description'] ?? null,
+                'is_required' => boolval($field['is_required'] ?? false),
+                'helpertext' => $field['helpertext'] ?? null,
             ];
 
             FieldParameters::updateOrCreate(
                 ['field_id' => $field['id']] + $shared,
-                ['parameters' => FieldType::findOrFail($field['field_type_id'])->extractParameters($field)]
+                ['parameters' => FieldTypeManager::findOrFail($field['field_type_id'])->extractParameters($field)]
             );
         }
         // Log::info($fields);

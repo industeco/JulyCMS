@@ -2,29 +2,28 @@
 
 namespace App\Entity;
 
+use App\EntityField\EntityPathAlias;
+use App\EntityField\EntityView;
+use App\EntityField\FieldBase;
 use App\Modules\Translation\TranslatableInterface;
+use App\Modules\Translation\TranslatableTrait;
 use App\Model;
 use App\Utils\Pocket;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\EntityField\PathView;
-use App\EntityField\PathAlias;
-use App\EntityField\FieldBase;
-use App\Modules\Translation\TranslatableTrait;
 
 abstract class EntityBase extends Model implements TranslatableInterface
 {
     use TranslatableTrait;
 
     /**
-     * 内建属性登记处
+     * 实体字段 id 缓存
      *
      * @var array
      */
-    protected static $columns = [];
+    protected static $fields = [];
 
     /**
      * 新建或更新时传入的原始数据
@@ -64,86 +63,67 @@ abstract class EntityBase extends Model implements TranslatableInterface
     }
 
     /**
-     * 查找实体
-     *
-     * @param  mixed  $id
-     * @param  array  $columns
-     * @return static|null
-     */
-    public static function find($id, array $columns = ['*'])
-    {
-        $instance = new static;
-
-        return $instance->forwardCallTo($instance->newQuery(), 'find', [$id, $columns]);
-    }
-
-    /**
-     * 查找实体，找不到则抛出错误
-     *
-     * @param  mixed  $id
-     * @param  array  $columns
-     * @return static
-     *
-     * @throws \App\Entity\Exceptions\EntityNotFoundException
-     */
-    public static function findOrFail($id, array $columns = ['*'])
-    {
-        try {
-            $instance = new static;
-
-            return $instance->forwardCallTo($instance->newQuery(), 'findOrFail', [$id, $columns]);
-        } catch (\Throwable $th) {
-            if ($th instanceof ModelNotFoundException) {
-                $th = Exceptions\EntityNotFoundException::wrap($th);
-            }
-            throw $th;
-        }
-    }
-
-    /**
      * 获取实体路径别名（网址）
      *
-     * @param  string|null $langcode 语言版本
      * @return string|null
      */
-    public function getPathAlias(string $langcode = null)
+    public function getPathAlias()
     {
-        if ($item = PathAlias::query()->where([
-                'path' => $this->getEntityPath(),
-                'langcode' => $langcode ?? $this->getLangcode(),
-            ])->first()) {
-
-            return $item->alias;
-        }
-
-        return null;
+        return EntityPathAlias::findAlias($this);
     }
 
     /**
-     * 获取实体的渲染模板
+     * 获取实体视图
      *
-     * @param  string|null $langcode 语言版本
      * @return string|null
      */
-    public function getPartialView(string $langcode = null)
+    public function getView()
     {
-        if ($item = PartialView::query()->where([
-                'path' => $this->getEntityPath(),
-                'langcode' => $langcode ?? $this->getLangcode(),
-            ])->first()) {
+        return EntityView::findView($this);
+    }
 
-            return $item->view;
-        }
+    /**
+     * 获取实体类型类
+     *
+     * @return string
+     */
+    abstract public static function getMoldClass();
 
-        return null;
+    /**
+     * 获取实体类型类
+     *
+     * @return string
+     */
+    public static function getMoldForeignKeyName()
+    {
+        return 'mold_id';
+    }
+
+    /**
+     * 实体所属类型
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function mold()
+    {
+        return $this->belongsTo($this->getMorphClass(), $this->getMoldForeignKeyName());
     }
 
     /**
      * 获取实体类型
      *
-     * @return \App\Entity\EntityMoldBase
+     * @return \App\Entity\EntityMoldBase|null
      */
-    abstract public function getMold();
+    public function getMold()
+    {
+        if ($this->exists) {
+            return $this->mold;
+        } elseif ($mold_id = $this->attributes['mold_id'] ?? null) {
+            $mold = $this->getMorphClass();
+            return $mold::find($mold_id);
+        }
+        return null;
+    }
 
     /**
      * 判断是否包含名为 {$key} 的实体属性
@@ -153,7 +133,7 @@ abstract class EntityBase extends Model implements TranslatableInterface
      */
     public function hasEntityAttribute(string $key)
     {
-        return $this->hasColumn($key) || $this->hasField($key);
+        return $key && ($this->hasColumn($key) || $this->hasField($key));
     }
 
     /**
@@ -212,219 +192,81 @@ abstract class EntityBase extends Model implements TranslatableInterface
     }
 
     /**
-     * 获取内建属性名表
-     *
-     * @return array
-     */
-    public function getColumnKeys()
-    {
-        if (is_array($keys = self::$keysCache['columns'][static::class] ?? null)) {
-            return $keys;
-        }
-
-        if (static::$columns) {
-            $keys = static::$columns;
-        } else {
-            $keys = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        }
-
-        return self::$keysCache['columns'][static::class] = $keys;
-    }
-
-    /**
-     * 获取字段属性名表
-     *
-     * @return array
-     */
-    public function getFieldKeys()
-    {
-        $mold = $this->getMold();
-        $key = str_replace('\\', '/', get_class($mold)).'/'.$mold->getKey();
-
-        if (is_array($keys = self::$keysCache['fields'][$key] ?? null)) {
-            return $keys;
-        }
-
-        $keys = [];
-        if (is_array($attributes = $this->cacheGetAttributes('fields'))) {
-            $keys = array_keys($attributes);
-        } else {
-            $keys = $this->collectFields()->keys()->all();
-        }
-
-        return self::$keysCache['fields'][$key] = $keys;
-    }
-
-    /**
      * 获取内建属性集
      *
      * @return \Illuminate\Support\Collection
      */
     public function collectColumns()
     {
-        $columns = $this->getColumnKeys();
+        $columns = $this->getColumns();
         return collect($columns)->combine($columns);
     }
+
+    /**
+     * 实体字段
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    abstract public function fields();
 
     /**
      * 获取实体字段对象集
      *
      * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
      */
-    public function collectFields()
-    {
-        return collect();
-    }
+    abstract public function collectFields();
 
     /**
-     * 判断是否包含名为 {$key} 的内建属性
+     * 获取字段属性名表
      *
-     * @param  string $key 属性名
-     * @return bool
+     * @return array
      */
-    public function hasColumn(string $key)
+    public function getFields()
     {
-        return in_array($key, $this->getColumnKeys());
+        if (empty($this->fields)) {
+            $this->fields = $this->collectFields()->keys()->all();
+        }
+        return $this->fields;
     }
 
     /**
-     * 判断是否包含名为 {$key} 的实体字段
+     * 判断实体字段是否存在
      *
      * @param  string $key 属性名
      * @return bool
      */
     public function hasField(string $key)
     {
-        return in_array($key, $this->getFieldKeys());
+        return in_array($key, $this->getFields());
     }
 
     /**
-     * 获取内建属性的值
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function getColumnValue(string $key)
-    {
-        return $this->transformAttributeValue($key, $this->attributes[$key] ?? null);
-    }
-
-    /**
-     * 获取实体字段的值
+     * 获取实体字段值
      *
      * @param  string $key 字段名
      * @return mixed
      */
     public function getFieldValue(string $key)
     {
-        /** @var \App\EntityField\EntityFieldBase */
+        /** @var \App\EntityField\FieldBase */
         $field = $this->collectFields()->get($key);
 
         return $this->transformAttributeValue($key, $field->getValue());
     }
 
     /**
-     * 获取所有内建属性
-     *
-     * @return array
-     */
-    public function columnsToArray()
-    {
-        if (is_array($attributes = $this->cacheGetAttributes('columns'))) {
-            return $attributes;
-        }
-
-        $attributes = [];
-        foreach ($this->getColumnKeys() as $key) {
-            $attributes[$key] = $this->attributes[$key] ?? null;
-        }
-
-        return $this->cachePutAttributes('columns', $this->transformAttributesArray($attributes));
-    }
-
-    /**
-     * 收集所有字段属性并化为数组
+     * 获取所有实体字段值
      *
      * @return array
      */
     public function fieldsToArray()
     {
-        if (is_array($attributes = $this->cacheGetAttributes('fields'))) {
-            return $attributes;
-        }
-
         $attributes = [];
         foreach ($this->collectFields() as $key => $field) {
             $attributes[$key] = $field->getValue();
         }
 
-        return $this->cachePutAttributes('fields', $this->transformAttributesArray($attributes));
-    }
-
-    /**
-     * 获取缓存的属性表
-     *
-     * @param  string $type 属性类型
-     * @return array|null
-     */
-    final protected function cacheGetAttributes(string $type)
-    {
-        return self::$attributesCache[$type][$this->getEntityPath()] ?? null;
-    }
-
-    /**
-     * 把属性表存入缓存
-     *
-     * @param  string $type 属性类型
-     * @param  array $attributes 属性表
-     * @return array
-     */
-    final protected function cachePutAttributes(string $type, array $attributes)
-    {
-        return self::$attributesCache[$type][$this->getEntityPath()] = $attributes;
-    }
-
-    /**
-     * 转换属性值
-     *
-     * @param  string $key
-     * @param  mixed $value
-     * @return mixed
-     */
-    protected function transformAttributeValue($key, $value)
-    {
-        return $this->transformModelValue($key, $value);
-    }
-
-    /**
-     * 转换属性数组
-     *
-     * @param  string $key
-     * @param  mixed $value
-     * @return mixed
-     */
-    protected function transformAttributesArray(array $attributes)
-    {
-        // If an attribute is a date, we will cast it to a string after converting it
-        // to a DateTime / Carbon instance. This is so we will get some consistent
-        // formatting while accessing attributes vs. arraying / JSONing a model.
-        $attributes = $this->addDateAttributesToArray(
-            $attributes = $this->getArrayableItems($attributes)
-        );
-
-        // Add the mutated attributes to the attributes array.
-        $attributes = $this->addMutatedAttributesToArray(
-            $attributes, $mutatedAttributes = $this->getMutatedAttributes()
-        );
-
-        // Handle any casts that have been setup for this model and cast
-        // the values to their appropriate type. If the attribute has a mutator we
-        // will not perform the cast on those attributes to avoid any confusion.
-        $attributes = $this->addCastAttributesToArray(
-            $attributes, $mutatedAttributes
-        );
-
-        return $attributes;
+        return $this->transformAttributesArray($attributes);
     }
 
     /**
@@ -470,7 +312,6 @@ abstract class EntityBase extends Model implements TranslatableInterface
         $saved = parent::save($options);
 
         DB::transaction(function () {
-            $this->updateLinks();
             $this->updateFields();
         });
 
@@ -550,7 +391,7 @@ abstract class EntityBase extends Model implements TranslatableInterface
             return $actualClass;
         }
 
-        return EntityManager::resolveName($class) ?? $class;
+        return EntityManager::resolve($class) ?? $class;
     }
 
     public static function boot()

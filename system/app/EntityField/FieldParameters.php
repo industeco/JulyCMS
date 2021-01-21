@@ -35,4 +35,20 @@ class FieldParameters extends Model
     protected $casts = [
         'parameters' => Serialized::class,
     ];
+
+    /**
+     * 采集字段所有相关参数，并以 langcode + mold_id 索引
+     *
+     * @param  \App\EntityField\FieldBase $field 字段
+     * @return \Illuminate\Support\Collection
+     */
+    public static function collect(FieldBase $field)
+    {
+        return static::query()
+            ->where(['entity_name' => $field->getBoundEntityName(), 'field_id' => $field->getKey()])
+            ->get()
+            ->keyBy(function($item) {
+                return $item->langcode.','.$item->mold_id;
+            });
+    }
 }

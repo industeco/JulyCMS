@@ -31,7 +31,7 @@ class GoogleSitemap
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>'.PHP_EOL;
 
-        $urls = Pocket::apply(static::class)->takeout('urls');
+        $urls = Pocket::make(static::class)->takeout('urls');
 
         // 生成 xml 内容
         foreach (Catalog::default()->get_nodes() as $node) {

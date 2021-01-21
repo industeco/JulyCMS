@@ -2,9 +2,11 @@
 
 namespace App\EntityField\FieldTypes;
 
+use App\Contracts\ManagerInterface;
 use App\EntityField\Exceptions\FieldTypeNotFoundException;
+use Illuminate\Support\Arr;
 
-class FieldTypeManager
+final class FieldTypeManager implements ManagerInterface
 {
     /**
      * 缓存的字段类型信息
@@ -14,15 +16,59 @@ class FieldTypeManager
     protected static $fieldTypes = [];
 
     /**
+     * 标记是否已处理 app.entities
+     *
+     * @var bool
+     */
+    protected static $discovered = false;
+
+    /**
      * 登记字段类型
      *
-     * @param  string $class
+     * @param  string|array $class
      * @return void
      */
-    public static function register(string $class)
+    public static function register($classes)
     {
-        if (class_exists($class)) {
-            static::$fieldTypes[$class::get('id')] = $class;
+        $classes = Arr::wrap($classes);
+        foreach ($classes as $class) {
+            if (class_exists($class)) {
+                static::$fieldTypes[$class::get('id')] = $class;
+            }
+        }
+    }
+
+    /**
+     * 获取字段类型定义类
+     *
+     * @param  string $id 类型定义 id
+     * @return string|null
+     */
+    public static function resolve(string $id)
+    {
+        return static::$fieldTypes[$id] ?? null;
+    }
+
+    /**
+     * 获取字段类型列表
+     *
+     * @return array
+     */
+    public static function all()
+    {
+        return static::$fieldTypes;
+    }
+
+    /**
+     * 将 config::app.field_types 登记到 $fieldTypes
+     *
+     * @return void
+     */
+    public static function discoverIfNotDiscovered()
+    {
+        if (! static::$discovered) {
+            static::register(config('app.field_types'));
+            static::$discovered = true;
         }
     }
 
@@ -34,7 +80,7 @@ class FieldTypeManager
      */
     public static function find(string $id)
     {
-        if ($class = static::$fieldTypes[$id] ?? null) {
+        if ($class = static::resolve($id)) {
             return new $class;
         }
         return null;
@@ -55,15 +101,5 @@ class FieldTypeManager
         }
 
         throw new FieldTypeNotFoundException();
-    }
-
-    /**
-     * 获取字段类型列表
-     *
-     * @return array
-     */
-    public static function all()
-    {
-        return static::$fieldTypes;
     }
 }

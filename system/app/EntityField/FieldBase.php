@@ -118,14 +118,42 @@ abstract class FieldBase extends Model implements TranslatableInterface
     }
 
     /**
-     * 获取字段参数
+     * is_required 属性可被实体类型覆写
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     * @param  bool|int $required
+     * @return bool
      */
-    public function fieldParameters()
+    public function getIsRequiredAttribute($required)
     {
-        return $this->morphMany(FieldParameters::class, null, 'entity_name', 'field_id');
+        if ($this->pivot) {
+            return (bool) ($this->pivot->is_required ?? $required);
+        }
+        return (bool) $required;
     }
+
+    /**
+     * helpertext 属性可被实体类型覆写
+     *
+     * @param  string|null $helpertext
+     * @return string
+     */
+    public function getHelpertextAttribute($helpertext)
+    {
+        if ($this->pivot) {
+            return (string) ($this->pivot->helpertext ?? $helpertext);
+        }
+        return (string) $helpertext;
+    }
+
+    // /**
+    //  * 获取字段参数
+    //  *
+    //  * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+    //  */
+    // public function fieldParameters()
+    // {
+    //     return $this->morphMany(FieldParameters::class, null, 'entity_name', 'field_id');
+    // }
 
     /**
      * 获取字段参数
@@ -135,12 +163,7 @@ abstract class FieldBase extends Model implements TranslatableInterface
     public function getParameters()
     {
         // 获取字段的所有相关参数
-        $fieldParameters = FieldParameters::query()->where([
-            'entity_name' => $this->getBoundEntityName(),
-            'field_id' => $this->getKey(),
-        ])->get()->keyBy(function(FieldParameters $item) {
-            return $item->langcode.','.$item->mold_id;
-        });
+        $fieldParameters = FieldParameters::collect($this);
 
         // 实体类型 id
         $moldId = $this->boundMold->getKey();
@@ -172,16 +195,14 @@ abstract class FieldBase extends Model implements TranslatableInterface
      */
     public function gather(array $keys = ['*'])
     {
-        $attributes = $this->entityToArray();
+        $attributes = array_merge(
+            $this->attributesToArray(), $this->getParameters()
+        );
         $attributes['delta'] = 0;
         if ($pivot = $this->pivot) {
             $attributes['label'] = $pivot->label ?? $attributes['label'];
             $attributes['description'] = $pivot->description ?? $attributes['description'];
             $attributes['delta'] = (int) $pivot->delta;
-        }
-
-        if (in_array('*', $keys) || in_array('parameters', $keys)) {
-            $attributes['parameters'] = $this->getParameters();
         }
 
         if ($keys && !in_array('*', $keys)) {
@@ -281,7 +302,7 @@ abstract class FieldBase extends Model implements TranslatableInterface
 
         // 尝试从缓存获取值
         $cachekey = join('/', [$entityId, $langcode, 'value']);
-        $pocket = Pocket::make($this)->useKey($cachekey);
+        $pocket = Pocket::make($this)->setKey($cachekey);
         if ($value = $pocket->get()) {
             return $value->value();
         }
@@ -312,7 +333,7 @@ abstract class FieldBase extends Model implements TranslatableInterface
 
         // 清除字段值缓存
         $cachekey = join('/', [$entityId, $langcode, 'value']);
-        Pocket::make($this)->useKey($cachekey)->clear();
+        Pocket::make($this)->setKey($cachekey)->clear();
 
         DB::delete("DELETE FROM `{$table}` WHERE `{$foreignKey}`=? AND `langcode`=?", [$entityId, $langcode]);
     }

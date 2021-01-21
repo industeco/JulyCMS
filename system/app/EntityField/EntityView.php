@@ -2,6 +2,7 @@
 
 namespace App\EntityField;
 
+use App\Entity\EntityBase;
 use App\Model;
 
 class EntityView extends Model
@@ -24,6 +25,23 @@ class EntityView extends Model
         'langcode',
         'view',
     ];
+
+    /**
+     * 获取实体视图
+     *
+     * @param  \App\Entity\EntityBase $entity
+     * @return string|null
+     */
+    public static function findView(EntityBase $entity)
+    {
+        if ($item = static::query()->where([
+            'path' => $entity->getEntityPath(),
+            'langcode' => $entity->getLangcode(),
+            ])->first()) {
+            return $item->view;
+        }
+        return null;
+    }
 
     /**
      * 根据实体路径查找配置项

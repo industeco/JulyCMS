@@ -48,6 +48,8 @@ class PackageUpdate extends Command
                     'seeds/*.php',
                 ],
                 'language/*.php',
+                'modules/**',
+                'resources/**',
                 'routes/*.php',
             ],
             'themes/backend/**',
@@ -55,21 +57,5 @@ class PackageUpdate extends Command
         ];
 
         return Archive::create('julycms_update.zip')->from($allowList)->zip();
-
-        // $whiteList = [
-        //     'system/app/*' => '',
-        //     'system/bootstrap/app.php' => '',
-        //     'system/bootstrap/autoload.php' => '',
-        //     'system/config/*' => '',
-        //     'system/database/migrations/*' => '',
-        //     'system/database/seeds/*' => '',
-        //     'system/language/*' => '',
-        //     'system/routes/*' => '',
-        //     'themes/backend/*' => '',
-        //     'index.php' => '',
-        // ];
-
-        // $pkg = public_path('julycms_update.zip');
-        // return package_files($pkg, get_file_list($whiteList));
     }
 }

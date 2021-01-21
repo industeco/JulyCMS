@@ -17,9 +17,9 @@ class CreateNodesTable extends Migration
             $table->id();
 
             // 节点类型
-            $table->string('node_type_id');
+            $table->string('mold_id');
 
-            // 初始语言代码
+            // 源语言
             $table->string('langcode', 12);
 
             // 属性三原色

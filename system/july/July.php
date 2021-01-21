@@ -32,7 +32,7 @@ class July
      */
     public static function takeout(string $key)
     {
-        $pocket = Pocket::make(static::class)->useKey($key);
+        $pocket = Pocket::make(static::class)->setKey($key);
         if ($value = $pocket->get()) {
             return $value->value();
         }

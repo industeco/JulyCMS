@@ -81,7 +81,7 @@ class FieldType
             return;
         }
 
-        $pocket = Pocket::make(static::class)->useKey('definitions');
+        $pocket = Pocket::make(static::class)->setKey('definitions');
         if ($definitions = $pocket->get()) {
             static::$definitions = $definitions->value();
         } else {

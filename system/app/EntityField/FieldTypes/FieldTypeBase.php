@@ -109,37 +109,6 @@ abstract class FieldTypeBase
         return $this;
     }
 
-    // /**
-    //  * 设置语言版本
-    //  *
-    //  * @param  string $langcode
-    //  * @return static
-    //  */
-    // public function translateTo(string $langcode)
-    // {
-    //     $this->langcode = $langcode;
-    //     if ($this->field) {
-    //         $this->field->translateTo($langcode);
-    //     }
-
-    //     return $this;
-    // }
-
-    // /**
-    //  * 获取字段定义语言
-    //  *
-    //  * @param  string $langcode
-    //  * @return static
-    //  */
-    // public function getLangcode()
-    // {
-    //     if ($this->field) {
-    //         return $this->field->getLangcode();
-    //     }
-
-    //     return $this->langcode;
-    // }
-
     public function getDefaultValue()
     {
         return null;
@@ -198,7 +167,7 @@ abstract class FieldTypeBase
      *     ...
      * ]
      *
-     * @return array
+     * @return array[]
      */
     public function getColumns()
     {

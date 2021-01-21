@@ -7,10 +7,8 @@ use App\Utils\Html;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use July\Core\Config\PartialViewLinkage;
-use July\Core\Config\PathAliasLinkage;
-use App\EntityField\EntityFieldBase;
-use App\EntityField\FieldType;
+use App\EntityField\FieldBase;
+use App\EntityField\FieldTypes\FieldTypeManager;
 use July\Node\CatalogSet;
 use July\Core\Taxonomy\Term;
 use July\Core\Taxonomy\TermSet;
@@ -30,7 +28,7 @@ class Node extends EntityBase
      * @var array
      */
     protected $fillable = [
-        'node_type_id',
+        'mold_id',
         'langcode',
         'is_red',
         'is_green',
@@ -49,13 +47,13 @@ class Node extends EntityBase
     ];
 
     /**
-     * 内建属性登记处
+     * （数据库表的）列名登记处
      *
      * @var array
      */
     protected static $columns = [
         'id',
-        'node_type_id',
+        'mold_id',
         'langcode',
         'is_red',
         'is_green',
@@ -65,27 +63,23 @@ class Node extends EntityBase
     ];
 
     /**
-     * {@inheritdoc}
+     * 获取实体类型类
+     *
+     * @return string
      */
-    public static function getBundleName()
+    public static function getMoldClass()
     {
-        return NodeType::getEntityName();
+        return NodeType::class;
     }
 
     /**
-     * {@inheritdoc}
+     * 获取所有列名
+     *
+     * @return array
      */
-    public function getBundle()
+    public static function getColumns()
     {
-        if ($this->exists) {
-            return $this->nodeType()->first();
-        }
-
-        if ($bundle_id = $this->attributes['node_type_id'] ?? null) {
-            return NodeType::find($bundle_id);
-        }
-
-        return null;
+        return static::$columns;
     }
 
     /**
@@ -96,25 +90,17 @@ class Node extends EntityBase
         $fields = NodeField::globalFields()->get();
         if ($this->exists) {
             $fields = $fields->merge($this->fields()->get());
-        } elseif ($nodeType = $this->getBundle()) {
-            $fields = $fields->merge($nodeType->fields);
+        } elseif ($mold = $this->getMold()) {
+            $fields = $fields->merge($mold->fields);
         } else {
             $fields = $fields->merge(NodeField::presetFields()->get());
         }
 
-        return $fields->map(function(EntityFieldBase $field) {
+        return $fields->map(function(FieldBase $field) {
                 return $field->bindEntity($this);
-            })->keyBy(function(EntityFieldBase $field) {
+            })->keyBy(function(FieldBase $field) {
                 return $field->getKey();
             });
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function nodeType()
-    {
-        return $this->belongsTo(NodeType::class);
     }
 
     /**
@@ -124,14 +110,14 @@ class Node extends EntityBase
      */
     public function fields()
     {
-        return $this->belongsToMany(NodeField::class, NodeFieldNodeType::class, 'node_type_id', 'node_field_id', 'node_type_id')
-                    ->orderBy('node_fields.preset_type', 'desc')
+        return $this->belongsToMany(NodeField::class, NodeFieldNodeType::class, 'mold_id', 'field_id', 'mold_id')
                     ->orderBy('node_field_node_type.delta')
                     ->withPivot([
                         'delta',
-                        // 'weight',
                         'label',
                         'description',
+                        'helpertext',
+                        'is_required',
                     ]);
     }
 
@@ -216,7 +202,7 @@ class Node extends EntityBase
         $materials = [];
         foreach ($this->collectFields() as $field) {
             $materials[$field->getKey()] = array_merge(
-                FieldType::findOrFail($field)->getMaterials(),
+                FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials(),
                 ['preset_type' => $field->preset_type]
             );
         }
@@ -332,7 +318,7 @@ class Node extends EntityBase
     //  */
     // public function saveValues(array $values)
     // {
-    //     Pocket::apply($this)->clear('values/'.$this->getLangcode());
+    //     Pocket::make($this)->clear('values/'.$this->getLangcode());
     //     // $this->cacheClear(['key'=>'values', 'langcode'=>langcode('content')]);
     //     // Log::info('CacheKey: '.static::cacheKey($this->id.'/values', langcode('content')));
 
@@ -392,11 +378,11 @@ class Node extends EntityBase
             foreach ($node->collectFields() as $field) {
                 $field->deleteValue();
             }
-            Pocket::apply($node)->clear('html');
+            Pocket::make($node)->clear('html');
         });
 
         static::updated(function(Node $node) {
-            Pocket::apply($node)->clear('html');
+            Pocket::make($node)->clear('html');
         });
     }
 
@@ -429,7 +415,7 @@ class Node extends EntityBase
         config()->set('render_langcode', null);
 
         $html = preg_replace('/\n\s+/', "\n", $html);
-        Pocket::apply($this)->put('html', $html);
+        Pocket::make($this)->put('html', $html);
 
         return $html;
     }

@@ -228,6 +228,12 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
+    // 管理类
+    'managers' => [
+        \App\Entity\EntityManager::class,
+        \App\EntityField\FieldTypes\FieldTypeManager::class,
+    ],
+
     // 安装标记
     'is_installed' => env('APP_INSTALLED', false),
 
@@ -281,9 +287,9 @@ return [
     ],
 
     'field_parameters_schema' => [
-        'default',
-        'options',
-        'placeholder',
+        'default' => [],
+        'options' => [],
+        'placeholder' => [],
 
         // 改为在字段类型中设置
         // 'type' => [

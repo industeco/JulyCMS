@@ -102,7 +102,7 @@ class AnyPage extends Controller
 
     protected function getHtml($url, $langcode)
     {
-        if ($entity = PathAlias::findEntityByAlias($url)) {
+        if ($entity = PathAlias::findEntity($url)) {
             return $entity->translateTo($langcode)->retrieveHtml();
         }
 

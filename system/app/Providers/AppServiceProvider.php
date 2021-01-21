@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Entity\EntityManager;
 use App\EntityField\FieldTypes\FieldTypeManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -18,9 +19,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // 注册 twig 单例
         $this->registerTwig();
-
-        // 登记字段类型
-        $this->registerFieldTypes();
     }
 
     /**
@@ -30,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // 启动管理类
+        $this->bootManagers();
+
         // 添加视图命名空间
         View::addNamespace('backend', backend_path('template'));
     }
@@ -54,12 +55,14 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * 登记字段类型
+     * 启动管理类
      */
-    protected function registerFieldTypes()
+    protected function bootManagers()
     {
-        foreach (config('app.field_types') as $class) {
-            FieldTypeManager::register($class);
+        foreach (config('app.managers') as $manager) {
+            if (class_exists($manager)) {
+                $manager::discoverIfNotDiscovered();
+            }
         }
     }
 }

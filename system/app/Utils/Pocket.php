@@ -32,6 +32,13 @@ class Pocket
      */
     protected $key;
 
+    /**
+     * 原始的 key
+     *
+     * @var mixed
+     */
+    protected $rawKey;
+
     // /**
     //  * 执行 takeout 动作的实际方法
     //  *
@@ -46,8 +53,8 @@ class Pocket
     public function __construct($subject, $key = '')
     {
         $this->subject = $subject;
-        $this->prefix = static::generatePrefix($subject);
-        $this->useKey($key);
+        $this->generatePrefix();
+        $this->setKey($key);
     }
 
     /**
@@ -63,49 +70,41 @@ class Pocket
     }
 
     /**
-     * 快捷创建
-     *
-     * @param  string|object $subject 调用 Pocket 的主体：类或类实例
-     * @param  mixed $key 默认的键名
-     * @return self
-     */
-    public static function apply($subject, string $key = null)
-    {
-        return new static($subject, $key);
-    }
-
-    /**
      * 生成缓存键的前缀
      *
-     * @param  string|object $subject
      * @return string
      */
-    public static function generatePrefix($subject)
+    protected function generatePrefix()
     {
-        $prefix = $subject;
-        if (is_object($subject)) {
-            if ($subject instanceof EntityBase) {
-                $prefix = str_replace('\\', '/', $subject->getEntityPath());
-            } elseif ($subject instanceof Model) {
-                $prefix = str_replace('\\', '/', get_class($subject)).'/'.$subject->getKey();
+        $prefix = $this->subject;
+        if (is_object($this->subject)) {
+            if ($this->subject instanceof EntityBase) {
+                $prefix = str_replace('\\', '/', $this->subject->getEntityPath());
+            } elseif ($this->subject instanceof Model) {
+                $prefix = str_replace('\\', '/', get_class($this->subject)).'/'.$this->subject->getKey();
             } else {
-                $prefix = str_replace('\\', '/', get_class($subject));
+                $prefix = str_replace('\\', '/', get_class($this->subject));
             }
-            if ($subject instanceof TranslatableInterface) {
-                $prefix .= '/'.$subject->getLangcode();
+            if ($this->subject instanceof TranslatableInterface) {
+                $prefix .= '/'.$this->subject->getLangcode();
             }
         }
-        return short_md5(serialize($prefix)).'/';
+        $this->prefix = short_md5(serialize($prefix)).'/';
     }
 
     /**
-     * 获取缓存键
+     * 重新指定 $subject
      *
-     * @return \App\Utils\Value
+     * @param  string|object $subject
+     * @return $this
      */
-    public function getKey()
+    public function setSubject($subject)
     {
-        return $this->key;
+        $this->subject = $subject;
+        $this->generatePrefix();
+        $this->setKey($this->rawKey);
+
+        return $this;
     }
 
     /**
@@ -114,8 +113,10 @@ class Pocket
      * @param mixed $key
      * @return $this
      */
-    public function useKey($key)
+    public function setKey($key)
     {
+        $this->rawKey = $key;
+
         if ($key instanceof Value) {
             $key = $key->value();
         }
@@ -130,14 +131,13 @@ class Pocket
     }
 
     /**
-     * 生成 Cache Key
+     * 获取缓存键
      *
-     * @param mixed $key
-     * @return $this
+     * @return \App\Utils\Value
      */
-    public function keyBy($key)
+    public function getKey()
     {
-        return $this->useKey($key);
+        return $this->key;
     }
 
     /**

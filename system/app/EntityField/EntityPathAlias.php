@@ -2,6 +2,7 @@
 
 namespace App\EntityField;
 
+use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 use App\Model;
 
@@ -45,6 +46,23 @@ class EntityPathAlias extends Model
     }
 
     /**
+     * 获取实体路径别名（网址）
+     *
+     * @param  \App\Entity\EntityBase $entity
+     * @return string|null
+     */
+    public static function findAlias(EntityBase $entity)
+    {
+        if ($item = static::query()->where([
+                'path' => $entity->getEntityPath(),
+                'langcode' => $entity->getLangcode(),
+            ])->first()) {
+            return $item->alias;
+        }
+        return null;
+    }
+
+    /**
      * 根据实体路径查找别名
      *
      * @param  string $path
@@ -61,12 +79,11 @@ class EntityPathAlias extends Model
      * @param string $alias
      * @return \App\Entity\EntityBase|null
      */
-    public static function findEntityByAlias(string $alias)
+    public static function findEntity(string $alias)
     {
         if ($instance = static::alias($alias)->first()) {
             return EntityManager::resolvePath($instance->path);
         }
-
         return null;
     }
 }
