@@ -176,8 +176,8 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getParameters()
     {
         // 尝试从缓存获取数据
-        if (isset($this->cached[__FUNCTION__])) {
-            return $this->cached[__FUNCTION__];
+        if ($parameters = $this->cacheGet(__FUNCTION__)) {
+            return $parameters->value();
         }
 
         // 获取字段的所有相关参数
@@ -200,29 +200,30 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             $this->getOriginalLangcode().',',
         ];
 
-        $parameters = [];
         foreach ($keys as $key) {
             if ($fieldParameters->has($key)) {
-                $parameters = $fieldParameters->get($key)->parameters;
-                break;
+                return $fieldParameters->get($key)->parameters;
             }
         }
 
-        return $this->cached[__FUNCTION__] = $parameters;
+        return [];
     }
 
     /**
-     * 收集实体的常用属性组成数组
+     * 获取所有列和字段值
      *
-     * @param  array $keys 限定的列名
+     * @param  array $keys 限定键名
      * @return array
      */
     public function gather(array $keys = ['*'])
     {
         // 尝试从缓存获取数据
-        if (isset($this->cached[__FUNCTION__])) {
-            $attributes = $this->cached[__FUNCTION__];
-        } else {
+        if ($attributes = $this->cacheGet(__FUNCTION__)) {
+            $attributes = $attributes->value();
+        }
+
+        // 生成属性数组
+        else {
             $attributes = array_merge(
                 $this->attributesToArray(), $this->getParameters()
             );

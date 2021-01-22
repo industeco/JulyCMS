@@ -28,6 +28,55 @@ define('JULY_VERSION', '3.0.0');
 
 require __DIR__.'/system/bootstrap/autoload.php';
 
+
+// class Test
+// {
+//     use \App\Concerns\CacheGetTrait;
+
+//     /**
+//      * 获取所有列和字段值
+//      *
+//      * @param  array $keys 限定键名
+//      * @return array
+//      */
+//     public function gather(array $keys = ['*'])
+//     {
+//         // 尝试从缓存获取数据
+//         if ($attributes = $this->cacheGet(__FUNCTION__)) {
+//             $attributes = $attributes->value();
+//         }
+
+//         // 生成属性数组
+//         else {
+//             $attributes = [
+//                 'id' => 1,
+//                 'label' => '标签',
+//                 'description' => '描述',
+//             ];
+//         }
+
+//         if ($keys && !in_array('*', $keys)) {
+//             $attributes = \Illuminate\Support\Arr::only($attributes, $keys);
+//         }
+
+//         return $attributes;
+//     }
+
+//     public function getCache()
+//     {
+//         return $this->resultCache;
+//     }
+// }
+
+// $test = new Test;
+
+// dump($test->gather(['id']));
+
+// dump($test->getCache());
+
+// exit;
+
+
 /*
 |--------------------------------------------------------------------------
 | Turn On The Lights

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Concerns\CacheResultTrait;
+use App\Concerns\CacheGetTrait;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 abstract class ModelBase extends Model
 {
-    use CacheResultTrait;
+    use CacheGetTrait;
 
     /**
      * （数据库表的）列名登记处
