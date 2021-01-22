@@ -3,10 +3,7 @@
 namespace App\Entity;
 
 use App\Contracts\ManagerInterface;
-use App\Utils\Pocket;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Symfony\Component\Finder\Finder;
 
 final class EntityManager implements ManagerInterface
 {

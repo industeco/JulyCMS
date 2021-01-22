@@ -2,14 +2,14 @@
 
 namespace July\Core\Config;
 
-use App\Model;
+use App\Models\ModelBase;
 use App\Utils\Settings;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use July\Core\Entity\EntityBase;
 use July\Core\Entity\EntityInterface;
 
-class Config extends Model
+class Config extends ModelBase
 {
     /**
      * 与模型关联的表名

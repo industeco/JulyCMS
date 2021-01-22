@@ -7,14 +7,14 @@ use App\EntityField\EntityView;
 use App\EntityField\FieldBase;
 use App\Modules\Translation\TranslatableInterface;
 use App\Modules\Translation\TranslatableTrait;
-use App\Model;
+use App\Models\ModelBase;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-abstract class EntityBase extends Model implements TranslatableInterface
+abstract class EntityBase extends ModelBase implements TranslatableInterface
 {
     use TranslatableTrait;
 

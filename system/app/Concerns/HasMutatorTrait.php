@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Concerns;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;

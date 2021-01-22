@@ -2,11 +2,11 @@
 
 namespace July\Core\Config;
 
-use App\Model;
+use App\Models\ModelBase;
 use App\Casts\Serialized;
 use Illuminate\Support\Facades\Log;
 
-class UserPreferences extends Model
+class UserPreferences extends ModelBase
 {
     /**
      * 与模型关联的表名

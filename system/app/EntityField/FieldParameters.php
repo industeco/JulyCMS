@@ -3,9 +3,9 @@
 namespace App\EntityField;
 
 use App\Casts\Serialized;
-use App\Model;
+use App\Models\ModelBase;
 
-class FieldParameters extends Model
+class FieldParameters extends ModelBase
 {
     /**
      * 与模型关联的表名
@@ -28,6 +28,25 @@ class FieldParameters extends Model
     ];
 
     /**
+     * 获取所有列名
+     *
+     * @return array
+     */
+    public static function getColumns()
+    {
+        return [
+            'id',
+            'entity_name',
+            'field_id',
+            'mold_id',
+            'langcode',
+            'parameters',
+            'updated_at',
+            'created_at',
+        ];
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @var array
@@ -37,18 +56,17 @@ class FieldParameters extends Model
     ];
 
     /**
-     * 采集字段所有相关参数，并以 langcode + mold_id 索引
+     * 采集字段所有相关参数，以 langcode + mold_id 索引
      *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \App\EntityField\FieldBase $field 字段
      * @return \Illuminate\Support\Collection
      */
-    public static function collect(FieldBase $field)
+    public function scopeOfField($query, FieldBase $field)
     {
-        return static::query()
-            ->where(['entity_name' => $field->getBoundEntityName(), 'field_id' => $field->getKey()])
-            ->get()
-            ->keyBy(function($item) {
-                return $item->langcode.','.$item->mold_id;
-            });
+        return $query->where([
+                'entity_name' => $field->getBoundEntityName(),
+                'field_id' => $field->getKey()
+            ]);
     }
 }

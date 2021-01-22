@@ -4,9 +4,8 @@ namespace App\EntityField;
 
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
-use App\Model;
 
-class EntityPathAlias extends Model
+class EntityPathAlias extends FieldValueBase
 {
     /**
      * 与模型关联的表名
@@ -23,9 +22,39 @@ class EntityPathAlias extends Model
     protected $fillable = [
         'entity_name',
         'entity_id',
+        'entity_path',
         'langcode',
         'alias',
     ];
+
+    /**
+     * 获取所有列名
+     *
+     * @return array
+     */
+    public static function getColumns()
+    {
+        return [
+            'id',
+            'entity_name',
+            'entity_id',
+            'entity_path',
+            'langcode',
+            'alias',
+            'updated_at',
+            'created_at',
+        ];
+    }
+
+    /**
+     * entity_path 属性的 Set Mutator
+     *
+     * @return string
+     */
+    public function setEntityPathAttribute()
+    {
+        $this->attributes['entity_path'] = $this->attributes['entity_name'].'/'.$this->attributes['entity_id'];
+    }
 
     public function scopeAlias($query, $alias)
     {
@@ -34,7 +63,7 @@ class EntityPathAlias extends Model
             ['alias', '=', '/'.$alias, 'or'],
         ];
 
-        if (substr($alias, -5) !== '.html') {
+        if (! preg_match('/\.(html?|php)$/i', $alias)) {
             $condition[] = ['alias', '=', ($alias ? '/'.$alias : '').'/index.html', 'or'];
         }
 
@@ -74,7 +103,7 @@ class EntityPathAlias extends Model
     }
 
     /**
-     * 根据别名查找实体
+     * 根据网址或路径查找实体
      *
      * @param string $alias
      * @return \App\Entity\EntityBase|null
@@ -82,7 +111,7 @@ class EntityPathAlias extends Model
     public static function findEntity(string $alias)
     {
         if ($instance = static::alias($alias)->first()) {
-            return EntityManager::resolvePath($instance->path);
+            return EntityManager::resolve($instance->entity_name, $instance->entity_id);
         }
         return null;
     }

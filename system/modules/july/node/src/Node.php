@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use App\EntityField\FieldBase;
 use App\EntityField\FieldTypes\FieldTypeManager;
 use July\Node\CatalogSet;
-use July\Core\Taxonomy\Term;
-use July\Core\Taxonomy\TermSet;
+use July\Taxonomy\Term;
+use July\Taxonomy\TermSet;
 
 class Node extends EntityBase
 {
@@ -688,7 +688,7 @@ class Node extends EntityBase
     /**
      * 获取内容标签
      *
-     * @return \July\Core\Taxonomy\TermSet
+     * @return \July\Taxonomy\TermSet
      */
     public function get_tags()
     {

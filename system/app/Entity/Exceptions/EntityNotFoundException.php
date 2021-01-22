@@ -2,7 +2,7 @@
 
 namespace App\Entity\Exceptions;
 
-use App\Traits\ExceptionWrapper;
+use App\Concerns\ExceptionWrapper;
 
 class EntityNotFoundException extends \RuntimeException
 {

@@ -3,9 +3,9 @@
 namespace Specs;
 
 use App\Casts\Serialized;
-use App\Model;
+use App\Models\ModelBase;
 
-class SpecField extends Model
+class SpecField extends ModelBase
 {
     /**
      * 与模型关联的表名

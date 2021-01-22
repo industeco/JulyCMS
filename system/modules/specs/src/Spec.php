@@ -2,7 +2,7 @@
 
 namespace Specs;
 
-use App\Model;
+use App\Models\ModelBase;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Arr;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-class Spec extends Model
+class Spec extends ModelBase
 {
     /**
      * 与模型关联的表名

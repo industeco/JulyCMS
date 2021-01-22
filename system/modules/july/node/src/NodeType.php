@@ -9,9 +9,9 @@ use App\Entity\EntityBundleBase;
 use App\EntityField\FieldType;
 use App\EntityField\FieldParameters;
 use App\EntityField\FieldTypes\FieldTypeManager;
-use App\Model;
+use App\Models\ModelBase;
 
-class NodeType extends Model implements GetNodesInterface
+class NodeType extends ModelBase implements GetNodesInterface
 {
     /**
      * 与模型关联的表名

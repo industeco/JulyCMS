@@ -2,10 +2,10 @@
 
 namespace July\Node;
 
-use App\Model;
+use App\Models\ModelBase;
 use Illuminate\Support\Facades\DB;
 
-class NodeIndex extends Model
+class NodeIndex extends ModelBase
 {
     /**
      * 与模型关联的表名

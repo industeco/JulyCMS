@@ -2,7 +2,7 @@
 
 namespace App\EntityField\FieldTypes;
 
-use App\Traits\HasAttributesTrait;
+use App\Concerns\HasAttributesTrait;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -159,17 +159,14 @@ abstract class FieldTypeBase
     /**
      * 字段数据存储表的列信息，结构：
      * [
-     *     [
-     *         type => string,
-     *         name => string,
-     *         parameters => array,
-     *     ],
-     *     ...
+     *     type => string,
+     *     name => string,
+     *     parameters => array,
      * ]
      *
-     * @return array[]
+     * @return array
      */
-    public function getColumns()
+    public function getColumn()
     {
         return [];
     }
@@ -181,13 +178,11 @@ abstract class FieldTypeBase
      */
     public function getMaterials()
     {
-        $data = $this->field->gather();
         return [
-            'id' => $data['id'],
+            'id' => $this->field->getKey(),
             'field_type_id' => $this->id,
-            'value' => null,
-            'element' => $this->getComponent($data),
-            'rules' => $this->getRules(),
+            'value' => $this->field->getDefaultValue(),
+            'element' => $this->render(),
         ];
     }
 
@@ -197,15 +192,13 @@ abstract class FieldTypeBase
      * @param  array|null $data 字段数据
      * @return string
      */
-    public function getComponent(?array $data = [])
+    public function render()
     {
-        $data = $data ?: $this->field->gather();
+        $data = $this->field->gather();
+        $data['helpertext'] = $data['helpertext'] ?: $data['description'];
+        $data['rules'] = $this->getRules();
 
-        if (! isset($data['parameters']['helptext'])) {
-            $data['parameters']['helptext'] = $data['description'] ?? null;
-        }
-
-        return view('backend::components.'.$this->id, $data)->render();
+        return view('field_types.'.$this->id, $data)->render();
     }
 
     /**
@@ -229,7 +222,7 @@ abstract class FieldTypeBase
      * @param  array|null $parameters 字段参数
      * @return array
      */
-    public function getValidator(?array $parameters = [])
+    public function getValidator()
     {
         return [];
     }
@@ -237,39 +230,31 @@ abstract class FieldTypeBase
     /**
      * 将记录转换为值
      *
-     * @param  array $records 表记录
-     * @param  array|null $columns 字段值表列
-     * @param  array|null $parameters 字段参数
+     * @param  array $record 表记录
      * @return mixed
      */
-    public function toValue(array $records, ?array $columns = [], ?array $parameters = [])
+    public function toValue(array $record)
     {
-        $columns = $columns ?: $this->getColumns();
-        $name = $columns[0]['name'];
+        $value = [];
+        foreach ($this->getColumn() as $column) {
+            $key = $column['name'];
+            $value[$key] = isset($record[$key]) ? trim($record[$key]) : null;
+        }
 
-        return trim($records[0][$name]);
+        return count($value) > 1 ? $value : reset($value);
     }
 
     /**
      * 将值转换为记录
      *
      * @param  mixed $value 字段值
-     * @param  array|null $columns 字段值表列
-     * @param  array|null $parameters 字段参数
      * @return array|null
      */
-    public function toRecords($value, ?array $columns = [], ?array $parameters = [])
+    public function toRecord($value)
     {
-        if (! strlen($value)) {
-            return null;
-        }
-
-        $columns = $columns ?: $this->getColumns();
-
+        $columns = $this->getColumn();
         return [
-            [
-                $columns[0]['name'] => $value,
-            ],
+            $columns[0]['name'] => $value,
         ];
     }
 

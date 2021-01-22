@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Concerns;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;

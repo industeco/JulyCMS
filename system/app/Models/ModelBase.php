@@ -1,15 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
+use App\Concerns\CacheResultTrait;
 use App\Utils\Pocket;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-abstract class Model extends EloquentModel
+abstract class ModelBase extends Model
 {
+    use CacheResultTrait;
+
     /**
      * （数据库表的）列名登记处
      *
@@ -36,7 +39,7 @@ abstract class Model extends EloquentModel
      *
      * @param  mixed  $id
      * @param  array  $columns
-     * @return \App\Model|\Illuminate\Database\Eloquent\Collection|static[]|static|null
+     * @return \App\Models\ModelBase|\Illuminate\Database\Eloquent\Collection|static[]|static|null
      */
     public static function find($id, array $columns = ['*'])
     {
@@ -50,7 +53,7 @@ abstract class Model extends EloquentModel
      *
      * @param  mixed  $id
      * @param  array  $columns
-     * @return \App\Model|\Illuminate\Database\Eloquent\Collection|static|static[]
+     * @return \App\Models\ModelBase|\Illuminate\Database\Eloquent\Collection|static|static[]
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
@@ -227,31 +230,4 @@ abstract class Model extends EloquentModel
     {
         return Arr::except($this->attributesToArray(), $columns);
     }
-
-    // /**
-    //  * {@inheritdoc}
-    //  */
-    // public static function boot()
-    // {
-    //     parent::boot();
-
-    //     static::created(function(Model $model) {
-    //         events()->record(static::class.':created');
-    //         events()->record(static::class.':changed');
-    //     });
-
-    //     static::updated(function(Model $model) {
-    //         events()->record(static::class.':updated');
-    //         events()->record(static::class.':changed');
-    //     });
-
-    //     static::saved(function(Model $model) {
-    //         events()->record(static::class.':saved');
-    //     });
-
-    //     static::deleted(function(Model $model) {
-    //         events()->record(static::class.':deleted');
-    //         events()->record(static::class.':changed');
-    //     });
-    // }
 }

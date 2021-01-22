@@ -2,7 +2,7 @@
 
 namespace Specs\FieldTypeDefinitions;
 
-use App\Traits\HasAttributesTrait;
+use App\Concerns\HasAttributesTrait;
 use App\Utils\Types;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;

@@ -3,9 +3,8 @@
 namespace App\EntityField;
 
 use App\Entity\EntityBase;
-use App\Model;
 
-class EntityView extends Model
+class EntityView extends FieldValueBase
 {
     /**
      * 与模型关联的表名

@@ -22,6 +22,9 @@ class CreateEntityPathAliasesTable extends Migration
             // 实体 id
             $table->string('entity_id');
 
+            // 实体路径 = 实体名/实体 id
+            $table->string('entity_path');
+
             // 语言版本
             $table->string('langcode', 12);
 
