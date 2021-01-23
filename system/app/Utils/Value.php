@@ -24,7 +24,7 @@ class Value
      * 快捷创建
      *
      * @param  mixed $value
-     * @return static
+     * @return \App\Utils\Value|static
      */
     public static function make($value)
     {
@@ -39,19 +39,5 @@ class Value
     public function value()
     {
         return $this->value;
-    }
-
-    /**
-     * 允许以属性方式获取
-     *
-     * @param  string $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        if ($name === 'value') {
-            return $this->value;
-        }
-        return null;
     }
 }

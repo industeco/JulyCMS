@@ -126,80 +126,24 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 判断是否包含名为 {$key} 的实体属性
+     * 获取属性集，可指定属性名
      *
-     * @param  string $key 属性名
-     * @return bool
-     */
-    public function hasEntityAttribute(string $key)
-    {
-        return $key && ($this->hasColumn($key) || $this->hasField($key));
-    }
-
-    /**
-     * 获取实体属性（可能是：内建属性，或实体字段，或外联属性）
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function getEntityAttribute(string $key)
-    {
-        if (! $key) {
-            return null;
-        }
-
-        // 尝试内建属性
-        if ($this->hasColumn($key)) {
-            return $this->getColumnValue($key);
-        }
-
-        // 尝试实体字段
-        elseif ($this->hasField($key)) {
-            return $this->getFieldValue($key);
-        }
-
-        return null;
-    }
-
-    /**
-     * 获取常用属性
-     *
-     * @return array
-     */
-    public function entityToArray()
-    {
-        return array_merge(
-            $this->columnsToArray(),
-            $this->fieldsToArray()
-        );
-    }
-
-    /**
-     * 从实体属性数组中采集指定的列
-     *
-     * @param  array $keys 限定的列名
+     * @param  array $keys 属性名列表
      * @return array
      */
     public function gather(array $keys = ['*'])
     {
-        $attributes = $this->entityToArray();
-
+        if ($attributes = $this->pipePocket(__FUNCTION__, 'attributes_and_fields')) {
+            $attributes = $attributes->value();
+        } else {
+            $attributes = array_merge(
+                $this->attributesToArray(), $this->fieldsToArray()
+            );
+        }
         if ($keys && !in_array('*', $keys)) {
             $attributes = Arr::only($attributes, $keys);
         }
-
         return $attributes;
-    }
-
-    /**
-     * 获取内建属性集
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function collectColumns()
-    {
-        $columns = $this->getColumns();
-        return collect($columns)->combine($columns);
     }
 
     /**

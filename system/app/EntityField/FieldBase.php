@@ -2,7 +2,6 @@
 
 namespace App\EntityField;
 
-use App\Utils\Pocket;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +9,6 @@ use Illuminate\Support\Facades\Schema;
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 use App\Entity\Exceptions\InvalidEntityException;
-use App\EntityField\Exceptions\InvalidBoundEntityException;
 use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Modules\Translation\TranslatableInterface;
 use App\Modules\Translation\TranslatableTrait;
@@ -83,22 +81,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         } else {
             throw new InvalidEntityException('当前字段无法绑定到实体：'.get_class($entity));
         }
-    }
-
-    /**
-     * 获取字段类型对象
-     *
-     * @return \App\EntityField\FieldTypes\FieldTypeBase
-     */
-    public function getFieldType()
-    {
-        // 尝试从缓存获取数据
-        $cacheKey = 'field_type';
-        if (isset($this->cached[$cacheKey])) {
-            return $this->cached[$cacheKey];
-        }
-
-        return $this->cached[$cacheKey] = FieldTypeManager::findOrFail($this->attributes['field_type_id'])->bindField($this);
     }
 
     /**
@@ -176,34 +158,36 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getParameters()
     {
         // 尝试从缓存获取数据
-        if ($parameters = $this->cacheGet(__FUNCTION__)) {
-            return $parameters->value();
+        if ($result = $this->pipeCache(__FUNCTION__)) {
+            return $result->value();
         }
 
         // 获取字段的所有相关参数
         /** @var \Illuminate\Database\Eloquent\Collection */
-        $fieldParameters = FieldParameters::ofField($this)->get()
+        $parameters = FieldParameters::ofField($this)->get()
             ->keyBy(function($item) {
                 return $item->langcode.','.$item->mold_id;
             });
 
-        // 实体类型
-        $mold = $this->entity->getMold();
+        // 类型 id
+        $mold_id = $this->entity->mold_id;
 
-        // 可能的键名（语言 + 实体类型 id），按匹配度降序排列：
-        //  - 当前内容语言，当前类型 id
-        //  - 实体类型源语言，当前类型 id
-        //  - 字段源语言
-        $keys = [
-            $this->getLangcode().','.$mold->getKey(),
-            $mold->getOriginalLangcode().','.$mold->getKey(),
-            $this->getOriginalLangcode().',',
-        ];
+        // 当前内容语言 + 当前类型 id
+        $key = $this->getLangcode().','.$mold_id;
+        if ($parameters->has($key)) {
+            return $parameters->get($key)->parameters;
+        }
 
-        foreach ($keys as $key) {
-            if ($fieldParameters->has($key)) {
-                return $fieldParameters->get($key)->parameters;
-            }
+        // 类型源语言 + 当前类型 id
+        $key = $this->entity->getMold()->getOriginalLangcode().','.$mold_id;
+        if ($parameters->has($key)) {
+            return $parameters->get($key)->parameters;
+        }
+
+        // 字段源语言 + null
+        $key = $this->getOriginalLangcode().',';
+        if ($parameters->has($key)) {
+            return $parameters->get($key)->parameters;
         }
 
         return [];
@@ -218,7 +202,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function gather(array $keys = ['*'])
     {
         // 尝试从缓存获取数据
-        if ($attributes = $this->cacheGet(__FUNCTION__)) {
+        if ($attributes = $this->pipeCache(__FUNCTION__)) {
             $attributes = $attributes->value();
         }
 
@@ -239,11 +223,49 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 获取字段类型对象
+     *
+     * @return \App\EntityField\FieldTypes\FieldTypeBase
+     */
+    public function getFieldType()
+    {
+        // 尝试从缓存获取数据
+        if ($result = $this->pipeCache(__FUNCTION__)) {
+            return $result->value();
+        }
+        return FieldTypeManager::findOrFail($this->attributes['field_type_id'])->bindField($this);
+    }
+
+    /**
+     * 获取字段值模型
+     *
+     * @return \App\EntityField\FieldValueBase
+     */
+    public function getValueModel()
+    {
+        // 尝试从缓存获取数据
+        if ($result = $this->pipeCache(__FUNCTION__)) {
+            return $result->value();
+        }
+        return $this->getFieldType()->getValueModel();
+    }
+
+    /**
+     * 判断是否使用动态表保存字段值
+     *
+     * @return bool
+     */
+    public function hasDynamicValueTable()
+    {
+        return !$this->getFieldType()->getTable();
+    }
+
+    /**
      * 获取存储字段值的数据库表的表名
      *
      * @return string
      */
-    public function getFieldTable()
+    public function getValueTable()
     {
         return $this->getFieldType()->getTable() ?: $this->getBoundEntityName().'__'.$this->getKey();
     }
@@ -259,21 +281,16 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 一组常用量
+     * 获取字段值
      *
-     * @return array
+     * @return mixed
      */
-    protected function sharedVariables()
+    public function getValue()
     {
-        if (isset($this->cached[__FUNCTION__])) {
-            return $this->cached[__FUNCTION__];
+        if ($value = $this->pipeCache(__FUNCTION__)) {
+            return $value->value();
         }
-
-        return $this->cached[__FUNCTION__] = [
-            $this->getFieldTable(),
-            $this->entity->getEntityId(),
-            $this->entity->getLangcode(),
-        ];
+        return $this->getValueModel()->getValue($this->entity);
     }
 
     /**
@@ -284,61 +301,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function setValue($value)
     {
-        list($table, $entityId, $langcode) = $this->sharedVariables();
-
-        // 清除字段值缓存
-        $cachekey = join('/', [$entityId, $langcode, 'value']);
-        Pocket::make($this, $cachekey)->clear();
-
-        DB::beginTransaction();
-
-        // 删除旧记录
-        DB::delete("DELETE FROM `{$table}` WHERE `entity_id`=? AND `langcode`=?", [$entityId, $langcode]);
-
-        // 插入新记录
-        if ($record = $this->getFieldType()->toRecord($value)) {
-            DB::table($table)->insert($record + [
-                'entity_id' => $entityId,
-                'langcode' => $langcode,
-            ]);
-        }
-
-        DB::commit();
-    }
-
-    /**
-     * 获取字段值
-     *
-     * @return mixed
-     */
-    public function getValue()
-    {
-        if ($this->entity && !$this->entity->exists) {
-            return $this->getParameters()['default'] ?? $this->getFieldType()->getDefaultValue();
-        }
-
-        list($table, $entityId, $langcode) = $this->sharedVariables();
-
-        // 尝试从缓存获取值
-        $cachekey = join('/', [$entityId, $langcode, 'value']);
-        $pocket = Pocket::make($this)->setKey($cachekey);
-        if ($value = $pocket->get()) {
-            return $value->value();
-        }
-
-        $value = null;
-
-        // 从数据库获取值
-        $record = DB::table($table)->where(['entity_id'=>$entityId, 'langcode'=>$langcode])->first();
-        if ($record) {
-            // 借助字段类型，将数据库记录重新组合为字段值
-            $value = $this->getFieldType()->toValue((array) $record);
-        }
-
-        // 缓存字段值
-        $pocket->put($value);
-
-        return $value;
+        return $this->getValueModel()->setValue($value, $this->entity);
     }
 
     /**
@@ -348,13 +311,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function deleteValue()
     {
-        list($table, $entityId, $langcode) = $this->sharedVariables();
-
-        // 清除字段值缓存
-        $cachekey = join('/', [$entityId, $langcode, 'value']);
-        Pocket::make($this, $cachekey)->clear();
-
-        DB::delete("DELETE FROM `{$table}` WHERE `entity_id`=? AND `langcode`=?", [$entityId, $langcode]);
+        return $this->getValueModel()->deleteValue($this->entity);
     }
 
     /**
@@ -365,36 +322,18 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function searchValue(string $needle)
     {
-        $column = $this->getValueColumn();
-        $conditions = [$column['name'], 'like', '%'.$needle.'%', 'or'];
-
-        $field = $this->gather(['id', 'field_type_id', 'label', 'description']);
-
-        $results = [];
-        foreach (DB::table($this->getFieldTable())->where($conditions)->get() as $record) {
-            $record = (array) $record;
-            $key = join('/', [$record['entity_id'], $field['id'], $record['langcode'] ?? 'und']);
-            if (! isset($results[$key])) {
-                $results[$key] = $field + [
-                    'entity_id' => $record['entity_id'],
-                    'langcode' => $record['langcode'] ?? 'und',
-                ];
-            }
-        }
-
-        return array_values($results);
+        return $this->getValueModel()->searchValue($needle);
     }
 
     /**
-     * 建立字段存储表
+     * 建立字段值存储表
      *
      * @return void
      */
     public function tableUp()
     {
-        // 检查存储表是否由字段类型提供
-        // 如果是，则不创建
-        if ($this->getFieldType()->getTable()) {
+        // 检查是否使用动态表保存字段值，如果不是则不创建
+        if (! $this->hasDynamicValueTable()) {
             return;
         }
 
@@ -405,16 +344,14 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         }
 
         // 获取用于创建数据表列的参数
-        $columns = $this->getValueColumn();
+        $column = $this->getValueColumn();
 
         // 创建数据表
-        Schema::create($tableName, function (Blueprint $table) use ($columns) {
+        Schema::create($tableName, function (Blueprint $table) use ($column) {
             $table->id();
             $table->unsignedBigInteger('entity_id');
 
-            foreach($columns as $column) {
-                $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
-            }
+            $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
 
             $table->string('langcode', 12);
             $table->timestamps();
@@ -424,17 +361,17 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 删除字段存储表
+     * 删除字段值存储表
      *
      * @return void
      */
     public function tableDown()
     {
-        // 检查存储表是否由字段类型提供
-        // 如果是，则不删除
-        if (! $this->getFieldType()->getTable()) {
-            Schema::dropIfExists($this->getFieldTable());
+        // 检查是否使用动态表保存字段值，如果不是则不删除
+        if (! $this->hasDynamicValueTable()) {
+            return;
         }
+        Schema::dropIfExists($this->getFieldTable());
     }
 
     /**

@@ -31,7 +31,7 @@ require __DIR__.'/system/bootstrap/autoload.php';
 
 // class Test
 // {
-//     use \App\Concerns\CacheGetTrait;
+//     use \App\Concerns\CacheResultTrait;
 
 //     /**
 //      * 获取所有列和字段值
@@ -70,7 +70,11 @@ require __DIR__.'/system/bootstrap/autoload.php';
 
 // $test = new Test;
 
-// dump($test->gather(['id']));
+// dump($test->cacheGet('gather', 'id'));
+
+// dump($test->getCache());
+
+// dump($test->gather());
 
 // dump($test->getCache());
 

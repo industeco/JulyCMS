@@ -7,6 +7,7 @@ use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\EntityField\FieldBase;
+use App\EntityField\FieldValue;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -112,6 +113,20 @@ abstract class FieldTypeBase
     public function getDefaultValue()
     {
         return null;
+    }
+
+    /**
+     * 获取字段值模型，用于管理字段值的增删改查等
+     *
+     * @return \App\EntityField\FieldValueBase
+     */
+    public function getValueModel()
+    {
+        $model = new FieldValue();
+        if ($this->field) {
+            $model->bindField($this->field);
+        }
+        return $model;
     }
 
     /**

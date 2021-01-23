@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Concerns\CacheGetTrait;
+use App\Concerns\CacheResultTrait;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -11,14 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 abstract class ModelBase extends Model
 {
-    use CacheGetTrait;
-
-    /**
-     * （数据库表的）列名登记处
-     *
-     * @var array
-     */
-    protected static $columns = [];
+    use CacheResultTrait;
 
     /**
      * 哪些字段可更新（白名单）
@@ -111,73 +104,6 @@ abstract class ModelBase extends Model
     }
 
     /**
-     * 获取所有列名
-     *
-     * @return array
-     */
-    public static function getColumns()
-    {
-        // 检查内存 $columns
-        if (isset(self::$columns[static::class])) {
-            return self::$columns[static::class];
-        }
-
-        // 检查缓存
-        $pocket = new Pocket(static::class, 'columns');
-        if ($columns = $pocket->get()) {
-            return self::$columns[static::class] = $columns->value();
-        }
-
-        // 生成
-        $columns = Schema::getColumnListing((new static)->getTable());
-
-        // 保存到内存 $columns
-        self::$columns[static::class] = $columns;
-
-        // 缓存
-        $pocket->put($columns);
-
-        return $columns;
-    }
-
-    /**
-     * 判断列是否存在
-     *
-     * @param  string $column
-     * @return bool
-     */
-    public static function hasColumn(string $column)
-    {
-        return in_array($column, static::getColumns());
-    }
-
-    /**
-     * 获取列值
-     *
-     * @param  string $column
-     * @return mixed
-     */
-    public function getColumnValue(string $column)
-    {
-        return $this->transformModelValue($column, $this->attributes[$column] ?? null);
-    }
-
-    /**
-     * 获取所有列值
-     *
-     * @return array
-     */
-    public function columnsToArray()
-    {
-        $attributes = [];
-        foreach (static::getColumns() as $column) {
-            $attributes[$column] = $this->attributes[$column] ?? null;
-        }
-
-        return $this->transformAttributesArray($attributes);
-    }
-
-    /**
      * 转换属性值
      *
      * @param  string $key
@@ -229,5 +155,30 @@ abstract class ModelBase extends Model
     public function except(array $columns = [])
     {
         return Arr::except($this->attributesToArray(), $columns);
+    }
+
+    /**
+     * 获取属性集，可指定属性名
+     *
+     * @param  array $keys 属性名列表
+     * @return array
+     */
+    public function gather(array $keys = ['*'])
+    {
+        if ($attributes = $this->pipeCache(__FUNCTION__)) {
+            $attributes = $attributes->value();
+        } else {
+            $pocket = new Pocket($this, 'attributes');
+            if ($attributes = $pocket->get()) {
+                $attributes = $attributes->value();
+            } else {
+                $attributes = $this->attributesToArray();
+                $pocket->put($attributes);
+            }
+        }
+        if ($keys && !in_array('*', $keys)) {
+            $attributes = Arr::only($attributes, $keys);
+        }
+        return $attributes;
     }
 }

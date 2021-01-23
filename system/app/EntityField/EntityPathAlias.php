@@ -56,7 +56,14 @@ class EntityPathAlias extends FieldValueBase
         $this->attributes['entity_path'] = $this->attributes['entity_name'].'/'.$this->attributes['entity_id'];
     }
 
-    public function scopeAlias($query, $alias)
+    /**
+     * 按指定的路径别名限定查询
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string $alias
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOfAlias($query, $alias)
     {
         $alias = trim(str_replace('\\', '/', $alias), "/ \t\n\r\0\x0B");
         $condition = [
@@ -72,6 +79,99 @@ class EntityPathAlias extends FieldValueBase
         }
 
         return $query->where($condition);
+    }
+
+    /**
+     * 按指定实体限定查询
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \App\Entity\EntityBase $entity
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOfEntity($query, EntityBase $entity)
+    {
+        return $query->where([
+            'entity_name' => $entity->getEntityName(),
+            'entity_id' => $entity->getEntityId(),
+            'langcode' => $entity->getLangcode(),
+        ]);
+    }
+
+    /**
+     * 获取字段值
+     *
+     * @param  \App\Entity\EntityBase|null $entity
+     * @return mixed
+     */
+    public function getValue(?EntityBase $entity = null)
+    {
+        // 如果未指定实体，或实体未保存，返回默认值
+        if (!$entity || !$entity->exists) {
+            return null;
+        }
+
+        // 查找字段表
+        if ($value = $this->newModelQuery()->ofEntity($entity)->first()) {
+            return $value->getAttributeValue('alias');
+        }
+
+        return null;
+    }
+
+    /**
+     * 设置字段值
+     *
+     * @param  mixed $value
+     * @param  \App\Entity\EntityBase $entity
+     * @return mixed
+     */
+    public function setValue($value, EntityBase $entity)
+    {
+        if (is_null($value)) {
+            return $this->deleteValue($entity);
+        }
+        return $this->newModelQuery()->updateOrCreate([
+            'entity_name' => $entity->getEntityName(),
+            'entity_id' => $entity->getEntityId(),
+            'langcode' => $entity->getLangcode(),
+        ], [
+            'alias' => $value,
+        ]);
+    }
+
+    /**
+     * 删除字段值
+     *
+     * @param  \App\Entity\EntityBase $entity
+     * @return mixed
+     */
+    public function deleteValue(EntityBase $entity)
+    {
+        return $this->newModelQuery()->ofEntity($entity)->delete();
+    }
+
+    /**
+     * 在字段表中搜索
+     *
+     * @param  string  $needle
+     * @return array
+     */
+    public function searchValue(string $needle)
+    {
+        $field = $this->field->gather(['id', 'field_type_id', 'label', 'description']);
+        $condition = ['alias', 'like', '%'.$needle.'%'];
+
+        $results = [];
+        foreach ($this->newModelQuery()->where($condition)->get() as $value) {
+            $results[] = $field + [
+                'entity_name' => $value->entity_name,
+                'entity_id' => $value->entity_id,
+                'langcode' => $value->langcode,
+                'value' => $value->alias,
+            ];
+        }
+
+        return $results;
     }
 
     /**
