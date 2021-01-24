@@ -4,7 +4,6 @@ namespace App\Concerns;
 
 use App\Utils\Pocket;
 use App\Utils\Value;
-use Illuminate\Support\Arr;
 
 trait CacheResultTrait
 {
@@ -19,23 +18,39 @@ trait CacheResultTrait
     ];
 
     /**
+     * Pocket 缓存
+     *
+     * @var \App\Utils\Pocket|null
+     */
+    protected $pocket = null;
+
+    /**
      * @param  string $method
-     * @param  array $args
+     * @param  string|null $key
+     * @param  bool $pocket
      * @return \App\Utils\Value|null
      */
-    public function pipeCache(string $method, ?string $key = null)
+    public function cachePipe(string $method, ?string $key = null, $pocket = false)
     {
         // 如果指定的方法为 pipeCache 或 pipePocket，则直接返回 null
-        if ($method === 'pipeCache' || $method === 'pipePocket') {
+        if (in_array($method, [
+                'cachePipe','cachePut','cacheGet','cacheClear',
+                'pocketPipe','pocketPut','pocketGet','pocketClear',
+            ])) {
             return null;
         }
 
         // 存储键 = 方法 + 参数
-        $key = $key ?? $method;
+        $key = ($key && is_string($key)) ? $key : $method;
 
         // 尝试获取值，如果成功则返回该值
         $value = $this->resultCache['cache'][$key] ?? null;
         if (is_object($value) && $value instanceof Value) {
+            return $value;
+        }
+
+        // 尝试从缓存获取值（使用 Pocket）
+        if ($pocket && ($value = $this->pocketGet($key))) {
             return $value;
         }
 
@@ -50,74 +65,21 @@ trait CacheResultTrait
             $this->resultCache['piping'][$method] = true;
 
             // 执行 method，获取结果
-            $this->resultCache['cache'][$key] = new Value($this->$method());
+            $value = $this->$method();
 
             // 取消 method 运行标记
             $this->resultCache['piping'][$method] = false;
 
-            // 返回结果
-            return $this->resultCache['cache'][$key];
-        } catch (\Throwable $th) {
-
-            // 取消 method 运行标记
-            $this->resultCache['pipeCache'][$method] = false;
-
-            // 发生错误，则返回 null
-            return null;
-        }
-    }
-
-    /**
-     * @param  string $method
-     * @param  string|null $key
-     * @param  array $args
-     * @return \App\Utils\Value|null
-     */
-    public function pipePocket(string $method, ?string $key = null)
-    {
-        // 如果指定的方法为 pipeCache 或 pipePocket，则直接返回 null
-        if ($method === 'pipeCache' || $method === 'pipePocket') {
-            return null;
-        }
-
-        // 存储键 = 方法 + 参数
-        $key = $key ?: $method;
-
-        // 尝试获取值，如果成功则返回该值
-        $value = $this->resultCache['cache'][$key] ?? null;
-        if (is_object($value) && $value instanceof Value) {
-            return $value;
-        }
-
-        // 尝试从缓存（通过 Pocket）获取值
-        $pocket = new Pocket($this, $key);
-        if ($value = $pocket->get()) {
-            return $value;
-        }
-
-        // 如果 method 无效，或正在被 pipeCache 或 pipePocket 执行，返回 null
-        if ($this->resultCache['piping'][$method] ?? false || !method_exists($this, $method)) {
-            return null;
-        }
-
-        // 尝试通过执行 method 获取值
-        try {
-            // 标记 method 正在运行
-            $this->resultCache['piping'][$method] = true;
-
-            // 执行 method，获取结果
-            $this->resultCache['cache'][$key] = new Value($this->$method());
-
-            // 取消 method 运行标记
-            $this->resultCache['piping'][$method] = false;
-
-            // 保存结果至缓存
-            $pocket->put($this->resultCache['cache'][$key]);
+            // 缓存执行结果
+            $this->cachePut($key, $value);
+            if ($pocket) {
+                $this->pocketPut($key, $value);
+            }
 
             // 返回结果
-            return $this->resultCache['cache'][$key];
-        } catch (\Throwable $th) {
+            return new Value($value);
 
+        } catch (\Throwable $th) {
             // 取消 method 运行标记
             $this->resultCache['piping'][$method] = false;
 
@@ -131,7 +93,7 @@ trait CacheResultTrait
      *
      * @param  string $key
      * @param  mixed $value
-     * @return \App\Utils\Value
+     * @return void
      */
     public function cachePut(string $key, $value)
     {
@@ -147,5 +109,74 @@ trait CacheResultTrait
     public function cacheGet(string $key)
     {
         return $this->resultCache['cache'][$key] ?? null;
+    }
+
+    /**
+     * 从 $resultCache 清除缓存
+     *
+     * @param  string $key
+     * @return void
+     */
+    public function cacheClear(string $key)
+    {
+        $this->resultCache['cache'][$key] = null;
+    }
+
+    /**
+     * @param  string $method
+     * @param  string|null $key
+     * @return \App\Utils\Value|null
+     */
+    public function pocketPipe(string $method, ?string $key = null)
+    {
+        return $this->cachePipe($method, $key, true);
+    }
+
+    /**
+     * 将 $value 按 $key 放入缓存（通过 Pocket）
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    public function pocketPut($key, $value)
+    {
+        $this->getPocket($key)->put($value);
+    }
+
+    /**
+     * 从缓存获取值（通过 Pocket）
+     *
+     * @param  string $key
+     * @return \App\Utils\Value|null
+     */
+    public function pocketGet($key)
+    {
+        return $this->getPocket($key)->get();
+    }
+
+    /**
+     * 清除缓存（通过 Pocket）
+     *
+     * @param  string $key
+     * @return void
+     */
+    public function pocketClear($key)
+    {
+        return $this->getPocket($key)->clear();
+    }
+
+    /**
+     * 获取专属 pocket
+     *
+     * @param  mixed $key
+     * @return \App\Utils\Pocket
+     */
+    public function getPocket($key)
+    {
+        if (! $this->pocket) {
+            $this->pocket = new Pocket($this);
+        }
+        return $this->pocket->setKey($key);
     }
 }

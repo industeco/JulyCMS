@@ -7,7 +7,6 @@ use App\Modules\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class Pocket
 {
@@ -28,29 +27,22 @@ class Pocket
     /**
      * 默认的键名
      *
-     * @var \App\Utils\Value
+     * @var \App\Utils\Value|null
      */
-    protected $key;
+    protected $key = null;
 
     /**
      * 原始的 key
      *
      * @var mixed
      */
-    protected $rawKey;
-
-    // /**
-    //  * 执行 takeout 动作的实际方法
-    //  *
-    //  * @var string
-    //  */
-    // protected $takeoutMethod = '';
+    protected $rawKey = null;
 
     /**
      * @param  string|object $subject 调用 Pocket 的主体：类或类实例
      * @param  mixed $key 默认的键名
      */
-    public function __construct($subject, $key = '')
+    public function __construct($subject, $key = null)
     {
         $this->subject = $subject;
         $this->generatePrefix();
@@ -62,9 +54,9 @@ class Pocket
      *
      * @param  string|object $subject 调用 Pocket 的主体：类或类实例
      * @param  mixed $key 默认的键名
-     * @return self
+     * @return \App\Utils\Value|static
      */
-    public static function make($subject, string $key = null)
+    public static function make($subject, $key = null)
     {
         return new static($subject, $key);
     }
@@ -89,7 +81,7 @@ class Pocket
                 $prefix .= '/'.$this->subject->getLangcode();
             }
         }
-        $this->prefix = short_md5(serialize($prefix)).'/';
+        $this->prefix = md5(serialize($prefix)).'/';
     }
 
     /**
@@ -125,7 +117,7 @@ class Pocket
             asort($key);
         }
 
-        $this->key = new Value($this->prefix.short_md5(serialize($key)));
+        $this->key = new Value($this->prefix.md5(serialize($key)));
 
         return $this;
     }

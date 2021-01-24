@@ -2,17 +2,17 @@
 
 namespace App\EntityField;
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 use App\Entity\Exceptions\InvalidEntityException;
-use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Models\ModelBase;
 use App\Modules\Translation\TranslatableInterface;
 use App\Modules\Translation\TranslatableTrait;
-use App\Models\ModelBase;
+use App\Utils\Arr;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 abstract class FieldBase extends ModelBase implements TranslatableInterface
 {
@@ -158,7 +158,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getParameters()
     {
         // 尝试从缓存获取数据
-        if ($result = $this->pipeCache(__FUNCTION__)) {
+        if ($result = $this->cachePipe(__FUNCTION__)) {
             return $result->value();
         }
 
@@ -202,7 +202,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function gather(array $keys = ['*'])
     {
         // 尝试从缓存获取数据
-        if ($attributes = $this->pipeCache(__FUNCTION__)) {
+        if ($attributes = $this->cachePipe(__FUNCTION__)) {
             $attributes = $attributes->value();
         }
 
@@ -212,13 +212,10 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
                 $this->attributesToArray(), $this->getParameters()
             );
             $attributes['delta'] = $this->pivot ? intval($this->pivot->delta) : 0;
-            $this->cached[__FUNCTION__] = $attributes;
         }
-
-        if ($keys && !in_array('*', $keys)) {
-            $attributes = Arr::only($attributes, $keys);
+        if ($keys && $keys !== ['*']) {
+            $attributes = Arr::selectAs($attributes, $keys);
         }
-
         return $attributes;
     }
 
@@ -230,7 +227,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getFieldType()
     {
         // 尝试从缓存获取数据
-        if ($result = $this->pipeCache(__FUNCTION__)) {
+        if ($result = $this->cachePipe(__FUNCTION__)) {
             return $result->value();
         }
         return FieldTypeManager::findOrFail($this->attributes['field_type_id'])->bindField($this);
@@ -244,7 +241,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getValueModel()
     {
         // 尝试从缓存获取数据
-        if ($result = $this->pipeCache(__FUNCTION__)) {
+        if ($result = $this->cachePipe(__FUNCTION__)) {
             return $result->value();
         }
         return $this->getFieldType()->getValueModel();
@@ -287,7 +284,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getValue()
     {
-        if ($value = $this->pipeCache(__FUNCTION__)) {
+        if ($value = $this->cachePipe(__FUNCTION__)) {
             return $value->value();
         }
         return $this->getValueModel()->getValue($this->entity);

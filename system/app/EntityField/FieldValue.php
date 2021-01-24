@@ -3,6 +3,7 @@
 namespace App\EntityField;
 
 use App\Entity\EntityBase;
+use App\Utils\Arr;
 
 class FieldValue extends FieldValueBase
 {
@@ -32,7 +33,7 @@ class FieldValue extends FieldValueBase
 
         // 设置字段值转换
         $this->casts = [
-            $this->value_column => $this->fieldType->caster,
+            $this->value_column => $this->fieldType->getCaster(),
         ];
 
         return $this;
@@ -98,16 +99,20 @@ class FieldValue extends FieldValueBase
      */
     public function searchValue(string $needle)
     {
-        $field = $this->field->gather(['id', 'field_type_id', 'label', 'description']);
+        // 正在查询的字段的信息
+        $field = Arr::selectAs($this->field->getAttributes(), [
+            'id' => 'field_id', 'field_type_id', 'label', 'description',
+        ]) + ['entity_name' => $this->field->getBoundEntityName()];
+
+        // 查询条件
         $condition = [$this->value_column, 'like', '%'.$needle.'%'];
 
+        // 获取查询结果
         $results = [];
         foreach ($this->newModelQuery()->where($condition)->get() as $value) {
-            $results[] = $field + [
-                'entity_id' => $value->entity_id,
-                'langcode' => $value->langcode,
-                'value' => $value->getAttributeValue($this->value_column),
-            ];
+            $results[] = $field + Arr::selectAs($value->getAttributes(), [
+                'entity_id', 'langcode', $this->value_column => 'field_value'
+            ]);
         }
 
         return $results;

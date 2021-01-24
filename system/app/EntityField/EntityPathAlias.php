@@ -4,6 +4,7 @@ namespace App\EntityField;
 
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
+use App\Utils\Arr;
 
 class EntityPathAlias extends FieldValueBase
 {
@@ -13,6 +14,13 @@ class EntityPathAlias extends FieldValueBase
      * @var string
      */
     protected $table = 'entity_path_aliases';
+
+    /**
+     * 保存字段值的列名
+     *
+     * @var string
+     */
+    protected $value_column = 'alias';
 
     /**
      * 可批量赋值的属性。
@@ -135,7 +143,7 @@ class EntityPathAlias extends FieldValueBase
             'entity_id' => $entity->getEntityId(),
             'langcode' => $entity->getLangcode(),
         ], [
-            'alias' => $value,
+            $this->value_column => $value,
         ]);
     }
 
@@ -158,17 +166,23 @@ class EntityPathAlias extends FieldValueBase
      */
     public function searchValue(string $needle)
     {
-        $field = $this->field->gather(['id', 'field_type_id', 'label', 'description']);
-        $condition = ['alias', 'like', '%'.$needle.'%'];
+        // 正在查询的字段的信息
+        $field = Arr::selectAs($this->field->getAttributes(), [
+            'id' => 'field_id', 'field_type_id', 'label', 'description',
+        ]) + ['entity_name' => $this->field->getBoundEntityName()];
 
+        // 查询条件
+        $condition = [
+            [$this->value_column, 'like', '%'.$needle.'%'],
+            ['entity_name', '=', $field['entity_name']],
+        ];
+
+        // 获取查询结果
         $results = [];
         foreach ($this->newModelQuery()->where($condition)->get() as $value) {
-            $results[] = $field + [
-                'entity_name' => $value->entity_name,
-                'entity_id' => $value->entity_id,
-                'langcode' => $value->langcode,
-                'value' => $value->alias,
-            ];
+            $results[] = $field + Arr::selectAs($value->getAttributes(), [
+                'entity_id', 'langcode', $this->value_column => 'field_value',
+            ]);
         }
 
         return $results;

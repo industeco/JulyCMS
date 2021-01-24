@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use App\Concerns\CacheResultTrait;
-use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
+use App\Utils\Arr;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
 abstract class ModelBase extends Model
 {
@@ -149,35 +147,29 @@ abstract class ModelBase extends Model
     /**
      * 排除指定属性
      *
-     * @param array $columns
+     * @param  array $columns
      * @return array
      */
     public function except(array $columns = [])
     {
-        return Arr::except($this->attributesToArray(), $columns);
+        return Arr::except($this->gather(), $columns);
     }
 
     /**
      * 获取属性集，可指定属性名
      *
-     * @param  array $keys 属性名列表
+     * @param  array $keys 属性白名单
      * @return array
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->pipeCache(__FUNCTION__)) {
+        if ($attributes = $this->cachePipe(__FUNCTION__)) {
             $attributes = $attributes->value();
         } else {
-            $pocket = new Pocket($this, 'attributes');
-            if ($attributes = $pocket->get()) {
-                $attributes = $attributes->value();
-            } else {
-                $attributes = $this->attributesToArray();
-                $pocket->put($attributes);
-            }
+            $attributes = $this->attributesToArray();
         }
-        if ($keys && !in_array('*', $keys)) {
-            $attributes = Arr::only($attributes, $keys);
+        if ($keys && $keys !== ['*']) {
+            $attributes = Arr::selectAs($attributes, $keys);
         }
         return $attributes;
     }

@@ -53,20 +53,6 @@ abstract class FieldTypeBase
      */
     protected $field = null;
 
-    // /**
-    //  * 字段参数读取语言
-    //  *
-    //  * @var string|null
-    //  */
-    // protected $langcode = null;
-
-    // /**
-    //  * 指示字段是否已翻译
-    //  *
-    //  * @var bool
-    //  */
-    // protected $translated = false;
-
     /**
      * 静态方式获取属性
      *
@@ -110,6 +96,51 @@ abstract class FieldTypeBase
         return $this;
     }
 
+    /**
+     * 获取类型 id
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * 获取类型标签
+     *
+     * @return string
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * 获取类型描述
+     *
+     * @return string|null
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * 获取类型转换器
+     *
+     * @return string
+     */
+    public function getCaster()
+    {
+        return $this->caster;
+    }
+
+    /**
+     * 获取默认值
+     *
+     * @return mixed
+     */
     public function getDefaultValue()
     {
         return null;
@@ -196,7 +227,7 @@ abstract class FieldTypeBase
         return [
             'id' => $this->field->getKey(),
             'field_type_id' => $this->id,
-            'value' => $this->field->getDefaultValue(),
+            'value' => $this->field->getValue(),
             'element' => $this->render(),
         ];
     }
