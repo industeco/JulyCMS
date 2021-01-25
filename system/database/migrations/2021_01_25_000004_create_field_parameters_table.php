@@ -28,9 +28,6 @@ class CreateFieldParametersTable extends Migration
             // 语言版本
             $table->string('langcode', 12);
 
-            // 占位字符
-            $table->string('placeholder')->nullable();
-
             // 默认值
             $table->string('default_value')->nullable();
 

@@ -10,6 +10,7 @@ use App\Models\ModelBase;
 use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
 use App\Utils\Arr;
+use App\Utils\Types;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,62 @@ use Illuminate\Support\Facades\Schema;
 abstract class FieldBase extends ModelBase implements TranslatableInterface
 {
     use TranslatableTrait;
+
+    /**
+     * 主键
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * 主键类型
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * 模型主键是否递增
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * 可批量赋值的属性。
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'id',
+        'field_type_id',
+        'is_reserved',
+        'is_global',
+        'group_title',
+        'search_weight',
+        'maxlength',
+        'label',
+        'description',
+        'is_required',
+        'helpertext',
+        'default_value',
+        'options',
+        'langcode',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'is_reserved' => 'boolean',
+        'is_global' => 'boolean',
+        'search_weight' => 'int',
+        'maxlength' => 'int',
+        'is_required' => 'boolean',
+    ];
 
     /**
      * 绑定的实体名
@@ -31,13 +88,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      * @var \App\Entity\EntityBase
      */
     protected $entity;
-
-    /**
-     * 中间数据缓存
-     *
-     * @var array
-     */
-    protected $cached = [];
 
     /**
      * 获取字段绑定实体的实体名
@@ -88,14 +138,14 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getLangcode()
     {
-        if (!$this->contentLangcode && $this->entity) {
+        if ($this->entity) {
             return $this->entity->getLangcode();
         }
-        return $this->contentLangcode;
+        return $this->contentLangcode ?? $this->getOriginalLangcode();
     }
 
     /**
-     * label 属性的 Mutator
+     * label 属性的 Get Mutator
      *
      * @param  string|null $label
      * @return string
@@ -103,13 +153,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getLabelAttribute($label)
     {
         if ($this->pivot) {
-            return trim($this->pivot->label ?? $label);
+            $label = $this->pivot->label;
         }
         return trim($label);
     }
 
     /**
-     * description 属性的 Mutator
+     * description 属性的 Get Mutator
      *
      * @param  string|null $description
      * @return string
@@ -117,13 +167,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getDescriptionAttribute($description)
     {
         if ($this->pivot) {
-            return trim($this->pivot->description ?? $description);
+            $description = $this->pivot->description;
         }
         return trim($description);
     }
 
     /**
-     * is_required 属性的 Mutator
+     * is_required 属性的 Get Mutator
      *
      * @param  bool|int $required
      * @return bool
@@ -131,13 +181,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getIsRequiredAttribute($required)
     {
         if ($this->pivot) {
-            return (bool) ($this->pivot->is_required ?? $required);
+            $required = $this->pivot->is_required;
         }
         return (bool) $required;
     }
 
     /**
-     * helpertext 属性的 Mutator
+     * helpertext 属性的 Get Mutator
      *
      * @param  string|null $helpertext
      * @return string
@@ -145,9 +195,47 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getHelpertextAttribute($helpertext)
     {
         if ($this->pivot) {
-            return trim($this->pivot->helpertext ?? $helpertext);
+            $helpertext = $this->pivot->helpertext;
         }
         return trim($helpertext);
+    }
+
+    /**
+     * default_value 属性的 Get Mutator
+     *
+     * @param  string|null $defaultValue
+     * @return string
+     */
+    public function getDefaultValueAttribute($defaultValue)
+    {
+        if ($this->pivot) {
+            $defaultValue = $this->pivot->defaultValue;
+        }
+        return Types::cast($defaultValue, $this->getFieldType()->getCaster());
+    }
+
+    /**
+     * options 属性的 Get Mutator
+     *
+     * @param  string|null $options
+     * @return array
+     */
+    public function getOptionsAttribute($options)
+    {
+        if ($this->pivot) {
+            $options = $this->pivot->options;
+        }
+
+        if (empty($options)) {
+            return [];
+        }
+
+        $caster = $this->getFieldType()->getCaster();
+        $options = array_map(function($option) use($caster) {
+            return Types::cast($option, $caster);
+        }, array_filter(array_map('trim', explode('|', $options))));
+
+        return array_values($options);
     }
 
     /**
@@ -162,34 +250,23 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return $result->value();
         }
 
-        // 获取字段的所有相关参数
-        /** @var \Illuminate\Database\Eloquent\Collection */
-        $parameters = FieldParameters::ofField($this)->get()
-            ->keyBy(function($item) {
-                return $item->langcode.','.$item->mold_id;
-            });
+        $parameters = null;
 
-        if (! $this->entity) {
-            // 字段源语言 + null
-            $key = $this->getOriginalLangcode().',';
-            if ($parameters->has($key)) {
-                return $parameters->get($key)->parameters;
-            }
-        } else {
-            // 类型 id
-            $mold_id = $this->entity->mold_id;
+        // 获取翻译过的模型字段参数
+        if ($this->entity && $this->entity->getMold()->isTranslated()) {
+            $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
+        }
 
-            // 当前内容语言 + 当前类型 id
-            $key = $this->getLangcode().','.$mold_id;
-            if ($parameters->has($key)) {
-                return $parameters->get($key)->parameters;
-            }
+        // 获取翻译过的字段参数
+        elseif (!$this->entity && $this->isTranslated()) {
+            $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
+        }
 
-            // 类型源语言 + 当前类型 id
-            $key = $this->entity->getMold()->getOriginalLangcode().','.$mold_id;
-            if ($parameters->has($key)) {
-                return $parameters->get($key)->parameters;
-            }
+        if ($parameters) {
+            return [
+                'default_value' => $parameters->default_value,
+                'options' => $parameters->options,
+            ];
         }
 
         return [];

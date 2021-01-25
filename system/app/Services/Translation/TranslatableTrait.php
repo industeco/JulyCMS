@@ -26,20 +26,30 @@ trait TranslatableTrait
     /**
      * 获取实例当前语言
      *
-     * @return string|null
+     * @return string
      */
     public function getLangcode()
     {
-        return $this->contentLangcode;
+        return $this->contentLangcode ?? $this->getOriginalLangcode();
     }
 
     /**
      * 获取实例源语言
      *
-     * @return string|null
+     * @return string
      */
     public function getOriginalLangcode()
     {
         return $this->attributes['langcode'];
+    }
+
+    /**
+     * 判断内容为翻译版本还是源语言版本
+     *
+     * @return bool
+     */
+    public function isTranslated()
+    {
+        return $this->getLangcode() !== $this->getOriginalLangcode();
     }
 }

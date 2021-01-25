@@ -24,60 +24,6 @@ class NodeField extends FieldBase
     protected $table = 'node_fields';
 
     /**
-     * 主键
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * 主键类型
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * 模型主键是否递增
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * 可批量赋值的属性。
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'id',
-        'field_type_id',
-        'is_reserved',
-        'is_global',
-        'group_title',
-        'search_weight',
-        'maxlength',
-        'label',
-        'description',
-        'is_required',
-        'helpertext',
-        'langcode',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'is_reserved' => 'boolean',
-        'is_global' => 'boolean',
-        'search_weight' => 'int',
-        'maxlength' => 'int',
-        'is_required' => 'boolean',
-    ];
-
-    /**
      * 获取使用过当前字段的所有类型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

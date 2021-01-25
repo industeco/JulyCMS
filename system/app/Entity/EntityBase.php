@@ -117,10 +117,10 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     public function getMold()
     {
         if ($this->exists) {
-            return $this->mold;
+            return $this->mold->translateTo($this->getLangcode());
         } elseif ($mold_id = $this->attributes['mold_id'] ?? null) {
             $mold = $this->getMoldClass();
-            return $mold::find($mold_id);
+            return $mold::findOrFail($mold_id)->translateTo($this->getLangcode());
         }
         return null;
     }

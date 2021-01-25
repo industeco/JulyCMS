@@ -25,7 +25,6 @@ class FieldParameters extends ModelBase
         'field_id',
         'mold_id',
         'langcode',
-        'placeholder',
         'default_value',
         'options',
     ];
@@ -57,7 +56,8 @@ class FieldParameters extends ModelBase
     {
         return $query->where([
                 'entity_name' => $field->getBoundEntityName(),
-                'field_id' => $field->getKey()
+                'field_id' => $field->getKey(),
+                'langcode' => $field->getLangcode(),
             ]);
     }
 
@@ -65,17 +65,6 @@ class FieldParameters extends ModelBase
     {
         $this->caster = $caster;
         return $this;
-    }
-
-    /**
-     * placeholder 属性的 Get Mutator
-     *
-     * @param  string|null  $placeholder
-     * @return mixed
-     */
-    public function getPlaceholderAttribute($placeholder)
-    {
-        return Types::cast($placeholder, 'string');
     }
 
     /**

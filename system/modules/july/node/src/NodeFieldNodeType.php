@@ -34,6 +34,8 @@ class NodeFieldNodeType extends Pivot
         'description',
         'is_required',
         'helpertext',
+        'default_value',
+        'options',
     ];
 
     /**

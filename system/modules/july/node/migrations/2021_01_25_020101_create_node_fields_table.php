@@ -50,6 +50,12 @@ class CreateNodeFieldsTable extends Migration
             // 表单字段下方输入提示
             $table->string('helpertext')->nullable();
 
+            // 默认值
+            $table->string('default_value')->nullable();
+
+            // 可选值
+            $table->string('options')->nullable();
+
             // 初始语言版本
             $table->string('langcode', 12);
 

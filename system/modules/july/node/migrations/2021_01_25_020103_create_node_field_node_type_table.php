@@ -36,6 +36,12 @@ class CreateNodeFieldNodeTypeTable extends Migration
             // 表单字段下方输入提示
             $table->string('helpertext')->nullable();
 
+            // 默认值
+            $table->string('default_value')->nullable();
+
+            // 可选值
+            $table->string('options')->nullable();
+
             // 字段 + 类型 唯一
             $table->unique(['mold_id', 'field_id']);
         });
