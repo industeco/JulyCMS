@@ -5,8 +5,8 @@ namespace App\Entity;
 use App\EntityField\EntityPathAlias;
 use App\EntityField\EntityView;
 use App\EntityField\FieldBase;
-use App\Modules\Translation\TranslatableInterface;
-use App\Modules\Translation\TranslatableTrait;
+use App\Services\Translation\TranslatableInterface;
+use App\Services\Translation\TranslatableTrait;
 use App\Models\ModelBase;
 use App\Utils\Arr;
 use App\Utils\Pocket;
@@ -336,6 +336,11 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         return EntityManager::resolve($class) ?? $class;
     }
 
+    /**
+     * Bootstrap the model and its traits.
+     *
+     * @return void
+     */
     public static function boot()
     {
         parent::boot();

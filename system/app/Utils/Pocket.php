@@ -3,7 +3,7 @@
 namespace App\Utils;
 
 use App\Entity\EntityBase;
-use App\Modules\Translation\TranslatableInterface;
+use App\Services\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Concerns\CacheResultTrait;
-use Illuminate\Database\Eloquent\Model;
 use App\Utils\Arr;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 abstract class ModelBase extends Model
