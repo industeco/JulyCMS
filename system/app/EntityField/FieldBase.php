@@ -169,25 +169,27 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
                 return $item->langcode.','.$item->mold_id;
             });
 
-        // 类型 id
-        $mold_id = $this->entity->mold_id;
+        if (! $this->entity) {
+            // 字段源语言 + null
+            $key = $this->getOriginalLangcode().',';
+            if ($parameters->has($key)) {
+                return $parameters->get($key)->parameters;
+            }
+        } else {
+            // 类型 id
+            $mold_id = $this->entity->mold_id;
 
-        // 当前内容语言 + 当前类型 id
-        $key = $this->getLangcode().','.$mold_id;
-        if ($parameters->has($key)) {
-            return $parameters->get($key)->parameters;
-        }
+            // 当前内容语言 + 当前类型 id
+            $key = $this->getLangcode().','.$mold_id;
+            if ($parameters->has($key)) {
+                return $parameters->get($key)->parameters;
+            }
 
-        // 类型源语言 + 当前类型 id
-        $key = $this->entity->getMold()->getOriginalLangcode().','.$mold_id;
-        if ($parameters->has($key)) {
-            return $parameters->get($key)->parameters;
-        }
-
-        // 字段源语言 + null
-        $key = $this->getOriginalLangcode().',';
-        if ($parameters->has($key)) {
-            return $parameters->get($key)->parameters;
+            // 类型源语言 + 当前类型 id
+            $key = $this->entity->getMold()->getOriginalLangcode().','.$mold_id;
+            if ($parameters->has($key)) {
+                return $parameters->get($key)->parameters;
+            }
         }
 
         return [];

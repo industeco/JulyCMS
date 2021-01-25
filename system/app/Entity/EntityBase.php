@@ -8,9 +8,9 @@ use App\EntityField\FieldBase;
 use App\Modules\Translation\TranslatableInterface;
 use App\Modules\Translation\TranslatableTrait;
 use App\Models\ModelBase;
+use App\Utils\Arr;
 use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -69,7 +69,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function getPathAlias()
     {
-        return EntityPathAlias::findAlias($this);
+        return EntityPathAlias::make()->getValue($this);
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function getView()
     {
-        return EntityView::findView($this);
+        return EntityView::make()->getValue($this);
     }
 
     /**
@@ -106,7 +106,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function mold()
     {
-        return $this->belongsTo($this->getMorphClass(), $this->getMoldForeignKeyName());
+        return $this->belongsTo($this->getMoldClass(), $this->getMoldForeignKeyName());
     }
 
     /**
@@ -133,15 +133,15 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->pipePocket(__FUNCTION__, 'attributes_and_fields')) {
+        if ($attributes = $this->pocketPipe(__FUNCTION__, 'attributes_and_fields')) {
             $attributes = $attributes->value();
         } else {
             $attributes = array_merge(
                 $this->attributesToArray(), $this->fieldsToArray()
             );
         }
-        if ($keys && !in_array('*', $keys)) {
-            $attributes = Arr::only($attributes, $keys);
+        if ($keys && $keys !== ['*']) {
+            $attributes = Arr::selectAs($attributes, $keys);
         }
         return $attributes;
     }
@@ -271,11 +271,9 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     protected function updateFields()
     {
-        foreach ($this->collectFields() as $key => $field) {
-            if (array_key_exists($key, $this->raw)) {
-                $field->setValue($this->raw[$key]);
-            }
-        }
+        $this->fields()->each(function(FieldBase $field) {
+            $field->bindEntity($this)->setValue($this->raw[$field->getKey()] ?? null);
+        });
     }
 
     /**
@@ -343,7 +341,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         parent::boot();
 
         static::deleting(function(EntityBase $entity) {
-            $entity->collectFields()->each(function (FieldBase $field) {
+            $entity->fields()->each(function (FieldBase $field) {
                 $field->deleteValue();
             });
         });

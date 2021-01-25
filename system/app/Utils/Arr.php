@@ -15,6 +15,10 @@ class Arr extends SupportArr
      */
     public static function selectAs(array $array, array $keys)
     {
+        if (! static::isAssoc($keys)) {
+            return static::only($array, $keys);
+        }
+
         $results = [];
         foreach ($keys as $key => $alias) {
             if (is_int($key)) {
