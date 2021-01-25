@@ -1,6 +1,6 @@
 <?php
 
-namespace Example;
+namespace July\Node;
 
 use App\Providers\ModuleServiceProviderBase;
 
@@ -19,6 +19,6 @@ class ModuleServiceProvider extends ModuleServiceProviderBase
      */
     protected function getModuleName()
     {
-        return 'july/node';
+        return 'node';
     }
 }

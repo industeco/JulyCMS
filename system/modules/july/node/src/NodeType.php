@@ -48,10 +48,10 @@ class NodeType extends ModelBase implements GetNodesInterface
      */
     protected $fillable = [
         'id',
-        'is_necessary',
         'label',
         'description',
         'langcode',
+        'is_reserved',
     ];
 
     /**
@@ -60,22 +60,7 @@ class NodeType extends ModelBase implements GetNodesInterface
      * @var array
      */
     protected $casts = [
-        'is_necessary' => 'boolean',
-    ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'is_necessary',
-        'label',
-        'description',
-        'langcode',
-        'created_at',
-        'updated_at',
+        'is_reserved' => 'boolean',
     ];
 
     /**
@@ -104,17 +89,36 @@ class NodeType extends ModelBase implements GetNodesInterface
     }
 
     /**
-     * 统计使用次数
+     * 引用计数
      *
      * @return array
      */
-    public static function countReference()
+    public static function referencedByNode()
     {
-        $query = DB::table((new Node)->getTable())
-            ->selectRaw('`node_type_id`, COUNT(*) as `total`')
-            ->groupBy('node_type_id');
+        return Node::query()->selectRaw('`node_type_id`, COUNT(*) as `total`')
+            ->groupBy('node_type_id')
+            ->pluck('total', 'node_type_id')->all();
+    }
 
-        return $query->pluck('total', 'node_type_id')->all();
+    /**
+     * 获取模型列表数据
+     *
+     * @return array
+     */
+    public static function index()
+    {
+        // 统计每个类型被节点引用次数（也就是有多少个节点使用该类型）
+        $referenced = static::referencedByNode();
+
+        // 获取模型列表
+        $nodeTypes = parent::index();
+
+        // 补充引用计数
+        foreach ($nodeTypes as $id => &$nodeType) {
+            $nodeType['referenced'] = $referenced[$id] ?? 0;
+        }
+
+        return $nodeTypes;
     }
 
     /**

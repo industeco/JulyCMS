@@ -30,13 +30,13 @@ class CreateNodeFieldNodeTypeTable extends Migration
             $table->string('label')->nullable();
             $table->string('description')->nullable();
 
-            // 表单字段下方辅助文本
-            $table->string('helpertext')->nullable();
-
             // 是否必填
             $table->boolean('is_required')->default(false);
 
-            // 同一个字段在同一个类型中最多出现一次
+            // 表单字段下方输入提示
+            $table->string('helpertext')->nullable();
+
+            // 字段 + 类型 唯一
             $table->unique(['mold_id', 'field_id']);
         });
 

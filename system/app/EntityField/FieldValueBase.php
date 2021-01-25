@@ -15,13 +15,6 @@ abstract class FieldValueBase extends ModelBase
     protected $field;
 
     /**
-     * 绑定的字段类型
-     *
-     * @var \App\EntityField\FieldTypes\FieldTypeBase
-     */
-    protected $fieldType;
-
-    /**
      * 保存字段值的列名
      *
      * @var string
@@ -47,7 +40,28 @@ abstract class FieldValueBase extends ModelBase
     public function bindField(FieldBase $field)
     {
         $this->field = $field;
-        $this->fieldType = $field->getFieldType();
+        $fieldType = $field->getFieldType();
+
+        if ($this->isDynamic()) {
+            // 设置模型表
+            $this->setTable($field->getDynamicValueTable());
+
+            // 获取列名
+            $this->value_column = $fieldType->getColumn()['name'];
+
+            // 设置 fillable
+            $this->fillable([
+                'entity_id',
+                $this->value_column => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
+                'langcode',
+                'updated_at',
+            ]);
+
+            // 设置字段值转换
+            $this->casts = [
+                $this->value_column => $fieldType->getCaster(),
+            ];
+        }
 
         return $this;
     }

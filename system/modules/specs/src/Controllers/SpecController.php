@@ -234,10 +234,10 @@ class SpecController extends Controller
      * @param  string|int  $id
      * @return \Illuminate\Http\Response
      */
-    public function isExist($id)
+    public function exists($id)
     {
         return response([
-            'is_exist' => !empty(Spec::find($id)),
+            'exists' => !empty(Spec::find($id)),
         ]);
     }
 }

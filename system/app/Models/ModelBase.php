@@ -26,6 +26,18 @@ abstract class ModelBase extends Model
     protected $updateExcept = [];
 
     /**
+     * 获取模型列表数据
+     *
+     * @return array
+     */
+    public static function index()
+    {
+        return static::all()->keyBy((new static)->getKeyName())->map(function(ModelBase $model) {
+            return $model->attributesToArray();
+        })->all();
+    }
+
+    /**
      * Find a model by its primary key.
      *
      * @param  mixed  $id
@@ -169,7 +181,7 @@ abstract class ModelBase extends Model
             $attributes = $this->attributesToArray();
         }
         if ($keys && $keys !== ['*']) {
-            $attributes = Arr::selectAs($attributes, $keys);
+            $attributes = Arr::only($attributes, $keys);
         }
         return $attributes;
     }

@@ -2,28 +2,26 @@
 
 namespace App\EntityField\FieldTypes;
 
-use Illuminate\Support\Facades\Log;
-
-class Text extends FieldTypeBase
+class Image extends File
 {
     /**
      * 字段类型 id
      *
      * @var string
      */
-    protected $id = 'text';
+    protected $id = 'image';
 
     /**
      * 字段类型标签
      *
      * @var string
      */
-    protected $label = '文字';
+    protected $label = '图片文件';
 
     /**
      * 字段类型描述
      *
      * @var string|null
      */
-    protected $description = '适用于无格式内容';
+    protected $description = '可输入图片文件的路径，输入框右侧带文件浏览按钮';
 }

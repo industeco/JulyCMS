@@ -4,6 +4,7 @@ namespace App\EntityField;
 
 use App\Casts\Serialized;
 use App\Models\ModelBase;
+use App\Utils\Types;
 
 class FieldParameters extends ModelBase
 {
@@ -24,27 +25,10 @@ class FieldParameters extends ModelBase
         'field_id',
         'mold_id',
         'langcode',
-        'parameters',
+        'placeholder',
+        'default_value',
+        'options',
     ];
-
-    /**
-     * 获取所有列名
-     *
-     * @return array
-     */
-    public static function getColumns()
-    {
-        return [
-            'id',
-            'entity_name',
-            'field_id',
-            'mold_id',
-            'langcode',
-            'parameters',
-            'updated_at',
-            'created_at',
-        ];
-    }
 
     /**
      * The attributes that should be cast.
@@ -52,8 +36,15 @@ class FieldParameters extends ModelBase
      * @var array
      */
     protected $casts = [
-        'parameters' => Serialized::class,
+        //
     ];
+
+    /**
+     * 参数值转换器
+     *
+     * @var string
+     */
+    protected $caster = 'string';
 
     /**
      * 采集字段所有相关参数，以 langcode + mold_id 索引
@@ -68,5 +59,51 @@ class FieldParameters extends ModelBase
                 'entity_name' => $field->getBoundEntityName(),
                 'field_id' => $field->getKey()
             ]);
+    }
+
+    public function setCaster(string $caster)
+    {
+        $this->caster = $caster;
+        return $this;
+    }
+
+    /**
+     * placeholder 属性的 Get Mutator
+     *
+     * @param  string|null  $placeholder
+     * @return mixed
+     */
+    public function getPlaceholderAttribute($placeholder)
+    {
+        return Types::cast($placeholder, 'string');
+    }
+
+    /**
+     * placeholder 属性的 Get Mutator
+     *
+     * @param  string|null  $value
+     * @return mixed
+     */
+    public function getDefaultValueAttribute($value)
+    {
+        return Types::cast($value, $this->caster);
+    }
+
+    /**
+     * placeholder 属性的 Get Mutator
+     *
+     * @param  string|null  $options
+     * @return array
+     */
+    public function getOptionsAttribute($options)
+    {
+        if (empty($options)) {
+            return [];
+        }
+        $options = array_map(function($option) {
+            return Types::cast($option, $this->caster);
+        }, array_filter(array_map('trim', explode(substr($options, 0, 1), $options))));
+
+        return array_values($options);
     }
 }

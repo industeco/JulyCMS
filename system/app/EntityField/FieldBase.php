@@ -250,13 +250,23 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 判断是否使用动态表保存字段值
+     * 获取存储字段值的动态数据库表的表名
      *
-     * @return bool
+     * @return string
      */
-    public function hasDynamicValueTable()
+    public function useDynamicValueTable()
     {
-        return !$this->getFieldType()->getTable();
+        return $this->getValueModel()->isDynamic();
+    }
+
+    /**
+     * 获取存储字段值的动态数据库表的表名
+     *
+     * @return string
+     */
+    public function getDynamicValueTable()
+    {
+        return $this->getBoundEntityName().'__'.$this->getKey();
     }
 
     /**
@@ -266,7 +276,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getValueTable()
     {
-        return $this->getFieldType()->getTable() ?: $this->getBoundEntityName().'__'.$this->getKey();
+        return $this->getValueModel()->getTable();
     }
 
     /**
@@ -332,12 +342,12 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function tableUp()
     {
         // 检查是否使用动态表保存字段值，如果不是则不创建
-        if (! $this->hasDynamicValueTable()) {
+        if (! $this->useDynamicValueTable()) {
             return;
         }
 
         // 获取独立表表名，并判断是否已存在
-        $tableName = $this->getFieldTable();
+        $tableName = $this->getDynamicValueTable();
         if (Schema::hasTable($tableName)) {
             return;
         }
@@ -366,11 +376,11 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function tableDown()
     {
-        // 检查是否使用动态表保存字段值，如果不是则不删除
-        if (! $this->hasDynamicValueTable()) {
+        // 检查是否使用动态表保存字段值，如果不是则不创建
+        if (! $this->useDynamicValueTable()) {
             return;
         }
-        Schema::dropIfExists($this->getFieldTable());
+        Schema::dropIfExists($this->getDynamicValueTable());
     }
 
     /**
@@ -392,9 +402,9 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * @return array[]
      */
-    public function getFieldRecords()
+    public function getValueRecords()
     {
-        return DB::table($this->getFieldTable())->get()->map(function ($record) {
+        return DB::table($this->getValueTable())->get()->map(function ($record) {
             return (array) $record;
         })->all();
     }

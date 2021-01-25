@@ -47,6 +47,13 @@ abstract class FieldTypeBase
     protected $caster = 'string';
 
     /**
+     * 字段值模型类
+     *
+     * @var string
+     */
+    protected $valueModel = \App\EntityField\FieldValue::class;
+
+    /**
      * 绑定的字段对象
      *
      * @var \App\EntityField\FieldBase|null
@@ -153,7 +160,7 @@ abstract class FieldTypeBase
      */
     public function getValueModel()
     {
-        $model = new FieldValue();
+        $model = new $this->valueModel;
         if ($this->field) {
             $model->bindField($this->field);
         }
@@ -193,16 +200,6 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取存储表表名
-     *
-     * @return string|null
-     */
-    public function getTable()
-    {
-        return null;
-    }
-
-    /**
      * 字段数据存储表的列信息，结构：
      * [
      *     type => string,
@@ -214,7 +211,11 @@ abstract class FieldTypeBase
      */
     public function getColumn()
     {
-        return [];
+        return [
+            'type' => 'string',
+            'name' => $this->field->getKey(),
+            'parameters' => [],
+        ];
     }
 
     /**

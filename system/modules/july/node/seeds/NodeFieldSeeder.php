@@ -33,8 +33,8 @@ class NodeFieldSeeder extends SeederBase
                 'description' => null,
             ],
             [
-                'id' => 'template',
-                'field_type_id' => 'twig',
+                'id' => 'view',
+                'field_type_id' => 'view',
                 'is_reserved' => true,
                 'is_global' => true,
                 'group_title' => '网址和模板',
@@ -117,10 +117,11 @@ class NodeFieldSeeder extends SeederBase
             ],
         ];
 
+        $now = Date::now();
         $share = [
-            'updated_at' => Date::now(),
-            'created_at' => Date::now(),
             'langcode' => langcode('content.default'),
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
 
         return array_map(function($record) use($share) {
@@ -138,27 +139,24 @@ class NodeFieldSeeder extends SeederBase
         $records = [
             [
                 'field_id' => 'url',
-                'parameters' => [
-                    'placeholder' => '/index.html',
-                ],
+                'placeholder' => '/index.html',
             ],
             [
-                'field_id' => 'template',
-                'parameters' => [
-                    'placeholder' => 'home.twig',
-                ],
+                'field_id' => 'view',
+                'placeholder' => 'home.twig',
             ],
         ];
 
+        $now = Date::now();
         $share = [
-            'entity_name' => 'node_field',
+            'entity_name' => 'node',
             'langcode' => langcode('content.default'),
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
 
         return array_map(function($record) use($share) {
-            $record += $share;
-            $record['parameters'] = serialize($record['parameters']);
-            return $record;
+            return $record + $share;
         }, $records);
     }
 

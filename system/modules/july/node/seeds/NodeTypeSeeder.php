@@ -31,24 +31,25 @@ class NodeTypeSeeder extends SeederBase
             [
                 'id' => 'list',
                 'label' => '列表页',
-                'description' => '用于生成列表页面。',
+                'description' => '可用于生成列表页面。',
             ],
             [
                 'id' => 'product',
                 'label' => '产品页',
-                'description' => '用于生成产品页面。',
+                'description' => '可用于生成产品页面。',
             ],
             [
                 'id' => 'article',
                 'label' => '文章页',
-                'description' => '用于生成文章页面。',
+                'description' => '可用于生成文章页面。',
             ],
         ];
 
+        $now = Date::now();
         $share = [
             'langcode' => langcode('content.default'),
-            'created_at' => Date::now(),
-            'updated_at' => Date::now(),
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
 
         return array_map(function($record) use($share) {

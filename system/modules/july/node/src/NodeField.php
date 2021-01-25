@@ -4,11 +4,10 @@ namespace July\Node;
 
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
-use App\EntityField\FieldBase as EntityFieldBase;
-use App\EntityField\FieldParameters;
+use App\EntityField\FieldBase;
 use App\EntityField\FieldTypes\FieldTypeManager;
 
-class NodeField extends EntityFieldBase
+class NodeField extends FieldBase
 {
     /**
      * 绑定实体的实体名
@@ -60,8 +59,8 @@ class NodeField extends EntityFieldBase
         'maxlength',
         'label',
         'description',
-        'helpertext',
         'is_required',
+        'helpertext',
         'langcode',
     ];
 
@@ -147,7 +146,7 @@ class NodeField extends EntityFieldBase
      */
     public function scopeSearchableFields($query)
     {
-        return $query->where('is_searchable', true);
+        return $query->where('search_weight', '>', 0);
     }
 
     /**

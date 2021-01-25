@@ -27,12 +27,13 @@ class NodeFieldNodeType extends Pivot
      * @var array
      */
     protected $fillable = [
-        'node_type_id',
-        'node_field_id',
+        'mold_id',
+        'field_id',
         'delta',
-        // 'weight',
         'label',
         'description',
+        'is_required',
+        'helpertext',
     ];
 
     /**
@@ -42,6 +43,7 @@ class NodeFieldNodeType extends Pivot
      */
     protected $casts = [
         'delta' => 'int',
+        'is_required' => 'boolean',
         // 'weight' => 'decimal:2',
     ];
 

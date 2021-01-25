@@ -24,7 +24,7 @@
           <template slot-scope="scope">
             <div class="jc-operators">
               <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default"
-                :disabled="scope.row.id === 'default'">
+                :disabled="scope.row.id === 'basic'">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
               {{-- @if (config('language.multiple'))
@@ -33,7 +33,7 @@
               </a>
               @endif --}}
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click="deleteType(scope.row)" :disabled="scope.row.nodes_total>0 || scope.row.is_necessary">
+                @click.stop="deleteType(scope.row)" :disabled="scope.row.referenced>0 || scope.row.is_reserved">
                 <div class="md-ripple">
                   <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div>
                 </div>
@@ -97,9 +97,11 @@
           deletable: false,
         },
 
-        editUrl: "{{ short_url('node_types.edit', '%id%') }}",
-        deleteUrl: "{{ short_url('node_types.destroy', '%id%') }}",
-        // {{-- translateUrl: "{{ short_url('node_types.translate', '%id%') }}", --}}
+        urlTemplates: {
+          editUrl: "{{ short_url('node_types.edit', '_ID_') }}",
+          deleteUrl: "{{ short_url('node_types.destroy', '_ID_') }}",
+          // {{-- translateUrl: "{{ short_url('node_types.translate', '_ID_') }}", --}}
+        },
       };
     },
 
@@ -111,7 +113,7 @@
 
         const _tar = this.contextmenu;
         _tar.target = row;
-        _tar.editUrl = this.editUrl.replace('%id%', row.id);
+        _tar.editUrl = this.urlTemplates.editUrl.replace('_ID_', row.id);
         _tar.editable = row.id !== 'default';
         _tar.deletable = row.nodes_total <= 0 && !row.is_necessary;
 
@@ -122,9 +124,9 @@
       getUrl(route, key) {
         switch (route) {
           case 'edit':
-            return this.editUrl.replace('%id%', key)
+            return this.urlTemplates.editUrl.replace('_ID_', key)
           // case 'translate':
-          //   return this.translateUrl.replace('%id%', key)
+          //   return this.urlTemplates.translateUrl.replace('_ID_', key)
         }
       },
 
@@ -143,7 +145,7 @@
             text: '正在删除 ...',
             background: 'rgba(0, 0, 0, 0.7)',
           });
-          axios.delete(this.deleteUrl.replace('%id%', id)).then(function(response) {
+          axios.delete(this.urlTemplates.deleteUrl.replace('_ID_', id)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success';
             loading.text = '已删除';

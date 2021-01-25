@@ -18,22 +18,10 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        // 统计每个类型下有多少个节点
-        $referenced = NodeType::countReference();
+        // dd(NodeType::index());
 
-        $nodeTypes = [];
-        foreach (NodeType::all() as $nodeType) {
-            $id = $nodeType->getKey();
-            $nodeTypes[$id] = array_merge(
-                $nodeType->attributesToArray(),
-                ['nodes_total' => $referenced[$id] ?? 0]
-            );
-        }
-
-        // dd($nodeTypes);
-
-        return view_with_langcode('backend::node_type.index', [
-            'nodeTypes' => $nodeTypes,
+        return view('node::node_type.index', [
+            'nodeTypes' => NodeType::index(),
         ]);
     }
 
@@ -44,28 +32,28 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
+        // $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
 
-        $currentFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-            ->sortBy('delta')->pluck('id')->all();
+        // $currentFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
+        //     ->sortBy('delta')->pluck('id')->all();
 
-        $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-            ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
-            ->sortBy('delta')
-            ->keyBy('id')
-            ->all();
+        // $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
+        //     ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
+        //     ->sortBy('delta')
+        //     ->keyBy('id')
+        //     ->all();
 
-        $data = [
-            'id' => null,
-            'label' => null,
-            'description' => null,
-            'currentFields' => $currentFields,
-            'availableFields' => $availableFields,
-        ];
+        // $data = [
+        //     'id' => null,
+        //     'label' => null,
+        //     'description' => null,
+        //     'currentFields' => $currentFields,
+        //     'availableFields' => $availableFields,
+        // ];
 
-        // dd($data);
+        // // dd($data);
 
-        return view_with_langcode('backend::node_type.create_edit', $data);
+        // return view_with_langcode('backend::node_type.create_edit', $data);
     }
 
     /**
@@ -101,23 +89,23 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
+        // $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
 
-        $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-            ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
-            ->sortBy('id')
-            ->keyBy('id')
-            ->all();
+        // $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
+        //     ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
+        //     ->sortBy('id')
+        //     ->keyBy('id')
+        //     ->all();
 
-        $data = [
-            'id' => $nodeType->id,
-            'label' => $nodeType->label,
-            'description' => $nodeType->description,
-            'currentFields' => $nodeType->fields->sortBy('delta')->pluck('id')->all(),
-            'availableFields' => $availableFields,
-        ];
+        // $data = [
+        //     'id' => $nodeType->id,
+        //     'label' => $nodeType->label,
+        //     'description' => $nodeType->description,
+        //     'currentFields' => $nodeType->fields->sortBy('delta')->pluck('id')->all(),
+        //     'availableFields' => $availableFields,
+        // ];
 
-        return view_with_langcode('backend::node_type.create_edit', $data);
+        // return view_with_langcode('backend::node_type.create_edit', $data);
     }
 
     /**

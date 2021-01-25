@@ -23,7 +23,7 @@ class CreateNodeTypesTable extends Migration
 
             // 是否预设：
             //  - 不可删除
-            //  - 只能通过程序添加，如安装或更新
+            //  - 只能通过程序添加
             $table->boolean('is_reserved')->default(false);
 
             $table->timestamps();

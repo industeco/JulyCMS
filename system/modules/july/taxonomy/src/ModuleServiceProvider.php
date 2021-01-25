@@ -19,6 +19,6 @@ class ModuleServiceProvider extends ModuleServiceProviderBase
      */
     protected function getModuleName()
     {
-        return 'example';
+        return 'taxonomy';
     }
 }

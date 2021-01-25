@@ -175,6 +175,7 @@ return [
 
         // Modules
         Installer\ModuleServiceProvider::class,
+        July\Node\ModuleServiceProvider::class,
         Specs\ModuleServiceProvider::class,
     ],
 
@@ -362,12 +363,12 @@ return [
             'icon' => 'device_hub',
             'route' => null,
             'children' => [
-                // [
-                //     'title' => '类型',
-                //     'icon' => null,
-                //     'route' => 'node_types.index',
-                //     'children' => [],
-                // ],
+                [
+                    'title' => '类型',
+                    'icon' => null,
+                    'route' => 'node_types.index',
+                    'children' => [],
+                ],
                 // [
                 //     'title' => '目录',
                 //     'icon' => null,

@@ -63,7 +63,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
     }
 
     /**
-     * 获取组件根目录
+     * 获取组件内部路径
      *
      * @param  string|null $path
      * @return string
@@ -74,7 +74,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
     }
 
     /**
-     * 获取组件根目录
+     * 获取组件根路径
      *
      * @return string
      */

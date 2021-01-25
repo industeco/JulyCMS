@@ -44,11 +44,11 @@ class CreateNodeFieldsTable extends Migration
             $table->string('label');
             $table->string('description')->nullable();
 
-            // 表单字段下方辅助文本
-            $table->string('helpertext')->nullable();
-
             // 是否必填
             $table->boolean('is_required')->default(false);
+
+            // 表单字段下方输入提示
+            $table->string('helpertext')->nullable();
 
             // 初始语言版本
             $table->string('langcode', 12);

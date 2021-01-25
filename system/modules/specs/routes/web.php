@@ -11,8 +11,8 @@ Route::prefix(config('app.management_prefix', 'admin'))
         ->names('specs');
 
     // 判断是否已存在
-    Route::get('specs/exists/{id}', [Controllers\SpecController::class, 'isExist'])
-        ->name('specs.is_exist');
+    Route::get('specs/exists/{id}', [Controllers\SpecController::class, 'exists'])
+        ->name('specs.exists');
 
     // 浏览数据
     Route::get('specs/{spec}/records', [Controllers\SpecController::class, 'records'])

@@ -1,7 +1,7 @@
-@extends('backend::layout')
+@extends('layout')
 
 @section('h1')
-  {{ $id ? '编辑内容类型' : '新建内容类型' }} <span id="content_locale">[ {{ lang($langcode)->getName() }} ]</span>
+  {{ $model['id'] ? '编辑内容类型' : '新建内容类型' }} <span id="content_locale">[ {{ lang($langcode)->getName() }} ]</span>
 @endsection
 
 @section('main_content')
@@ -10,9 +10,9 @@
     :rules="nodeTypeRules"
     label-position="top">
     <div id="main_form_left">
-      @include('backend::widgets.id', ['_model' => 'nodeType', '_readOnly' => $id])
-      @include('backend::widgets.label', ['_model' => 'nodeType', '_label'=>'名称'])
-      @include('backend::widgets.description', ['_model' => 'nodeType'])
+      <x-handle model="nodeType.model" :readOnly="!!$model['id']">
+      <x-label model="nodeType.model" label="名称">
+      <x-description model="nodeType.model">
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
         <div class="el-form-item__content">
           <div class="jc-embeded-field__header">
@@ -256,6 +256,7 @@
 
       return {
         nodeType: {
+          model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
           langcode: '{{ $langcode }}',
           id: '{{ $id }}',
           label: '{{ $label }}',
