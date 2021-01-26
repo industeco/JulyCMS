@@ -7,7 +7,8 @@
   'model' => 'model',
 ])
 
-<el-form-item label="{{ $label }}" prop="{{ $name }}" size="small" class="has-helptext">
+<el-form-item label="{{ $label }}" prop="{{ $name }}" size="small" class="has-helptext"
+  :rules="[{required:true, message:'不能为空', trigger:'submit'}]">
   <el-input
     v-model="{{ $model }}.{{ $name }}"
     name="{{ $name }}"

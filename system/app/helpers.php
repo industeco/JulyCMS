@@ -1,5 +1,6 @@
 <?php
 
+use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Utils\Lang;
 use App\Utils\Types;
 use Illuminate\Contracts\View\Factory as ViewFactory;
@@ -240,5 +241,17 @@ if (! function_exists('safe_get_contents')) {
     function safe_get_contents(string $file)
     {
         return is_file($file) ? file_get_contents($file) : '';
+    }
+}
+
+if (! function_exists('get_field_types')) {
+    /**
+     * 获取所有字段类型
+     *
+     * @return array
+     */
+    function get_field_types()
+    {
+        return FieldTypeManager::details();
     }
 }

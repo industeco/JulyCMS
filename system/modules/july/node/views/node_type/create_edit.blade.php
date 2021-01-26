@@ -6,13 +6,13 @@
 
 @section('main_content')
   <el-form id="main_form" ref="main_form"
-    :model="nodeType"
-    :rules="nodeTypeRules"
+    :model="mold.model"
+    :rules="mold.rules"
     label-position="top">
     <div id="main_form_left">
-      <x-handle model="nodeType.model" :readOnly="!!$model['id']">
-      <x-label model="nodeType.model" label="名称">
-      <x-description model="nodeType.model">
+      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="{{ short_url('node_types.exists', '_ID_') }}">
+      <x-label model="mold.model" label="名称">
+      <x-description model="mold.model">
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
         <div class="el-form-item__content">
           <div class="jc-embeded-field__header">
@@ -192,14 +192,13 @@
   const selectedFields = [];
   const selectableFields = [];
 
-  const availableFields = @json($availableFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  const allFields = @json($all_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-  for (const id in availableFields) {
-    const field = availableFields[id];
-    if (field.field_type_id == 'text' && field.parameters.options instanceof Array) {
-      field.parameters.options = field.parameters.options.map(item => {value:item});
-    } else {
-      field.parameters.options = [{value:''}];
+  for (const id in allFields) {
+    const field = allFields[id];
+    field.options = field.options.map(item => {value:item});
+    if (field.options.length <= 0) {
+      field.options.push({value:''});
     }
 
     if (field.preset_type === 1) {
@@ -211,7 +210,7 @@
 
   const currentFields = @json($currentFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
   currentFields.forEach(function(fieldName) {
-    const field = availableFields[fieldName];
+    const field = allFields[fieldName];
     if (field.preset_type === 0) {
       selectedFields.push(field);
     }
@@ -220,126 +219,50 @@
   let app = new Vue({
     el: '#main_content',
     data() {
-      var isUniqueNodeType = function(rule, value, callback) {
-        if (!value || !value.length) {
-          callback();
-        } else {
-          const action = "{{ short_url('node_types.is_exist', ':id:') }}";
-          axios.get(action.replace(':id:', value)).then(function(response) {
-            if (response.data.is_exist) {
-              callback(new Error('类型 id 已存在'));
-            } else {
-              callback();
-            }
-          }).catch(function(error) {
-            console.error(error);
-          });
-        }
-      };
-
-      var isUniqueNodeField = function(rule, value, callback) {
-        if (!value || !value.length) {
-          callback();
-        } else {
-          const action = "{{ short_url('node_fields.is_exist', ':id:') }}";
-          axios.get(action.replace(':id:', value)).then(function(response) {
-            if (response.data.is_exist) {
-              callback(new Error('字段 id 已存在'));
-            } else {
-              callback();
-            }
-          }).catch(function(error) {
-            console.error(error);
-          });
-        }
-      };
-
       return {
-        nodeType: {
-          model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
-          langcode: '{{ $langcode }}',
-          id: '{{ $id }}',
-          label: '{{ $label }}',
-          description: '{{ $description }}',
-          preset_fields: presetFields,
-          fields: selectedFields,
+        fields: @json($all_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+
+        mold: {
+          model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          fields: @json(array_values($mold_fields), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          rules: {},
         },
 
-        nodeTypeRules: {
-          @if (!$id)
-          "id": [
-            { required: true, message: '『ID』不能为空', trigger: 'submit' },
-            { max: 32, message: '最多 32 个字符', trigger: 'change' },
-            { pattern: /^[a-z0-9_]+$/, message: '『ID』只能包含小写字母、数字和下划线', trigger: 'change' },
-            { validator: isUniqueNodeType, trigger: 'blur' }
-          ],
-          @endif
-          "label": [
-            { required: true, message: '『名称』不能为空', trigger: 'submit' },
-            { max: 64, message: '最多 64 个字符', trigger: 'change' }
-          ],
-          "description": [
-            { max: 255, message: '最多 255 个字符', trigger: 'change' }
-          ],
+        field: {
+          model: {},
+          rules: {},
+          dialogVisible: false,
         },
 
-        // currentField: null,
-        editingField: availableFields['title'],
-
-        editingFieldRules: {
-          "id": [
-            { required: true, message: '『ID』不能为空', trigger: 'submit' },
-          ],
-          "label": [
-            { required: true, message: '『标签』不能为空', trigger: 'submit' },
-          ],
-        },
-
-        nodeField: {
-          id: null,
-          field_type_id: null,
-          is_searchable: true,
-          weight: 1,
-          label: null,
-          description: null,
-          langcode: '{{ $langcode }}',
-          parameters: {
-            required: false,
-            maxlength: 200,
-            file_bundle: null,
-            helptext: null,
-            default: null,
+        newField: {
+          model: {},
+          rules: {
+            field_type_id: [
+              { required:true, message:'『字段类型』不能为空', trigger:'submit' },
+            ],
+          },
+          template: {
+            id: null,
+            field_type_id: null,
+            search_weight: 0,
+            label: null,
+            description: null,
+            langcode: '{{ $langcode }}',
+            is_required: false,
+            maxlength: 0,
+            helpertext: null,
+            default_value: null,
             options: [{value:''}],
           },
         },
 
-        nodeFieldRules: {
-          "field_type_id": [
-            { required: true, message: '『字段类型』不能为空', trigger: 'submit' },
-          ],
-          "id": [
-            { required: true, message: '『ID』不能为空', trigger: 'submit' },
-            { max: 32, message: '『ID』最多 32 个字符', trigger: 'change' },
-            { pattern: /^[a-z0-9_]+$/, message: '『ID』只能包含小写字母、数字和下划线', trigger: 'change' },
-            { validator: isUniqueNodeField, trigger: 'blur' },
-          ],
-          "label": [
-            { required: true, message: '『标签』不能为空', trigger: 'submit' },
-          ],
-          'parameters.file_bundle': [
-            { required: true, message: '『文件类型』不能为空', trigger: 'submit' },
-          ],
-        },
-
         fieldSelectorVisible: false,
-        fieldEditorVisible: false,
         currentTab: 'select',
 
         selectedFields: [],
         selectableFields: selectableFields,
 
-        fieldTypes: @json(\July\Core\EntityField\FieldType::all(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        fileTypes: @json(config('jc.validation.file_bundles'), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        fieldTypes: @json(get_field_types(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
       }
     },
 

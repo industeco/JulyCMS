@@ -3,11 +3,11 @@
 namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
-use July\Node\Node;
-use July\Node\NodeField;
-use July\Node\NodeType;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use July\Node\NodeField;
+use July\Node\NodeType;
 
 class NodeTypeController extends Controller
 {
@@ -18,8 +18,6 @@ class NodeTypeController extends Controller
      */
     public function index()
     {
-        // dd(NodeType::index());
-
         return view('node::node_type.index', [
             'nodeTypes' => NodeType::index(),
         ]);
@@ -32,28 +30,48 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        // $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
+        $data = [
+            'model' => NodeType::template(),
+            'mold_fields' => [],
+            'all_fields' => $this->fieldsToArray(NodeField::all()),
+            'langcode' => langcode('content'),
+        ];
 
-        // $currentFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-        //     ->sortBy('delta')->pluck('id')->all();
+        // dd($data);
 
-        // $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-        //     ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
-        //     ->sortBy('delta')
-        //     ->keyBy('id')
-        //     ->all();
+        return view('node_type.create_edit', $data);
+    }
 
-        // $data = [
-        //     'id' => null,
-        //     'label' => null,
-        //     'description' => null,
-        //     'currentFields' => $currentFields,
-        //     'availableFields' => $availableFields,
-        // ];
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \July\Node\NodeType  $nodeType
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(NodeType $nodeType)
+    {
+        $data = [
+            'model' => $nodeType->gather(),
+            'mold_fields' => $this->fieldsToArray($nodeType->fields),
+            'all_fields' => $this->fieldsToArray(NodeField::all()),
+            'langcode' => langcode('content'),
+        ];
 
-        // // dd($data);
+        return view('node_type.create_edit', $data);
+    }
 
-        // return view_with_langcode('backend::node_type.create_edit', $data);
+    /**
+     * 获取所有字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\July\Node\NodeField[]
+     * @return array
+     */
+    protected function fieldsToArray(Collection $fields)
+    {
+        $keys = array_keys(NodeField::template());
+        return $fields->map(function(NodeField $field) use($keys) {
+            return $field->gather($keys);
+        })->keyBy('id')->all();
     }
 
     /**
@@ -79,33 +97,6 @@ class NodeTypeController extends Controller
     public function show(NodeType $nodeType)
     {
         //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \July\Node\NodeType  $nodeType
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(NodeType $nodeType)
-    {
-        // $allFields = NodeField::retrieveFieldsInfo()->groupBy('preset_type');
-
-        // $availableFields = $allFields->get(NodeField::PRESET_TYPE['preset'])
-        //     ->merge($allFields->get(NodeField::PRESET_TYPE['normal']))
-        //     ->sortBy('id')
-        //     ->keyBy('id')
-        //     ->all();
-
-        // $data = [
-        //     'id' => $nodeType->id,
-        //     'label' => $nodeType->label,
-        //     'description' => $nodeType->description,
-        //     'currentFields' => $nodeType->fields->sortBy('delta')->pluck('id')->all(),
-        //     'availableFields' => $availableFields,
-        // ];
-
-        // return view_with_langcode('backend::node_type.create_edit', $data);
     }
 
     /**

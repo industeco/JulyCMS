@@ -10,25 +10,23 @@
   export default {
     data() {
       return {
-        visible: false,
         left: 0,
         top: 0,
+        visible: false,
       };
     },
 
     methods: {
       show(event) {
-        event.preventDefault()
-        this.top = event.clientY;
-        this.left = event.clientX;
+        event.preventDefault();
         this.visible = true;
+        let rect = this.$refs.contextmenu.$el.getClientRects();
+
+        this.top = Math.min(event.clientY, window.innerHeight-rect.height-20);
+        this.left = Math.min(event.clientX, window.innerWidth-rect.width-20);
 
         const _m = this;
         function hideContextMenu(e) {
-          // if (! _m.$refs.contextmenu.contains(e.target)) {
-          //   _m.visible = false;
-          //   document.removeEventListener('click', hideContextMenu);
-          // }
           _m.visible = false;
           document.removeEventListener('click', hideContextMenu);
         }

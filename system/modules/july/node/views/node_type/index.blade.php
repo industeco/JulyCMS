@@ -114,8 +114,8 @@
         const _tar = this.contextmenu;
         _tar.target = row;
         _tar.editUrl = this.urlTemplates.editUrl.replace('_ID_', row.id);
-        _tar.editable = row.id !== 'default';
-        _tar.deletable = row.nodes_total <= 0 && !row.is_necessary;
+        _tar.editable = !row.is_reserved;
+        _tar.deletable = row.referenced <= 0 && !row.is_reserved;
 
         // this.contextmenuTarget = row;
         this.$refs.contextmenu.show(event);

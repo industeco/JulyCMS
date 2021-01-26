@@ -2,16 +2,14 @@
 
 namespace July\Node;
 
+use App\Entity\EntityMoldBase;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Entity\EntityBundleBase;
-use App\EntityField\FieldType;
 use App\EntityField\FieldParameters;
 use App\EntityField\FieldTypes\FieldTypeManager;
-use App\Models\ModelBase;
 
-class NodeType extends ModelBase implements GetNodesInterface
+class NodeType extends EntityMoldBase implements GetNodesInterface
 {
     /**
      * 与模型关联的表名
@@ -21,104 +19,13 @@ class NodeType extends ModelBase implements GetNodesInterface
     protected $table = 'node_types';
 
     /**
-     * 主键名
+     * 获取实体类
      *
-     * @var string
+     * @return string
      */
-    protected $primaryKey = 'id';
-
-    /**
-     * 主键类型
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * 主键是否自增
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * 可批量赋值的属性。
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'id',
-        'label',
-        'description',
-        'langcode',
-        'is_reserved',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'is_reserved' => 'boolean',
-    ];
-
-    /**
-     * 当前类型下的所有节点
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function nodes()
+    public static function getEntityModel()
     {
-        return $this->hasMany(Node::class);
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function fields()
-    {
-        return $this->belongsToMany(NodeField::class, 'node_field_node_type', 'node_type_id', 'node_field_id')
-            ->orderBy('node_field_node_type.delta')
-            ->withPivot([
-                'delta',
-                // 'weight',
-                'label',
-                'description',
-            ]);
-    }
-
-    /**
-     * 引用计数
-     *
-     * @return array
-     */
-    public static function referencedByNode()
-    {
-        return Node::query()->selectRaw('`node_type_id`, COUNT(*) as `total`')
-            ->groupBy('node_type_id')
-            ->pluck('total', 'node_type_id')->all();
-    }
-
-    /**
-     * 获取模型列表数据
-     *
-     * @return array
-     */
-    public static function index()
-    {
-        // 统计每个类型被节点引用次数（也就是有多少个节点使用该类型）
-        $referenced = static::referencedByNode();
-
-        // 获取模型列表
-        $nodeTypes = parent::index();
-
-        // 补充引用计数
-        foreach ($nodeTypes as $id => &$nodeType) {
-            $nodeType['referenced'] = $referenced[$id] ?? 0;
-        }
-
-        return $nodeTypes;
+        return Node::class;
     }
 
     /**

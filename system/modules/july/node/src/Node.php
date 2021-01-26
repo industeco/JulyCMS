@@ -67,9 +67,29 @@ class Node extends EntityBase
      *
      * @return string
      */
-    public static function getMoldClass()
+    public static function getMoldModel()
     {
         return NodeType::class;
+    }
+
+    /**
+     * 获取实体字段类
+     *
+     * @return string
+     */
+    public static function getFieldModel()
+    {
+        return NodeField::class;
+    }
+
+    /**
+     * 获取类型字段关联类
+     *
+     * @return string
+     */
+    public static function getPivotModel()
+    {
+        return NodeFieldNodeType::class;
     }
 
     /**
@@ -448,24 +468,24 @@ class Node extends EntityBase
         return $this->getSuggestedTemplates();
     }
 
-    /**
-     * 获取可能的模板
-     *
-     * @return string|null
-     */
-    public function template()
-    {
-        $langcode = $this->getLangcode();
+    // /**
+    //  * 获取可能的模板
+    //  *
+    //  * @return string|null
+    //  */
+    // public function template()
+    // {
+    //     $langcode = $this->getLangcode();
 
-        foreach ($this->getSuggestedTemplates() as $tpl) {
-            $tpl = str_replace('{langcode}', $langcode, $tpl);
-            if (is_file(frontend_path('template/'.$tpl))) {
-                return $tpl;
-            }
-        }
+    //     foreach ($this->getSuggestedTemplates() as $tpl) {
+    //         $tpl = str_replace('{langcode}', $langcode, $tpl);
+    //         if (is_file(frontend_path('template/'.$tpl))) {
+    //             return $tpl;
+    //         }
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 
     /**
      * 获取建议模板
@@ -685,17 +705,17 @@ class Node extends EntityBase
         return CatalogSet::make($catalogs);
     }
 
-    /**
-     * 获取内容标签
-     *
-     * @return \July\Taxonomy\TermSet
-     */
-    public function get_tags()
-    {
-        $langcode = config('render_langcode') ?? langcode('frontend');
-        $tags = $this->tags($langcode)->get()->keyBy('tag');
-        return TermSet::make($tags);
-    }
+    // /**
+    //  * 获取内容标签
+    //  *
+    //  * @return \July\Taxonomy\TermSet
+    //  */
+    // public function get_tags()
+    // {
+    //     $langcode = config('render_langcode') ?? langcode('frontend');
+    //     $tags = $this->tags($langcode)->get()->keyBy('tag');
+    //     return TermSet::make($tags);
+    // }
 
     public function get_url()
     {

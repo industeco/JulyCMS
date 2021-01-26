@@ -28,13 +28,23 @@ abstract class ModelBase extends Model
     /**
      * 获取模型列表数据
      *
-     * @return array
+     * @return array[]
      */
     public static function index()
     {
-        return static::all()->keyBy((new static)->getKeyName())->map(function(ModelBase $model) {
-            return $model->attributesToArray();
-        })->all();
+        return static::all()->map(function(ModelBase $model) {
+            return $model->gather();
+        })->keyBy((new static)->getKeyName())->all();
+    }
+
+    /**
+     * 获取模型模板数据
+     *
+     * @return array
+     */
+    public static function template()
+    {
+        return array_fill_keys((new static)->getFillable(), null);
     }
 
     /**

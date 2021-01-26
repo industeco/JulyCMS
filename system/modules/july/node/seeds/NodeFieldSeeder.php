@@ -13,7 +13,7 @@ class NodeFieldSeeder extends SeederBase
      *
      * @var array
      */
-    protected $tables = ['node_fields', 'field_parameters'];
+    protected $tables = ['node_fields'];
 
     /**
      * 获取 node_fields 表数据
@@ -119,37 +119,6 @@ class NodeFieldSeeder extends SeederBase
 
         $now = Date::now();
         $share = [
-            'langcode' => langcode('content.default'),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ];
-
-        return array_map(function($record) use($share) {
-            return $record + $share;
-        }, $records);
-    }
-
-    /**
-     * 获取 field_parameters 表数据
-     *
-     * @return array
-     */
-    protected function getFieldParametersTableRecords()
-    {
-        $records = [
-            [
-                'field_id' => 'url',
-                'placeholder' => '/index.html',
-            ],
-            [
-                'field_id' => 'view',
-                'placeholder' => 'home.twig',
-            ],
-        ];
-
-        $now = Date::now();
-        $share = [
-            'entity_name' => 'node',
             'langcode' => langcode('content.default'),
             'created_at' => $now,
             'updated_at' => $now,

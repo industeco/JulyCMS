@@ -30,10 +30,15 @@ trait CacheResultTrait
      * @param  bool $pocket
      * @return \App\Utils\Value|null
      */
-    public function cachePipe(string $method, ?string $key = null, $pocket = false)
+    public function cachePipe(string $method, ?string $key = null, $usePocket = false)
     {
-        // 如果指定的方法为 pipeCache 或 pipePocket，则直接返回 null
-        if (in_array($method, [
+        // 如果 method 正在被 pipeCache 执行，返回 null
+        if ($this->resultCache['piping'][$method] ?? false) {
+            return null;
+        }
+
+        // 如果 method 无效，返回 null
+        if (!method_exists($this, $method) || in_array($method, [
                 'cachePipe','cachePut','cacheGet','cacheClear',
                 'pocketPipe','pocketPut','pocketGet','pocketClear',
             ])) {
@@ -41,22 +46,16 @@ trait CacheResultTrait
         }
 
         // 存储键 = 方法 + 参数
-        $key = ($key && is_string($key)) ? $key : $method;
+        $key = $key ?? $method;
 
         // 尝试获取值，如果成功则返回该值
-        $value = $this->resultCache['cache'][$key] ?? null;
-        if (is_object($value) && $value instanceof Value) {
+        if ($value = $this->cacheGet($key)) {
             return $value;
         }
 
         // 尝试从缓存获取值（使用 Pocket）
-        if ($pocket && ($value = $this->pocketGet($key))) {
+        if ($usePocket && ($value = $this->pocketGet($key))) {
             return $value;
-        }
-
-        // 如果 method 无效，或正在被 pipeCache 执行，返回 null
-        if ($this->resultCache['piping'][$method] ?? false || !method_exists($this, $method)) {
-            return null;
         }
 
         // 尝试通过执行 method 获取值
@@ -72,7 +71,7 @@ trait CacheResultTrait
 
             // 缓存执行结果
             $this->cachePut($key, $value);
-            if ($pocket) {
+            if ($usePocket) {
                 $this->pocketPut($key, $value);
             }
 

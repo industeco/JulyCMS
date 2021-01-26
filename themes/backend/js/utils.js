@@ -100,3 +100,33 @@ function isEqual(v1, v2) {
   // return v1 == v2 || stringify(v1) == stringify(v2);
   return _.isEqual(v1, v2);
 }
+
+// 检查 id 是否已存在
+function unique(action) {
+  return function(rule, value, callback) {
+    axios.get(action.replace('_ID_', value)).then(function(response) {
+      if (response.data.exists) {
+        callback(new Error('id 已存在'));
+      } else {
+        callback();
+      }
+    }).catch(function(error) {
+      console.error(error);
+    });
+  };
+}
+
+// 检查 url 是否已存在
+function uniqueUrl(action) {
+  return function(rule, value, callback) {
+    axios.post(action, {url: value}).then(function(response) {
+      if (response.data.exists) {
+        callback(new Error('URL 已存在'));
+      } else {
+        callback();
+      }
+    }).catch(function(error) {
+      console.error(error);
+    });
+  };
+}

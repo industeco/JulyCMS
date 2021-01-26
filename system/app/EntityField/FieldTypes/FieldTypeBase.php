@@ -2,12 +2,10 @@
 
 namespace App\EntityField\FieldTypes;
 
-use App\Concerns\HasAttributesTrait;
+use App\EntityField\FieldBase;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\EntityField\FieldBase;
-use App\EntityField\FieldValue;
 
 /**
  * 模型字段类型定义类，简称定义类
@@ -45,6 +43,13 @@ abstract class FieldTypeBase
      * @var string
      */
     protected $caster = 'string';
+
+    /**
+     * 字段默认值
+     *
+     * @var mixed
+     */
+    protected $defaultValue = null;
 
     /**
      * 字段值模型类
@@ -150,7 +155,7 @@ abstract class FieldTypeBase
      */
     public function getDefaultValue()
     {
-        return null;
+        return $this->defaultValue;
     }
 
     /**
@@ -168,35 +173,20 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 从表单数据中提取字段参数
+     * 从表单数据中提取字段参数，主要用于类型翻译
      *
      * @param array $raw 包含表单数据的数组
      * @return array
      */
     public function extractParameters(array $raw)
     {
-        $raw = $raw['parameters'] ?? $raw;
-        $parameters = [];
+        return [
+            // 默认值
+            'default_value' => $raw['default_value'] ?? null,
 
-        // 默认值
-        if (isset($raw['default'])) {
-            $parameters['default'] = Types::cast($raw['default'], $this->caster);
-        }
-
-        // 可选项
-        $options = $raw['options'] ?? null;
-        if ($options && is_array($options)) {
-            $parameters['options'] = array_map(function($option) {
-                return Types::cast($option, $this->caster);
-            }, $options);
-        }
-
-        // 占位提示
-        if (isset($raw['placeholder'])) {
-            $parameters['placeholder'] = trim($raw['placeholder']);
-        }
-
-        return $parameters;
+            // 可选项
+            'options' => $raw['options'] ?? [],
+        ];
     }
 
     /**
@@ -256,8 +246,7 @@ abstract class FieldTypeBase
     public function getRules()
     {
         $rules = [];
-        $parameters = $this->field->getParameters();
-        if ($parameters['required'] ?? false) {
+        if ($this->field->is_required) {
             $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
         }
         return $rules;
@@ -282,13 +271,8 @@ abstract class FieldTypeBase
      */
     public function toValue(array $record)
     {
-        $value = [];
-        foreach ($this->getColumn() as $column) {
-            $key = $column['name'];
-            $value[$key] = isset($record[$key]) ? trim($record[$key]) : null;
-        }
-
-        return count($value) > 1 ? $value : reset($value);
+        $value = $record[$this->getColumn()['name']] ?? null;
+        return Types::cast($value, $this->caster);
     }
 
     /**

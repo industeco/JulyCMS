@@ -2,7 +2,6 @@
 
 namespace App\EntityField;
 
-use App\Casts\Serialized;
 use App\Models\ModelBase;
 use App\Utils\Types;
 
@@ -61,6 +60,12 @@ class FieldParameters extends ModelBase
             ]);
     }
 
+    /**
+     * 设置值转换器
+     *
+     * @param  string $caster
+     * @return $this
+     */
     public function setCaster(string $caster)
     {
         $this->caster = $caster;
@@ -89,10 +94,25 @@ class FieldParameters extends ModelBase
         if (empty($options)) {
             return [];
         }
+
         $options = array_map(function($option) {
             return Types::cast($option, $this->caster);
-        }, array_filter(array_map('trim', explode(substr($options, 0, 1), $options))));
+        }, array_filter(array_map('trim', explode('|', $options))));
 
         return array_values($options);
+    }
+
+    /**
+     * options 属性的 Set Mutator
+     *
+     * @param  array|null $options
+     * @return array
+     */
+    public function setOptionsAttribute($options)
+    {
+        if (is_array($options)) {
+            $options = implode('|', $options);
+        }
+        $this->attributes['options'] = $options;
     }
 }

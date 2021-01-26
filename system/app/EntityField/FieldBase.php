@@ -76,13 +76,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     ];
 
     /**
-     * 绑定的实体名
-     *
-     * @var string|null
-     */
-    protected $boundEntityName = null;
-
-    /**
      * 字段所属实体
      *
      * @var \App\Entity\EntityBase
@@ -90,18 +83,65 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     protected $entity;
 
     /**
+     * 获取模型模板数据
+     *
+     * @return array
+     */
+    public static function template()
+    {
+        return [
+            'id' => null,
+            'field_type_id' => null,
+            'is_reserved' => false,
+            'is_global' => false,
+            'group_title' => null,
+            'search_weight' => 0,
+            'maxlength' => 0,
+            'label' => null,
+            'description' => null,
+            'is_required' => false,
+            'helpertext' => null,
+            'default_value' => null,
+            'options' => [],
+            'langcode' => langcode('content'),
+        ];
+    }
+
+    /**
+     * 获取实体类
+     *
+     * @return string
+     */
+    abstract public static function getEntityModel();
+
+    /**
+     * 获取实体字段类
+     *
+     * @return string
+     */
+    public static function getMoldModel()
+    {
+        return static::getEntityModel()::getMoldModel();
+    }
+
+    /**
+     * 获取类型字段关联类
+     *
+     * @return string
+     */
+    public static function getPivotModel()
+    {
+        return static::getEntityModel()::getPivotModel();
+    }
+
+    /**
      * 获取字段绑定实体的实体名
      *
-     * @return string|null
+     * @return string
      */
-    public function getBoundEntityName()
+    public static function getBoundEntityName()
     {
-        if ($this->boundEntityName) {
-            return $this->boundEntityName;
-        } elseif ($this->entity) {
-            return $this->entity->getEntityName();
-        }
-        return null;
+        return static::getEntityModel()::getEntityName();
     }
 
     /**
@@ -124,8 +164,8 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function bindEntity(EntityBase $entity)
     {
-        $class = $this->boundEntityName ? EntityManager::resolve($this->boundEntityName) : null;
-        if (!$class || $entity instanceof $class) {
+        $class = $this->getEntityModel();
+        if ($entity instanceof $class) {
             $this->entity = $entity;
             return $this;
         } else {
@@ -209,7 +249,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function getDefaultValueAttribute($defaultValue)
     {
         if ($this->pivot) {
-            $defaultValue = $this->pivot->defaultValue;
+            $defaultValue = $this->pivot->default_value;
         }
         return Types::cast($defaultValue, $this->getFieldType()->getCaster());
     }
@@ -230,12 +270,30 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return [];
         }
 
+        if (is_string($options)) {
+            $options = array_filter(array_map('trim', explode('|', $options)));
+        }
+
         $caster = $this->getFieldType()->getCaster();
         $options = array_map(function($option) use($caster) {
             return Types::cast($option, $caster);
-        }, array_filter(array_map('trim', explode('|', $options))));
+        }, $options);
 
         return array_values($options);
+    }
+
+    /**
+     * options 属性的 Set Mutator
+     *
+     * @param  array|null $options
+     * @return array
+     */
+    public function setOptionsAttribute($options)
+    {
+        if (is_array($options)) {
+            $options = implode('|', $options);
+        }
+        $this->attributes['options'] = $options;
     }
 
     /**
@@ -293,7 +351,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             $attributes['delta'] = $this->pivot ? intval($this->pivot->delta) : 0;
         }
         if ($keys && $keys !== ['*']) {
-            $attributes = Arr::selectAs($attributes, $keys);
+            $attributes = Arr::only($attributes, $keys);
         }
         return $attributes;
     }
@@ -319,51 +377,10 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getValueModel()
     {
-        // 尝试从缓存获取数据
-        if ($result = $this->cachePipe(__FUNCTION__)) {
-            return $result->value();
+        if ($model = $this->cachePipe(__FUNCTION__)) {
+            return $model->value();
         }
         return $this->getFieldType()->getValueModel();
-    }
-
-    /**
-     * 获取存储字段值的动态数据库表的表名
-     *
-     * @return string
-     */
-    public function useDynamicValueTable()
-    {
-        return $this->getValueModel()->isDynamic();
-    }
-
-    /**
-     * 获取存储字段值的动态数据库表的表名
-     *
-     * @return string
-     */
-    public function getDynamicValueTable()
-    {
-        return $this->getBoundEntityName().'__'.$this->getKey();
-    }
-
-    /**
-     * 获取存储字段值的数据库表的表名
-     *
-     * @return string
-     */
-    public function getValueTable()
-    {
-        return $this->getValueModel()->getTable();
-    }
-
-    /**
-     * 获取数据表列参数
-     *
-     * @return array
-     */
-    public function getValueColumn()
-    {
-        return $this->getFieldType()->getColumn();
     }
 
     /**
@@ -409,6 +426,46 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     public function searchValue(string $needle)
     {
         return $this->getValueModel()->searchValue($needle);
+    }
+
+    /**
+     * 判断是否使用动态表存储
+     *
+     * @return string
+     */
+    public function useDynamicValueTable()
+    {
+        return $this->getValueModel()->isDynamic();
+    }
+
+    /**
+     * 获取存储字段值的动态数据库表的表名
+     *
+     * @return string
+     */
+    public function getDynamicValueTable()
+    {
+        return $this->getBoundEntityName().'__'.$this->getKey();
+    }
+
+    /**
+     * 获取存储字段值的数据库表的表名
+     *
+     * @return string
+     */
+    public function getValueTable()
+    {
+        return $this->getValueModel()->getTable();
+    }
+
+    /**
+     * 获取数据表列参数
+     *
+     * @return array
+     */
+    public function getValueColumn()
+    {
+        return $this->getFieldType()->getColumn();
     }
 
     /**

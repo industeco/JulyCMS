@@ -19,18 +19,42 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     use TranslatableTrait;
 
     /**
-     * 实体字段 id 缓存
-     *
-     * @var array
-     */
-    protected static $fields = [];
-
-    /**
      * 新建或更新时传入的原始数据
      *
      * @var array
      */
     protected $raw = [];
+
+    /**
+     * 获取实体类型类
+     *
+     * @return string
+     */
+    public static function getMoldModel()
+    {
+        return static::class.'Type';
+    }
+
+    /**
+     * 获取实体字段类
+     *
+     * @return string
+     */
+    public static function getFieldModel()
+    {
+        return static::class.'Field';
+    }
+
+    /**
+     * 获取类型字段关联类
+     *
+     * @return string
+     */
+    public static function getPivotModel()
+    {
+        $classname = basename(static::class);
+        return __NAMESPACE__.'\\'.$classname.'Field'.$classname.'Type';
+    }
 
     /**
      * 获取实体名
@@ -87,14 +111,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    abstract public static function getMoldClass();
-
-    /**
-     * 获取实体类型类
-     *
-     * @return string
-     */
-    public static function getMoldForeignKeyName()
+    public function getMoldForeignKeyName()
     {
         return 'mold_id';
     }

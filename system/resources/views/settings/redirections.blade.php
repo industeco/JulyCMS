@@ -39,7 +39,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(redirection, index) in settings.redirections" :key="index">
+              <tr v-for="(redirection, index) in settings['site.redirections']" :key="index">
                 <th>@{{ index + 1 }}</th>
                 <td>
                   <input type="text" class="jc-input-intable" v-model="redirection.from">
@@ -84,33 +84,36 @@
 
 @section('script')
 <script>
-  const _redirections = @json($settings, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
-  const _redirectionsArray = [];
-  _.forEach(redirectionsMap, (item, key) => {
-    _redirectionsArray.push({
-      from: key.trim(),
-      to: item.to.trim(),
-      code: this.parseCode(item.code),
-    });
-  });
-
   const app = new Vue({
     el: '#main_content',
     data() {
       return {
-        settings: _redirectionsArray,
+        settings: @json($settings, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
       };
     },
 
     created() {
+      this.settings['site.redirections'] = this.mapToArray(this.settings['site.redirections']);
       this.original_settings = _.cloneDeep(this.settings);
     },
 
     methods: {
+      mapToArray(redirectionsMap) {
+        const _redirectionsArray = [];
+        _.forEach(redirectionsMap, (item, key) => {
+          _redirectionsArray.push({
+            from: key.trim(),
+            to: item.to ? item.to.trim() : '',
+            code: this.parseCode(item.code),
+          });
+        });
+        return _redirectionsArray;
+      },
+
       arrayToMap(redirectionsArray) {
         const redirections = {};
         _.forEach(redirectionsArray, item => {
-          if (item.from.trim() && item.to.trim()) {
+          if (item.from.trim() && item.to && item.to.trim()) {
             redirections[item.from.trim()] = {
               to: item.to.trim(),
               code: this.parseCode(item.code),
@@ -121,7 +124,7 @@
       },
 
       addRedirection() {
-        this.settings.redirections.push({
+        this.settings['site.redirections'].push({
           from: '',
           to: '',
           code: 302,
@@ -129,16 +132,16 @@
       },
 
       removeRedirection(index) {
-        this.settings.redirections.splice(index, 1);
+        this.settings['site.redirections'].splice(index, 1);
       },
 
       parseCode(code) {
-        const code = parseInt(code);
+        code = parseInt(code);
         if (code === 301 || code === 302) {
           return code;
         }
         return 302;
-      }
+      },
 
       submit() {
         if (_.isEqual(this.settings, this.original_settings)) {
@@ -154,7 +157,7 @@
 
         this.$refs.main_form.validate().then(() => {
           axios.post("{{ short_url('settings.update', $name) }}", {
-            redirections: this.arrayToMap(this.settings.redirections)
+            'site.redirections': this.arrayToMap(this.settings['site.redirections'])
           }).then(response => {
             loading.close();
             this.original_settings = _.cloneDeep(this.settings);

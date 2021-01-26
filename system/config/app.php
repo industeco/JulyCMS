@@ -249,10 +249,10 @@ return [
 
     // 登记配置管理类
     'settings' => [
-        \App\Settings\Language::class,
-        \App\Settings\SiteInformation::class,
-        // \App\Settings\UserInterface::class,
-        \App\Settings\Redirections::class,
+        \App\Services\Settings\Language::class,
+        \App\Services\Settings\SiteInformation::class,
+        // \App\Services\Settings\UserInterface::class,
+        \App\Services\Settings\Redirections::class,
     ],
 
     // 登记实体
@@ -262,10 +262,13 @@ return [
 
     // 登记实体字段类型
     'field_types' => [
+        \App\EntityField\FieldTypes\Any::class,
         \App\EntityField\FieldTypes\File::class,
         \App\EntityField\FieldTypes\Html::class,
+        \App\EntityField\FieldTypes\Image::class,
         \App\EntityField\FieldTypes\Text::class,
-        \App\EntityField\FieldTypes\Any::class,
+        \App\EntityField\FieldTypes\Url::class,
+        \App\EntityField\FieldTypes\View::class,
     ],
 
     // 是否允许通过实体路径访问

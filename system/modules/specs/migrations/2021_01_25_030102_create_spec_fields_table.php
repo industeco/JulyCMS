@@ -68,6 +68,6 @@ class CreateSpecFieldsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('specs_fields');
+        Schema::dropIfExists('spec_fields');
     }
 }

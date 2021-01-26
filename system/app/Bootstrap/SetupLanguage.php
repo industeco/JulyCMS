@@ -18,8 +18,8 @@ class SetupLanguage
         $request = $app->make('request');
 
         // 提取并设定内容语言（Request 所携带的内容数据的语言版本，内容数据是指通过后台表单提交的数据）
-        if ($contentLangcode = $request->input('content_langcode')) {
-            config(['lang.request_content' => $contentLangcode]);
+        if ($langcode = $request->input('langcode') ?? $request->input('content_langcode')) {
+            config(['lang.request_content' => $langcode]);
         }
 
         // 判断并设定是否管理路由（以管理前缀开头的路由）

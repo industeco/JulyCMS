@@ -60,6 +60,24 @@ final class FieldTypeManager implements ManagerInterface
     }
 
     /**
+     * 获取字段类型列表
+     *
+     * @return array
+     */
+    public static function details()
+    {
+        $types = [];
+        foreach (static::$fieldTypes as $id => $class) {
+            $types[$id] = [
+                'id' => $id,
+                'label' => $class::get('label'),
+                'description' => $class::get('description'),
+            ];
+        }
+        return $types;
+    }
+
+    /**
      * 将 config::app.field_types 登记到 $fieldTypes
      *
      * @return void
