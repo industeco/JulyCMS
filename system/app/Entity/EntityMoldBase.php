@@ -91,6 +91,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
             'id' => null,
             'label' => null,
             'description' => null,
+            'langcode' => langcode('content'),
         ];
     }
 

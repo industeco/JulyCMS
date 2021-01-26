@@ -1,4 +1,4 @@
-@extends('backend::layout')
+@extends('layout')
 
 @section('h1')
   {{ __('backend.'.$mode) }}内容 <span id="content_locale">[ {{ $node_type['label'] }}({{ $node_type['id'] }}), {{ lang($langcode)->getName() }}({{ $langcode }}) ]</span>

@@ -83,24 +83,24 @@ class FieldParameters extends ModelBase
         return Types::cast($value, $this->caster);
     }
 
-    /**
-     * placeholder 属性的 Get Mutator
-     *
-     * @param  string|null  $options
-     * @return array
-     */
-    public function getOptionsAttribute($options)
-    {
-        if (empty($options)) {
-            return [];
-        }
+    // /**
+    //  * placeholder 属性的 Get Mutator
+    //  *
+    //  * @param  string|null  $options
+    //  * @return array
+    //  */
+    // public function getOptionsAttribute($options)
+    // {
+    //     if (empty($options)) {
+    //         return [];
+    //     }
 
-        $options = array_map(function($option) {
-            return Types::cast($option, $this->caster);
-        }, array_filter(array_map('trim', explode('|', $options))));
+    //     $options = array_map(function($option) {
+    //         return Types::cast($option, $this->caster);
+    //     }, array_filter(array_map('trim', explode('|', $options))));
 
-        return array_values($options);
-    }
+    //     return array_values($options);
+    // }
 
     /**
      * options 属性的 Set Mutator

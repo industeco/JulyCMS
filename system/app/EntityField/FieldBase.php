@@ -10,6 +10,7 @@ use App\Models\ModelBase;
 use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
 use App\Utils\Arr;
+use App\Utils\Pocket;
 use App\Utils\Types;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,15 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         'search_weight' => 'int',
         'maxlength' => 'int',
         'is_required' => 'boolean',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'delta',
     ];
 
     /**
@@ -174,6 +184,28 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 将字段分为预设和可选
+     *
+     * @return array
+     */
+    public static function classify()
+    {
+        $optional = [];
+        $preseted = [];
+        foreach (static::all() as $field) {
+            $field = $field->attributesToArray();
+            if ($field['is_reserved'] || $field['is_global']) {
+                $preseted[$field['id']] = $field;
+            } else {
+                $optional[$field['id']] = $field;
+            }
+        }
+        $fields = compact('optional', 'preseted');
+
+        return $fields;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getLangcode()
@@ -258,42 +290,52 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      * options 属性的 Get Mutator
      *
      * @param  string|null $options
-     * @return array
+     * @return string
      */
     public function getOptionsAttribute($options)
     {
         if ($this->pivot) {
             $options = $this->pivot->options;
         }
-
-        if (empty($options)) {
-            return [];
-        }
-
-        if (is_string($options)) {
-            $options = array_filter(array_map('trim', explode('|', $options)));
-        }
-
-        $caster = $this->getFieldType()->getCaster();
-        $options = array_map(function($option) use($caster) {
-            return Types::cast($option, $caster);
-        }, $options);
-
-        return array_values($options);
+        return trim($options);
     }
 
     /**
-     * options 属性的 Set Mutator
+     * delta 属性的 Get Mutator
      *
-     * @param  array|null $options
+     * @return int
+     */
+    public function getDeltaAttribute()
+    {
+        if ($this->pivot) {
+            return $this->pivot->delta;
+        }
+        return 0;
+    }
+
+    /**
+     * 获取所有列和字段值
+     *
+     * @param  array $keys 限定键名
      * @return array
      */
-    public function setOptionsAttribute($options)
+    public function gather(array $keys = ['*'])
     {
-        if (is_array($options)) {
-            $options = implode('|', $options);
+        // 尝试从缓存获取数据
+        if ($attributes = $this->cachePipe(__FUNCTION__)) {
+            $attributes = $attributes->value();
         }
-        $this->attributes['options'] = $options;
+
+        // 生成属性数组
+        else {
+            $attributes = $this->attributesToArray();
+        }
+
+        if ($keys && $keys !== ['*']) {
+            $attributes = Arr::only($attributes, $keys);
+        }
+
+        return $attributes;
     }
 
     /**
@@ -328,32 +370,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         }
 
         return [];
-    }
-
-    /**
-     * 获取所有列和字段值
-     *
-     * @param  array $keys 限定键名
-     * @return array
-     */
-    public function gather(array $keys = ['*'])
-    {
-        // 尝试从缓存获取数据
-        if ($attributes = $this->cachePipe(__FUNCTION__)) {
-            $attributes = $attributes->value();
-        }
-
-        // 生成属性数组
-        else {
-            $attributes = array_merge(
-                $this->attributesToArray(), $this->getParameters()
-            );
-            $attributes['delta'] = $this->pivot ? intval($this->pivot->delta) : 0;
-        }
-        if ($keys && $keys !== ['*']) {
-            $attributes = Arr::only($attributes, $keys);
-        }
-        return $attributes;
     }
 
     /**
@@ -528,7 +544,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             $field->tableUp();
         });
 
-        static::deleted(function(FieldBase $field) {
+        static::deleting(function(FieldBase $field) {
             $field->tableDown();
         });
     }

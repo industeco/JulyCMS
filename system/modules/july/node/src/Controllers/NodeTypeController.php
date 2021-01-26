@@ -30,10 +30,11 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
+        $fields = NodeField::classify();
         $data = [
             'model' => NodeType::template(),
-            'mold_fields' => [],
-            'all_fields' => $this->fieldsToArray(NodeField::all()),
+            'mold_fields' => $fields['preseted'],
+            'optional_fields' => $fields['optional'],
             'langcode' => langcode('content'),
         ];
 
@@ -50,28 +51,19 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
+        $fields = NodeField::classify();
+        $moldFields = $nodeType->fields->map(function($field) {
+            return $field->gather();
+        })->keyBy('id')->all();
+
         $data = [
             'model' => $nodeType->gather(),
-            'mold_fields' => $this->fieldsToArray($nodeType->fields),
-            'all_fields' => $this->fieldsToArray(NodeField::all()),
+            'mold_fields' => $moldFields,
+            'optional_fields' => $fields['optional'],
             'langcode' => langcode('content'),
         ];
 
         return view('node_type.create_edit', $data);
-    }
-
-    /**
-     * 获取所有字段
-     *
-     * @param  \Illuminate\Database\Eloquent\Collection|\July\Node\NodeField[]
-     * @return array
-     */
-    protected function fieldsToArray(Collection $fields)
-    {
-        $keys = array_keys(NodeField::template());
-        return $fields->map(function(NodeField $field) use($keys) {
-            return $field->gather($keys);
-        })->keyBy('id')->all();
     }
 
     /**

@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('h1')
-  {{ $model['id'] ? '编辑内容类型' : '新建内容类型' }} <span id="content_locale">[ {{ lang($langcode)->getName() }} ]</span>
+  {{ $model['id'] ? '编辑内容类型' : '新建内容类型' }}
 @endsection
 
 @section('main_content')
@@ -10,7 +10,7 @@
     :rules="mold.rules"
     label-position="top">
     <div id="main_form_left">
-      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="{{ short_url('node_types.exists', '_ID_') }}">
+      <x-handle model="mold.model" :read-only="!!$model['id']" unique-action="{{ short_url('node_types.exists', '_ID_') }}">
       <x-label model="mold.model" label="名称">
       <x-description model="mold.model">
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
@@ -21,7 +21,9 @@
               <button type="button" title="选择或新建字段"
                 class="md-button md-icon-button md-dense md-accent md-theme-default"
                 @click.stop="fieldSelectorVisible = true">
-                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">add</i></div></div>
+                <div class="md-ripple">
+                  <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">add</i></div>
+                </div>
               </button>
             </div>
           </div>
@@ -38,7 +40,7 @@
               <thead>
                 <tr>
                   <th></th>
-                  <th>真名</th>
+                  <th>ID</th>
                   <th>标签</th>
                   <th>描述</th>
                   <th>类型</th>
@@ -49,7 +51,7 @@
                 <tr v-for="field in nodeType.preset_fields" :key="field.id">
                   <td></td>
                   <td><span>@{{ field.id }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':field.required}">@{{ field.label }}</span></td>
+                  <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
                   <td><span>@{{ field.description }}</span></td>
                   <td><span>@{{ field.field_type_id }}</span></td>
                   <td>
@@ -111,9 +113,9 @@
         </button>
       </div>
     </div>
-    <div id="main_form_right">
+    {{-- <div id="main_form_right">
       <h2 class="jc-form-info-item">通用非必填项</h2>
-    </div>
+    </div> --}}
   </el-form>
   <el-dialog
     id="field_selector"
@@ -182,45 +184,45 @@
 
 @section('script')
 <script>
-  function clone(obj) {
-    return JSON.parse(JSON.stringify(obj))
-  }
+  // function clone(obj) {
+  //   return JSON.parse(JSON.stringify(obj))
+  // }
 
-  let mode = "{{ $id ? 'edit' : 'create' }}";
+  // let mode = "{{ $id ? 'edit' : 'create' }}";
 
-  const presetFields = [];
-  const selectedFields = [];
-  const selectableFields = [];
+  // const presetFields = [];
+  // const selectedFields = [];
+  // const selectableFields = [];
 
-  const allFields = @json($all_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  // const allFields = @json($all_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-  for (const id in allFields) {
-    const field = allFields[id];
-    field.options = field.options.map(item => {value:item});
-    if (field.options.length <= 0) {
-      field.options.push({value:''});
-    }
+  // for (const id in allFields) {
+  //   const field = allFields[id];
+  //   field.options = field.options.map(item => {value:item});
+  //   if (field.options.length <= 0) {
+  //     field.options.push({value:''});
+  //   }
 
-    if (field.preset_type === 1) {
-      presetFields.push(field);
-    } else {
-      selectableFields.push(field);
-    }
-  }
+  //   if (field.preset_type === 1) {
+  //     presetFields.push(field);
+  //   } else {
+  //     selectableFields.push(field);
+  //   }
+  // }
 
-  const currentFields = @json($currentFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-  currentFields.forEach(function(fieldName) {
-    const field = allFields[fieldName];
-    if (field.preset_type === 0) {
-      selectedFields.push(field);
-    }
-  });
+  // const currentFields = @json($currentFields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  // currentFields.forEach(function(fieldName) {
+  //   const field = allFields[fieldName];
+  //   if (field.preset_type === 0) {
+  //     selectedFields.push(field);
+  //   }
+  // });
 
   let app = new Vue({
     el: '#main_content',
     data() {
       return {
-        fields: @json($all_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        fields: @json($optional_fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
 
         mold: {
           model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
@@ -252,7 +254,7 @@
             maxlength: 0,
             helpertext: null,
             default_value: null,
-            options: [{value:''}],
+            options: null,
           },
         },
 
@@ -285,7 +287,7 @@
     },
 
     created: function() {
-      this.initial_data = JSON.stringify(this.nodeType);
+      this.initial_data = JSON.stringify(this.mold);
     },
 
     methods: {

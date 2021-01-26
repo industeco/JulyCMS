@@ -40,17 +40,17 @@ abstract class FieldMoldPivotBase extends Pivot
         'is_required' => 'boolean',
     ];
 
-    /**
-     * options 属性的 Set Mutator
-     *
-     * @param  array|null $options
-     * @return array
-     */
-    public function setOptionsAttribute($options)
-    {
-        if (is_array($options)) {
-            $options = implode('|', $options);
-        }
-        $this->attributes['options'] = $options;
-    }
+    // /**
+    //  * options 属性的 Set Mutator
+    //  *
+    //  * @param  array|null $options
+    //  * @return array
+    //  */
+    // public function setOptionsAttribute($options)
+    // {
+    //     if (is_array($options)) {
+    //         $options = implode('|', $options);
+    //     }
+    //     $this->attributes['options'] = $options;
+    // }
 }

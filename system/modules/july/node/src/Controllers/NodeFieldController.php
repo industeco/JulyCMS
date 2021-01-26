@@ -4,12 +4,8 @@ namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
 use July\Node\NodeField;
-use App\EntityField\FieldType;
-use App\EntityField\FieldParameters;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Response;
 
 class NodeFieldController extends Controller
 {
@@ -20,10 +16,7 @@ class NodeFieldController extends Controller
      */
     public function index()
     {
-        $fields = NodeField::all()->map(function($field) {
-            return $field->gather();
-        })->all();
-        return response($fields);
+        return response(NodeField::index());
     }
 
     /**
@@ -44,19 +37,7 @@ class NodeFieldController extends Controller
      */
     public function store(Request $request)
     {
-        $field = NodeField::make($request->all());
-        $parameters = FieldParameters::make([
-            'parameters' => FieldType::find($field)->extractParameters($request->input('parameters')),
-            'langcode' => $field->langcode,
-        ]);
-
-        DB::beginTransaction();
-
-        $field->save();
-        $field->parameters()->save($parameters);
-
-        DB::commit();
-
+        NodeField::create($request->all());
         return response('');
     }
 
@@ -114,13 +95,14 @@ class NodeFieldController extends Controller
     public function exists(string $id)
     {
         // 保留的字段名
-        $reserved = [
-            // Node 固有属性名
-            'id', 'node_type_id', 'langcode', 'updated_at', 'created_at',
+        $reserved = array_merge(
+            // 固有属性
+            array_keys(NodeField::template()),
+            ['updated_at', 'created_at', 'delta'],
 
-            // 关联属性名
-            'tags', 'catalogs',
-        ];
+            // 动态表中用到的，或可能会用到的
+            ['entity_id', 'entity_name']
+        );
 
         return response([
             'exists' => in_array($id, $reserved) || !empty(NodeField::find($id)),
