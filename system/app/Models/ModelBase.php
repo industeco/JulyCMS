@@ -26,26 +26,11 @@ abstract class ModelBase extends Model
     protected $updateExcept = [];
 
     /**
-     * 获取模型列表数据
+     * 新建或更新时传入的原始数据
      *
-     * @return array[]
+     * @var array
      */
-    public static function index()
-    {
-        return static::all()->map(function(ModelBase $model) {
-            return $model->gather();
-        })->keyBy((new static)->getKeyName())->all();
-    }
-
-    /**
-     * 获取模型模板数据
-     *
-     * @return array
-     */
-    public static function template()
-    {
-        return array_fill_keys((new static)->getFillable(), null);
-    }
+    protected $raw = [];
 
     /**
      * Find a model by its primary key.
@@ -99,6 +84,23 @@ abstract class ModelBase extends Model
         return tap((new static)->newQuery()->make($attributes), function ($instance) {
             $instance->save();
         });
+    }
+
+    /**
+     * Fill the model with an array of attributes.
+     *
+     * @param  array  $attributes
+     * @return $this
+     *
+     * @throws \Illuminate\Database\Eloquent\MassAssignmentException
+     */
+    public function fill(array $attributes)
+    {
+        $this->raw = $attributes;
+
+        parent::fill($attributes);
+
+        return $this;
     }
 
     /**
@@ -164,6 +166,28 @@ abstract class ModelBase extends Model
         );
 
         return $attributes;
+    }
+
+    /**
+     * 获取模型列表数据
+     *
+     * @return array[]
+     */
+    public static function index()
+    {
+        return static::all()->map(function(ModelBase $model) {
+            return $model->gather();
+        })->keyBy((new static)->getKeyName())->all();
+    }
+
+    /**
+     * 获取模型模板数据
+     *
+     * @return array
+     */
+    public static function template()
+    {
+        return array_fill_keys((new static)->getFillable(), null);
     }
 
     /**

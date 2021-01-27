@@ -70,19 +70,9 @@ class NodeType extends EntityMoldBase implements GetNodesInterface
      */
     public function updateRelatedFields(array $data)
     {
-        // Log::info($data);
-        $langcode = langcode('content');
-
-        Pocket::make($this, 'field_ids')->clear();
-
         DB::beginTransaction();
 
         $fields = [];
-        $shared = [
-            'entity_name' => Node::getEntityName(),
-            'bundle_name' => NodeType::getEntityName(),
-            'langcode' => $langcode,
-        ];
 
         foreach ($data as $index => $field) {
             $fields[$field['id']] = [
@@ -92,11 +82,6 @@ class NodeType extends EntityMoldBase implements GetNodesInterface
                 'is_required' => boolval($field['is_required'] ?? false),
                 'helpertext' => $field['helpertext'] ?? null,
             ];
-
-            FieldParameters::updateOrCreate(
-                ['field_id' => $field['id']] + $shared,
-                ['parameters' => FieldTypeManager::findOrFail($field['field_type_id'])->extractParameters($field)]
-            );
         }
         // Log::info($fields);
 

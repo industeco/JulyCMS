@@ -102,17 +102,17 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         return [
             'id' => null,
             'field_type_id' => null,
+            'label' => null,
+            'description' => null,
             'is_reserved' => false,
             'is_global' => false,
             'group_title' => null,
             'search_weight' => 0,
             'maxlength' => 0,
-            'label' => null,
-            'description' => null,
             'is_required' => false,
             'helpertext' => null,
             'default_value' => null,
-            'options' => [],
+            'options' => null,
             'langcode' => langcode('content'),
         ];
     }

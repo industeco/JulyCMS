@@ -130,11 +130,11 @@
         }
       },
 
-      deleteType(nodeType) {
-        if (!this.contextmenu.deletable) {
+      deleteType(mold) {
+        if (mold.referenced > 0 || mold.is_reserved) {
           return;
         }
-        const id = nodeType.id;
+        const id = mold.id;
         this.$confirm(`确定要删除 ${id} 类型？`, '删除内容类型', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',

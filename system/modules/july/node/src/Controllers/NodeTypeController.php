@@ -2,6 +2,7 @@
 
 namespace July\Node\Controllers;
 
+use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -33,14 +34,15 @@ class NodeTypeController extends Controller
         $fields = NodeField::classify();
         $data = [
             'model' => NodeType::template(),
-            'mold_fields' => $fields['preseted'],
-            'optional_fields' => $fields['optional'],
-            'langcode' => langcode('content'),
+            'context' => [
+                'fields' => $fields['preseted'],
+                'optional_fields' => $fields['optional'],
+                'field_template' => NodeField::template(),
+                'content_langcode' => langcode('content'),
+            ],
         ];
 
-        // dd($data);
-
-        return view('node_type.create_edit', $data);
+        return view('node::node_type.create-edit', $data);
     }
 
     /**
@@ -52,18 +54,17 @@ class NodeTypeController extends Controller
     public function edit(NodeType $nodeType)
     {
         $fields = NodeField::classify();
-        $moldFields = $nodeType->fields->map(function($field) {
-            return $field->gather();
-        })->keyBy('id')->all();
-
         $data = [
             'model' => $nodeType->gather(),
-            'mold_fields' => $moldFields,
-            'optional_fields' => $fields['optional'],
-            'langcode' => langcode('content'),
+            'context' => [
+                'fields' => $nodeType->gatherFields()->all(),
+                'optional_fields' => $fields['optional'],
+                'field_template' => NodeField::template(),
+                'content_langcode' => langcode('content'),
+            ],
         ];
 
-        return view('node_type.create_edit', $data);
+        return view('node::node_type.create-edit', $data);
     }
 
     /**
@@ -74,9 +75,9 @@ class NodeTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $nodeType = NodeType::make($request->all());
-        $nodeType->save();
-        $nodeType->updateRelatedFields($request->input('fields', []));
+        // 创建类型
+        $nodeType = NodeType::create($request->all());
+
         return response('');
     }
 
@@ -100,8 +101,9 @@ class NodeTypeController extends Controller
      */
     public function update(Request $request, NodeType $nodeType)
     {
+        // 更新类型
         $nodeType->update($request->all());
-        $nodeType->updateRelatedFields($request->input('fields', []));
+
         return response('');
     }
 
@@ -113,8 +115,8 @@ class NodeTypeController extends Controller
      */
     public function destroy(NodeType $nodeType)
     {
-        $nodeType->fields()->detach();
         $nodeType->delete();
+
         return response('');
     }
 

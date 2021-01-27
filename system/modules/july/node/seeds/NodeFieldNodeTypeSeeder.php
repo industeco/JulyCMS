@@ -20,77 +20,26 @@ class NodeFieldNodeTypeSeeder extends SeederBase
      */
     protected function getNodeFieldNodeTypeTableRecords()
     {
-        return [
-            [
-                'mold_id' => 'basic',
-                'field_id' => 'title',
-                'delta' => 0,
-            ],
-            [
-                'mold_id' => 'basic',
-                'field_id' => 'content',
-                'delta' => 1,
-            ],
-            [
-                'mold_id' => 'list',
-                'field_id' => 'title',
-                'delta' => 0,
-            ],
-            [
-                'mold_id' => 'list',
-                'field_id' => 'content',
-                'delta' => 1,
-            ],
-            [
-                'mold_id' => 'product',
-                'field_id' => 'title',
-                'delta' => 0,
-            ],
-            [
-                'mold_id' => 'product',
-                'field_id' => 'summary',
-                'delta' => 1,
-            ],
-            [
-                'mold_id' => 'product',
-                'field_id' => 'content',
-                'delta' => 2,
-            ],
-            [
-                'mold_id' => 'product',
-                'field_id' => 'image_src',
-                'delta' => 3,
-            ],
-            [
-                'mold_id' => 'product',
-                'field_id' => 'image_alt',
-                'delta' => 4,
-            ],
-            [
-                'mold_id' => 'article',
-                'field_id' => 'title',
-                'delta' => 0,
-            ],
-            [
-                'mold_id' => 'article',
-                'field_id' => 'summary',
-                'delta' => 1,
-            ],
-            [
-                'mold_id' => 'article',
-                'field_id' => 'content',
-                'delta' => 2,
-            ],
-            [
-                'mold_id' => 'article',
-                'field_id' => 'image_src',
-                'delta' => 3,
-            ],
-            [
-                'mold_id' => 'article',
-                'field_id' => 'image_alt',
-                'delta' => 4,
-            ],
+        $reserved = ['title'];
+        $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
+        $molds = [
+            'basic' => ['content'],
+            'list' => ['content'],
+            'product' => ['summary', 'content', 'image_src', 'image_alt'],
+            'article' => ['summary', 'content', 'image_src', 'image_alt'],
         ];
+
+        $records = [];
+        foreach ($molds as $id => $fields) {
+            $fields = array_merge($reserved, $fields, $global);
+            foreach ($fields as $index => $field) {
+                $records[] = [
+                    'mold_id' => $id,
+                    'field_id' => $field,
+                    'delta' => $index,
+                ];
+            }
+        }
+        return $records;
     }
 }

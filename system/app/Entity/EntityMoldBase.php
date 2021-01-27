@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
 use App\Models\ModelBase;
+use App\Utils\Arr;
 
 abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
 {
@@ -135,7 +136,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function entities()
     {
-        return $this->hasMany($this->getEntityModel(), 'mold_id');
+        return $this->hasMany(static::getEntityModel(), 'mold_id');
     }
 
     /**
@@ -143,8 +144,9 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function fields()
     {
-        $pivot = (new $this->getPivotModel())->getTable();
-        return $this->belongsToMany($this->getFieldModel(), $pivot, 'mold_id', 'field_id')
+        $pivotModel = static::getPivotModel();
+        $pivot = (new $pivotModel)->getTable();
+        return $this->belongsToMany(static::getFieldModel(), $pivot, 'mold_id', 'field_id')
             ->orderBy($pivot.'.delta')
             ->withPivot([
                 'delta',
@@ -155,5 +157,60 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
                 'default_value',
                 'options',
             ]);
+    }
+
+    /**
+     * 同步字段
+     *
+     * @param  array|null $fields
+     * @return array
+     */
+    public function syncFields(array $fields = null)
+    {
+        $fields = $fields ?? $this->raw['fields'] ?? [];
+        $keys = ['delta','label','description','is_required','helpertext','default_value','options'];
+        $attachedFields = [];
+        foreach (array_values($fields) as $index => $field) {
+            $field['delta'] = $index;
+            $attachedFields[$field['id']] = Arr::only($field, $keys);
+        }
+        $this->fields()->sync($attachedFields);
+    }
+
+    /**
+     * 字段属性数组集
+     *
+     * @return \Illuminate\Support\Collection|array[]
+     */
+    public function gatherFields()
+    {
+        if (! $this->exists) {
+            return static::getFieldModel()::classify()['preseted'];
+        }
+
+        return $this->fields->map(function($field) {
+            return $field->gather();
+        })->keyBy('id');
+    }
+
+    /**
+     * Bootstrap the model and its traits.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        // 创建或更新后同步关联字段
+        // 字段数据保存在 $raw 属性中
+        static::saved(function(EntityMoldBase $mold) {
+            $mold->syncFields();
+        });
+
+        // 删除时移除关联字段
+        static::deleting(function(EntityMoldBase $mold) {
+            $mold->fields()->detach();
+        });
     }
 }

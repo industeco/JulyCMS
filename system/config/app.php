@@ -262,11 +262,11 @@ return [
 
     // 登记实体字段类型
     'field_types' => [
-        \App\EntityField\FieldTypes\Any::class,
+        // \App\EntityField\FieldTypes\Any::class,
+        \App\EntityField\FieldTypes\Text::class,
         \App\EntityField\FieldTypes\File::class,
         \App\EntityField\FieldTypes\Html::class,
         \App\EntityField\FieldTypes\Image::class,
-        \App\EntityField\FieldTypes\Text::class,
         \App\EntityField\FieldTypes\Url::class,
         \App\EntityField\FieldTypes\View::class,
     ],

@@ -19,13 +19,6 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     use TranslatableTrait;
 
     /**
-     * 新建或更新时传入的原始数据
-     *
-     * @var array
-     */
-    protected $raw = [];
-
-    /**
      * 获取实体类型类
      *
      * @return string
@@ -171,13 +164,6 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     abstract public function fields();
 
     /**
-     * 获取实体字段对象集
-     *
-     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
-     */
-    abstract public function collectFields();
-
-    /**
      * 获取字段属性名表
      *
      * @return array
@@ -243,23 +229,6 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         }
 
         return $this->getEntityAttribute($key) ?? parent::getAttribute($key);
-    }
-
-    /**
-     * Fill the model with an array of attributes.
-     *
-     * @param  array  $attributes
-     * @return $this
-     *
-     * @throws \Illuminate\Database\Eloquent\MassAssignmentException
-     */
-    public function fill(array $attributes)
-    {
-        $this->raw = $attributes;
-
-        parent::fill($attributes);
-
-        return $this;
     }
 
     /**
