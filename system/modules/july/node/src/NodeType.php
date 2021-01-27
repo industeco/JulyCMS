@@ -6,7 +6,6 @@ use App\Entity\EntityMoldBase;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\EntityField\FieldParameters;
 use App\EntityField\FieldTypes\FieldTypeManager;
 
 class NodeType extends EntityMoldBase implements GetNodesInterface

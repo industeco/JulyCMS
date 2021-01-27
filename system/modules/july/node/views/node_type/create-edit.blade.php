@@ -155,16 +155,16 @@
     top="-5vh"
     :show-close="false"
     :visible.sync="tabs.visible"
-    @open="syncToSelection" class="jc-dialog-form">
+    @open="syncSelectedToSelection" class="jc-dialog-form">
     <el-tabs v-model="tabs.current" type="card" class="jc-tabs-mini">
-      <el-tab-pane label="选择字段" name="candidates" class="md-scrollbar md-theme-default">
+      <el-tab-pane label="选择字段" name="selection" class="md-scrollbar md-theme-default">
         <el-table
-          ref="candidates_table"
-          :data="candidates.fields"
+          ref="optional_fields_table"
+          :data="selectionData.fields"
           style="width: 100%;"
           class="jc-table jc-dense"
           @selection-change="handleSelectionChange"
-          @hook:mounted="syncToSelection">
+          @hook:mounted="syncSelectedToSelection">
           <el-table-column type="selection" width="50"></el-table-column>
           <el-table-column prop="id" label="ID" width="160" sortable></el-table-column>
           <el-table-column prop="label" label="标签" width="160" sortable></el-table-column>
@@ -172,8 +172,8 @@
           <el-table-column prop="field_type_id" label="类型" width="160" sortable></el-table-column>
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="新建字段" name="new_field" class="md-scrollbar md-theme-default">
-        <x-field.create-edit scope="newField" model="newField.model" mode="create" />
+      <el-tab-pane label="新建字段" name="creation" class="md-scrollbar md-theme-default">
+        <x-field.create-edit scope="newField" model="newField.model" mode="creation" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -188,7 +188,7 @@
     :visible.sync="field.dialogVisible" class="jc-dialog-form">
     <div class="md-scrollbar md-theme-default js-scroll-wrapper"
       style="max-height:600px; overflow:hidden auto; padding:0 20px">
-      <x-field.create-edit scope="field" model="field.model" mode="edit" />
+      <x-field.create-edit scope="field" model="field.model" mode="editing" />
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click.stop="field.dialogVisible = false">取 消</el-button>
@@ -199,7 +199,6 @@
 
 @section('script')
 <script>
-  const _allMoldFields = @json(array_values($context['fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
   let app = new Vue({
     el: '#main_content',
     data() {
@@ -219,11 +218,11 @@
         },
 
         tabs: {
-          current: 'candidates',
+          current: 'selection',
           visible: false,
         },
 
-        candidates: {
+        selectionData: {
           fields: @json(array_values($context['optional_fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
           selection: [],
         },
@@ -237,7 +236,8 @@
     },
 
     created: function() {
-      _allMoldFields.forEach(field => {
+      const fields = @json(array_values($context['fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+      fields.forEach(field => {
         if (field.is_global) {
           this.mold.globalFields.push(field);
         } else if (field.is_reserved) {
@@ -268,8 +268,7 @@
       },
 
       handleFieldEditingConfirm() {
-        let form = this.$refs.field_edit_form;
-        form.validate((valid) => {
+        this.$refs.field_editing_form.validate((valid) => {
           if (valid) {
             // this.currentField = this.editingField;
             this.field.dialogVisible = false;
@@ -277,84 +276,88 @@
         });
       },
 
-      // 切换字段选择列表的选择状态
-      syncToSelection() {
-        const selected = this.mold.optionalFields.map(field => field.id);
-        let table = this.$refs.candidates_table;
-        if (table) {
-          // table.clearSelection();
-          this.candidates.syncing = true;
-          this.candidates.fields.forEach(row => {
-            if (!row.is_global && !row.is_reserved) {
-              table.toggleRowSelection(row, selected.indexOf(row.id) >= 0);
-            }
-          });
-          this.candidates.syncing = false;
-        }
-      },
-
       // 保存已选字段
       handleSelectionChange(selection) {
-        if (! this.candidates.syncing) {
-          this.candidates.selection = selection.slice();
+        if (! this.selectionData.syncing) {
+          this.selectionData.selection = selection.slice();
         }
       },
 
       // 确认选择
       handleSelectionConfirm() {
-        const form = this.$refs.field_create_form;
-
-        if (this.tabs.current == 'new_field') {
-          form.validate().then(() => {
-
-            const loading = app.$loading({
-              lock: true,
-              text: '正在新建字段 ...',
-              background: 'rgba(255, 255, 255, 0.7)',
-            });
-
-            const field = _.cloneDeep(this.newField.model);
-
-            axios.post("{{ short_url('node_fields.store') }}", field).then((response) => {
-              // console.log(response)
-              this.mold.optionalFields.push(field);
-              this.candidates.fields.push(_.cloneDeep(field));
-              form.resetFields();
-              loading.close();
-              this.tabs.visible = false;
-            }).catch((error) => {
-              loading.close();
-              console.error(error);
-            })
-          }).catch((error) => {
-            console.error(error);
-          });
+        if (this.tabs.current == 'selection') {
+          this.syncSelectionToSelected();
         } else {
-          const fields = [];
-          const current = this.mold.optionalFields.map(field => field.id);
-          const selected = this.candidates.selection.map(field => field.id);
-
-          // 移除未选中的
-          this.mold.optionalFields.forEach(field => {
-            if (field.is_global || field.is_reserved || selected.indexOf(field.id) >= 0) {
-              fields.push(field);
-            }
-          });
-
-          // 添加已选中的
-          this.candidates.selection.forEach(field => {
-            if (current.indexOf(field.id) < 0) {
-              fields.push(_.cloneDeep(field));
-            }
-          });
-
-          // 更新视图
-          this.$set(this.$data.mold, 'optionalFields', fields);
-
-          form.resetFields();
-          this.candidates.selection = [];
-          this.tabs.visible = false;
+          this.createField();
         }
+      },
+
+      // 同步当前字段到已选字段（更新选择状态）
+      syncSelectedToSelection() {
+        const selected = this.mold.optionalFields.map(field => field.id);
+        let table = this.$refs.optional_fields_table;
+        if (table) {
+          // table.clearSelection();
+          this.selectionData.syncing = true;
+          this.selectionData.fields.forEach(row => {
+            table.toggleRowSelection(row, selected.indexOf(row.id) >= 0);
+          });
+          this.selectionData.syncing = false;
+        }
+      },
+
+      // 同步已选字段到当前字段（添加新选字段，移除未选字段）
+      syncSelectionToSelected() {
+        const fields = [];
+        const current = this.mold.optionalFields.map(field => field.id);
+        const selected = this.selectionData.selection.map(field => field.id);
+
+        // 移除未选中的
+        this.mold.optionalFields.forEach(field => {
+          if (field.is_global || field.is_reserved || selected.indexOf(field.id) >= 0) {
+            fields.push(field);
+          }
+        });
+
+        // 添加已选中的
+        this.selectionData.selection.forEach(field => {
+          if (current.indexOf(field.id) < 0) {
+            fields.push(_.cloneDeep(field));
+          }
+        });
+
+        // 更新视图
+        this.$set(this.$data.mold, 'optionalFields', fields);
+
+        this.selectionData.selection = [];
+        this.tabs.visible = false;
+      },
+
+      createField() {
+        const form = this.$refs.field_creation_form;
+        form.validate().then(() => {
+          const loading = app.$loading({
+            lock: true,
+            text: '正在新建字段 ...',
+            background: 'rgba(255, 255, 255, 0.7)',
+          });
+
+          const field = _.cloneDeep(this.newField.model);
+
+          axios.post("{{ short_url('node_fields.store') }}", field).then((response) => {
+            // console.log(response)
+            this.mold.optionalFields.push(field);
+            this.selectionData.fields.push(_.cloneDeep(field));
+            form.resetFields();
+            loading.close();
+            this.tabs.visible = false;
+          }).catch((error) => {
+            loading.close();
+            console.error(error);
+          })
+        }).catch((error) => {
+          console.error(error);
+        });
       },
 
       submit() {

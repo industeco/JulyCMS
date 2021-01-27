@@ -76,7 +76,7 @@ class NodeTypeController extends Controller
     public function store(Request $request)
     {
         // 创建类型
-        $nodeType = NodeType::create($request->all());
+        NodeType::create($request->all());
 
         return response('');
     }

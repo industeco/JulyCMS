@@ -184,7 +184,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 将字段分为预设和可选
+     * 将字段分为预设和可选两类
      *
      * @return array
      */
@@ -200,9 +200,8 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
                 $optional[$field['id']] = $field;
             }
         }
-        $fields = compact('optional', 'preseted');
 
-        return $fields;
+        return compact('optional', 'preseted');
     }
 
     /**

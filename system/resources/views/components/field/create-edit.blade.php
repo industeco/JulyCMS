@@ -1,13 +1,13 @@
 @props([
   'scope',
   'model' => 'model',
-  'mode' => 'create',
+  'mode' => 'creation',
 ])
 
 <el-form ref="field_{{ $mode }}_form" :model="{{ $model }}" label-width="108px">
 
   {{-- 字段类型 --}}
-  @if ($mode === 'create')
+  @if ($mode === 'creation')
   <el-form-item label="字段类型" prop="field_type_id" size="small" class="has-helptext"
     :rules="[{ required:true, message:'『字段类型』不能为空', trigger:'submit' }]">
     <el-select v-model="{{ $model }}.field_type_id" placeholder="--选择字段类型--" @change="handleFieldTypeChange('{{ $scope }}', $event)">
@@ -20,7 +20,7 @@
   @endif
 
   {{-- 字段 id --}}
-  <x-handle :model="$model" :read-only="$mode==='edit'" :unique-action="short_url('node_fields.exists', '_ID_')" />
+  <x-handle :model="$model" :read-only="$mode==='editing'" :unique-action="short_url('node_fields.exists', '_ID_')" />
 
   {{-- 字段标签 --}}
   <x-label :model="$model" label="字段标签" />

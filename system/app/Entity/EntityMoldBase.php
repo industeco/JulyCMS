@@ -160,7 +160,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 同步字段
+     * 同步关联字段
      *
      * @param  array|null $fields
      * @return array
@@ -184,13 +184,13 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function gatherFields()
     {
-        if (! $this->exists) {
-            return static::getFieldModel()::classify()['preseted'];
+        $fields = collect(static::getFieldModel()::classify()['preseted']);
+        if ($this->exists) {
+            $fields = $fields->merge($this->fields->map(function($field) {
+                return $field->gather();
+            })->keyBy('id'));
         }
-
-        return $this->fields->map(function($field) {
-            return $field->gather();
-        })->keyBy('id');
+        return $fields->sortBy('delta');
     }
 
     /**
