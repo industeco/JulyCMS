@@ -195,18 +195,81 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 将字段分为预设和可选两类
+     * 限定全局字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeIsGlobal($query)
+    {
+        return $query->where('is_global');
+    }
+
+    /**
+     * 限定预设字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeIsReserved($query)
+    {
+        return $query->where('is_reserved');
+    }
+
+    /**
+     * 限定预设字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeIsPreseted($query)
+    {
+        return $query->where('is_global')->orWhere('is_reserved');
+    }
+
+    /**
+     * 限定候选字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeIsOptional($query)
+    {
+        return $query->where(['is_global' => false, 'is_reserved' => false]);
+    }
+
+    /**
+     * 将字段按预设类型分组
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public static function groupbyPresetType()
+    {
+        return static::all()->groupBy(function(FieldBase $field) {
+            if ($field->is_global) {
+                return 'global';
+            } elseif ($field->is_reserved) {
+                return 'reserved';
+            } else {
+                return 'optional';
+            }
+        });
+    }
+
+    /**
+     * 将字段分为预设和非预设两组
      *
      * @return \Illuminate\Support\Collection
      */
     public static function bisect()
     {
-        return static::all()->keyBy('id')->groupBy(function(FieldBase $field) {
+        return static::all()->groupBy(function(FieldBase $field) {
             if ($field->is_global || $field->is_reserved) {
                 return 'preseted';
+            } else {
+                return 'optional';
             }
-            return 'optional';
-        }, true);
+        });
     }
 
     /**

@@ -173,7 +173,7 @@ class Node extends EntityBase
      */
     public function collectFields()
     {
-        $fields = NodeField::bisect()->get('preseted');
+        $fields = NodeField::groupbyPresetType()->get('preseted');
         if ($this->exists) {
             $fields = $fields->merge($this->fields->keyBy('id'));
         } elseif ($mold = $this->getMold()) {

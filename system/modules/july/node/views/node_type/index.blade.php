@@ -87,7 +87,7 @@
 
     data() {
       return {
-        nodeTypes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        nodeTypes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
         contextmenu: {
           target: null,
           editUrl: null,

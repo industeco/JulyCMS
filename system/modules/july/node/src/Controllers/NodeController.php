@@ -22,11 +22,12 @@ class NodeController extends Controller
      */
     public function index()
     {
+        $keys = ['id','mold_id','is_red','is_green','is_blue','updated_at','created_at','title','url','suggested_views',];
         $data = [
-            'models' => Node::index(),
+            'models' => Node::index($keys),
             'context' => [
-                'node_types' => NodeType::all()->pluck('label', 'id')->all(),
-                'catalogs' => Catalog::all()->pluck('label', 'id')->all(),
+                'node_types' => NodeType::query()->pluck('label', 'id')->all(),
+                'catalogs' => Catalog::query()->pluck('label', 'id')->all(),
                 'languages' => Lang::getTranslatableLangnames(),
                 // 'catalogs' => ['main' => '默认目录'],
                 // 'tags' => Tag::allTags(),

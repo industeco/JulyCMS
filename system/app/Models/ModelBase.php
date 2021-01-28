@@ -174,12 +174,12 @@ abstract class ModelBase extends Model
      *
      * @return array[]
      */
-    public static function index()
+    public static function index(array $keys = ['*'])
     {
-        $primaryKey = (new static)->getKeyName();
-        return static::all()->map(function(ModelBase $model) {
-            return $model->gather();
-        })->keyBy($primaryKey)->all();
+        $keyName = static::getModelKeyName();
+        return static::all()->map(function(ModelBase $model) use($keys) {
+            return $model->gather($keys);
+        })->keyBy($keyName)->all();
     }
 
     /**
@@ -189,7 +189,7 @@ abstract class ModelBase extends Model
      */
     public static function template()
     {
-        return array_fill_keys((new static)->getFillable(), null);
+        return array_fill_keys(static::getModelFillable(), null);
     }
 
     /**

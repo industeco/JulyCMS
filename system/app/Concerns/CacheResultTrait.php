@@ -70,9 +70,9 @@ trait CacheResultTrait
             $this->resultCache['piping'][$method] = false;
 
             // 缓存执行结果
-            $this->cachePut($key, $value);
+            $this->cachePut($value, $key);
             if ($usePocket) {
-                $this->pocketPut($key, $value);
+                $this->pocketPut($value, $key);
             }
 
             // 返回结果
@@ -92,11 +92,12 @@ trait CacheResultTrait
      *
      * @param  string $key
      * @param  mixed $value
-     * @return void
+     * @return mixed
      */
-    public function cachePut(string $key, $value)
+    public function cachePut($value, string $key)
     {
-        return $this->resultCache['cache'][$key] = new Value($value);
+        $this->resultCache['cache'][$key] = new Value($value);
+        return $value;
     }
 
     /**
@@ -134,13 +135,14 @@ trait CacheResultTrait
     /**
      * 将 $value 按 $key 放入缓存（通过 Pocket）
      *
-     * @param  string $key
      * @param  mixed $value
-     * @return void
+     * @param  array $keys
+     * @return mixed
      */
-    public function pocketPut($key, $value)
+    public function pocketPut($value, ...$keys)
     {
-        $this->getPocket($key)->put($value);
+        $this->getPocket()->put($value, ...$keys);
+        return $value;
     }
 
     /**
@@ -151,31 +153,30 @@ trait CacheResultTrait
      */
     public function pocketGet($key)
     {
-        return $this->getPocket($key)->get();
+        return $this->getPocket()->get($key);
     }
 
     /**
      * 清除缓存（通过 Pocket）
      *
-     * @param  string $key
+     * @param  string[] $keys
      * @return void
      */
-    public function pocketClear($key)
+    public function pocketClear(...$keys)
     {
-        return $this->getPocket($key)->clear();
+        return $this->getPocket()->clear(...$keys);
     }
 
     /**
      * 获取专属 pocket
      *
-     * @param  mixed $key
      * @return \App\Utils\Pocket
      */
-    public function getPocket($key)
+    public function getPocket()
     {
         if (! $this->pocket) {
             $this->pocket = new Pocket($this);
         }
-        return $this->pocket->setKey($key);
+        return $this->pocket;
     }
 }

@@ -190,7 +190,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         } elseif ($mold = $this->getMold()) {
             $fields = $mold->fields;
         } else {
-            $fields = static::getFieldClass()::bisect()->get('preseted');
+            $fields = static::getFieldClass()::isPreseted()->get();
         }
 
         // 字段表主键名
@@ -203,12 +203,45 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 获取所有字段的 id
+     *
+     * @return array
+     */
+    public function getFieldKeys()
+    {
+        if ($keys = $this->cachePipe(__FUNCTION__)) {
+            return $keys->value();
+        }
+
+        $keyName = static::getFieldClass()::getModelKeyName();
+
+        if ($this->exists) {
+            return $this->fields()->pluck($keyName)->all();
+        } elseif ($mold = $this->getMold()) {
+            return $mold->fields()->pluck($keyName)->all();
+        } else {
+            return static::getFieldClass()::isPreseted()->pluck($keyName)->all();
+        }
+    }
+
+    /**
+     * 判断是否拥有指定字段
+     *
+     * @param  string|int $key
+     * @return bool
+     */
+    public function hasField($key)
+    {
+        return in_array($key, $this->getFieldKeys());
+    }
+
+    /**
      * 获取实体字段值
      *
-     * @param  string $key 字段名
+     * @param  string|int $key 字段 id
      * @return mixed
      */
-    public function getFieldValue(string $key)
+    public function getFieldValue($key)
     {
         /** @var \App\EntityField\FieldBase */
         $field = $this->getFields()->get($key);
@@ -243,7 +276,11 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
             return;
         }
 
-        return $this->getEntityAttribute($key) ?? parent::getAttribute($key);
+        if ($this->hasField($key)) {
+            return $this->getFieldValue($key);
+        }
+
+        return parent::getAttribute($key);
     }
 
     /**
@@ -260,8 +297,6 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
             $this->updateFields();
         });
 
-        $this->raw = [];
-
         return $saved;
     }
 
@@ -272,7 +307,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     protected function updateFields()
     {
-        $this->fields()->each(function(FieldBase $field) {
+        $this->fields->each(function(FieldBase $field) {
             $field->bindEntity($this)->setValue($this->raw[$field->getKey()] ?? null);
         });
     }
@@ -292,18 +327,9 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public function retrieveHtml()
+    public function fetchHtml()
     {
-        $pocket = new Pocket($this, 'html');
-
-        if ($html = $pocket->get()) {
-            return $html->value();
-        }
-
-        $html = $this->render();
-        $pocket->put($html);
-
-        return $html;
+        return $this->pocketPipe('render', 'html')->value();
     }
 
     /**
@@ -347,9 +373,17 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         parent::boot();
 
         static::deleting(function(EntityBase $entity) {
-            $entity->fields()->each(function (FieldBase $field) {
-                $field->deleteValue();
+            $entity->fields->each(function (FieldBase $field) use($entity) {
+                $field->bindEntity($entity)->deleteValue();
             });
+        });
+
+        static::saved(function(EntityBase $entity) {
+            $entity->pocketClear('html', 'gather');
+        });
+
+        static::deleted(function(EntityBase $entity) {
+            $entity->pocketClear('html', 'gather');
         });
     }
 }

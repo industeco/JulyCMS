@@ -140,16 +140,19 @@ class Pocket
     /**
      * 存储值到缓存中
      *
-     * @param mixed $value
-     * @param  mixed $key
+     * @param  mixed $value
+     * @param  array $keys
      * @return bool
      */
-    public function put($value, $key = null)
+    public function put($value, ...$keys)
     {
         if ($value instanceof Value) {
             $value = $value->value();
         }
-        return Cache::put($this->getKey($key)->value(), $value);
+        foreach ($keys as $key) {
+            Cache::put($this->getKey($key)->value(), $value);
+        }
+        return true;
     }
 
     /**
@@ -170,11 +173,14 @@ class Pocket
     /**
      * 清除目标缓存
      *
-     * @param  mixed $key
+     * @param  array $keys
      * @return boolean
      */
-    public function clear($key = null)
+    public function clear(...$keys)
     {
-        return Cache::forget($this->getKey($key)->value());
+        foreach ($keys as $key) {
+            Cache::forget($this->getKey($key)->value());
+        }
+        return true;
     }
 }

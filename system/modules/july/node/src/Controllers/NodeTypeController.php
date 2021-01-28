@@ -60,8 +60,8 @@ class NodeTypeController extends Controller
         return [
             'model' => NodeType::template(),
             'context' => [
-                'fields' => gather($fields->get('preseted'))->all(),
-                'optional_fields' => gather($fields->get('optional'))->all(),
+                'fields' => gather($fields->get('preseted'))->keyBy('id')->all(),
+                'optional_fields' => gather($fields->get('optional'))->keyBy('id')->all(),
                 'field_template' => NodeField::template(),
                 'content_langcode' => langcode('content'),
             ],

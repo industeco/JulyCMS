@@ -65,14 +65,14 @@
       </div>
       <div class="jc-option">
         <label>显示『建议模板』：</label>
-        <el-switch v-model="showSuggestedTemplates"></el-switch>
+        <el-switch v-model="showSuggestedViews"></el-switch>
       </div>
       <div class="jc-option">
         <label for="nodes_view">呈现方式：</label>
         <select id="nodes_view" class="jc-select">
           <option value="" selected>列表</option>
           <optgroup label="------- 目录 -------">
-            @foreach ($catalogs as $id => $label)
+            @foreach ($context['catalogs'] as $id => $label)
             <option value="{{ $id }}">{{ $label }}</option>
             @endforeach
           </optgroup>
@@ -91,8 +91,7 @@
         <el-table-column label="ID" prop="id" width="100" sortable></el-table-column>
         <el-table-column label="标题" prop="title" width="auto" sortable>
           <template slot-scope="scope">
-            <a v-if="scope.row.url" :href="scope.row.url" target="_blank">@{{ scope.row.title }}</a>
-            <span v-else>@{{ scope.row.title }}</span>
+            <a :href="getUrl('edit', scope.row.id)" target="_blank">@{{ scope.row.title }}</a>
           </template>
         </el-table-column>
         <el-table-column label="颜色" prop="color" width="240">
@@ -102,9 +101,9 @@
             <el-switch style="margin-right: 1em" v-model="scope.row.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="建议模板" prop="templates" width="auto" v-if="showSuggestedTemplates">
+        <el-table-column label="建议模板" prop="suggested_views" width="auto" v-if="showSuggestedViews">
           <template slot-scope="scope">
-            <span class="jc-suggested-template" v-for="template in scope.row.templates" :key="template">@{{ template }}</span>
+            <span class="jc-suggested-template" v-for="view in scope.row.suggested_views" :key="template">@{{ view }}</span>
           </template>
         </el-table-column>
         <el-table-column label="类型" prop="mold_id" width="120" sortable>
@@ -157,10 +156,10 @@
 
     data() {
       return {
-        nodes: @json(array_values($nodes), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        nodeTypes: @json($node_types, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        nodes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+        nodeTypes: @json($context['node_types'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
         selected: [],
-        showSuggestedTemplates: false,
+        showSuggestedViews: false,
         contextmenu: {
           target: null,
           url: null,
@@ -178,11 +177,11 @@
         },
 
         // {{-- tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), --}}
-        languages: @json($languages, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        languages: @json($context['languages'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
 
-        editUrl: "{{ short_url('nodes.edit', '%id%') }}",
-        deleteUrl: "{{ short_url('nodes.destroy', '%id%') }}",
-        translateUrl: "{{ short_url('nodes.languages', '%id%') }}",
+        editUrl: "{{ short_url('nodes.edit', '_ID_') }}",
+        deleteUrl: "{{ short_url('nodes.destroy', '_ID_') }}",
+        translateUrl: "{{ short_url('nodes.languages', '_ID_') }}",
       };
     },
 
@@ -198,16 +197,16 @@
       getUrl(route, id) {
         switch (route) {
           case 'edit':
-            return this.editUrl.replace('%id%', id);
+            return this.editUrl.replace('_ID_', id);
           case 'translate':
-            return this.translateUrl.replace('%id%', id);
+            return this.translateUrl.replace('_ID_', id);
         }
       },
 
       deleteNode(node) {
         if (! node) return;
 
-        // console.log(this.deleteUrl.replace('%id%', node.id));
+        // console.log(this.deleteUrl.replace('_ID_', node.id));
         this.$confirm(`确定要删除内容？`, '删除内容', {
           confirmButtonText: '删除',
           cancelButtonText: '取消',
@@ -218,14 +217,14 @@
             text: '正在删除 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
-          axios.delete(this.deleteUrl.replace('%id%', node.id)).then(function(response) {
+          axios.delete(this.deleteUrl.replace('_ID_', node.id)).then(function(response) {
             // console.log(response)
             loading.spinner = 'el-icon-success';
             loading.text = '已删除';
             window.location.reload();
           }).catch(function(error) {
             console.error(error);
-          })
+          });
         }).catch(()=>{});
       },
 
@@ -238,8 +237,8 @@
         const menu = this.contextmenu;
         menu.target = row;
         menu.url = row.url;
-        menu.editUrl = this.editUrl.replace('%id%', row.id);
-        menu.translateUrl = this.translateUrl.replace('%id%', row.id);
+        menu.editUrl = this.editUrl.replace('_ID_', row.id);
+        menu.translateUrl = this.translateUrl.replace('_ID_', row.id);
 
         this.$refs.contextmenu.show(event);
       },
