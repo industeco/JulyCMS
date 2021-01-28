@@ -23,7 +23,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getMoldModel()
+    public static function getMoldClass()
     {
         return static::class.'Type';
     }
@@ -33,7 +33,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getFieldModel()
+    public static function getFieldClass()
     {
         return static::class.'Field';
     }
@@ -43,10 +43,20 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getPivotModel()
+    public static function getPivotClass()
     {
         $classname = basename(static::class);
         return __NAMESPACE__.'\\'.$classname.'Field'.$classname.'Type';
+    }
+
+    /**
+     * 获取实体类型类
+     *
+     * @return string
+     */
+    public static function getMoldForeignKeyName()
+    {
+        return 'mold_id';
     }
 
     /**
@@ -100,23 +110,34 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 获取实体类型类
-     *
-     * @return string
-     */
-    public function getMoldForeignKeyName()
-    {
-        return 'mold_id';
-    }
-
-    /**
      * 实体所属类型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function mold()
     {
-        return $this->belongsTo($this->getMoldClass(), $this->getMoldForeignKeyName());
+        return $this->belongsTo(static::getMoldClass(), static::getMoldForeignKeyName());
+    }
+
+    /**
+     * 关联字段
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function fields()
+    {
+        $pivotTable = static::getPivotClass()::getModelTable();
+        return $this->belongsToMany(static::getFieldClass(), static::getPivotClass(), 'mold_id', 'field_id', 'mold_id')
+                    ->withPivot([
+                        'delta',
+                        'label',
+                        'description',
+                        'helpertext',
+                        'is_required',
+                        'default_value',
+                        'options',
+                    ])
+                    ->orderBy($pivotTable.'.delta');
     }
 
     /**
@@ -129,7 +150,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         if ($this->exists) {
             return $this->mold->translateTo($this->getLangcode());
         } elseif ($mold_id = $this->attributes['mold_id'] ?? null) {
-            $mold = $this->getMoldClass();
+            $mold = static::getMoldClass();
             return $mold::findOrFail($mold_id)->translateTo($this->getLangcode());
         }
         return null;
@@ -143,7 +164,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->pocketPipe(__FUNCTION__, 'attributes_and_fields')) {
+        if ($attributes = $this->pocketPipe(__FUNCTION__, 'gather')) {
             $attributes = $attributes->value();
         } else {
             $attributes = array_merge(
@@ -151,40 +172,34 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
             );
         }
         if ($keys && $keys !== ['*']) {
-            $attributes = Arr::selectAs($attributes, $keys);
+            $attributes = Arr::only($attributes, $keys);
         }
         return $attributes;
     }
 
     /**
-     * 实体字段
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    abstract public function fields();
-
-    /**
      * 获取字段属性名表
      *
-     * @return array
+     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
      */
     public function getFields()
     {
-        if (empty($this->fields)) {
-            $this->fields = $this->collectFields()->keys()->all();
+        // 获取关联字段集合
+        if ($this->exists) {
+            $fields = $this->fields;
+        } elseif ($mold = $this->getMold()) {
+            $fields = $mold->fields;
+        } else {
+            $fields = static::getFieldClass()::bisect()->get('preseted');
         }
-        return $this->fields;
-    }
 
-    /**
-     * 判断实体字段是否存在
-     *
-     * @param  string $key 属性名
-     * @return bool
-     */
-    public function hasField(string $key)
-    {
-        return in_array($key, $this->getFields());
+        // 字段表主键名
+        $keyName = static::getFieldClass()::getModelKeyName();
+
+        // 为字段绑定当前实体对象，排序等
+        return $fields->map(function(FieldBase $field) {
+                return $field->bindEntity($this);
+            })->keyBy($keyName)->sortBy('delta');
     }
 
     /**
@@ -196,7 +211,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     public function getFieldValue(string $key)
     {
         /** @var \App\EntityField\FieldBase */
-        $field = $this->collectFields()->get($key);
+        $field = $this->getFields()->get($key);
 
         return $this->transformAttributeValue($key, $field->getValue());
     }
@@ -209,7 +224,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     public function fieldsToArray()
     {
         $attributes = [];
-        foreach ($this->collectFields() as $key => $field) {
+        foreach ($this->getFields() as $key => $field) {
             $attributes[$key] = $field->getValue();
         }
 

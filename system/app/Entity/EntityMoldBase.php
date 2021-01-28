@@ -59,16 +59,16 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    abstract public static function getEntityModel();
+    abstract public static function getEntityClass();
 
     /**
      * 获取实体字段类
      *
      * @return string
      */
-    public static function getFieldModel()
+    public static function getFieldClass()
     {
-        return static::getEntityModel()::getFieldModel();
+        return static::getEntityClass()::getFieldClass();
     }
 
     /**
@@ -76,9 +76,9 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getPivotModel()
+    public static function getPivotClass()
     {
-        return static::getEntityModel()::getPivotModel();
+        return static::getEntityClass()::getPivotClass();
     }
 
     /**
@@ -124,7 +124,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public static function referencedByEntity()
     {
-        return static::getEntityModel()::query()->selectRaw('`mold_id`, COUNT(*) as `total`')
+        return static::getEntityClass()::query()->selectRaw('`mold_id`, COUNT(*) as `total`')
             ->groupBy('mold_id')
             ->pluck('total', 'mold_id')->all();
     }
@@ -136,7 +136,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function entities()
     {
-        return $this->hasMany(static::getEntityModel(), 'mold_id');
+        return $this->hasMany(static::getEntityClass(), 'mold_id');
     }
 
     /**
@@ -144,9 +144,9 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function fields()
     {
-        $pivotModel = static::getPivotModel();
+        $pivotModel = static::getPivotClass();
         $pivot = (new $pivotModel)->getTable();
-        return $this->belongsToMany(static::getFieldModel(), $pivot, 'mold_id', 'field_id')
+        return $this->belongsToMany(static::getFieldClass(), $pivot, 'mold_id', 'field_id')
             ->orderBy($pivot.'.delta')
             ->withPivot([
                 'delta',
@@ -169,28 +169,12 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     {
         $fields = $fields ?? $this->raw['fields'] ?? [];
         $keys = ['delta','label','description','is_required','helpertext','default_value','options'];
-        $attachedFields = [];
+        $relatedFields = [];
         foreach (array_values($fields) as $index => $field) {
             $field['delta'] = $index;
-            $attachedFields[$field['id']] = Arr::only($field, $keys);
+            $relatedFields[$field['id']] = Arr::only($field, $keys);
         }
-        $this->fields()->sync($attachedFields);
-    }
-
-    /**
-     * 字段属性数组集
-     *
-     * @return \Illuminate\Support\Collection|array[]
-     */
-    public function gatherFields()
-    {
-        $fields = collect(static::getFieldModel()::classify()['preseted']);
-        if ($this->exists) {
-            $fields = $fields->merge($this->fields->map(function($field) {
-                return $field->gather();
-            })->keyBy('id'));
-        }
-        return $fields->sortBy('delta');
+        $this->fields()->sync($relatedFields);
     }
 
     /**

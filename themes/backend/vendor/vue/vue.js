@@ -660,7 +660,7 @@
       }
 
       return (
-        (name ? ("<" + (classify(name)) + ">") : "<Anonymous>") +
+        (name ? ("<" + (bisect(name)) + ">") : "<Anonymous>") +
         (file && includeFile !== false ? (" at " + file) : '')
       )
     };

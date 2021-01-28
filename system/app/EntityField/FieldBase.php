@@ -122,16 +122,16 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    abstract public static function getEntityModel();
+    abstract public static function getEntityClass();
 
     /**
      * 获取实体字段类
      *
      * @return string
      */
-    public static function getMoldModel()
+    public static function getMoldClass()
     {
-        return static::getEntityModel()::getMoldModel();
+        return static::getEntityClass()::getMoldClass();
     }
 
     /**
@@ -139,9 +139,9 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getPivotModel()
+    public static function getPivotClass()
     {
-        return static::getEntityModel()::getPivotModel();
+        return static::getEntityClass()::getPivotClass();
     }
 
     /**
@@ -151,7 +151,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public static function getBoundEntityName()
     {
-        return static::getEntityModel()::getEntityName();
+        return static::getEntityClass()::getEntityName();
     }
 
     /**
@@ -174,12 +174,12 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function bindEntity(EntityBase $entity)
     {
-        $class = $this->getEntityModel();
+        $class = $this->getEntityClass();
         if ($entity instanceof $class) {
             $this->entity = $entity;
             return $this;
         } else {
-            throw new InvalidEntityException('当前字段无法绑定到实体：'.get_class($entity));
+            throw new InvalidEntityException('字段无法绑定到实体：'.get_class($entity));
         }
     }
 
@@ -197,22 +197,16 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * 将字段分为预设和可选两类
      *
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
-    public static function classify()
+    public static function bisect()
     {
-        $optional = [];
-        $preseted = [];
-        foreach (static::all() as $field) {
-            $field = $field->attributesToArray();
-            if ($field['is_reserved'] || $field['is_global']) {
-                $preseted[$field['id']] = $field;
-            } else {
-                $optional[$field['id']] = $field;
+        return static::all()->keyBy('id')->groupBy(function(FieldBase $field) {
+            if ($field->is_global || $field->is_reserved) {
+                return 'preseted';
             }
-        }
-
-        return compact('optional', 'preseted');
+            return 'optional';
+        }, true);
     }
 
     /**
@@ -321,31 +315,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return $this->pivot->delta;
         }
         return 0;
-    }
-
-    /**
-     * 获取所有列和字段值
-     *
-     * @param  array $keys 限定键名
-     * @return array
-     */
-    public function gather(array $keys = ['*'])
-    {
-        // 尝试从缓存获取数据
-        if ($attributes = $this->cachePipe(__FUNCTION__)) {
-            $attributes = $attributes->value();
-        }
-
-        // 生成属性数组
-        else {
-            $attributes = $this->attributesToArray();
-        }
-
-        if ($keys && $keys !== ['*']) {
-            $attributes = Arr::only($attributes, $keys);
-        }
-
-        return $attributes;
     }
 
     /**

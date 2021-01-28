@@ -6,6 +6,7 @@ use App\Concerns\CacheResultTrait;
 use App\Utils\Arr;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 abstract class ModelBase extends Model
 {
@@ -203,21 +204,43 @@ abstract class ModelBase extends Model
     }
 
     /**
-     * 获取属性集，可指定属性名
+     * 获取属性集，可指定属性名单
      *
      * @param  array $keys 属性白名单
      * @return array
      */
     public function gather(array $keys = ['*'])
     {
+        // 尝试从缓存获取数据
         if ($attributes = $this->cachePipe(__FUNCTION__)) {
             $attributes = $attributes->value();
-        } else {
+        }
+
+        // 生成属性数组
+        else {
             $attributes = $this->attributesToArray();
         }
+
         if ($keys && $keys !== ['*']) {
             $attributes = Arr::only($attributes, $keys);
         }
+
         return $attributes;
+    }
+
+    /**
+     * Handle dynamic static method calls into the model.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        if (Str::startsWith($method, 'getModel')) {
+            $method = 'get'.substr($method, strlen('getModel'));
+        }
+
+        return (new static)->$method(...$parameters);
     }
 }

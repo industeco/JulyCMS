@@ -13,8 +13,8 @@
         </colgroup>
         <thead>
           <tr>
-            <th>内容类型</th>
-            <th>类型 ID</th>
+            <th>类型</th>
+            <th>ID</th>
             <th>描述</th>
           </tr>
         </thead>
@@ -23,7 +23,7 @@
           <tr>
             <td><a href="{{ short_url('nodes.create', $type->id) }}">{{ $type->label }}</a></td>
             <td>{{ $type->id }}</td>
-            <td>{{ $type->description }}</td>
+            <td>{{ $type->description ?: '' }}</td>
           </tr>
           @endforeach
         </tbody>

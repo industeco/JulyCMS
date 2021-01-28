@@ -2,9 +2,7 @@
 
 namespace July\Node\Controllers;
 
-use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use July\Node\NodeField;
@@ -31,18 +29,7 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        $fields = NodeField::classify();
-        $data = [
-            'model' => NodeType::template(),
-            'context' => [
-                'fields' => $fields['preseted'],
-                'optional_fields' => $fields['optional'],
-                'field_template' => NodeField::template(),
-                'content_langcode' => langcode('content'),
-            ],
-        ];
-
-        return view('node::node_type.create-edit', $data);
+        return view('node::node_type.create-edit', $this->getCreationContext());
     }
 
     /**
@@ -53,18 +40,32 @@ class NodeTypeController extends Controller
      */
     public function edit(NodeType $nodeType)
     {
-        $fields = NodeField::classify();
-        $data = [
-            'model' => $nodeType->gather(),
+        $data = $this->getCreationContext();
+        $data['context']['fields'] = collect($data['context']['fields'])
+            ->merge(gather($nodeType->fields)->keyBy('id'))
+            ->sortBy('delta')
+            ->all();
+
+        return view('node::node_type.create-edit', $data);
+    }
+
+    /**
+     * 获取 create 所需渲染环境
+     *
+     * @return array
+     */
+    protected function getCreationContext()
+    {
+        $fields = NodeField::bisect();
+        return [
+            'model' => NodeType::template(),
             'context' => [
-                'fields' => $nodeType->gatherFields()->all(),
-                'optional_fields' => $fields['optional'],
+                'fields' => gather($fields->get('preseted'))->all(),
+                'optional_fields' => gather($fields->get('optional'))->all(),
                 'field_template' => NodeField::template(),
                 'content_langcode' => langcode('content'),
             ],
         ];
-
-        return view('node::node_type.create-edit', $data);
     }
 
     /**

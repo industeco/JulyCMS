@@ -2,17 +2,16 @@
 
 namespace July\Node\Controllers;
 
+use App\EntityField\EntityView;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Arr;
 use App\Utils\Lang;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use July\Node\Catalog;
 use July\Node\Node;
 use July\Node\NodeType;
 use July\Node\NodeField;
 use July\Taxonomy\Tag;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use July\Config\PartialView;
 
 class NodeController extends Controller
 {
@@ -23,16 +22,29 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $nodes = Node::index();
-
-        return view('backend::node.index', [
-                'nodes' => $nodes,
+        $data = [
+            'models' => Node::index(),
+            'context' => [
                 'node_types' => NodeType::all()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::all()->pluck('label', 'id')->all(),
+                'languages' => Lang::getTranslatableLangnames(),
                 // 'catalogs' => ['main' => '默认目录'],
                 // 'tags' => Tag::allTags(),
-                'languages' => Lang::getTranslatableLangnames(),
-            ]);
+            ],
+        ];
+
+        return view('node::node.index', $data);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \July\Core\Node\Node  $content
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Node $content)
+    {
+        //
     }
 
     /**
@@ -40,11 +52,13 @@ class NodeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function chooseNodeType()
+    public function chooseMold()
     {
-        return view_with_langcode('backend::node.choose_node_type', [
-                'node_types' => NodeType::all()->all(),
-            ]);
+        $data = [
+            'models' => NodeType::index(),
+        ];
+
+        return view('node::node.choose_mold', $data);
     }
 
     /**
@@ -91,31 +105,6 @@ class NodeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $node = Node::create($request->all());
-        return response([
-            'node_id' => $node->getKey(),
-        ]);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \July\Core\Node\Node  $content
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Node $content)
-    {
-        //
-    }
-
-    /**
      * 展示编辑或翻译界面
      *
      * @param  \July\Core\Node\Node  $node
@@ -152,6 +141,20 @@ class NodeController extends Controller
         // dd($data);
 
         return view_with_langcode('backend::node.create_edit', $data);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $node = Node::create($request->all());
+        return response([
+            'node_id' => $node->getKey(),
+        ]);
     }
 
     /**
@@ -264,8 +267,8 @@ class NodeController extends Controller
      */
     protected function getTwigTemplates(string $langcode)
     {
-        $templates = PartialView::query()->where('langcode', $langcode)->get()->pluck('view');
+        $views = EntityView::query()->where('langcode', $langcode)->pluck('view');
 
-        return array_values($templates->sort()->unique()->all());
+        return array_values($views->sort()->unique()->all());
     }
 }

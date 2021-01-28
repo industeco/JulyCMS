@@ -1,9 +1,11 @@
 <?php
 
 use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Models\ModelBase;
 use App\Utils\Lang;
 use App\Utils\Types;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 if (! function_exists('backend_path')) {
@@ -253,5 +255,26 @@ if (! function_exists('get_field_types')) {
     function get_field_types()
     {
         return FieldTypeManager::details();
+    }
+}
+
+if (! function_exists('gather')) {
+    /**
+     * 在模型或模型集上执行 gather
+     *
+     * @param  mixed $items
+     * @return \Illuminate\Support\Collection|array
+     */
+    function gather($items, array $keys = ['*'])
+    {
+        if ($items instanceof ModelBase) {
+            return $items->gather($keys);
+        }
+        if ($items instanceof Collection) {
+            return $items->map(function($item) use($keys) {
+                return gather($item, $keys);
+            });
+        }
+        return (array) $items;
     }
 }

@@ -8,7 +8,6 @@ use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\EntityField\FieldBase;
-use App\EntityField\FieldTypes\FieldTypeManager;
 use July\Node\CatalogSet;
 use July\Taxonomy\Term;
 use July\Taxonomy\TermSet;
@@ -47,19 +46,14 @@ class Node extends EntityBase
     ];
 
     /**
-     * （数据库表的）列名登记处
+     * 附加属性
      *
      * @var array
      */
-    protected static $columns = [
-        'id',
-        'mold_id',
-        'langcode',
-        'is_red',
-        'is_green',
-        'is_blue',
-        'created_at',
-        'updated_at',
+    protected $appends = [
+        'is_black',
+        'is_white',
+        'suggested_views',
     ];
 
     /**
@@ -67,7 +61,7 @@ class Node extends EntityBase
      *
      * @return string
      */
-    public static function getMoldModel()
+    public static function getMoldClass()
     {
         return NodeType::class;
     }
@@ -77,7 +71,7 @@ class Node extends EntityBase
      *
      * @return string
      */
-    public static function getFieldModel()
+    public static function getFieldClass()
     {
         return NodeField::class;
     }
@@ -87,97 +81,34 @@ class Node extends EntityBase
      *
      * @return string
      */
-    public static function getPivotModel()
+    public static function getPivotClass()
     {
         return NodeFieldNodeType::class;
     }
 
-    /**
-     * 获取所有列名
-     *
-     * @return array
-     */
-    public static function getColumns()
-    {
-        return static::$columns;
-    }
+    // /**
+    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    //  */
+    // public function catalogs()
+    // {
+    //     return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog_id')
+    //                 ->withPivot([
+    //                     'parent_id',
+    //                     'prev_id',
+    //                     'path',
+    //                 ]);
+    // }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function collectFields()
-    {
-        $fields = NodeField::globalFields()->get();
-        if ($this->exists) {
-            $fields = $fields->merge($this->fields()->get());
-        } elseif ($mold = $this->getMold()) {
-            $fields = $fields->merge($mold->fields);
-        } else {
-            $fields = $fields->merge(NodeField::presetFields()->get());
-        }
-
-        return $fields->map(function(FieldBase $field) {
-                return $field->bindEntity($this);
-            })->keyBy(function(FieldBase $field) {
-                return $field->getKey();
-            });
-    }
-
-    /**
-     * 获取所有实体字段
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function fields()
-    {
-        return $this->belongsToMany(NodeField::class, NodeFieldNodeType::class, 'mold_id', 'field_id', 'mold_id')
-                    ->orderBy('node_field_node_type.delta')
-                    ->withPivot([
-                        'delta',
-                        'label',
-                        'description',
-                        'helpertext',
-                        'is_required',
-                    ]);
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function catalogs()
-    {
-        return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog_id')
-                    ->withPivot([
-                        'parent_id',
-                        'prev_id',
-                        'langcode',
-                    ]);
-    }
-
-    /**
-     * 获取关联的标签
-     *
-     * @param  string $langcode
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function tags(string $langcode = null)
-    {
-        if ($langcode) {
-            return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
-                ->wherePivot('langcode', $langcode);
-        }
-
-        return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
-            ->withPivot(['langcode']);
-    }
-
-    /**
-     * @return array
-     */
-    public function positions()
-    {
-        return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog_id')->toArray();
-    }
+    // /**
+    //  * 关联标签
+    //  *
+    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    //  */
+    // public function tags()
+    // {
+    //     return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+    //         ->wherePivot('langcode', $this->getLangcode());
+    // }
 
     /**
      * 组合属性：is_black
@@ -200,72 +131,103 @@ class Node extends EntityBase
     }
 
     /**
-     * 获取用于渲染页面表单的原料
+     * 附加属性 suggested_views 的 Get Mutator
      *
      * @return array
      */
-    public function retrieveFormMaterials()
+    public function getSuggestedViewsAttribute()
     {
-        return array_merge(
-            $this->retrieveFieldMaterials(),
-            $this->retrieveLinkMaterials()
-        );
+        $localized = [];
+        $views = [];
+
+        if ($view = $this->getView()) {
+            $localized[] = $view;
+        }
+
+        // 根据 id
+        $localized[] = 'node--'.$this->id.'.{langcode}.twig';
+        $views[] = 'node--'.$this->id.'.twig';
+
+        // 根据 url
+        if ($url = $this->getPathAlias()) {
+            $url = str_replace('/', '_', trim($url, '\\/'));
+            // $views[] = 'url--'.$url.'.{langcode}.twig';
+            $localized[] = 'url--'.$url.'.twig';
+        }
+
+        // // 根据目录位置
+        // if ($parent = Catalog::default()->tree()->parent($this->id)) {
+        //     $localized[] = 'under--' . $parent[0] . '.{langcode}.twig';
+        //     $views[] = 'under--' . $parent[0] . '.twig';
+        // }
+
+        // 根据类型
+        $localized[] = 'mold--'.$this->mold_id.'.{langcode}.twig';
+        $views[] = 'mold--'.$this->mold_id.'.twig';
+
+        return array_merge($localized, $views);
     }
 
     /**
-     * 获取字段渲染原料（与字段相关的一组信息，用于组成表单）
-     *
-     * @return array
+     * {@inheritdoc}
      */
-    public function retrieveFieldMaterials()
+    public function collectFields()
     {
-        $materials = [];
-        foreach ($this->collectFields() as $field) {
-            $materials[$field->getKey()] = array_merge(
-                FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials(),
-                ['preset_type' => $field->preset_type]
-            );
+        $fields = NodeField::bisect()->get('preseted');
+        if ($this->exists) {
+            $fields = $fields->merge($this->fields->keyBy('id'));
+        } elseif ($mold = $this->getMold()) {
+            $fields = $fields->merge($mold->fields->keyBy('id'));
         }
 
-        return $materials;
-
-        // $pocket = new Pocket(static::class);
-        // $key = join('/', [
-        //     $this->attributes['node_type_id'] ?? '{node_type_id}',
-        //     $this->getLangcode() ?: '{langcode}',
-        //     'field_materials',
-        // ]);
-
-        // if ($materials = $pocket->get($key)) {
-        //     $materials = $materials->value();
-        // }
-
-        // $modified = last_modified(backend_path('template/components/'));
-        // if (!$materials || $materials['created_at'] < $modified) {
-        //     $materials = [];
-        //     foreach ($this->collectFields() as $field) {
-        //         $materials[$field->getKey()] = array_merge(
-        //             FieldType::findOrFail($field)->getMaterials(),
-        //             ['preset_type' => $field->preset_type]
-        //         );
-        //     }
-
-        //     $materials = [
-        //         'created_at' => time(),
-        //         'materials' => $materials,
-        //     ];
-
-        //     $pocket->put($key, $materials);
-        // }
-
-        // return $materials['materials'];
+        return $fields->map(function(FieldBase $field) {
+                return $field->bindEntity($this);
+            })->sortBy('delta');
     }
 
-    public function retrieveLinkMaterials()
+    /**
+     * @return array
+     */
+    public function positions()
     {
-        return [];
+        return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog_id')->toArray();
     }
 
+    // /**
+    //  * 获取用于渲染页面表单的原料
+    //  *
+    //  * @return array
+    //  */
+    // public function retrieveFormMaterials()
+    // {
+    //     return array_merge(
+    //         $this->retrieveFieldMaterials(),
+    //         $this->retrieveLinkMaterials()
+    //     );
+    // }
+
+    // /**
+    //  * 获取字段渲染原料（与字段相关的一组信息，用于组成表单）
+    //  *
+    //  * @return array
+    //  */
+    // public function retrieveFieldMaterials()
+    // {
+    //     $materials = [];
+    //     foreach ($this->collectFields() as $field) {
+    //         $materials[$field->getKey()] = array_merge(
+    //             FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials(),
+    //             ['preset_type' => $field->preset_type]
+    //         );
+    //     }
+
+    //     return $materials;
+    // }
+
+    // public function retrieveLinkMaterials()
+    // {
+    //     return [];
+    // }
 
     // public function searchableFields()
     // {
@@ -395,9 +357,9 @@ class Node extends EntityBase
         parent::boot();
 
         static::deleting(function(Node $node) {
-            foreach ($node->collectFields() as $field) {
-                $field->deleteValue();
-            }
+            $node->fields->each(function(NodeField $field) {
+                $field->bindEntity($this)->deleteValue();
+            });
             Pocket::make($node)->clear('html');
         });
 
@@ -413,7 +375,7 @@ class Node extends EntityBase
      */
     public function render()
     {
-        $tpl = $this->template();
+        $tpl = $this->getBestView();
         if (! $tpl) {
             return '';
         }
@@ -435,9 +397,26 @@ class Node extends EntityBase
         config()->set('render_langcode', null);
 
         $html = preg_replace('/\n\s+/', "\n", $html);
-        Pocket::make($this)->put('html', $html);
+        Pocket::make($this, 'html')->put($html);
 
         return $html;
+    }
+
+    /**
+     * 获取可能的模板
+     *
+     * @return string|null
+     */
+    public function getBestView()
+    {
+        $langcode = $this->getLangcode();
+        foreach ($this->getSuggestedViewsAttribute() as $view) {
+            $view = str_replace('{langcode}', $langcode, $view);
+            if (is_file(frontend_path('template/'.$view))) {
+                return $view;
+            }
+        }
+        return null;
     }
 
     /**
@@ -459,74 +438,16 @@ class Node extends EntityBase
     }
 
     /**
-     * 获取 templates
+     * 查找坏掉的链接
      *
      * @return array
      */
-    public function getTemplatesAttribute()
+    public function findInvalidLinks()
     {
-        return $this->getSuggestedTemplates();
-    }
+        $langcode = $this->getLangcode();
 
-    // /**
-    //  * 获取可能的模板
-    //  *
-    //  * @return string|null
-    //  */
-    // public function template()
-    // {
-    //     $langcode = $this->getLangcode();
-
-    //     foreach ($this->getSuggestedTemplates() as $tpl) {
-    //         $tpl = str_replace('{langcode}', $langcode, $tpl);
-    //         if (is_file(frontend_path('template/'.$tpl))) {
-    //             return $tpl;
-    //         }
-    //     }
-
-    //     return null;
-    // }
-
-    /**
-     * 获取建议模板
-     *
-     * @return array
-     */
-    public function getSuggestedTemplates()
-    {
-        $templates = [];
-
-        if ($template = $this->getPartialView()) {
-            $templates[] = $template;
-        }
-
-        // 按 id
-        $templates[] = 'node_'.$this->id.'.{langcode}.twig';
-        $templates[] = 'node_'.$this->id.'.twig';
-
-        // 按 url
-        if ($url = $this->getPathAlias()) {
-            # code...
-            $url = str_replace('/', '_', trim($url, '\\/'));
-            $templates[] = 'url_'.$url.'.{langcode}.twig';
-            $templates[] = 'url_'.$url.'.twig';
-        }
-
-        if ($parent = Catalog::default()->tree()->parent($this->id)) {
-            $templates[] = 'under_' . $parent[0] . '.{langcode}.twig';
-            $templates[] = 'under_' . $parent[0] . '.twig';
-        }
-
-        // 针对该节点类型的模板
-        $templates[] = 'type_'.$this->node_type_id.'.{langcode}.twig';
-        $templates[] = 'type_'.$this->node_type_id.'.twig';
-
-        return $templates;
-    }
-
-    public function findInvalidLinks($langcode)
-    {
-        $html = $this->retrieveHtml($langcode);
+        $pocket = new Pocket($this, 'html');
+        $html = $pocket->get() ?? $this->render();
         if (! $html) {
             return [];
         }
@@ -691,7 +612,7 @@ class Node extends EntityBase
      */
     public function get_type()
     {
-        return $this->nodeType;
+        return $this->mold;
     }
 
     /**

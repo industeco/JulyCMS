@@ -19,7 +19,7 @@ class NodeField extends FieldBase
      *
      * @return string
      */
-    public static function getEntityModel()
+    public static function getEntityClass()
     {
         return Node::class;
     }

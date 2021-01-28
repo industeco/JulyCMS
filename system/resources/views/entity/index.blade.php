@@ -1,11 +1,11 @@
-@extends('layout')
+@extends('backend::layout')
 
 @section('h1', '所有内容')
 
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_url('nodes.choose_mold') }}" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_url('nodes.choose_node_type') }}" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建内容</div></div>
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"
@@ -23,7 +23,7 @@
           <el-option label="按类型" value="node_type"></el-option>
           <el-option label="按网址" value="url"></el-option>
           <el-option label="按颜色" value="color"></el-option>
-          @if (config('lang.multiple'))
+          @if (config('language.multiple'))
           <el-option label="按语言" value="langcode"></el-option>
           @endif
         </el-select>
@@ -43,8 +43,8 @@
           </el-option>
         </el-select>
         <el-select v-if="filterBy=='url'" v-model="filterValues.url" size="small" @change="filterNodes">
-          <el-option label="有网址" :value="true"></el-option>
-          <el-option label="没有网址" :value="false"></el-option>
+          <el-option label="有 URL" :value="true"></el-option>
+          <el-option label="没有 URL" :value="false"></el-option>
         </el-select>
         <el-select size="small"
           v-if="filterBy=='color'"
@@ -54,7 +54,7 @@
           <el-option value="is_green">绿</el-option>
           <el-option value="is_blue">蓝</el-option>
         </el-select>
-        @if (config('lang.multiple'))
+        @if (config('language.multiple'))
         <el-select size="small"
           v-if="filterBy=='langcode'"
           v-model="filterValues.langcode"
@@ -107,9 +107,9 @@
             <span class="jc-suggested-template" v-for="template in scope.row.templates" :key="template">@{{ template }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="类型" prop="mold_id" width="120" sortable>
+        <el-table-column label="类型" prop="node_type_id" width="120" sortable>
           <template slot-scope="scope">
-            <span>@{{ nodeTypes[scope.row.mold_id] }}</span>
+            <span>@{{ nodeTypes[scope.row.node_type_id] }}</span>
           </template>
         </el-table-column>
         </el-table-column>
@@ -124,7 +124,7 @@
               <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              @if (config('lang.multiple'))
+              @if (config('language.multiple'))
               <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
@@ -139,13 +139,48 @@
       </el-table>
     </div>
     <jc-contextmenu ref="contextmenu">
-      <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" />
-      @if (config('lang.multiple'))
-      <x-menu-item title="翻译" icon="translate" href="contextmenu.translateUrl" />
+      <li class="md-list-item">
+        <a :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
+            <span class="md-list-item-text">编辑</span>
+          </div>
+        </a>
+      </li>
+      @if (config('language.multiple'))
+      <li class="md-list-item">
+        <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-primary md-theme-default">translate</i>
+            <span class="md-list-item-text">翻译</span>
+          </div>
+        </a>
+      </li>
       @endif
-      <x-menu-item title="删除" icon="remove_circle" click="deleteNode(contextmenu.target)" />
-      <x-menu-item title="生成 HTML" icon="description" click="render(contextmenu.target)" />
-      <x-menu-item title="查看页面" icon="visibility" href="contextmenu.url" />
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="deleteNode(contextmenu.target)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
+            <span class="md-list-item-text">删除</span>
+          </div>
+        </div>
+      </li>
+      <li class="md-list-item">
+        <div class="md-list-item-container md-button-clean" @click.stop="render(contextmenu.target)">
+          <div class="md-list-item-content md-ripple">
+            <i class="md-icon md-icon-font md-theme-default">description</i>
+            <span class="md-list-item-text">生成 HTML</span>
+          </div>
+        </div>
+      </li>
+      <li class="md-list-item">
+        <a :href="contextmenu.url" target="_blank" class="md-list-item-link md-list-item-container md-button-clean">
+          <div class="md-list-item-content">
+            <i class="md-icon md-icon-font md-theme-default">visibility</i>
+            <span class="md-list-item-text">查看页面</span>
+          </div>
+        </a>
+      </li>
     </jc-contextmenu>
   </div>
 @endsection
@@ -305,7 +340,7 @@
 
         const nodes = [];
         this.initialData.forEach(node => {
-          if (node.mold_id === value) {
+          if (node.node_type_id === value) {
             nodes.push(clone(node));
           }
         });

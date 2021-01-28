@@ -22,7 +22,7 @@ class NodeType extends EntityMoldBase implements GetNodesInterface
      *
      * @return string
      */
-    public static function getEntityModel()
+    public static function getEntityClass()
     {
         return Node::class;
     }

@@ -25,7 +25,7 @@ class Pocket
     protected $prefix = '';
 
     /**
-     * 默认的键名
+     * 缓存键
      *
      * @var \App\Utils\Value|null
      */
@@ -40,7 +40,7 @@ class Pocket
 
     /**
      * @param  string|object $subject 调用 Pocket 的主体：类或类实例
-     * @param  mixed $key 默认的键名
+     * @param  mixed $key 缓存键
      */
     public function __construct($subject, $key = null)
     {
@@ -109,6 +109,23 @@ class Pocket
     {
         $this->rawKey = $key;
 
+        $this->key = $this->getKey($key);
+
+        return $this;
+    }
+
+    /**
+     * 获取缓存键
+     *
+     * @param  mixed $key
+     * @return \App\Utils\Value
+     */
+    public function getKey($key = null)
+    {
+        if (is_null($key)) {
+            return $this->key;
+        }
+
         if ($key instanceof Value) {
             $key = $key->value();
         }
@@ -117,48 +134,36 @@ class Pocket
             asort($key);
         }
 
-        $this->key = new Value($this->prefix.md5(serialize($key)));
-
-        return $this;
-    }
-
-    /**
-     * 获取缓存键
-     *
-     * @return \App\Utils\Value
-     */
-    public function getKey()
-    {
-        return $this->key;
+        return new Value($this->prefix.md5(serialize($key)));
     }
 
     /**
      * 存储值到缓存中
      *
      * @param mixed $value
+     * @param  mixed $key
      * @return bool
      */
-    public function put($value)
+    public function put($value, $key = null)
     {
         if ($value instanceof Value) {
             $value = $value->value();
         }
-
-        return Cache::put($this->key->value(), $value);
+        return Cache::put($this->getKey($key)->value(), $value);
     }
 
     /**
      * 从缓存中获取值
      *
+     * @param  mixed $key
      * @return \App\Utils\Value|null
      */
-    public function get()
+    public function get($key = null)
     {
-        $value = Cache::get($this->key->value(), $this);
+        $value = Cache::get($this->getKey($key)->value(), $this);
         if ($value === $this) {
             return null;
         }
-
         return new Value($value);
     }
 
@@ -168,8 +173,8 @@ class Pocket
      * @param  mixed $key
      * @return boolean
      */
-    public function clear()
+    public function clear($key = null)
     {
-        return Cache::forget($this->key->value());
+        return Cache::forget($this->getKey($key)->value());
     }
 }
