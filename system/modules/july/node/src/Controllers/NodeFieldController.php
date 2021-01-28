@@ -38,16 +38,17 @@ class NodeFieldController extends Controller
     public function store(Request $request)
     {
         NodeField::create($request->all());
+
         return response('');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \July\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $field
      * @return \Illuminate\Http\Response
      */
-    public function show(NodeField $contentField)
+    public function show(NodeField $field)
     {
         //
     }
@@ -55,10 +56,10 @@ class NodeFieldController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \July\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $field
      * @return \Illuminate\Http\Response
      */
-    public function edit(NodeField $contentField)
+    public function edit(NodeField $field)
     {
         //
     }
@@ -67,10 +68,10 @@ class NodeFieldController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \July\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $field
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, NodeField $contentField)
+    public function update(Request $request, NodeField $field)
     {
         //
     }
@@ -78,10 +79,10 @@ class NodeFieldController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Node\NodeField  $contentField
+     * @param  \July\Node\NodeField  $field
      * @return \Illuminate\Http\Response
      */
-    public function destroy(NodeField $contentField)
+    public function destroy(NodeField $field)
     {
         //
     }
@@ -97,7 +98,7 @@ class NodeFieldController extends Controller
         // 保留的字段名
         $reserved = array_merge(
             // 固有属性
-            array_keys(NodeField::template()),
+            (new NodeField)->getFillable(),
             ['updated_at', 'created_at', 'delta'],
 
             // 动态表中用到的，或可能会用到的

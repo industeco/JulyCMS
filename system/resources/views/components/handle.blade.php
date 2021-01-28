@@ -13,7 +13,7 @@
   @if(!$readOnly)
   :rules="[
     { required:true, message:'不能为空', trigger:'submit' },
-    { pattern:/^[a-z_][a-z0-9_]+$/, message:'格式不正确', trigger:'change' },
+    { pattern:/^[a-z_][a-z0-9_]*$/, message:'格式不正确', trigger:'change' },
     { validator:unique('{{ $uniqueAction }}'), trigger:'blur' },
   ]"
   @endif>

@@ -2,10 +2,8 @@
 
 namespace July\Node;
 
-use App\Utils\Pocket;
-use Illuminate\Support\Facades\Log;
 use App\EntityField\FieldBase;
-use App\EntityField\FieldTypes\FieldTypeManager;
+use Illuminate\Support\Facades\Log;
 
 class NodeField extends FieldBase
 {
@@ -87,104 +85,93 @@ class NodeField extends FieldBase
     //     return $query->where('preset_type', static::PRESET_TYPE['global']);
     // }
 
-    /**
-     * 限定仅查询全局预设字段
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeSearchableFields($query)
-    {
-        return $query->where('search_weight', '>', 0);
-    }
+    // /**
+    //  * 获取所有字段的信息（包含参数）
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public static function retrieveFieldsInfo()
+    // {
+    //     return static::query()->with('fieldParameters')->get()
+    //         ->map(function(NodeField $field) {
+    //             return $field->gather();
+    //         });
+    // }
 
-    /**
-     * 获取所有字段的信息（包含参数）
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public static function retrieveFieldsInfo()
-    {
-        return static::query()->with('fieldParameters')->get()
-            ->map(function(NodeField $field) {
-                return $field->gather();
-            });
-    }
+    // /**
+    //  * 获取全局字段的信息
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public static function takeGlobalFieldsInfo()
+    // {
+    //     return static::globalFields()->with('fieldParameters')->get()
+    //         ->map(function(NodeField $field) {
+    //             return $field->gather();
+    //         });
 
-    /**
-     * 获取全局字段的信息
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public static function takeGlobalFieldsInfo()
-    {
-        return static::globalFields()->with('fieldParameters')->get()
-            ->map(function(NodeField $field) {
-                return $field->gather();
-            });
+    //     // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['global']);
+    // }
 
-        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['global']);
-    }
+    // /**
+    //  * 获取预设字段的信息
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public static function takePresetFieldsInfo()
+    // {
+    //     return static::presetFields()->with('fieldParameters')->get()
+    //         ->map(function(NodeField $field) {
+    //             return $field->gather();
+    //         });
 
-    /**
-     * 获取预设字段的信息
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public static function takePresetFieldsInfo()
-    {
-        return static::presetFields()->with('fieldParameters')->get()
-            ->map(function(NodeField $field) {
-                return $field->gather();
-            });
+    //     // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['preset']);
+    // }
 
-        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['preset']);
-    }
+    // /**
+    //  * 获取常规字段的信息
+    //  *
+    //  * @return \Illuminate\Support\Collection
+    //  */
+    // public static function takeSelectableFieldsInfo()
+    // {
+    //     return static::normalFields()->with('fieldParameters')->get()
+    //         ->map(function(NodeField $field) {
+    //             return $field->gather();
+    //         });
 
-    /**
-     * 获取常规字段的信息
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public static function takeSelectableFieldsInfo()
-    {
-        return static::normalFields()->with('fieldParameters')->get()
-            ->map(function(NodeField $field) {
-                return $field->gather();
-            });
+    //     // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['normal']);
+    // }
 
-        // return static::retrieveFieldsInfo()->groupBy('preset_type')->get(static::PRESET_TYPE['normal']);
-    }
+    // /**
+    //  * 获取全局字段的构建材料
+    //  *
+    //  * @param  string|null $langcode
+    //  * @return array
+    //  */
+    // public static function takeGlobalFieldMaterials(?string $langcode = null)
+    // {
+    //     $langcode = $langcode ?? langcode('content');
+    //     $pocket = Pocket::make(static::class)->setKey('global_field_materials/'.$langcode);
 
-    /**
-     * 获取全局字段的构建材料
-     *
-     * @param  string|null $langcode
-     * @return array
-     */
-    public static function takeGlobalFieldMaterials(?string $langcode = null)
-    {
-        $langcode = $langcode ?? langcode('content');
-        $pocket = Pocket::make(static::class)->setKey('global_field_materials/'.$langcode);
+    //     if ($materials = $pocket->get()) {
+    //         $materials = $materials->value();
+    //     }
 
-        if ($materials = $pocket->get()) {
-            $materials = $materials->value();
-        }
+    //     $lastModified = last_modified(backend_path('template/components/'));
+    //     if (!$materials || $materials['created_at'] < $lastModified) {
+    //         $materials = [];
+    //         foreach (static::takeGlobalFieldsInfo() as $field) {
+    //             $field = NodeField::make($field);
+    //             $materials[$field['id']] = FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials();
+    //         }
+    //         $materials = [
+    //             'created_at' => time(),
+    //             'materials' => $materials,
+    //         ];
+    //         $pocket->put($materials);
+    //     }
 
-        $lastModified = last_modified(backend_path('template/components/'));
-        if (!$materials || $materials['created_at'] < $lastModified) {
-            $materials = [];
-            foreach (static::takeGlobalFieldsInfo() as $field) {
-                $field = NodeField::make($field);
-                $materials[$field['id']] = FieldTypeManager::findOrFail($field['field_type_id'])->bindField($field)->getMaterials();
-            }
-            $materials = [
-                'created_at' => time(),
-                'materials' => $materials,
-            ];
-            $pocket->put($materials);
-        }
-
-        return $materials['materials'];
-    }
+    //     return $materials['materials'];
+    // }
 }

@@ -351,12 +351,12 @@ return [
             'icon' => 'create',
             'route' => null,
             'children' => [
-                // [
-                //     'title' => '内容',
-                //     'icon' => null,
-                //     'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
-                //     'children' => [],
-                // ],
+                [
+                    'title' => '内容',
+                    'icon' => null,
+                    'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+                    'children' => [],
+                ],
             ],
         ],
 

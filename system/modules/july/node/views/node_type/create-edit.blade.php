@@ -30,6 +30,7 @@
           <div class="jc-table-wrapper">
             <table class="jc-table jc-dense is-draggable with-drag-handle with-operators">
               <colgroup>
+                <col width="100px">
                 <col width="50px">
                 <col width="150px">
                 <col width="150px">
@@ -39,6 +40,7 @@
               </colgroup>
               <thead>
                 <tr>
+                  <th>字段组</th>
                   <th></th>
                   <th>ID</th>
                   <th>标签</th>
@@ -47,94 +49,9 @@
                   <th>操作</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="field in mold.reservedFields" :key="field.id">
-                  <td></td>
-                  <td><span>@{{ field.id }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
-                  <td><span>@{{ field.description }}</span></td>
-                  <td><span>@{{ field.field_type_id }}</span></td>
-                  <td>
-                    <div class="jc-operators">
-                      <button type="button" title="编辑" class="md-button md-icon-button md-primary md-theme-default"
-                        @click.stop="editField(field)">
-                        <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
-                        {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
-                      </button>
-                      <button type="button" title="删除" class="md-button md-icon-button md-accent md-theme-default" disabled>
-                        <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-              <tbody
-                is="draggable"
-                v-model="mold.optionalFields"
-                :animation="150"
-                ghost-class="jc-drag-ghost"
-                handle=".jc-drag-handle"
-                tag="tbody">
-                <tr v-for="field in mold.optionalFields" :key="field.id">
-                  <td><i class="md-icon md-icon-font md-theme-default jc-drag-handle">swap_vert</i></td>
-                  <td><span>@{{ field.id }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
-                  <td><span>@{{ field.description }}</span></td>
-                  <td><span>@{{ field.field_type_id }}</span></td>
-                  <td>
-                    <div class="jc-operators">
-                      <button
-                        type="button"
-                        class="md-button md-icon-button md-primary md-theme-default"
-                        title="编辑"
-                        @click.stop="editField(field)">
-                        <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
-                        {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
-                      </button>
-                      <button
-                        type="button"
-                        class="md-button md-icon-button md-accent md-theme-default"
-                        title="删除"
-                        @click.stop="removeField(field)">
-                        <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-              <tbody
-                is="draggable"
-                v-model="mold.globalFields"
-                :animation="150"
-                ghost-class="jc-drag-ghost"
-                handle=".jc-drag-handle"
-                tag="tbody">
-                <tr>
-                  <th colspan="6" style="text-align: center">全局字段</th>
-                </tr>
-                <tr v-for="field in mold.globalFields" :key="field.id">
-                  <td><i class="md-icon md-icon-font md-theme-default jc-drag-handle">swap_vert</i></td>
-                  <td><span>@{{ field.id }}</span></td>
-                  <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
-                  <td><span>@{{ field.description }}</span></td>
-                  <td><span>@{{ field.field_type_id }}</span></td>
-                  <td>
-                    <div class="jc-operators">
-                      <button
-                        type="button"
-                        class="md-button md-icon-button md-primary md-theme-default"
-                        title="编辑"
-                        @click.stop="editField(field)">
-                        <svg class="md-icon jc-svg-icon"><use xlink:href="#jcon_edit_circle"></use></svg>
-                        {{-- <i class="md-icon md-icon-font md-theme-default">edit</i> --}}
-                      </button>
-                      <button type="button" class="md-button md-icon-button md-accent md-theme-default" title="删除" disabled>
-                        <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+              <x-mold.field-list model="mold.globalFields" caption="全局" />
+              <x-mold.field-list model="mold.reservedFields" :sortable="false" caption="预设" />
+              <x-mold.field-list model="mold.optionalFields" :deletable="true" caption="可选" />
             </table>
           </div>
           <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择、排序字段</span>
@@ -251,8 +168,7 @@
 
     methods: {
       // 从列表移除指定字段
-      removeField(field) {
-        const fields = this.mold.optionalFields;
+      removeField(fields, field) {
         for (let i = 0, len = fields.length; i < len; i++) {
           if (fields[i].id === field.id) {
             fields.splice(i, 1);

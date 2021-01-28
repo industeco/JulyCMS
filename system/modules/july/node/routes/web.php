@@ -39,24 +39,24 @@ Route::group([
     //     ->parameters(['catalogs' => 'catalog'])
     //     ->names('catalogs');
 
-    // // 内容
-    // Route::get('nodes/create/{nodeType}', [Controllers\NodeController::class, 'create'])
-    //     ->name('nodes.create');
+    // 内容
+    Route::get('nodes/create/{nodeType}', [Controllers\NodeController::class, 'create'])
+        ->name('nodes.create');
 
-    // Route::get('nodes/choose/node_type', [Controllers\NodeController::class, 'chooseNodeType'])
-    //     ->name('nodes.choose_node_type');
+    Route::get('nodes/mold', [Controllers\NodeController::class, 'chooseMold'])
+        ->name('nodes.choose_mold');
 
-    // Route::get('nodes/{node}/languages', [Controllers\NodeController::class, 'chooseLanguage'])
-    //     ->name('nodes.languages');
+    Route::get('nodes/{node}/translate', [Controllers\NodeController::class, 'translateTo'])
+        ->name('nodes.translate_to');
 
-    // Route::get('nodes/{node}/translate/{langcode}', [Controllers\NodeController::class, 'edit'])
-    //     ->name('nodes.translate');
+    Route::get('nodes/{node}/translate/{langcode}', [Controllers\NodeController::class, 'edit'])
+        ->name('nodes.translate');
 
-    // Route::post('nodes/render', [Controllers\NodeController::class, 'render'])
-    //     ->name('nodes.render');
+    Route::post('nodes/render', [Controllers\NodeController::class, 'render'])
+        ->name('nodes.render');
 
-    // Route::resource('nodes', Controllers\NodeController::class)
-    //     ->except(['create'])
-    //     ->parameters(['nodes' => 'node'])
-    //     ->names('nodes');
+    Route::resource('nodes', Controllers\NodeController::class)
+        ->except(['create'])
+        ->parameters(['nodes' => 'node'])
+        ->names('nodes');
 });

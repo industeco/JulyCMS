@@ -20,7 +20,7 @@ class NodeTypeController extends Controller
     public function index()
     {
         return view('node::node_type.index', [
-            'nodeTypes' => NodeType::index(),
+            'models' => NodeType::index(),
         ]);
     }
 

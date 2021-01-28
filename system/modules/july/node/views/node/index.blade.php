@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_url('nodes.choose_node_type') }}" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_url('nodes.choose_mold') }}" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建内容</div></div>
       </a>
       <button type="button" class="md-button md-dense md-raised md-primary md-theme-default"

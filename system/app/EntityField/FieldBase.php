@@ -184,6 +184,17 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 限定可检索字段
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchable($query)
+    {
+        return $query->where('search_weight', '>', 0);
+    }
+
+    /**
      * 将字段分为预设和可选两类
      *
      * @return array

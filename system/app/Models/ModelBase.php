@@ -175,9 +175,10 @@ abstract class ModelBase extends Model
      */
     public static function index()
     {
+        $primaryKey = (new static)->getKeyName();
         return static::all()->map(function(ModelBase $model) {
             return $model->gather();
-        })->keyBy((new static)->getKeyName())->all();
+        })->keyBy($primaryKey)->all();
     }
 
     /**

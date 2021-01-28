@@ -4,17 +4,14 @@ namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Arr;
-use App\Language\Lang;
-use July\Config\Config;
+use App\Utils\Lang;
 use July\Node\Catalog;
 use July\Node\Node;
 use July\Node\NodeType;
 use July\Node\NodeField;
 use July\Taxonomy\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Response;
 use July\Config\PartialView;
 
 class NodeController extends Controller
@@ -26,16 +23,9 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $keys = array_merge(
-            Node::make()->getColumnKeys(),
-            ['title', 'url', 'template']
-        );
+        $nodes = Node::index();
 
-        $nodes = Node::all()->map(function (Node $node) use ($keys) {
-                return Arr::only($node->gather(), $keys);
-            })->keyBy('id')->all();
-
-        return view_with_langcode('backend::node.index', [
+        return view('backend::node.index', [
                 'nodes' => $nodes,
                 'node_types' => NodeType::all()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::all()->pluck('label', 'id')->all(),

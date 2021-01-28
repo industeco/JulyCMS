@@ -33,7 +33,7 @@
               </a>
               @endif --}}
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
-                @click.stop="deleteType(scope.row)" :disabled="scope.row.referenced>0 || scope.row.is_reserved">
+                @click.stop="deleteMold(scope.row)" :disabled="scope.row.referenced>0 || scope.row.is_reserved">
                 <div class="md-ripple">
                   <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div>
                 </div>
@@ -69,7 +69,7 @@
       </li>
       @endif --}}
       <li class="md-list-item">
-        <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteType(contextmenu.target)">
+        <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteMold(contextmenu.target)">
           <div class="md-list-item-content">
             <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
             <span class="md-list-item-text">删除</span>
@@ -87,7 +87,7 @@
 
     data() {
       return {
-        nodeTypes: @json(array_values($nodeTypes), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        nodeTypes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
         contextmenu: {
           target: null,
           editUrl: null,
@@ -130,7 +130,7 @@
         }
       },
 
-      deleteType(mold) {
+      deleteMold(mold) {
         if (mold.referenced > 0 || mold.is_reserved) {
           return;
         }

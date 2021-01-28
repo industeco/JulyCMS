@@ -28,19 +28,19 @@
   {{-- 字段描述 --}}
   <x-description :model="$model" helpertext="在列表或表单中显示" />
 
+  {{-- 是否必填 --}}
+  <el-form-item label="必填" size="small">
+    <el-switch v-model="{{ $model }}.is_required"></el-switch>
+  </el-form-item>
+
   {{-- 搜索权重 --}}
   <el-form-item label="搜索权重" size="small" class="has-helptext">
     <el-input-number
       v-model="{{ $model }}.search_weight"
       size="small"
       controls-position="right"
-      :min="1" :step="1" :precision="0"></el-input-number>
+      :min="0" :step="1" :precision="0"></el-input-number>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 用于对搜索结果排序，权重越高，搜索结果越靠前；0 表示不允许搜索。</span>
-  </el-form-item>
-
-  {{-- 是否必填 --}}
-  <el-form-item label="必填" size="small">
-    <el-switch v-model="{{ $model }}.is_required"></el-switch>
   </el-form-item>
 
   {{-- 帮助文本 --}}
