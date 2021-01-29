@@ -2,7 +2,6 @@
 
 namespace July\Node\Controllers;
 
-use App\EntityField\EntityView;
 use App\Http\Controllers\Controller;
 use App\Utils\Lang;
 use Illuminate\Http\Request;
@@ -40,7 +39,7 @@ class NodeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Core\Node\Node  $content
+     * @param  \July\Node\Node  $content
      * @return \Illuminate\Http\Response
      */
     public function show(Node $content)
@@ -87,14 +86,9 @@ class NodeController extends Controller
                 'global_fields' => $fields->get('global'),
                 'local_fields' => $fields->get('local'),
                 'mode' => 'create',
+                // 'catalog_nodes' => Catalog::allPositions(),
+                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
             ],
-            // 'context' => [
-            //     'tags' => Tag::allTags($langcode),
-            //     'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
-            //     'nodes' => $nodes,
-            //     'catalog_nodes' => Catalog::allPositions(),
-            //     'editor_config' => Config::getEditorConfig(),
-            // ],
         ];
 
         return view('node::node.create-edit', $data);
@@ -104,39 +98,35 @@ class NodeController extends Controller
      * 展示编辑或翻译界面
      *
      * @param  \July\Node\Node  $node
-     * @param  string|null  $translateTo
+     * @param  string|null  $langcode
      * @return \Illuminate\Http\Response
      */
-    public function edit(Node $node, string $translateTo = null)
+    public function edit(Node $node, string $langcode = null)
     {
-        if ($translateTo) {
-            config(['request.langcode.content' => $translateTo]);
-            $node->translateTo($translateTo);
+        if ($langcode) {
+            $node->translateTo($langcode);
         }
-        $langcode = $node->getLangcode();
+
+        // 字段集，按是否全局字段分组
+        $fields = $node->getFields()->groupBy(function(NodeField $field) {
+            return $field->is_global ? 'global' : 'local';
+        });
 
         $data = [
-            'node' => array_merge($node->gather(), ['path' => $node->getEntityPath()]),
-            'node_type' => [
-                'id' => $node->nodeType->id,
-                'label' => $node->nodeType->label,
-            ],
-            'fields' => $node->retrieveFieldMaterials(),
+            'model' => $node->gather(),
             'context' => [
-                // 'tags' => Tag::allTags($langcode),
-                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
-                // 'nodes' => $this->simpleNodes($langcode),
-                'templates' => $this->getTwigTemplates($langcode),
+                'mold' => $node->mold,
+                'global_fields' => $fields->get('global'),
+                'local_fields' => $fields->get('local'),
+                'mode' => $node->isTranslated() ? 'translate' : 'edit',
                 // 'catalog_nodes' => Catalog::allPositions(),
-                // 'editor_config' => Config::getEditorConfig(),
+                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
             ],
-            'langcode' => $langcode,
-            'mode' => ($translateTo && $translateTo !== $langcode) ? 'translate' : 'edit',
         ];
 
         // dd($data);
 
-        return view_with_langcode('backend::node.create_edit', $data);
+        return view('node::node.create-edit', $data);
     }
 
     /**
@@ -157,7 +147,7 @@ class NodeController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \July\Core\Node\Node  $node
+     * @param  \July\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Node $node)
@@ -175,7 +165,7 @@ class NodeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Core\Node\Node  $node
+     * @param  \July\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
     public function destroy(Node $node)
@@ -194,29 +184,16 @@ class NodeController extends Controller
      */
     public function translateTo(Node $node)
     {
-        if (!config('language.multiple')) {
+        if (!config('lang.multiple')) {
             abort(404);
         }
 
-        return view_with_langcode('backend::languages', [
-            'original_langcode' => $node->getAttribute('langcode'),
+        return view('node::languages', [
+            'original_langcode' => $node->getOriginalLangcode(),
             'languages' => Lang::getTranslatableLangnames(),
-            'entityKey' => $node->getKey(),
-            'routePrefix' => 'nodes',
+            'entity_id' => $node->getKey(),
+            'route_prefix' => 'nodes',
         ]);
-    }
-
-    protected function simpleNodes(string $langcode = null)
-    {
-        return Node::all()->map(function (Node $node) use ($langcode) {
-            if ($langcode) {
-                $node->translateTo($langcode);
-            }
-            return [
-                'id' => $node->getKey(),
-                'title' => $node->getAttributeValue('title'),
-            ];
-        })->keyBy('id')->all();
     }
 
     /**
@@ -235,8 +212,8 @@ class NodeController extends Controller
         }
 
         // 多语言生成
-        if (config('language.multiple')) {
-            $langs = $request->input('langcode') ?: lang()->getAccessibleLangcodes();
+        if (config('lang.multiple')) {
+            $langs = $request->input('langcode') ?: Lang::getAccessibleLangcodes();
         } else {
             $langs = [langcode('frontend')];
         }

@@ -125,9 +125,10 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public static function referencedByEntity()
     {
-        return static::getEntityClass()::query()->selectRaw('`mold_id`, COUNT(*) as `total`')
-            ->groupBy('mold_id')
-            ->pluck('total', 'mold_id')->all();
+        $moldKey = static::getEntityClass()::getMoldKeyName();
+        return static::getEntityClass()::query()->selectRaw('`'.$moldKey.'`, COUNT(*) as `total`')
+            ->groupBy($moldKey)
+            ->pluck('total', $moldKey)->all();
     }
 
     /**
@@ -137,7 +138,8 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function entities()
     {
-        return $this->hasMany(static::getEntityClass(), 'mold_id');
+        $class = static::getEntityClass();
+        return $this->hasMany($class, $class::getMoldKeyName());
     }
 
     /**
@@ -145,9 +147,9 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      */
     public function fields()
     {
-        $pivotModel = static::getPivotClass();
-        $pivot = (new $pivotModel)->getTable();
-        return $this->belongsToMany(static::getFieldClass(), $pivot, 'mold_id', 'field_id')
+        $pivot = static::getPivotClass();
+        $pivotTable = $pivot::getModelTable();
+        return $this->belongsToMany(static::getFieldClass(), $pivotTable, $pivot::getMoldKeyName(), $pivot::getFieldKeyName())
             ->withPivot([
                 'delta',
                 'label',
@@ -156,8 +158,9 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
                 'helpertext',
                 'default_value',
                 'options',
+                'rules',
             ])
-            ->orderBy($pivot.'.delta');
+            ->orderBy($pivotTable.'.delta');
     }
 
     /**

@@ -99,9 +99,7 @@ abstract class ModelBase extends Model
     {
         $this->raw = $attributes;
 
-        parent::fill($attributes);
-
-        return $this;
+        return parent::fill($attributes);
     }
 
     /**

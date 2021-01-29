@@ -53,7 +53,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      *
      * @return string
      */
-    public static function getMoldForeignKeyName()
+    public static function getMoldKeyName()
     {
         return 'mold_id';
     }
@@ -132,7 +132,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function mold()
     {
-        return $this->belongsTo(static::getMoldClass(), static::getMoldForeignKeyName());
+        return $this->belongsTo(static::getMoldClass(), static::getMoldKeyName());
     }
 
     /**
@@ -142,18 +142,24 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function fields()
     {
-        $pivotTable = static::getPivotClass()::getModelTable();
-        return $this->belongsToMany(static::getFieldClass(), static::getPivotClass(), 'mold_id', 'field_id', 'mold_id')
-                    ->withPivot([
-                        'delta',
-                        'label',
-                        'description',
-                        'helpertext',
-                        'is_required',
-                        'default_value',
-                        'options',
-                    ])
-                    ->orderBy($pivotTable.'.delta');
+        $pivot = static::getPivotClass();
+        $pivotTable = $pivot::getModelTable();
+        return $this->belongsToMany(
+                static::getFieldClass(),
+                static::getPivotClass(),
+                $pivot::getMoldKeyName(),
+                $pivot::getFieldKeyName(),
+                static::getMoldKeyName()
+            )->withPivot([
+                'delta',
+                'label',
+                'description',
+                'helpertext',
+                'is_required',
+                'default_value',
+                'options',
+                'rules',
+            ])->orderBy($pivotTable.'.delta');
     }
 
     /**
@@ -165,7 +171,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     {
         if ($this->exists) {
             return $this->mold->translateTo($this->getLangcode());
-        } elseif ($mold_id = $this->attributes['mold_id'] ?? null) {
+        } elseif ($mold_id = $this->attributes[static::getMoldKeyName()] ?? null) {
             $mold = static::getMoldClass();
             return $mold::findOrFail($mold_id)->translateTo($this->getLangcode());
         }
@@ -228,18 +234,22 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         if ($keys = $this->cachePipe(__FUNCTION__)) {
             return $keys->value();
         }
-        dd($this->mold());
 
-        $table = static::getFieldClass()::getModelTable();
-        $column = $table.'.'.static::getFieldClass()::getModelKeyName();
-
-        if ($this->exists) {
-            return $this->fields()->get()->pluck('id')->all();
-        } elseif ($mold = $this->getMold()) {
-            return $mold->fields->pluck('id')->all();
-        } else {
-            return static::getFieldClass()::isPreseted()->pluck('id')->all();
+        $fields = [];
+        if ($mold_id = $this->attributes[static::getMoldKeyName()] ?? null) {
+            $pivot = static::getPivotClass();
+            $fields = $pivot::query()
+                ->where($pivot::getMoldKeyName(), $mold_id)
+                ->pluck($pivot::getFieldKeyName())
+                ->all();
         }
+
+        if (! $fields) {
+            $field = static::getFieldClass();
+            $fields = $field::isPreseted()->pluck($field::getModelKeyName())->all();
+        }
+
+        return $fields;
     }
 
     /**

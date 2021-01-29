@@ -385,8 +385,8 @@ class Node extends EntityBase
      */
     public function render()
     {
-        $tpl = $this->getBestView();
-        if (! $tpl) {
+        $view = $this->getBestView();
+        if (! $view) {
             return '';
         }
 
@@ -402,14 +402,11 @@ class Node extends EntityBase
         config()->set('render_langcode', $this->getLangcode());
 
         // 生成 html
-        $html = $twig->render($tpl, $data);
+        $html = $twig->render($view, $data);
 
         config()->set('render_langcode', null);
 
-        $html = preg_replace('/\n\s+/', "\n", $html);
-        Pocket::make($this, 'html')->put($html);
-
-        return $html;
+        return preg_replace('/\n\s+/', "\n", $html);
     }
 
     /**
@@ -440,7 +437,7 @@ class Node extends EntityBase
         $url = $url ?? $this->getPathAlias() ?? '/'.$this->getEntityPath();
 
         // 如果不是前台默认语言，则权威页面加上语言代码
-        if ($this->getLangcode() !== langcode('page')) {
+        if ($this->getLangcode() !== langcode('frontend')) {
             $url = '/'.$this->getLangcode().$url;
         }
 

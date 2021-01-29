@@ -35,7 +35,7 @@ class EntityPathAlias extends FieldValueBase
     ];
 
     /**
-     * entity_path 属性的 Set Mutator
+     * entity_path 属性的 Mutator
      *
      * @return string
      */

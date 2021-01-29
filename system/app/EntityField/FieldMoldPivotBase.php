@@ -41,6 +41,26 @@ abstract class FieldMoldPivotBase extends PivotBase
         'is_required' => 'boolean',
     ];
 
+    /**
+     * 获取实体类型在此的外键
+     *
+     * @return string
+     */
+    public static function getMoldKeyName()
+    {
+        return 'mold_id';
+    }
+
+    /**
+     * 获取实体字段在此的外键
+     *
+     * @return string
+     */
+    public static function getFieldKeyName()
+    {
+        return 'field_id';
+    }
+
     // /**
     //  * options 属性的 Set Mutator
     //  *

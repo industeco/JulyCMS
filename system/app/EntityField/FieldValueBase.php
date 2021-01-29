@@ -4,6 +4,8 @@ namespace App\EntityField;
 
 use App\Entity\EntityBase;
 use App\Models\ModelBase;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 
 abstract class FieldValueBase extends ModelBase
 {
@@ -22,6 +24,13 @@ abstract class FieldValueBase extends ModelBase
     protected $value_column;
 
     /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
+    // protected $guarded = [];
+
+    /**
      * 判断是否动态模型
      *
      * @return bool
@@ -29,6 +38,26 @@ abstract class FieldValueBase extends ModelBase
     public static function isDynamic()
     {
         return false;
+    }
+
+    /**
+     * 获取值列名
+     *
+     * @return string
+     */
+    public function getValueColumn()
+    {
+        return $this->value_column;
+    }
+
+    /**
+     * 设置值列
+     *
+     * @param  string|null $column
+     */
+    public function setValueColumn($column)
+    {
+        $this->value_column = $column;
     }
 
     /**
@@ -49,10 +78,14 @@ abstract class FieldValueBase extends ModelBase
             // 获取列名
             $this->value_column = $fieldType->getColumn()['name'];
 
+            $this->attributes = [
+                $this->value_column => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
+            ];
+
             // 设置 fillable
             $this->fillable([
                 'entity_id',
-                $this->value_column => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
+                $this->value_column,
                 'langcode',
                 'updated_at',
             ]);
@@ -99,7 +132,7 @@ abstract class FieldValueBase extends ModelBase
         }
 
         // 查找字段表
-        if ($value = $this->newModelQuery()->ofEntity($entity)->first()) {
+        if ($value = $this->newQuery()->ofEntity($entity)->first()) {
             return $value->{$this->value_column};
         }
 
@@ -119,14 +152,16 @@ abstract class FieldValueBase extends ModelBase
             return $this->deleteValue($entity);
         }
 
-        $attributes = [
+        $attributes = array_merge(array_fill_keys($this->fillable, null), [
             'entity_id' => $entity->getEntityId(),
             'langcode' => $entity->getLangcode(),
-        ];
-        if (in_array('entity_name', $this->fillable)) {
+        ]);
+
+        if (array_key_exists('entity_name', $attributes)) {
             $attributes['entity_name'] = $entity->getEntityName();
         }
-        return $this->newModelQuery()->updateOrCreate($attributes, [
+
+        return $this->newQuery()->updateOrCreate($attributes, [
             $this->value_column => $value,
         ]);
     }
@@ -139,7 +174,7 @@ abstract class FieldValueBase extends ModelBase
      */
     public function deleteValue(EntityBase $entity)
     {
-        return $this->newModelQuery()->ofEntity($entity)->delete();
+        return $this->newQuery()->ofEntity($entity)->delete();
     }
 
     /**
@@ -169,7 +204,7 @@ abstract class FieldValueBase extends ModelBase
 
         // 获取查询结果
         $results = [];
-        foreach ($this->newModelQuery()->where($condition)->get() as $value) {
+        foreach ($this->newQuery()->where($condition)->get() as $value) {
             $results[] = $field + [
                 'entity_id' => $value->entity_id,
                 'langcode' => $value->langcode,
@@ -178,5 +213,38 @@ abstract class FieldValueBase extends ModelBase
         }
 
         return $results;
+    }
+
+    /**
+     * Create a new instance of the given model.
+     *
+     * @param  array  $attributes
+     * @param  bool  $exists
+     * @return static
+     */
+    public function newInstance($attributes = [], $exists = false)
+    {
+        // This method just provides a convenient way for us to generate fresh model
+        // instances of this current model. It is particularly useful during the
+        // hydration of new objects via the Eloquent query builder instances.
+        $model = new static;
+
+        $model->fillable($this->getFillable());
+
+        $model->fill((array) $attributes);
+
+        $model->exists = $exists;
+
+        $model->setConnection(
+            $this->getConnectionName()
+        );
+
+        $model->setTable($this->getTable());
+
+        $model->mergeCasts($this->casts);
+
+        $model->setValueColumn($this->getValueColumn());
+
+        return $model;
     }
 }

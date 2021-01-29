@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use July\Node\NodeField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use July\Node\Node;
 
 class NodeFieldController extends Controller
 {
@@ -97,9 +98,12 @@ class NodeFieldController extends Controller
     {
         // 保留的字段名
         $reserved = array_merge(
-            // 固有属性
-            (new NodeField)->getFillable(),
-            ['updated_at', 'created_at', 'delta'],
+            // 实体的固有属性
+            Node::getModelFillable(),
+            ['id', 'updated_at', 'created_at'],
+
+            // 实体的动态属性（关联）
+            ['fields', 'mold'],
 
             // 动态表中用到的，或可能会用到的
             ['entity_id', 'entity_name']
