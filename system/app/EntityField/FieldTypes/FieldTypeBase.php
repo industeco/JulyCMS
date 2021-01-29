@@ -185,7 +185,7 @@ abstract class FieldTypeBase
             'default_value' => $raw['default_value'] ?? null,
 
             // 可选项
-            'options' => $raw['options'] ?? [],
+            'options' => $raw['options'] ?? '',
         ];
     }
 
@@ -209,33 +209,19 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
-     *
-     * @return array
-     */
-    public function getMaterials()
-    {
-        return [
-            'id' => $this->field->getKey(),
-            'field_type_id' => $this->id,
-            'value' => $this->field->getValue(),
-            'element' => $this->render(),
-        ];
-    }
-
-    /**
      * 获取表单组件（element-ui component）
      *
-     * @param  array|null $data 字段数据
+     * @param  mixed $value 字段值
      * @return string
      */
-    public function render()
+    public function render($value = null)
     {
         $data = $this->field->gather();
+        $data['value'] = $value;
         $data['helpertext'] = $data['helpertext'] ?: $data['description'];
         $data['rules'] = $this->getRules();
 
-        return view('field_types.'.$this->id, $data)->render();
+        return view('field_type.'.$this->id, $data)->render();
     }
 
     /**
@@ -286,6 +272,21 @@ abstract class FieldTypeBase
         $columns = $this->getColumn();
         return [
             $columns[0]['name'] => $value,
+        ];
+    }
+
+    /**
+     * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
+     *
+     * @return array
+     */
+    public function getMaterials()
+    {
+        return [
+            'id' => $this->field->getKey(),
+            'field_type_id' => $this->id,
+            'value' => $this->field->getValue(),
+            'element' => $this->render(),
         ];
     }
 

@@ -9,7 +9,6 @@ use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
 use App\Models\ModelBase;
 use App\Utils\Arr;
-use App\Utils\Pocket;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -90,6 +89,23 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public static function template(EntityMoldBase $mold = null)
+    {
+        $template = parent::template();
+        if ($mold) {
+            $template = array_merge(
+                $template,
+                ['mold_id' => $mold->getKey()],
+                $mold->getFieldValues()
+            );
+        }
+
+        return $template;
+    }
+
+    /**
      * 获取实体路径别名（网址）
      *
      * @return string|null
@@ -164,7 +180,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->pocketPipe(__FUNCTION__, 'gather')) {
+        if ($attributes = $this->cachePipe(__FUNCTION__)) {
             $attributes = $attributes->value();
         } else {
             $attributes = array_merge(
@@ -212,15 +228,17 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         if ($keys = $this->cachePipe(__FUNCTION__)) {
             return $keys->value();
         }
+        dd($this->mold());
 
-        $keyName = static::getFieldClass()::getModelKeyName();
+        $table = static::getFieldClass()::getModelTable();
+        $column = $table.'.'.static::getFieldClass()::getModelKeyName();
 
         if ($this->exists) {
-            return $this->fields()->pluck($keyName)->all();
+            return $this->fields()->get()->pluck('id')->all();
         } elseif ($mold = $this->getMold()) {
-            return $mold->fields()->pluck($keyName)->all();
+            return $mold->fields->pluck('id')->all();
         } else {
-            return static::getFieldClass()::isPreseted()->pluck($keyName)->all();
+            return static::getFieldClass()::isPreseted()->pluck('id')->all();
         }
     }
 
@@ -264,24 +282,24 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         return $this->transformAttributesArray($attributes);
     }
 
-    /**
-     * Get an attribute from the model.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function getAttribute($key)
-    {
-        if (! $key) {
-            return;
-        }
+    // /**
+    //  * Get an attribute from the model.
+    //  *
+    //  * @param  string  $key
+    //  * @return mixed
+    //  */
+    // public function getAttribute($key)
+    // {
+    //     if (! $key) {
+    //         return;
+    //     }
 
-        if ($this->hasField($key)) {
-            return $this->getFieldValue($key);
-        }
+    //     if ($this->hasField($key)) {
+    //         return $this->getFieldValue($key);
+    //     }
 
-        return parent::getAttribute($key);
-    }
+    //     return parent::getAttribute($key);
+    // }
 
     /**
      * 实体保存

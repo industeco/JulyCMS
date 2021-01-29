@@ -20,12 +20,12 @@ class NodeFieldSeeder extends SeederBase
      *
      * @return array
      */
-    protected function getNodeFieldsTableRecords()
+    public function getNodeFieldsTableRecords()
     {
         $records = [
             [
                 'id' => 'url',
-                'field_type_id' => 'url',
+                'field_type_id' => 'path_alias',
                 'is_reserved' => true,
                 'is_global' => true,
                 'group_title' => '网址和模板',
@@ -43,12 +43,12 @@ class NodeFieldSeeder extends SeederBase
             ],
             [
                 'id' => 'meta_title',
-                'field_type_id' => 'text',
+                'field_type_id' => 'input',
                 'is_reserved' => true,
                 'is_global' => true,
-                'group_title' => 'META',
+                'group_title' => 'SEO 信息',
                 'maxlength' => 60,
-                'label' => 'META 标题',
+                'label' => '标题',
                 'description' => '标题建议控制在 60 个字符以内。',
             ],
             [
@@ -56,9 +56,9 @@ class NodeFieldSeeder extends SeederBase
                 'field_type_id' => 'text',
                 'is_reserved' => true,
                 'is_global' => true,
-                'group_title' => 'META',
+                'group_title' => 'SEO 信息',
                 'maxlength' => 160,
-                'label' => 'META 关键词',
+                'label' => '关键词',
                 'description' => '关键词建议控制在 160 个字符以内。',
             ],
             [
@@ -66,23 +66,23 @@ class NodeFieldSeeder extends SeederBase
                 'field_type_id' => 'text',
                 'is_reserved' => true,
                 'is_global' => true,
-                'group_title' => 'META',
+                'group_title' => 'SEO 信息',
                 'maxlength' => 160,
-                'label' => 'META 描述',
+                'label' => '描述',
                 'description' => '描述建议控制在 160 个字符以内。',
             ],
             [
                 'id' => 'meta_canonical',
-                'field_type_id' => 'text',
+                'field_type_id' => 'url',
                 'is_reserved' => true,
                 'is_global' => true,
-                'group_title' => 'META',
-                'label' => 'META 权威页面',
+                'group_title' => 'SEO 信息',
+                'label' => '权威页面',
                 'description' => null,
             ],
             [
                 'id' => 'title',
-                'field_type_id' => 'text',
+                'field_type_id' => 'input',
                 'is_reserved' => true,
                 'search_weight' => 10,
                 'label' => '标题',
@@ -111,7 +111,7 @@ class NodeFieldSeeder extends SeederBase
             ],
             [
                 'id' => 'image_alt',
-                'field_type_id' => 'text',
+                'field_type_id' => 'input',
                 'label' => '主图 alt',
                 'description' => null,
             ],

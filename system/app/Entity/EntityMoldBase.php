@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\EntityField\FieldBase;
 use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
 use App\Models\ModelBase;
@@ -101,13 +102,13 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
      *
      * @return array[]
      */
-    public static function index()
+    public static function index(array $keys = ['*'])
     {
         // 统计每个类型被节点引用次数（也就是有多少个节点使用该类型）
         $referenced = static::referencedByEntity();
 
         // 获取模型列表
-        $molds = parent::index();
+        $molds = parent::index($keys);
 
         // 补充引用计数
         foreach ($molds as $key => &$mold) {
@@ -147,7 +148,6 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         $pivotModel = static::getPivotClass();
         $pivot = (new $pivotModel)->getTable();
         return $this->belongsToMany(static::getFieldClass(), $pivot, 'mold_id', 'field_id')
-            ->orderBy($pivot.'.delta')
             ->withPivot([
                 'delta',
                 'label',
@@ -156,7 +156,21 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
                 'helpertext',
                 'default_value',
                 'options',
-            ]);
+            ])
+            ->orderBy($pivot.'.delta');
+    }
+
+    /**
+     * 获取类型关联字段
+     *
+     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
+     */
+    public function getFields()
+    {
+        if ($fields = $this->cachePipe(__FUNCTION__)) {
+            return $fields->value();
+        }
+        return $this->fields;
     }
 
     /**
@@ -178,6 +192,55 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 获取字段默认值
+     *
+     * @return array
+     */
+    public function getFieldValues()
+    {
+        return $this->getFields()->map(function(FieldBase $field) {
+            return [
+                'id' => $field->getKey(),
+                'value' => $field->getDefaultValue(),
+            ];
+        })->pluck('value', 'id')->all();
+    }
+
+    /**
+     * 获取字段属性及渲染后的表单控件
+     *
+     * @return array
+     */
+    public function fieldsToArray()
+    {
+        if ($results = $this->cachePipe(__FUNCTION__)) {
+            return $results->value();
+        }
+
+        return $this->getFields()->map(function(FieldBase $field) {
+            return $field->gather();
+        })->all();
+    }
+
+    /**
+     * 获取字段属性及渲染后的表单控件
+     *
+     * @return array
+     */
+    public function fieldsToControls()
+    {
+        if ($results = $this->pocketPipe(__FUNCTION__)) {
+            return $results->value();
+        }
+
+        return $this->getFields()->map(function(FieldBase $field) {
+            return $field->gather() + [
+                'control' => $field->render(),
+            ];
+        })->all();
+    }
+
+    /**
      * Bootstrap the model and its traits.
      *
      * @return void
@@ -190,11 +253,13 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         // 字段数据保存在 $raw 属性中
         static::saved(function(EntityMoldBase $mold) {
             $mold->syncFields();
+            $mold->pocketClear('fieldsToControls');
         });
 
         // 删除时移除关联字段
         static::deleting(function(EntityMoldBase $mold) {
             $mold->fields()->detach();
+            $mold->pocketClear('fieldsToControls');
         });
     }
 }

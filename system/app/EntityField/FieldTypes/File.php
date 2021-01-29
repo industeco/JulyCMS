@@ -16,12 +16,12 @@ class File extends FieldTypeBase
      *
      * @var string
      */
-    protected $label = '文件名';
+    protected $label = '文件';
 
     /**
      * 字段类型描述
      *
      * @var string|null
      */
-    protected $description = '可输入带路径文件名，输入框右侧带文件浏览按钮';
+    protected $description = '用于保存文件名（含路径），带文件浏览按钮';
 }

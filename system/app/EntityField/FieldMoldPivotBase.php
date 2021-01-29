@@ -2,9 +2,9 @@
 
 namespace App\EntityField;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use App\Models\PivotBase;
 
-abstract class FieldMoldPivotBase extends Pivot
+abstract class FieldMoldPivotBase extends PivotBase
 {
     /**
      * 是否自动维护时间戳
@@ -28,6 +28,7 @@ abstract class FieldMoldPivotBase extends Pivot
         'helpertext',
         'default_value',
         'options',
+        'rules',
     ];
 
     /**

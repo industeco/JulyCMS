@@ -181,12 +181,12 @@
 
         editUrl: "{{ short_url('nodes.edit', '_ID_') }}",
         deleteUrl: "{{ short_url('nodes.destroy', '_ID_') }}",
-        translateUrl: "{{ short_url('nodes.languages', '_ID_') }}",
+        translateUrl: "{{ short_url('nodes.translate_to', '_ID_') }}",
       };
     },
 
     created() {
-      this.initialData = clone(this.nodes);
+      this.initialData = _.cloneDeep(this.nodes);
     },
 
     methods: {

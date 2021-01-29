@@ -23,12 +23,16 @@ class Url extends FieldTypeBase
      *
      * @var string|null
      */
-    protected $description = '实体路径别名';
+    protected $description = '标准格式网址';
 
     /**
-     * 字段值模型类
-     *
-     * @var string
+     * {@inheritdoc}
      */
-    protected $valueModel = \App\EntityField\EntityPathAlias::class;
+    public function getRules()
+    {
+        $rules = parent::getRules();
+        $rules[] = "{type:'url', message:'网址格式不正确', trigger:'blur'}";
+
+        return $rules;
+    }
 }

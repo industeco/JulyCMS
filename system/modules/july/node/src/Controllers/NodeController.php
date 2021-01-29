@@ -56,7 +56,7 @@ class NodeController extends Controller
     public function chooseMold()
     {
         $data = [
-            'models' => NodeType::index(),
+            'models' => NodeType::all(),
         ];
 
         return view('node::node.choose_mold', $data);
@@ -65,50 +65,45 @@ class NodeController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @param  \July\Core\Node\NodeType  $nodeType
+     * @param  \July\Node\NodeType  $nodeType
      * @return \Illuminate\Http\Response
      */
     public function create(NodeType $nodeType)
     {
-        // $nodes = Node::all()->map(function(Node $node) {
-        //     return [
-        //         'id' => $node->id,
-        //         'title' => $node->title,
-        //     ];
-        // })->keyBy('id')->all();
+        // 节点模板数据
+        $model = array_merge(Node::template(), $nodeType->getFieldValues());
+        $model['langcode'] = langcode('content');
+        $model['mold_id'] = $nodeType->getKey();
 
-        $langcode = langcode('content');
-        $node = new Node([
-                'node_type_id' => $nodeType->getKey(),
-                'langcode' => $langcode,
-            ]);
+        // 字段集，按是否全局字段分组
+        $fields = $nodeType->getFields()->groupBy(function(NodeField $field) {
+            return $field->is_global ? 'global' : 'local';
+        });
 
         $data = [
-            'node' => array_merge($node->gather(), ['path' => '']),
-            'node_type' => [
-                'id' => $nodeType->getKey(),
-                'label' => $nodeType->label,
-            ],
-            'fields' => $node->retrieveFormMaterials(),
+            'model' => $model,
             'context' => [
-                // 'tags' => Tag::allTags($langcode),
-                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
-                // 'nodes' => $nodes,
-                'templates' => $this->getTwigTemplates($langcode),
-                // 'catalog_nodes' => Catalog::allPositions(),
-                // 'editor_config' => Config::getEditorConfig(),
+                'mold' => $nodeType,
+                'global_fields' => $fields->get('global'),
+                'local_fields' => $fields->get('local'),
+                'mode' => 'create',
             ],
-            'langcode' => $langcode,
-            'mode' => 'create',
+            // 'context' => [
+            //     'tags' => Tag::allTags($langcode),
+            //     'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
+            //     'nodes' => $nodes,
+            //     'catalog_nodes' => Catalog::allPositions(),
+            //     'editor_config' => Config::getEditorConfig(),
+            // ],
         ];
 
-        return view('backend::node.create_edit', $data);
+        return view('node::node.create-edit', $data);
     }
 
     /**
      * 展示编辑或翻译界面
      *
-     * @param  \July\Core\Node\Node  $node
+     * @param  \July\Node\Node  $node
      * @param  string|null  $translateTo
      * @return \Illuminate\Http\Response
      */
@@ -194,10 +189,10 @@ class NodeController extends Controller
     /**
      * 选择语言
      *
-     * @param  \July\Core\Node\Node  $content
+     * @param  \July\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
-    public function chooseLanguage(Node $node)
+    public function translateTo(Node $node)
     {
         if (!config('language.multiple')) {
             abort(404);
@@ -261,15 +256,5 @@ class NodeController extends Controller
         }
 
         return response($success);
-    }
-
-    /**
-     * @return array
-     */
-    protected function getTwigTemplates(string $langcode)
-    {
-        $views = EntityView::query()->where('langcode', $langcode)->pluck('view');
-
-        return array_values($views->sort()->unique()->all());
     }
 }

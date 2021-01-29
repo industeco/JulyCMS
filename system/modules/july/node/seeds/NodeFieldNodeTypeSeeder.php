@@ -2,6 +2,7 @@
 
 namespace July\Node\Seeds;
 
+use App\Utils\Arr;
 use Database\Seeds\SeederBase;
 
 class NodeFieldNodeTypeSeeder extends SeederBase
@@ -18,10 +19,20 @@ class NodeFieldNodeTypeSeeder extends SeederBase
      *
      * @return array
      */
-    protected function getNodeFieldNodeTypeTableRecords()
+    public function getNodeFieldNodeTypeTableRecords()
     {
+        // 所有字段信息
+        $allFields = collect((new NodeFieldSeeder)->getNodeFieldsTableRecords())->keyBy('id')->map(function(array $field) {
+            return Arr::only($field, ['label','description','is_required','helpertext','default_value','options','rules']);
+        }, true);
+
+        // 全部预设字段
         $reserved = ['title'];
+
+        // 全局字段
         $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
+
+        // 类型关联字段
         $molds = [
             'basic' => ['content'],
             'list' => ['content'],
@@ -29,17 +40,19 @@ class NodeFieldNodeTypeSeeder extends SeederBase
             'article' => ['summary', 'content', 'image_src', 'image_alt'],
         ];
 
+        // 生成记录
         $records = [];
         foreach ($molds as $id => $fields) {
             $fields = array_merge($reserved, $fields, $global);
             foreach ($fields as $index => $field) {
-                $records[] = [
+                $records[] = $allFields->get($field) + [
                     'mold_id' => $id,
                     'field_id' => $field,
                     'delta' => $index,
                 ];
             }
         }
+
         return $records;
     }
 }

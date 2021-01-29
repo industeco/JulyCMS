@@ -23,5 +23,5 @@ class Html extends FieldTypeBase
      *
      * @var string|null
      */
-    protected $description = '适用于 HTML 文档';
+    protected $description = '适用于 HTML 内容';
 }

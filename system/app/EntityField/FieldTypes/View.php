@@ -2,6 +2,8 @@
 
 namespace App\EntityField\FieldTypes;
 
+use App\EntityField\EntityView;
+
 class View extends FieldTypeBase
 {
     /**
@@ -31,4 +33,23 @@ class View extends FieldTypeBase
      * @var string
      */
     protected $valueModel = \App\EntityField\EntityView::class;
+
+    /**
+     * 获取表单组件（element-ui component）
+     *
+     * @param  mixed $value 字段值
+     * @return string
+     */
+    public function render($value = null)
+    {
+        $data = $this->field->gather();
+        $data['value'] = $value;
+        $data['helpertext'] = $data['helpertext'] ?: $data['description'];
+        $data['rules'] = $this->getRules();
+
+        $views = EntityView::query()->where('langcode', $this->field->getLangcode())->pluck('view');
+        $data['views'] = array_values($views->sort()->unique()->all());
+
+        return view('field_type.'.$this->id, $data)->render();
+    }
 }

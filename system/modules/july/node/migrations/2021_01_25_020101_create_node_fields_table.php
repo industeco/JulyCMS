@@ -56,6 +56,9 @@ class CreateNodeFieldsTable extends Migration
             // 可选值
             $table->string('options')->nullable();
 
+            // 验证规则
+            $table->string('rules')->nullable();
+
             // 初始语言版本
             $table->string('langcode', 12);
 

@@ -16,12 +16,12 @@ class Image extends File
      *
      * @var string
      */
-    protected $label = '图片文件';
+    protected $label = '图片';
 
     /**
      * 字段类型描述
      *
      * @var string|null
      */
-    protected $description = '可输入图片文件的路径，输入框右侧带文件浏览按钮';
+    protected $description = '用于保存图片名（含路径），带文件浏览按钮';
 }

@@ -86,6 +86,16 @@ class Node extends EntityBase
         return NodeFieldNodeType::class;
     }
 
+    /**
+     * 实体所属类型
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function mold()
+    {
+        return $this->belongsTo(NodeType::class, 'mold_id');
+    }
+
     // /**
     //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
     //  */

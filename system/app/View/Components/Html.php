@@ -6,14 +6,22 @@ use Illuminate\View\Component;
 
 class Html extends Component
 {
+    public $field;
+
+    public $value;
+
+    public $model;
+
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(array $field, $value = null, string $model = 'model')
     {
-        //
+        $this->field = $field;
+        $this->value = $value;
+        $this->model = $model;
     }
 
     /**

@@ -245,9 +245,9 @@
                 if (!value || !value.length) {
                   callback();
                 } else {
-                  const action = "{{ short_url('specs.is_exist', '_ID_') }}".replace('_ID_', value);
+                  const action = "{{ short_url('specs.exists', '_ID_') }}".replace('_ID_', value);
                   axios.get(action).then(function(response) {
-                    if (response.data.is_exist) {
+                    if (response.data.exists) {
                       callback(new Error('类型 id 已存在'));
                     } else {
                       callback();

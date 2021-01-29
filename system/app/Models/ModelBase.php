@@ -189,7 +189,7 @@ abstract class ModelBase extends Model
      */
     public static function template()
     {
-        return array_fill_keys(static::getModelFillable(), null);
+        return array_fill_keys((new static)->getFillable(), null);
     }
 
     /**

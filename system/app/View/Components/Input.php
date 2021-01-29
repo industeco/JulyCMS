@@ -4,7 +4,7 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 
-class Text extends Component
+class Input extends Component
 {
     public $field;
 
@@ -31,6 +31,6 @@ class Text extends Component
      */
     public function render()
     {
-        return view('components.text');
+        return view('components.field_type.input');
     }
 }

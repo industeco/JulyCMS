@@ -60,6 +60,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         'helpertext',
         'default_value',
         'options',
+        'rules',
         'langcode',
     ];
 
@@ -381,37 +382,16 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 获取字段参数
+     * rules 属性的 Get Mutator
      *
-     * @return array
+     * @return int
      */
-    public function getParameters()
+    public function getRulesAttribute($rules)
     {
-        // 尝试从缓存获取数据
-        if ($result = $this->cachePipe(__FUNCTION__)) {
-            return $result->value();
+        if ($this->pivot) {
+            return $this->pivot->rules;
         }
-
-        $parameters = null;
-
-        // 获取翻译过的模型字段参数
-        if ($this->entity && $this->entity->getMold()->isTranslated()) {
-            $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
-        }
-
-        // 获取翻译过的字段参数
-        elseif (!$this->entity && $this->isTranslated()) {
-            $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
-        }
-
-        if ($parameters) {
-            return [
-                'default_value' => $parameters->default_value,
-                'options' => $parameters->options,
-            ];
-        }
-
-        return [];
+        return $rules;
     }
 
     /**
@@ -429,6 +409,17 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 生成表单控件
+     *
+     * @param  mixed $value 字段值
+     * @return string
+     */
+    public function render($value = null)
+    {
+        return $this->getFieldType()->render($value);
+    }
+
+    /**
      * 获取字段值模型
      *
      * @return \App\EntityField\FieldValueBase
@@ -439,6 +430,16 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return $model->value();
         }
         return $this->getFieldType()->getValueModel();
+    }
+
+    /**
+     * 获取字段默认值
+     *
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->getDefaultValueAttribute($this->attributes['default_value'] ?? null);
     }
 
     /**
@@ -599,5 +600,39 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         return DB::table($this->getValueTable())->get()->map(function ($record) {
             return (array) $record;
         })->all();
+    }
+
+    /**
+     * 获取字段参数
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        // 尝试从缓存获取数据
+        if ($result = $this->cachePipe(__FUNCTION__)) {
+            return $result->value();
+        }
+
+        $parameters = null;
+
+        // 获取翻译过的模型字段参数
+        if ($this->entity && $this->entity->getMold()->isTranslated()) {
+            $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
+        }
+
+        // 获取翻译过的字段参数
+        elseif (!$this->entity && $this->isTranslated()) {
+            $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
+        }
+
+        if ($parameters) {
+            return [
+                'default_value' => $parameters->default_value,
+                'options' => $parameters->options,
+            ];
+        }
+
+        return [];
     }
 }

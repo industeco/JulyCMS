@@ -29,11 +29,13 @@ class CatalogSeeder extends SeederBase
             ],
         ];
 
-        return array_map(function($record) {
-            return $record + [
-                'created_at' => Date::now(),
-                'updated_at' => Date::now(),
-            ];
+        $share = [
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
+        ];
+
+        return array_map(function($record) use($share) {
+            return $record + $share;
         }, $records);
     }
 }

@@ -1,13 +1,20 @@
-<el-form-item prop="{{ $id }}" size="small" class="{{ \Arr::get($parameters, 'helptext')?'has-helptext':'' }}">
-  <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="{{ $id }}" placement="right">
+@props([
+  'field',
+  'model' => 'model',
+  'value' => null,
+])
+
+{{-- html 类型字段 --}}
+<el-form-item prop="{{ $field['id'] }}" size="small" class="{{ $field['helpertext'] ? 'has-helptext' : '' }}">
+  <el-tooltip slot="label" content="{{ $field['id'] }}" placement="right" effect="dark" popper-class="jc-twig-output">
     <span>{{ $label }}</span>
   </el-tooltip>
   <ckeditor
-    ref="ckeditor_{{ $id }}"
-    v-model="node.{{ $id }}"
+    ref="ckeditor_{{ $field['id'] }}"
+    v-model="{{ $model }}.{{ $field['id'] }}"
     tag-name="textarea"
     :config="{filebrowserImageBrowseUrl: '{{ short_url('media.select') }}'}"></ckeditor>
-  @if (\Arr::get($parameters, 'helptext'))
-  <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $parameters['helptext'] }}</span>
+  @if ($field['helpertext'])
+  <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ $field['helpertext'] }}</span>
   @endif
 </el-form-item>
