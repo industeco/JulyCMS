@@ -19,7 +19,7 @@ class CatalogSeeder extends SeederBase
      *
      * @return array
      */
-    protected function getCatalogsRecords()
+    protected function getCatalogsTableRecords()
     {
         $records = [
             [

@@ -2,83 +2,99 @@
 
 namespace July\Node;
 
-use App\Utils\Pocket;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class CatalogTree
 {
     /**
      * @var \July\Node\Catalog
      */
-    protected $catalog = null;
+    protected $catalog;
 
     /**
      * @var \Illuminate\Support\Collection
      */
-    protected $nodes = null;
+    protected $treeNodes;
 
-    function __construct(Catalog $catalog)
+    /**
+     * @param  \July\Node\Catalog $catalog
+     */
+    public function __construct(Catalog $catalog)
     {
         $this->catalog = $catalog;
 
-        $pocket = new Pocket($catalog);
-        $key = $pocket->key('treeNodes');
-
-        if ($treeNodes = $pocket->get($key)) {
-            $treeNodes = $treeNodes->value;
-        }else {
-            $treeNodes = $this->getTreeNodes();
-            $pocket->put($key, $treeNodes);
-        }
-        $this->nodes = collect($treeNodes);
+        $this->treeNodes = collect($this->getTreeNodes());
     }
 
+    /**
+     * 从目录记录生成树节点
+     *
+     * @return array
+     */
     protected function getTreeNodes()
     {
-        $nodes = $this->catalog->retrieveNodePositions();
-
-        $treeNodes = [
-            0 => [
-                'node_id' => 0,
-                'parent_id' => null,
-                'prev_id' => null,
-                'path' => [],
-            ],
-        ];
-
-        if (empty($nodes)) {
-            return $treeNodes;
-        }
-
-        if (count($nodes) === 1) {
-            $node = reset($nodes);
-            $node['path'] = explode('/', trim($node['path'], '/'));
-            $treeNodes[$node['node_id']] = $node;
-
-            return $treeNodes;
-        }
-
-        // $nodes = $this->sortNodes($nodes);
-        foreach ($this->sortNodes($nodes) as $id => $node) {
-            $node['parent_id'] = $node['parent_id'] ?? 0;
-            $treeNodes[$id] = $node;
-        }
-
-        return $treeNodes;
-    }
-
-    protected function sortNodes(array $nodes)
-    {
-        $nodes = collect($nodes)->map(function($node) {
-            $path = explode('/', trim($node['path'], '/'));
+        $nodes = $this->catalog->nodes->map(function(Node $node) {
             return [
-                'node_id' => (int) $node['node_id'],
-                'parent_id' => (int) $node['parent_id'],
-                'prev_id' => (int) $node['prev_id'],
-                'path' => array_map('intval', $path),
+                'node_id' => $node->pivot->node_id,
+                'parent_id' => $node->pivot->parent_id ?? 0,
+                'prev_id' => $node->pivot->prev_id,
+                'next_id' => null,
+                'child_id' => null,
+                'children' => [],
+                'path' => array_map('intval', explode('/', trim($node->pivot->path, '/'))),
             ];
         })->keyBy('node_id')->all();
 
+        $root = [
+            'node_id' => 0,
+            'parent_id' => null,
+            'prev_id' => null,
+            'next_id' => null,
+            'child_id' => null,
+            'children' => [],
+            'path' => [],
+        ];
+
+        if (empty($nodes)) {
+            return [0 => $root];
+        }
+
+        if (count($nodes) === 1) {
+            $node = array_shift($nodes);
+            $id = $node['node_id'];
+
+            $node['parent_id'] = 0;
+            $node['prev_id'] = null;
+            $node['next_id'] = null;
+            $node['path'] = [0];
+            $treeNodes[$id] = $node;
+
+            $treeNodes[0]['child_id'] = $id;
+            $treeNodes[0]['children'] = [$id];
+
+            return $treeNodes;
+        }
+
+        try {
+            [$nodes, $first] = $this->prepareNodes($nodes);
+            $sorted = $this->sortNodes($nodes, $first);
+            if (count($sorted) === count($nodes)) {
+                Log::info('Nodes are correct.');
+                return $nodes;
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+
+        Log::info('Nodes not correct.');
+        $nodes = $this->correctNodes($nodes);
+        $first = $nodes[0]['child_id'];
+        return $this->sortNodes($nodes, $first);
+    }
+
+    protected function prepareNodes(array $nodes)
+    {
         $first = null;
         foreach ($nodes as $id => $node) {
             if ($node['prev_id']) {
@@ -89,19 +105,40 @@ class CatalogTree
                 $first = $id;
             }
         }
+        return $nodes;
+    }
 
-        $sortedNodes = [];
-        $node = $nodes[$first];
+    /**
+     * 排序节点
+     *
+     * @param  array $nodes 待排序的节点
+     */
+    protected function sortNodes(array $nodes)
+    {
+        $sorted = [];
+        $node = $nodes[0];
+
+        // 防止陷入死循环
+        $limit = count($nodes);
+        $counter = 0;
         while (true) {
-            if (! isset($sortedNodes[$node['node_id']])) {
-                $sortedNodes[$node['node_id']] = $node;
-                if ($node['child_id'] ?? null) {
+            $counter++;
+            if ($counter > $limit + 3) {
+                break;
+            }
+            if (! isset($sorted[$node['node_id']])) {
+                $sorted[$node['node_id']] = $node;
+
+                // 防止陷入死循环
+                $limit -= 1;
+                $counter = 0;
+                if ($node['child_id']) {
                     $node = $nodes[$node['child_id']];
                     continue;
                 }
             }
 
-            if ($node['next_id'] ?? null) {
+            if ($node['next_id']) {
                 $node = $nodes[$node['next_id']];
             } elseif ($node['parent_id']) {
                 $node = $nodes[$node['parent_id']];
@@ -110,7 +147,148 @@ class CatalogTree
             }
         }
 
-        return $sortedNodes;
+        return $sorted;
+    }
+
+    /**
+     * 节点信息纠错，在默认方法出错时执行
+     *
+     * @param  array $nodes
+     * @return array
+     */
+    protected function correctNodes(array $nodes)
+    {
+        return $this->correntOrders($this->correctParent($nodes));
+    }
+
+    /**
+     * 纠正 parent_id 和 path（假设存在冲突或缺失）
+     *
+     * @param  array $nodes
+     * @return array
+     */
+    protected function correctParent(array $nodes)
+    {
+        foreach ($nodes as $id => $node) {
+            if (!$node['parent_id'] || !isset($nodes[$node['parent_id']])) {
+                $nodes[$id]['parent_id'] = 0;
+            }
+        }
+
+        $orders = [
+            0 => [
+                'node_id' => 0,
+                'parent_id' => null,
+                'prev_id' => null,
+                'next_id' => null,
+                'child_id' => null,
+                'children' => [],
+                'path' => [],
+            ],
+        ];
+        $parents = [0 => true];
+        while (true) {
+            $count = 0;
+            $children = [];
+            foreach ($nodes as $id => $node) {
+                $parent_id = $node['parent_id'];
+                if (isset($parents[$parent_id])) {
+                    $orders[$parent_id]['children'][] = $id;
+                    $node['parent_id'] = $parent_id;
+                    $node['path'] = array_merge($orders[$parent_id]['path'], [$parent_id]);
+                    $orders[$id] = $node;
+                    $children[$id] = true;
+                    $count++;
+                }
+            }
+            if ($count > 0) {
+                $nodes = array_diff_key($nodes, $orders);
+            } else {
+                $node = array_shift($nodes);
+                $node['parent_id'] = 0;
+                $node['path'] = [0];
+                $orders[$node['node_id']] = $node;
+                $orders[0]['children'][] = $node['node_id'];
+            }
+            if (empty($nodes)) {
+                break;
+            }
+            $parents = $children;
+        }
+
+        return $orders;
+    }
+
+    /**
+     * 纠正 prev_id（假设存在冲突或缺失）
+     *
+     * @param  array $nodes
+     * @return array
+     */
+    protected function correntOrders(array $nodes)
+    {
+        foreach ($nodes as $id => $node) {
+            if (!$node['prev_id']) {
+                continue;
+            }
+            $prev_id = $node['prev_id'];
+            if (!isset($nodes[$prev_id]) || $nodes[$prev_id]['parent_id'] !== $node['parent_id']) {
+                $nodes[$id]['prev_id'] = null;
+            }
+        }
+
+        foreach ($nodes as $id => $node) {
+            $children = $this->correctChildrenOrders($nodes, $node['children']);
+            $prev = null;
+            foreach ($children as $id) {
+                $nodes[$id]['prev_id'] = $prev;
+                if ($prev) {
+                    $nodes[$prev]['next_id'] = $id;
+                }
+                $prev = $id;
+            }
+            $nodes[$id]['children'] = $children;
+            $nodes[$id]['child_id'] = $children[0] ?? null;
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * 纠正子节点顺序
+     *
+     * @param  array $nodes
+     * @param  array $children
+     * @return array
+     */
+    protected function correctChildrenOrders(array $nodes, array $children)
+    {
+        if (count($children) <= 1) {
+            return $children;
+        }
+
+        $orders = [];
+        $prev = null;
+        while (true) {
+            $count = 0;
+            foreach ($children as $id) {
+                if ($nodes[$id]['prev_id'] === $prev) {
+                    $orders[] = $id;
+                    $prev = $id;
+                    $count++;
+                }
+            }
+            if ($count > 0) {
+                $children = array_diff($children, $orders);
+            } else {
+                $prev = array_shift($children);
+                $orders[] = $prev;
+            }
+            if (empty($children)) {
+                break;
+            }
+        }
+        return $orders;
     }
 
     /**
@@ -122,9 +300,9 @@ class CatalogTree
     public function nodes(array $ids = null)
     {
         if ($ids) {
-            return $this->nodes->only($ids)->keys()->filter()->all();
+            return $this->treeNodes->only($ids)->keys()->filter()->all();
         }
-        return $this->nodes->keys()->filter()->all();
+        return $this->treeNodes->keys()->filter()->all();
     }
 
     /**
@@ -135,7 +313,7 @@ class CatalogTree
      */
     public function parent($id)
     {
-        if ($node = $this->nodes->get($id)) {
+        if ($node = $this->treeNodes->get($id)) {
             if ($node['parent_id']) {
                 return [$node['parent_id']];
             }
@@ -151,7 +329,7 @@ class CatalogTree
      */
     public function ancestors($id)
     {
-        if ($node = $this->nodes->get($id)) {
+        if ($node = $this->treeNodes->get($id)) {
             return $node['path'];
         }
         return [];
@@ -166,8 +344,8 @@ class CatalogTree
     public function children($id)
     {
         $children = [];
-        if ($this->nodes->has($id)) {
-            foreach ($this->nodes as $node_id => $node) {
+        if ($this->treeNodes->has($id)) {
+            foreach ($this->treeNodes as $node_id => $node) {
                 if ($node_id && $node['parent_id'] == $id) {
                     $children[] = $node_id;
                 }
@@ -185,13 +363,13 @@ class CatalogTree
     public function descendants($id)
     {
         if ($id == 0) {
-            return $this->nodes->keys()->filter()->all();
+            return $this->treeNodes->keys()->filter()->all();
         }
 
         $descendants = [];
-        if ($this->nodes->has($id)) {
+        if ($this->treeNodes->has($id)) {
             $end = false;
-            foreach ($this->nodes as $node_id => $node) {
+            foreach ($this->treeNodes as $node_id => $node) {
                 if ($end) {
                     if ($node_id == $end) {
                         break;
@@ -218,9 +396,9 @@ class CatalogTree
     public function siblings($id)
     {
         $siblings = [];
-        if ($id > 0 && ($node = $this->nodes->get($id))) {
+        if ($id > 0 && ($node = $this->treeNodes->get($id))) {
             $parent_id = $node['parent_id'];
-            foreach ($this->nodes as $node_id => $node) {
+            foreach ($this->treeNodes as $node_id => $node) {
                 if ($node['parent_id'] == $parent_id && $node_id != $id) {
                     $siblings[] = $node_id;
                 }
@@ -238,7 +416,7 @@ class CatalogTree
      */
     public function prev($id)
     {
-        if ($node = $this->nodes->get($id)) {
+        if ($node = $this->treeNodes->get($id)) {
             return $node['prev_id'] ?? null;
         }
         return null;
@@ -252,7 +430,7 @@ class CatalogTree
      */
     public function next($id)
     {
-        if ($node = $this->nodes->get($id)) {
+        if ($node = $this->treeNodes->get($id)) {
             return $node['next_id'] ?? null;
         }
         return null;

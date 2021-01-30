@@ -24,20 +24,20 @@ Route::group([
         ->parameters(['node_types' => 'nodeType'])
         ->names('node_types');
 
-    // // 目录
-    // // 检查目录 id 是否存在
-    // Route::get('catalogs/exists/{id}', [Controllers\CatalogController::class, 'isExist'])
-    //     ->name('catalogs.is_exist');
+    // 目录
+    // 检查目录 id 是否存在
+    Route::get('catalogs/exists/{id}', [Controllers\CatalogController::class, 'exists'])
+        ->name('catalogs.exists');
 
-    // Route::get('catalogs/{catalog}/sort', [Controllers\CatalogController::class, 'sort'])
-    //     ->name('catalogs.sort');
+    Route::get('catalogs/{catalog}/tree', [Controllers\CatalogController::class, 'tree'])
+        ->name('catalogs.tree');
 
-    // Route::put('catalogs/{catalog}/sort', [Controllers\CatalogController::class, 'updateOrders'])
-    //     ->name('catalogs.updateOrders');
+    Route::put('catalogs/{catalog}/sort', [Controllers\CatalogController::class, 'sort'])
+        ->name('catalogs.sort');
 
-    // Route::resource('catalogs', Controllers\CatalogController::class)
-    //     ->parameters(['catalogs' => 'catalog'])
-    //     ->names('catalogs');
+    Route::resource('catalogs', Controllers\CatalogController::class)
+        ->parameters(['catalogs' => 'catalog'])
+        ->names('catalogs');
 
     // 内容
     Route::get('nodes/create/{nodeType}', [Controllers\NodeController::class, 'create'])

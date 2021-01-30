@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Entity\EntityManager;
 use App\EntityField\FieldTypes\FieldTypeManager;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
 
         // 添加视图命名空间
         View::addNamespace('backend', backend_path('template'));
+
+        $this->extendBlade();
     }
 
     /**
@@ -64,5 +68,25 @@ class AppServiceProvider extends ServiceProvider
                 $manager::discoverIfNotDiscovered();
             }
         }
+    }
+
+    /**
+     * 扩展 Blade
+     */
+    protected function extendBlade()
+    {
+        Blade::directive('jjson', function ($expression) {
+            if (Str::startsWith($expression, '(')) {
+                $expression = substr($expression, 1, -1);
+            }
+
+            $parts = explode(',', $expression);
+
+            $options = 'JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE'.(isset($parts[1]) ? ' | '.trim($parts[1]) : '');
+
+            $depth = isset($parts[2]) ? trim($parts[2]) : 512;
+
+            return "<?php echo json_encode($parts[0], $options, $depth) ?>";
+        });
     }
 }

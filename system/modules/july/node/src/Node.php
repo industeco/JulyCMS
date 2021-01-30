@@ -367,9 +367,6 @@ class Node extends EntityBase
         parent::boot();
 
         static::deleting(function(Node $node) {
-            $node->fields->each(function(NodeField $field) {
-                $field->bindEntity($this)->deleteValue();
-            });
             Pocket::make($node)->clear('html');
         });
 

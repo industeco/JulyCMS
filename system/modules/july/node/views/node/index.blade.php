@@ -144,7 +144,7 @@
       @endif
       <x-menu-item title="删除" icon="remove_circle" click="deleteNode(contextmenu.target)" />
       <x-menu-item title="生成 HTML" icon="description" click="render(contextmenu.target)" />
-      <x-menu-item title="查看页面" icon="visibility" href="contextmenu.url" />
+      <x-menu-item title="查看页面" icon="visibility" target="_blank" href="contextmenu.url" />
     </jc-contextmenu>
   </div>
 @endsection
@@ -156,8 +156,8 @@
 
     data() {
       return {
-        nodes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
-        nodeTypes: @json($context['node_types'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+        nodes: @jjson(array_values($models), JSON_PRETTY_PRINT),
+        nodeTypes: @jjson($context['node_types'], JSON_PRETTY_PRINT),
         selected: [],
         showSuggestedViews: false,
         contextmenu: {
@@ -177,7 +177,7 @@
         },
 
         // {{-- tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), --}}
-        languages: @json($context['languages'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+        languages: @jjson($context['languages'], JSON_PRETTY_PRINT),
 
         editUrl: "{{ short_url('nodes.edit', '_ID_') }}",
         deleteUrl: "{{ short_url('nodes.destroy', '_ID_') }}",

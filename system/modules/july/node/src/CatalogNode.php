@@ -2,9 +2,9 @@
 
 namespace July\Node;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use App\Models\PivotBase;
 
-class CatalogNode extends Pivot
+class CatalogNode extends PivotBase
 {
     /**
      * 与模型关联的表名
@@ -31,5 +31,11 @@ class CatalogNode extends Pivot
         'parent_id',
         'prev_id',
         'path',
+    ];
+
+    protected $casts = [
+        'node_id' => 'int',
+        'parent_id' => 'int',
+        'prev_id' => 'int',
     ];
 }

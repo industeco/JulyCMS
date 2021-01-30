@@ -5,9 +5,9 @@ namespace July\Node;
 use Illuminate\Support\Arr;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
-use App\Entity\EntityBase;
+use App\Models\ModelBase;
 
-class Catalog extends EntityBase implements GetNodesInterface
+class Catalog extends ModelBase implements GetNodesInterface
 {
     /**
      * 与模型关联的表名
@@ -44,9 +44,9 @@ class Catalog extends EntityBase implements GetNodesInterface
      */
     protected $fillable = [
         'id',
-        'is_necessary',
         'label',
         'description',
+        'is_reserved',
     ];
 
     /**
@@ -55,21 +55,7 @@ class Catalog extends EntityBase implements GetNodesInterface
      * @var array
      */
     protected $casts = [
-        'is_necessary' => 'boolean',
-    ];
-
-    /**
-     * 内建属性登记处
-     *
-     * @var array
-     */
-    protected static $columns = [
-        'id',
-        'is_necessary',
-        'label',
-        'description',
-        'created_at',
-        'updated_at',
+        'is_reserved' => 'boolean',
     ];
 
     /**
@@ -79,12 +65,29 @@ class Catalog extends EntityBase implements GetNodesInterface
      */
     protected $catalogTree = null;
 
+    public static function template()
+    {
+        return [
+            'id' => null,
+            'label' => null,
+            'description' => null,
+            'is_reserved' => false,
+        ];
+    }
+
+    /**
+     * 获取默认目录
+     *
+     * @return \July\Node\Catalog|static
+     */
     public static function default()
     {
         return static::findOrFail('main');
     }
 
     /**
+     * 节点关联
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function nodes()
@@ -95,6 +98,20 @@ class Catalog extends EntityBase implements GetNodesInterface
                     'prev_id',
                     'path',
                 ]);
+    }
+
+    /**
+     * Bootstrap the model and its traits.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function(Catalog $catalog) {
+            $catalog->nodes()->detach();
+        });
     }
 
     public function nodesMerged()
@@ -132,76 +149,7 @@ class Catalog extends EntityBase implements GetNodesInterface
     {
         return CatalogNode::query()->where('catalog_id', $this->getKey())
                 ->get(['node_id','parent_id','prev_id','path'])->toArray();
-
-        // $pocket = new Pocket($this);
-        // $key = $pocket->key('nodes');
-
-        // if ($nodes = $pocket->get($key)) {
-        //     $nodes = $nodes->value;
-        // } else {
-        //     $nodes = CatalogNode::query()->where('catalog_id', $this->getKey())
-        //         ->get(['id','parent_id','prev_id','path'])->toArray();
-
-        //     $pocket->put($key, $nodes);
-        // }
-
-        // return $nodes;
     }
-
-    // public function removePosition(array $position)
-    // {
-    //     $pocket = new Pocket($this);
-    //     // $pocket->clear('nodes');
-    //     $pocket->clear('treeNodes');
-
-    //     // DB::delete("DELETE from catalog_content where `catalog`=? and (`content_id`=? or `path` like '%/$content_id/%' )");
-    //     $id = $this->getKey();
-    //     CatalogNode::where([
-    //         'catalog' => $id,
-    //         'node_id' => $position['id'],
-    //     ])->orWhere([
-    //         ['catalog', '=', $id],
-    //         ['path', 'like', '%/'.$position['id'].'/%'],
-    //     ])->delete();
-
-    //     $this->touch();
-    // }
-
-    // public function insertPosition(array $position)
-    // {
-    //     $pocket = new Pocket($this);
-    //     // $pocket->clear('nodes');
-    //     $pocket->clear('treeNodes');
-
-    //     // $position['catalog'] = $this->id;
-    //     $position['langcode'] = langcode('content');
-
-    //     $parent = $position['parent_id'];
-    //     if ($parent) {
-    //         $parent = CatalogNode::where([
-    //             'catalog' => $position['catalog'],
-    //             'content_id' => $parent,
-    //         ])->firstOrFail();
-    //         $position['path'] = $parent->path.$position['parent_id'].'/';
-    //     } else {
-    //         $position['path'] = '/';
-    //     }
-
-    //     $next = CatalogNode::where([
-    //         'catalog' => $position['catalog'],
-    //         'parent_id' => $position['parent_id'],
-    //         'prev_id' => $position['prev_id'],
-    //     ])->first();
-
-    //     if ($next) {
-    //         $next->prev_id = $position['id'];
-    //         $next->save();
-    //     }
-
-    //     CatalogNode::create($position);
-
-    //     $this->touch();
-    // }
 
     public function updatePositions(array $positions)
     {

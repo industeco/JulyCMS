@@ -26,6 +26,13 @@ class EntityView extends FieldValueBase
     ];
 
     /**
+     * 保存字段值的列名
+     *
+     * @var string
+     */
+    protected $value_column = 'view';
+
+    /**
      * 按指定实体限定查询
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query

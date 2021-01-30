@@ -153,7 +153,6 @@ class NodeController extends Controller
     public function update(Request $request, Node $node)
     {
         $changed = (array) $request->input('_changed');
-
         if (!empty($changed)) {
             // Log::info($changed);
             $node->update($request->only($changed));

@@ -186,7 +186,7 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->cachePipe(__FUNCTION__)) {
+        if ($attributes = $this->pocketPipe(__FUNCTION__)) {
             $attributes = $attributes->value();
         } else {
             $attributes = array_merge(
@@ -292,24 +292,24 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
         return $this->transformAttributesArray($attributes);
     }
 
-    // /**
-    //  * Get an attribute from the model.
-    //  *
-    //  * @param  string  $key
-    //  * @return mixed
-    //  */
-    // public function getAttribute($key)
-    // {
-    //     if (! $key) {
-    //         return;
-    //     }
+    /**
+     * Get an attribute from the model.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    public function getAttribute($key)
+    {
+        if (! $key) {
+            return;
+        }
 
-    //     if ($this->hasField($key)) {
-    //         return $this->getFieldValue($key);
-    //     }
+        if ($this->hasField($key)) {
+            return $this->getFieldValue($key);
+        }
 
-    //     return parent::getAttribute($key);
-    // }
+        return parent::getAttribute($key);
+    }
 
     /**
      * 实体保存
@@ -336,7 +336,9 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     protected function updateFields()
     {
         $this->fields->each(function(FieldBase $field) {
-            $field->bindEntity($this)->setValue($this->raw[$field->getKey()] ?? null);
+            if (array_key_exists($id = $field->getKey(), $this->raw)) {
+                $field->bindEntity($this)->setValue($this->raw[$id]);
+            }
         });
     }
 

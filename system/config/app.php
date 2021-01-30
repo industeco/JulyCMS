@@ -305,12 +305,12 @@ return [
                     'route' => 'node_types.index',
                     'children' => [],
                 ],
-                // [
-                //     'title' => '目录',
-                //     'icon' => null,
-                //     'route' => 'catalogs.index',
-                //     'children' => [],
-                // ],
+                [
+                    'title' => '目录',
+                    'icon' => null,
+                    'route' => 'catalogs.index',
+                    'children' => [],
+                ],
                 // [
                 //     'title' => '标签',
                 //     'icon' => null,

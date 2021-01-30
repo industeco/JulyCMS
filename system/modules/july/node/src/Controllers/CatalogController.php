@@ -5,7 +5,6 @@ namespace July\Node\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
 use July\Node\Catalog;
 use July\Node\Node;
 use July\Node\NodeField;
@@ -19,35 +18,9 @@ class CatalogController extends Controller
      */
     public function index()
     {
-        return view('backend::catalog.index', [
-            'catalogs' => Catalog::all()->map(function($catalog) {
-                return $catalog->gather();
-            })->all(),
+        return view('node::catalog.index', [
+            'models' => Catalog::index(),
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('backend::catalog.create_edit', [
-            'id' => null,
-            'langcode' => langcode('backend'),
-        ]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        return response(Catalog::make($request->all())->save());
     }
 
     /**
@@ -62,6 +35,21 @@ class CatalogController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('node::catalog.create-edit', [
+            'model' => Catalog::template(),
+            'context' => [
+                'mode' => 'create',
+            ],
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Catalog  $catalog
@@ -69,7 +57,25 @@ class CatalogController extends Controller
      */
     public function edit(Catalog $catalog)
     {
-        return view('backend::catalog.create_edit', array_merge($catalog->gather(), ['langcode' => langcode('backend')]));
+        return view('node::catalog.create-edit', [
+            'model' => $catalog->gather(),
+            'context' => [
+                'mode' => 'edit',
+            ],
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        Catalog::create($request->all());
+
+        return response('');
     }
 
     /**
@@ -81,7 +87,9 @@ class CatalogController extends Controller
      */
     public function update(Request $request, Catalog $catalog)
     {
-        return response($catalog->update($request->all()));
+        $catalog->update($request->all());
+
+        return response('');
     }
 
     /**
@@ -92,13 +100,18 @@ class CatalogController extends Controller
      */
     public function destroy(Catalog $catalog)
     {
-        $catalog->nodes()->detach();
         $catalog->delete();
 
         return response('');
     }
 
-    public function sort(Catalog $catalog)
+    /**
+     * 展示目录结构
+     *
+     * @param  \July\Node\Catalog $catalog
+     * @return \Illuminate\View\View
+     */
+    public function tree(Catalog $catalog)
     {
         $data = [
             'catalog' => $catalog->gather(),
@@ -113,10 +126,10 @@ class CatalogController extends Controller
             return Arr::except($node->gather(), $keys);
         })->keyBy('id')->all();
 
-        return view('backend::catalog.sort', $data);
+        return view('node::catalog.tree', $data);
     }
 
-    public function updateOrders(Request $request, Catalog $catalog)
+    public function sort(Request $request, Catalog $catalog)
     {
         $catalog->updatePositions($request->input('positions'));
 
@@ -126,13 +139,13 @@ class CatalogController extends Controller
     /**
      * 检查目录是否存在
      *
-     * @param  string  $id
+     * @param  string|int  $id
      * @return \Illuminate\Http\Response
      */
-    public function isExist(string $id)
+    public function exists($id)
     {
         return response([
-            'is_exist' => !empty(Catalog::find($id)),
+            'exists' => !empty(Catalog::find($id)),
         ]);
     }
 }

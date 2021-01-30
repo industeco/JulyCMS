@@ -4,6 +4,7 @@ namespace App\EntityField;
 
 use App\Entity\EntityBase;
 use App\Models\ModelBase;
+use App\Utils\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 
@@ -152,18 +153,23 @@ abstract class FieldValueBase extends ModelBase
             return $this->deleteValue($entity);
         }
 
-        $attributes = array_merge(array_fill_keys($this->fillable, null), [
+        $attributes = [
             'entity_id' => $entity->getEntityId(),
             'langcode' => $entity->getLangcode(),
-        ]);
+        ];
 
-        if (array_key_exists('entity_name', $attributes)) {
+        if (in_array('entity_name', $this->fillable)) {
             $attributes['entity_name'] = $entity->getEntityName();
         }
 
-        return $this->newQuery()->updateOrCreate($attributes, [
+        $values = array_merge(array_fill_keys($this->fillable, null), [
             $this->value_column => $value,
         ]);
+
+        return $this->newQuery()->updateOrCreate(
+            $attributes,
+            Arr::except($values, ['entity_name','entity_id','langcode'])
+        );
     }
 
     /**
