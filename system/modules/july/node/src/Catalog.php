@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
 use App\Models\ModelBase;
+use App\Utils\Tree;
 
 class Catalog extends ModelBase implements GetNodesInterface
 {
@@ -59,12 +60,15 @@ class Catalog extends ModelBase implements GetNodesInterface
     ];
 
     /**
-     * 排序后的目录内容
+     * 树状结构的目录数据
      *
-     * @var \July\Node\CatalogTree
+     * @var \App\Utils\Tree
      */
-    protected $catalogTree = null;
+    protected $tree = null;
 
+    /**
+     * {@inheritdoc}
+     */
     public static function template()
     {
         return [
@@ -98,6 +102,24 @@ class Catalog extends ModelBase implements GetNodesInterface
                     'prev_id',
                     'path',
                 ]);
+    }
+
+    /**
+     * 获取目录内位置数据
+     *
+     * @return array
+     */
+    public function getPositions()
+    {
+        $positions = [];
+        foreach (CatalogNode::ofCatalog($this)->get() as $position) {
+            $positions[] = [
+                'id' => $position->node_id,
+                'parent_id' => $position->parent_id ?? null,
+                'prev_id' => $position->prev_id,
+            ];
+        }
+        return $positions;
     }
 
     /**
@@ -140,11 +162,6 @@ class Catalog extends ModelBase implements GetNodesInterface
         return $positions;
     }
 
-    public function positions()
-    {
-        return CatalogNode::query()->where('catalog_id', $this->getKey())->get()->toArray();
-    }
-
     public function retrieveNodePositions()
     {
         return CatalogNode::query()->where('catalog_id', $this->getKey())
@@ -174,14 +191,14 @@ class Catalog extends ModelBase implements GetNodesInterface
     }
 
     /**
-     * @return \July\Node\CatalogTree
+     * @return \App\Utils\Tree
      */
     public function tree()
     {
-        if (! $this->catalogTree) {
-            $this->catalogTree = new CatalogTree($this);
+        if (! $this->tree) {
+            $this->tree = new Tree($this->getPositions());
         }
-        return $this->catalogTree;
+        return $this->tree;
     }
 
 

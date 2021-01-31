@@ -24,7 +24,12 @@ class CatalogTree
     {
         $this->catalog = $catalog;
 
-        $this->treeNodes = collect($this->getTreeNodes());
+        $this->treeNodes = collect($this->generateTreeNodes());
+    }
+
+    public function getTreeNodes()
+    {
+        return $this->treeNodes->all();
     }
 
     /**
@@ -32,9 +37,10 @@ class CatalogTree
      *
      * @return array
      */
-    protected function getTreeNodes()
+    protected function generateTreeNodes()
     {
         $nodes = $this->catalog->nodes->map(function(Node $node) {
+            $path = array_map('intval', explode('/', trim($node->pivot->path, '/')));
             return [
                 'node_id' => $node->pivot->node_id,
                 'parent_id' => $node->pivot->parent_id ?? 0,
@@ -42,7 +48,7 @@ class CatalogTree
                 'next_id' => null,
                 'child_id' => null,
                 'children' => [],
-                'path' => array_map('intval', explode('/', trim($node->pivot->path, '/'))),
+                'path' => array_merge([0], $path),
             ];
         })->keyBy('node_id')->all();
 
@@ -68,43 +74,62 @@ class CatalogTree
             $node['prev_id'] = null;
             $node['next_id'] = null;
             $node['path'] = [0];
-            $treeNodes[$id] = $node;
 
-            $treeNodes[0]['child_id'] = $id;
-            $treeNodes[0]['children'] = [$id];
+            $root['child_id'] = $id;
+            $root['children'] = [$id];
 
-            return $treeNodes;
+            return [
+                0 => $root,
+                $id => $node,
+            ];
         }
 
+        $nodes[0] = $root;
         try {
-            [$nodes, $first] = $this->prepareNodes($nodes);
-            $sorted = $this->sortNodes($nodes, $first);
+            $sorted = $this->sortNodes($this->prepareNodes($nodes));
             if (count($sorted) === count($nodes)) {
                 Log::info('Nodes are correct.');
-                return $nodes;
+                return $sorted;
             }
         } catch (\Throwable $th) {
             //throw $th;
         }
 
         Log::info('Nodes not correct.');
-        $nodes = $this->correctNodes($nodes);
-        $first = $nodes[0]['child_id'];
-        return $this->sortNodes($nodes, $first);
+        return $this->sortNodes($this->correctNodes($nodes));
     }
 
+    /**
+     * 设置 next_id，child_id 和 children（假设数据没有冲突或缺失）
+     *
+     * @param  array $nodes
+     * @return array
+     */
     protected function prepareNodes(array $nodes)
     {
-        $first = null;
+        // 设置 next_id 和 child_id
         foreach ($nodes as $id => $node) {
             if ($node['prev_id']) {
                 $nodes[$node['prev_id']]['next_id'] = $id;
             } elseif ($node['parent_id']) {
                 $nodes[$node['parent_id']]['child_id'] = $id;
-            } elseif (!$first) {
-                $first = $id;
+            } elseif ($id) {
+                $nodes[0]['child_id'] = $id;
             }
         }
+
+        // 获取正确顺序的 children
+        foreach ($nodes as $id => $node) {
+            if ($next = $node['child_id']) {
+                $children = [];
+                while($next) {
+                    $children[] = $next;
+                    $next = $nodes[$next]['next_id'];
+                }
+                $nodes[$id]['children'] = $children;
+            }
+        }
+
         return $nodes;
     }
 
@@ -115,23 +140,24 @@ class CatalogTree
      */
     protected function sortNodes(array $nodes)
     {
+        // 防止陷入死循环
+        $total = count($nodes);
+        $counter = 0;
+
         $sorted = [];
         $node = $nodes[0];
-
-        // 防止陷入死循环
-        $limit = count($nodes);
-        $counter = 0;
         while (true) {
             $counter++;
-            if ($counter > $limit + 3) {
+            if ($counter > $total + 3) {
                 break;
             }
             if (! isset($sorted[$node['node_id']])) {
                 $sorted[$node['node_id']] = $node;
 
                 // 防止陷入死循环
-                $limit -= 1;
+                $total -= 1;
                 $counter = 0;
+
                 if ($node['child_id']) {
                     $node = $nodes[$node['child_id']];
                     continue;
@@ -169,23 +195,17 @@ class CatalogTree
      */
     protected function correctParent(array $nodes)
     {
+        $orders = [
+            0 => $nodes[0],
+        ];
+        $nodes = array_diff_key($nodes, $orders);
+
         foreach ($nodes as $id => $node) {
             if (!$node['parent_id'] || !isset($nodes[$node['parent_id']])) {
                 $nodes[$id]['parent_id'] = 0;
             }
         }
 
-        $orders = [
-            0 => [
-                'node_id' => 0,
-                'parent_id' => null,
-                'prev_id' => null,
-                'next_id' => null,
-                'child_id' => null,
-                'children' => [],
-                'path' => [],
-            ],
-        ];
         $parents = [0 => true];
         while (true) {
             $count = 0;
@@ -209,6 +229,7 @@ class CatalogTree
                 $node['path'] = [0];
                 $orders[$node['node_id']] = $node;
                 $orders[0]['children'][] = $node['node_id'];
+                $children[$node['node_id']] = true;
             }
             if (empty($nodes)) {
                 break;
@@ -308,17 +329,15 @@ class CatalogTree
     /**
      * 获取给定节点的父节点
      *
-     * @param int $id
-     * @return array
+     * @param  int $id
+     * @return int|null
      */
     public function parent($id)
     {
         if ($node = $this->treeNodes->get($id)) {
-            if ($node['parent_id']) {
-                return [$node['parent_id']];
-            }
+            return $node['parent_id'];
         }
-        return [];
+        return null;
     }
 
     /**
@@ -343,15 +362,10 @@ class CatalogTree
      */
     public function children($id)
     {
-        $children = [];
         if ($this->treeNodes->has($id)) {
-            foreach ($this->treeNodes as $node_id => $node) {
-                if ($node_id && $node['parent_id'] == $id) {
-                    $children[] = $node_id;
-                }
-            }
+            return $this->treeNodes->get($id)['children'];
         }
-        return $children;
+        return [];
     }
 
     /**
@@ -362,28 +376,12 @@ class CatalogTree
      */
     public function descendants($id)
     {
-        if ($id == 0) {
-            return $this->treeNodes->keys()->filter()->all();
-        }
-
         $descendants = [];
-        if ($this->treeNodes->has($id)) {
-            $end = false;
-            foreach ($this->treeNodes as $node_id => $node) {
-                if ($end) {
-                    if ($node_id == $end) {
-                        break;
-                    } else {
-                        $descendants[] = $node_id;
-                    }
-                }
-                if ($node_id == $id) {
-                    $end = $node['next_id'] ?? -1;
-                    continue;
-                }
+        foreach ($this->treeNodes as $node_id => $node) {
+            if (in_array($id, $node['path'])) {
+                $descendants[] = $node_id;
             }
         }
-
         return $descendants;
     }
 
@@ -395,24 +393,17 @@ class CatalogTree
      */
     public function siblings($id)
     {
-        $siblings = [];
-        if ($id > 0 && ($node = $this->treeNodes->get($id))) {
-            $parent_id = $node['parent_id'];
-            foreach ($this->treeNodes as $node_id => $node) {
-                if ($node['parent_id'] == $parent_id && $node_id != $id) {
-                    $siblings[] = $node_id;
-                }
-            }
+        if ($parent = $this->parent($id)) {
+            return array_diff($this->treeNodes->get($parent)['children'], [$id]);
         }
-
-        return $siblings;
+        return [];
     }
 
     /**
      * 获取给定节点的前一个节点
      *
      * @param int $id
-     * @return int
+     * @return int|null
      */
     public function prev($id)
     {
@@ -426,7 +417,7 @@ class CatalogTree
      * 获取给定节点的后一个节点
      *
      * @param int $id
-     * @return int
+     * @return int|null
      */
     public function next($id)
     {

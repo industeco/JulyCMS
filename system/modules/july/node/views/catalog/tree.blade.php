@@ -24,7 +24,7 @@
         <svg class="jc-svg-icon jc-drag-handle" v-if="!isRecycle(node)"><use xlink:href="#jcon_drag"></use></svg>
         <span class="jc-tree-node__id" v-if="!isRecycle(node)">[@{{ data.id }}]</span>
         <span class="el-tree-node__label"><span :title="getNodeAttr(data.id, 'title')">@{{ getNodeAttr(data.id, 'title') }}</span></span>
-        <span class="jc-tree-node__type" v-if="!isRecycle(node)">类型：@{{ getNodeAttr(data.id, 'node_type_id') }}</span>
+        <span class="jc-tree-node__type" v-if="!isRecycle(node)">类型：@{{ getNodeAttr(data.id, 'mold_id') }}</span>
         <span class="jc-tree-node__updated" v-if="!isRecycle(node)">更新：@{{ getNodeAttr(data.id, 'updated_at') }}</span>
         <button
           type="button" v-if="!isRecycle(node)" :title="!settled[data.id] ? '移出回收站' : '移入回收站'"
@@ -32,14 +32,14 @@
           @click.stop="remove(node)">
           <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">close</i></div></div>
         </button>
-        <select v-if="isRecycle(node)" v-model="recycleOrderBy" @click.stop @change="sortRecycledNodes">
+        <select v-if="isRecycle(node)" v-model="recycle.orderBy" @click.stop @change="sortRecycledNodes">
           <option value="default">- 默认排序 -</option>
           <option value="id,asc">id 升序</option>
           <option value="id,desc">id 降序</option>
           <option value="title,asc">标题 升序</option>
           <option value="title,desc">标题 降序</option>
-          <option value="node_type_id,asc">类型 升序</option>
-          <option value="node_type_id,desc">类型 降序</option>
+          <option value="mold_id,asc">类型 升序</option>
+          <option value="mold_id,desc">类型 降序</option>
           <option value="updated_at,desc">更新时间 最近</option>
           <option value="updated_at,asc">更新时间 最远</option>
         </select>
@@ -53,7 +53,7 @@
       </div>
     </el-tree>
     <div id="main_form_bottom" class="is-button-item">
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="saveOrder">
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="submit">
         <div class="md-button-content">保存</div>
       </button>
     </div>
@@ -62,25 +62,59 @@
 
 @section('script')
 <script>
-  let initialPositions = [
-    @foreach ($positions as $position)
-    {
-      id:{{ $position['node_id'] }},
-      parent_id:{{ $position['parent_id'] ?? 'null' }},
-      prev_id:{{ $position['prev_id'] ?? 'null' }},
-    },
-    @endforeach
-  ];
+  // {{--
+  // let initialPositions = [
+  //   @foreach ($positions as $position)
+  //   {
+  //     id:{{ $position['node_id'] }},
+  //     parent_id:{{ $position['parent_id'] ?? 'null' }},
+  //     prev_id:{{ $position['prev_id'] ?? 'null' }},
+  //   },
+  //   @endforeach
+  // ];
+  // --}}
+
+  const _positions = @jjson($positions, JSON_NUMERIC_CHECK);
+
+  // 折叠位置数据
+  function getChildNodes(nodes, parent_id) {
+    const children = [];
+    nodes[parent_id].children.forEach(id => {
+      const node = nodes[id];
+      children.push(node);
+      node.children = getChildNodes(nodes, node.id);
+    });
+    return children;
+  }
+
+  // 嵌套的节点数据转为平行的位置数据
+  function toPositions(nodes, parent) {
+    const positions = [];
+    let prev = null;
+    nodes.forEach(node => {
+      positions.push({
+        id: node.id,
+        parent_id: parent || null,
+        prev_id: prev,
+      });
+      if (node.children && node.children.length) {
+        positions = positions.concat(toPositions(node.children, node.id));
+      }
+      prev = node.id;
+    });
+    return positions
+  }
 
   let app = new Vue({
     el: '#main_content',
     data() {
       return {
         tree: [],
-        nodes: @jjson($context['nodes'], JSON_NUMERIC_CHECK),
-        settled: {},
+        nodes: @jjson($context['nodes']),
+        settled: @jjson(array_fill_keys(array_keys($positions), true)),
+        breadcrumbs: [],
         recycle: {
-          position: 'center',
+          place: 'center',
           orderBy: 'default',
           defaultOrders: null,
         },
@@ -88,19 +122,21 @@
     },
 
     created: function() {
-      // 生成目录中已存在的节点的列表
-      initialPositions.forEach(position => {
-        this.settled[position.id] = true;
-      });
+      const root = _positions[0];
+      this.breadcrumbs.push(root);
+
+      const rootChildren = getChildNodes(_positions, 0);
+      root.children = rootChildren;
 
       // 初始化目录数据
-      this.$set(this.$data, 'positions', toTree(initialPositions));
+      // this.$set(this.$data, 'tree', rootChildren);
+      this.tree = rootChildren;
 
       // 保存初始化的位置数据
-      this.initial_data = JSON.stringify(this.positions);
+      this.original_tree = _.cloneDeep(this.tree);
 
       // 添加回收站
-      const first = this.positions[0];
+      const first = this.tree[0];
       if (first) {
         first.prev_id = 'recycle';
       }
@@ -111,7 +147,7 @@
         next_id: first ? first.id : null,
         children: [],
       };
-      this.positions.unshift(recycle);
+      this.tree.unshift(recycle);
 
       // 初始化回收站
       let last = null;
@@ -137,13 +173,13 @@
     methods: {
       getNodeClass(node, tree) {
         if (node.data.id === 'recycle') {
-          return ['catalog-tree__recycle', this.recyclePlace];
+          return ['catalog-tree__recycle', this.recycle.place];
         }
         return '';
       },
 
       getRecycle() {
-        return this.positions[0];
+        return this.tree[0];
       },
 
       isRecycle(node) {
@@ -152,7 +188,7 @@
 
       recycleNode(id) {
         this.settled[id] = false;
-        this.prependToPositions(this.getRecycle().children, id, 'recycle');
+        this.prependToTree(this.getRecycle().children, id, 'recycle');
         this.sortRecycledNodes();
 
         this.syncToRecycleDefaultOrders(id);
@@ -160,17 +196,17 @@
 
       appendNode(id) {
         this.settled[id] = true;
-        this.appendToPositions(this.positions, id);
+        this.appendToTree(this.tree, id);
 
         this.syncToRecycleDefaultOrders(id);
       },
 
-      appendToPositions(positions, id, parent_id) {
-        const last = positions[positions.length - 1];
+      appendToTree(tree, id, parent_id) {
+        const last = tree[tree.length - 1];
         if (last) {
           last.next_id = id;
         }
-        positions.push({
+        tree.push({
           id: id,
           parent_id: parent_id || null,
           prev_id: last ? last.id : null,
@@ -178,12 +214,12 @@
         });
       },
 
-      prependToPositions(positions, id, parent_id) {
-        const first = positions[0];
+      prependToTree(tree, id, parent_id) {
+        const first = tree[0];
         if (first) {
           first.prev_id = id;
         }
-        positions.unshift({
+        tree.unshift({
           id: id,
           parent_id: parent_id || null,
           prev_id: null,
@@ -249,11 +285,11 @@
       },
 
       syncToRecycleDefaultOrders(id) {
-        if (this.recycleDefaultOrders == null) {
+        if (this.recycle.defaultOrders == null) {
           return;
         }
 
-        const orders = this.recycleDefaultOrders;
+        const orders = this.recycle.defaultOrders;
         if (this.settled[id]) {
           for (let i = 0, len = orders.length; i < len; i++) {
             if (orders[i].id === id) {
@@ -262,32 +298,32 @@
             }
           }
         } else {
-          this.prependToPositions(orders, id, 'recycle');
+          this.prependToTree(orders, id, 'recycle');
         }
       },
 
       sortRecycledNodes() {
         const recycle = this.getRecycle();
 
-        if (this.recycleOrderBy === 'default') {
-          if (this.recycleDefaultOrders) {
-            recycle.children.splice(0, recycle.children.length, ...this.recycleDefaultOrders);
-            this.recycleDefaultOrders = null;
+        if (this.recycle.orderBy === 'default') {
+          if (this.recycle.defaultOrders) {
+            recycle.children.splice(0, recycle.children.length, ...this.recycle.defaultOrders);
+            this.recycle.defaultOrders = null;
           }
           return;
         }
 
-        if (this.recycleDefaultOrders == null) {
-          this.recycleDefaultOrders = recycle.children.slice();
+        if (this.recycle.defaultOrders == null) {
+          this.recycle.defaultOrders = recycle.children.slice();
         }
 
         if (recycle.children.length <= 1) return;
 
-        const params = this.recycleOrderBy.split(',');
+        const params = this.recycle.orderBy.split(',');
         const attr = params[0];
         const asc = params[1] === 'asc' ? 1 : -1;
 
-        const children = clone(recycle.children);
+        const children = _.cloneDeep(recycle.children);
         children.sort((a, b) => {
           return this.nodes[a.id][attr] > this.nodes[b.id][attr] ? asc : -asc;
         });
@@ -309,22 +345,22 @@
 
       moveRecycle(recycleNode) {
         const places = ['top', 'center', 'bottom'];
-        const newPlace = places[(places.indexOf(this.recyclePlace) + 1)%3];
+        const newPlace = places[(places.indexOf(this.recycle.place) + 1)%3];
 
         const el = recycleNode.treeNode.$el;
-        el.classList.remove(this.recyclePlace);
+        el.classList.remove(this.recycle.place);
         el.classList.add(newPlace);
-        this.recyclePlace = newPlace;
+        this.recycle.place = newPlace;
       },
 
-      getSettledPositions() {
-        const positions = clone(this.positions);
-        positions.shift();
-        positions[0].prev_id = null;
-        return positions;
+      getTreeNodes() {
+        const nodes = _.cloneDeep(this.tree);
+        nodes.shift();
+        nodes[0].prev_id = null;
+        return nodes;
       },
 
-      saveOrder() {
+      submit() {
         // form.$el.submit()
         const loading = app.$loading({
           lock: true,
@@ -332,29 +368,23 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        const positions = this.getSettledPositions();
-        if (app.initial_data === JSON.stringify(positions)) {
+        const nodes = this.getTreeNodes();
+        if (_.isEqual(nodes, this.original_tree)) {
           window.location.href = "{{ short_url('catalogs.index') }}";
           return;
         }
 
         const data = {
-          'positions': toRecords(positions).map(function(node) {
-            return {
-              node_id: node.id,
-              parent_id: node.parent_id,
-              prev_id: node.prev_id,
-              path: node.path,
-            };
-          }),
+          'positions': toPositions(nodes)
         };
 
-        axios.put("{{ short_url('catalogs.updateOrders', $catalog['id']) }}", data).then(function(response) {
-          window.location.href = "{{ short_url('catalogs.index') }}";
-        }).catch(function(error) {
-          app.$message.error(error);
-          loading.close();
-        });
+        axios.put("{{ short_url('catalogs.sort', $catalog['id']) }}", data)
+          .then((response) => {
+            window.location.href = "{{ short_url('catalogs.index') }}";
+          }).catch((error) => {
+            this.$message.error(error);
+            loading.close();
+          });
       },
     }
   })

@@ -38,4 +38,16 @@ class CatalogNode extends PivotBase
         'parent_id' => 'int',
         'prev_id' => 'int',
     ];
+
+    /**
+     * 按指定实体限定查询
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \July\Node\Catalog $catalog
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOfCatalog($query, Catalog $catalog)
+    {
+        return $query->where('catalog_id', $catalog->getKey());
+    }
 }

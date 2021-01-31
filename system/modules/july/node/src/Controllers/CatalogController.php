@@ -113,18 +113,24 @@ class CatalogController extends Controller
      */
     public function tree(Catalog $catalog)
     {
-        $data = [
-            'catalog' => $catalog->gather(),
-            'positions' => $catalog->positions(),
-        ];
+        // 获取所有 title 字段的值
+        $titles = NodeField::findOrFail('title')
+            ->getValueModel()
+            ->newQuery()
+            ->pluck('title', 'entity_id')
+            ->all();
 
-        // 非预设字段
-        $keys = NodeField::normalFields()->pluck('id')->all();
-
-        // 获取所有节点数据，并排除数据中的常规字段
-        $data['nodes'] = Node::all()->map(function (Node $node) use ($keys) {
-            return Arr::except($node->gather(), $keys);
+        // 获取所有节点数据，附带 title 字段值
+        $nodes = Node::all()->map(function (Node $node) use ($titles) {
+            return $node->attributesToArray() + ['title' => $titles[$node->getKey()] ?? null];
         })->keyBy('id')->all();
+
+        $data = [
+            'positions' => $catalog->tree()->getNodes(),
+            'context' => [
+                'nodes' => $nodes,
+            ],
+        ];
 
         return view('node::catalog.tree', $data);
     }
