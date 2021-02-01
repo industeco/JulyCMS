@@ -25,7 +25,7 @@
               <a :href="getUrl('edit', scope.row.id)" title="修改" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              <a :href="getUrl('sort', scope.row.id)" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
+              <a :href="getUrl('tree', scope.row.id)" title="重排内容" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">sort</i></div></div>
               </a>
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
@@ -39,7 +39,7 @@
     </div>
     <jc-contextmenu ref="contextmenu">
       <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" />
-      <x-menu-item title="排序" icon="sort" href="contextmenu.sortUrl" />
+      <x-menu-item title="排序" icon="sort" href="contextmenu.treeUrl" />
       <x-menu-item title="删除" icon="remove_circle" click="deleteCatalog(contextmenu.target)" disabled="!contextmenu.deletable" />
     </jc-contextmenu>
   </div>
@@ -57,13 +57,13 @@
         contextmenu: {
           target: null,
           editUrl: null,
-          resortUrl: null,
+          treeUrl: null,
           translateUrl: null,
           translatable: false,
           deletable: false,
         },
         editUrl: "{{ short_url('catalogs.edit', '_ID_') }}",
-        sortUrl: "{{ short_url('catalogs.sort', '_ID_') }}",
+        treeUrl: "{{ short_url('catalogs.tree', '_ID_') }}",
         deleteUrl: "{{ short_url('catalogs.destroy', '_ID_') }}",
       };
     },
@@ -77,7 +77,7 @@
         const _tar = this.contextmenu;
         _tar.target = row;
         _tar.editUrl = this.editUrl.replace('_ID_', row.id);
-        _tar.sortUrl = this.sortUrl.replace('_ID_', row.id);
+        _tar.treeUrl = this.treeUrl.replace('_ID_', row.id);
         _tar.deletable = !row.is_reserved;
 
         // this.contextmenuTarget = row;
@@ -88,8 +88,8 @@
         switch (route) {
           case 'edit':
             return this.editUrl.replace('_ID_', id);
-          case 'sort':
-            return this.sortUrl.replace('_ID_', id);
+          case 'tree':
+            return this.treeUrl.replace('_ID_', id);
         }
       },
 

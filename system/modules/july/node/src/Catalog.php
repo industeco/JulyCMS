@@ -170,19 +170,24 @@ class Catalog extends ModelBase implements GetNodesInterface
 
     public function updatePositions(array $positions)
     {
-        $pocket = new Pocket($this);
-        // $pocket->clear('nodes');
-        $pocket->clear('treeNodes');
-
+        $positions = (new Tree($positions))->getNodes();
         $id = $this->getKey();
 
         DB::beginTransaction();
 
-        DB::table('catalog_node')->where('catalog_id', $id)->delete();
+        CatalogNode::ofCatalog($this)->delete();
         foreach ($positions as $position) {
-            $position['catalog_id'] = $id;
-            $position = Arr::only($position, ['catalog_id','node_id','parent_id','prev_id','path']);
-            DB::table('catalog_node')->insert($position);
+            if ($position['id'] <= 0) {
+                continue;
+            }
+            $position = [
+                'catalog_id' => $id,
+                'node_id' => $position['id'],
+                'parent_id' => $position['parent_id'],
+                'prev_id' => $position['prev_id'],
+                'path' => '/'.join('/', array_slice($position['path'], 1)).'/',
+            ];
+            CatalogNode::create($position);
         }
 
         DB::commit();

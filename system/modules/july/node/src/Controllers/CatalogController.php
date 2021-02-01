@@ -126,8 +126,9 @@ class CatalogController extends Controller
         })->keyBy('id')->all();
 
         $data = [
-            'positions' => $catalog->tree()->getNodes(),
+            'model' => $catalog,
             'context' => [
+                'positions' => $catalog->tree()->getNodes(),
                 'nodes' => $nodes,
             ],
         ];

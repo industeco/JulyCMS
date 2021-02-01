@@ -1,67 +1,68 @@
 
 function clone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return _.cloneDeep(obj);
+  // return JSON.parse(JSON.stringify(obj));
 }
 
-// 折叠数据
-function toTree(nodes) {
-  nodes = nodes || [];
-  if (nodes.length <= 1) {
-    return nodes;
-  }
+// // 折叠数据
+// function toTree(nodes) {
+//   nodes = nodes || [];
+//   if (nodes.length <= 1) {
+//     return nodes;
+//   }
 
-  const nodesById = {
-    0: {},
-  };
+//   const nodesById = {
+//     0: {},
+//   };
 
-  nodes.forEach(node => {
-    nodesById[node.id] = node;
-  });
+//   nodes.forEach(node => {
+//     nodesById[node.id] = node;
+//   });
 
-  nodes.forEach(node => {
-    if (node.prev_id) {
-      nodesById[node.prev_id].next_id = node.id;
-    } else {
-      const parent_id = node.parent_id || 0;
-      nodesById[parent_id].child_id = node.id;
-    }
-  });
+//   nodes.forEach(node => {
+//     if (node.prev_id) {
+//       nodesById[node.prev_id].next_id = node.id;
+//     } else {
+//       const parent_id = node.parent_id || 0;
+//       nodesById[parent_id].child_id = node.id;
+//     }
+//   });
 
-  return getChildNodes(nodesById, 0);
-}
+//   return getChildNodes(nodesById, 0);
+// }
 
-function getChildNodes(nodes, parent_id) {
-  const children = [];
-  const parent = nodes[parent_id];
-  let node = nodes[parent.child_id];
-  while (node) {
-    children.push(node);
-    node.children = getChildNodes(nodes, node.id);
-    node = nodes[node.next_id];
-  }
-  return children;
-}
+// function getChildNodes(nodes, parent_id) {
+//   const children = [];
+//   const parent = nodes[parent_id];
+//   let node = nodes[parent.child_id];
+//   while (node) {
+//     children.push(node);
+//     node.children = getChildNodes(nodes, node.id);
+//     node = nodes[node.next_id];
+//   }
+//   return children;
+// }
 
-// 拆分数据
-function toRecords(treeData, parent, prev, path) {
-  let records = [];
+// // 拆分数据
+// function toRecords(treeData, parent, prev, path) {
+//   let records = [];
 
-  path = path || '/';
-  treeData.forEach(node => {
-    records.push({
-      id: node.id,
-      parent_id: parent || null,
-      prev_id: prev || null,
-      path: path || '/',
-    });
-    if (node.children && node.children.length) {
-      records = records.concat(toRecords(node.children, node.id, null, path + node.id + '/'));
-    }
-    prev = node.id;
-  });
+//   path = path || '/';
+//   treeData.forEach(node => {
+//     records.push({
+//       id: node.id,
+//       parent_id: parent || null,
+//       prev_id: prev || null,
+//       path: path || '/',
+//     });
+//     if (node.children && node.children.length) {
+//       records = records.concat(toRecords(node.children, node.id, null, path + node.id + '/'));
+//     }
+//     prev = node.id;
+//   });
 
-  return records
-}
+//   return records
+// }
 
 function isEmptyObject(obj) {
   for (const key in obj) {
