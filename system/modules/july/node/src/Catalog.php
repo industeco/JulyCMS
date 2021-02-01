@@ -2,8 +2,6 @@
 
 namespace July\Node;
 
-use Illuminate\Support\Arr;
-use App\Utils\Pocket;
 use Illuminate\Support\Facades\DB;
 use App\Models\ModelBase;
 use App\Utils\Tree;
@@ -385,7 +383,7 @@ class Catalog extends ModelBase implements GetNodesInterface
 
     public function get_nodes()
     {
-        $ids = $this->tree()->nodes();
+        $ids = array_keys($this->tree()->getNodes());
         return NodeSet::find($ids);
     }
 

@@ -59,7 +59,9 @@
             "July\\Node\\": "modules/july/node/src/",
             "July\\Node\\Seeds\\": "modules/july/node/seeds/",
             "July\\Taxonomy\\": "modules/july/taxonomy/src/",
-            "July\\Taxonomy\\Seeds\\": "modules/july/taxonomy/seeds/"
+            "July\\Taxonomy\\Seeds\\": "modules/july/taxonomy/seeds/",
+            "July\\Message\\": "modules/july/message/src/",
+            "July\\Message\\Seeds\\": "modules/july/message/seeds/"
         },
         "classmap": [
             "database/seeds",

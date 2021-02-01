@@ -176,6 +176,7 @@ return [
         // Modules
         Installer\ModuleServiceProvider::class,
         July\Node\ModuleServiceProvider::class,
+        July\Message\ModuleServiceProvider::class,
         Specs\ModuleServiceProvider::class,
     ],
 
