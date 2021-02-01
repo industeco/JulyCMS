@@ -103,7 +103,7 @@
         </el-table-column>
         <el-table-column label="建议模板" prop="suggested_views" width="auto" v-if="showSuggestedViews">
           <template slot-scope="scope">
-            <span class="jc-suggested-template" v-for="view in scope.row.suggested_views" :key="template">@{{ view }}</span>
+            <span class="jc-suggested-template" v-for="view in scope.row.suggested_views" :key="view">@{{ view }}</span>
           </template>
         </el-table-column>
         <el-table-column label="类型" prop="mold_id" width="120" sortable>

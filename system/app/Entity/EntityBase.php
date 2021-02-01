@@ -17,6 +17,8 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
 {
     use TranslatableTrait;
 
+    protected static $fieldKeys = [];
+
     /**
      * 获取实体类型类
      *
@@ -231,25 +233,27 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
      */
     public function getFieldKeys()
     {
-        if ($keys = $this->cachePipe(__FUNCTION__)) {
-            return $keys->value();
-        }
-
-        $fields = [];
-        if ($mold_id = $this->attributes[static::getMoldKeyName()] ?? null) {
+        if (! static::$fieldKeys) {
             $pivot = static::getPivotClass();
-            $fields = $pivot::query()
-                ->where($pivot::getMoldKeyName(), $mold_id)
-                ->pluck($pivot::getFieldKeyName())
-                ->all();
+            $mold_id = $pivot::getMoldKeyName();
+            $field_id = $pivot::getFieldKeyName();
+
+            $moldFields = DB::table($pivot::getModelTable())->get([$mold_id, $field_id])
+                ->groupBy($mold_id)
+                ->map(function($group) use($field_id) {
+                    return $group->map(function($field) use($field_id) {
+                        return $field->$field_id;
+                    })->all();
+                })->all();
+
+            $fieldClass = static::getFieldClass();
+            $fields = $fieldClass::isPreseted()->pluck($fieldClass::getModelKeyName())->all();
+
+            static::$fieldKeys = array_merge($moldFields, [':preseted' => $fields]);
         }
 
-        if (! $fields) {
-            $field = static::getFieldClass();
-            $fields = $field::isPreseted()->pluck($field::getModelKeyName())->all();
-        }
-
-        return $fields;
+        $group = $this->attributes[static::getMoldKeyName()] ?? ':preseted';
+        return static::$fieldKeys[$group] ?? [];
     }
 
     /**

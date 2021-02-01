@@ -53,7 +53,6 @@ class Node extends EntityBase
     protected $appends = [
         'is_black',
         'is_white',
-        'suggested_views',
     ];
 
     /**
@@ -145,7 +144,7 @@ class Node extends EntityBase
      *
      * @return array
      */
-    public function getSuggestedViewsAttribute()
+    public function getSuggestedViews()
     {
         $localized = [];
         $views = [];
@@ -414,7 +413,7 @@ class Node extends EntityBase
     public function getBestView()
     {
         $langcode = $this->getLangcode();
-        foreach ($this->getSuggestedViewsAttribute() as $view) {
+        foreach ($this->getSuggestedViews() as $view) {
             $view = str_replace('{langcode}', $langcode, $view);
             if (is_file(frontend_path('template/'.$view))) {
                 return $view;

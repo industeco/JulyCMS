@@ -203,7 +203,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function scopeIsGlobal($query)
     {
-        return $query->where('is_global');
+        return $query->where('is_global', true);
     }
 
     /**
@@ -214,7 +214,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function scopeIsReserved($query)
     {
-        return $query->where('is_reserved');
+        return $query->where('is_reserved', true);
     }
 
     /**
@@ -225,7 +225,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function scopeIsPreseted($query)
     {
-        return $query->where('is_global')->orWhere('is_reserved');
+        return $query->where('is_global', true)->orWhere('is_reserved', true);
     }
 
     /**
