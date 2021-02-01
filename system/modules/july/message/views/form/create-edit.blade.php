@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('h1')
-  {{ $model['id'] ? '编辑内容类型' : '新建内容类型' }}
+  {{ __('backend.'.$context['mode']) }}表单
 @endsection
 
 @section('main_content')
@@ -10,7 +10,7 @@
     :rules="mold.rules"
     label-position="top">
     <div id="main_form_left">
-      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="short_url('node_types.exists', '_ID_')" />
+      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="short_url('message_forms.exists', '_ID_')" />
       <x-label model="mold.model" label="名称" />
       <x-description model="mold.model" />
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
@@ -49,9 +49,7 @@
                   <th>操作</th>
                 </tr>
               </thead>
-              <x-mold.field-list model="mold.globalFields" caption="全局" />
-              <x-mold.field-list model="mold.reservedFields" :sortable="false" caption="预设" />
-              <x-mold.field-list model="mold.optionalFields" :deletable="true" caption="可选" />
+              <x-mold.field-list model="mold.fields" :deletable="true" />
             </table>
           </div>
           <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择、排序字段</span>
@@ -76,7 +74,7 @@
     <el-tabs v-model="tabs.current" type="card" class="jc-tabs-mini">
       <el-tab-pane label="选择字段" name="selection" class="md-scrollbar md-theme-default">
         <el-table
-          ref="optional_fields_table"
+          ref="fields_table"
           :data="selectionData.fields"
           style="width: 100%;"
           class="jc-table jc-dense"
@@ -121,15 +119,13 @@
     data() {
       return {
         mold: {
-          model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
-          globalFields: [],
-          reservedFields: [],
-          optionalFields: [],
+          model: @jjson($model, JSON_PRETTY_PRINT),
+          fields: @jjson(array_values($context['fields']), JSON_PRETTY_PRINT),
           rules: {},
         },
 
         field: {
-          model: @json($context['field_template'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           dialogVisible: false,
         },
@@ -140,12 +136,12 @@
         },
 
         selectionData: {
-          fields: @json(array_values($context['optional_fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          fields: @jjson(array_values($context['optional_fields']), JSON_PRETTY_PRINT),
           selection: [],
         },
 
         newField: {
-          model: @json($context['field_template'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           fieldTypeHelper: '选择字段类型',
         },
@@ -153,16 +149,6 @@
     },
 
     created: function() {
-      const fields = @json(array_values($context['fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-      fields.forEach(field => {
-        if (field.is_global) {
-          this.mold.globalFields.push(field);
-        } else if (field.is_reserved) {
-          this.mold.reservedFields.push(field);
-        } else {
-          this.mold.optionalFields.push(field);
-        }
-      });
       this.original_mold = _.cloneDeep(this.mold);
     },
 
@@ -210,8 +196,8 @@
 
       // 同步当前字段到已选字段（更新选择状态）
       syncSelectedToSelection() {
-        const selected = this.mold.optionalFields.map(field => field.id);
-        let table = this.$refs.optional_fields_table;
+        const selected = this.mold.fields.map(field => field.id);
+        const table = this.$refs.fields_table;
         if (table) {
           // table.clearSelection();
           this.selectionData.syncing = true;
@@ -225,11 +211,11 @@
       // 同步已选字段到当前字段（添加新选字段，移除未选字段）
       syncSelectionToSelected() {
         const fields = [];
-        const current = this.mold.optionalFields.map(field => field.id);
+        const current = this.mold.fields.map(field => field.id);
         const selected = this.selectionData.selection.map(field => field.id);
 
         // 移除未选中的
-        this.mold.optionalFields.forEach(field => {
+        this.mold.fields.forEach(field => {
           if (field.is_global || field.is_reserved || selected.indexOf(field.id) >= 0) {
             fields.push(field);
           }
@@ -243,7 +229,7 @@
         });
 
         // 更新视图
-        this.$set(this.$data.mold, 'optionalFields', fields);
+        this.$set(this.$data.mold, 'fields', fields);
 
         this.selectionData.selection = [];
         this.tabs.visible = false;
@@ -262,7 +248,7 @@
 
           axios.post("{{ short_url('node_fields.store') }}", field).then((response) => {
             // console.log(response)
-            this.mold.optionalFields.push(field);
+            this.mold.fields.push(field);
             this.selectionData.fields.push(_.cloneDeep(field));
             form.resetFields();
             loading.close();
@@ -277,39 +263,40 @@
       },
 
       submit() {
-        @if ($model['id'])
+        @if ($context['mode'] === 'edit')
         if (_.isEqual(this.original_mold, this.mold)) {
-          window.location.href = "{{ short_url('node_types.index') }}";
+          window.location.href = "{{ short_url('message_forms.index') }}";
           return;
         }
         @endif
 
         this.$refs.main_form.validate().then(() => {
-          const loading = app.$loading({
+          const loading = this.$loading({
             lock: true,
-            text: '{{ $model['id'] ? "正在保存修改 ..." : "正在新建类型 ..." }}',
+            text: '{{ $model['id'] ? "正在保存修改 ..." : "正在新建表单 ..." }}',
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          @if ($model['id'])
-          const action = "{{ short_url('node_types.update', $model['id']) }}";
+          @if ($context['mode'] === 'edit')
+          const action = "{{ short_url('message_forms.update', $model['id']) }}";
           @else
-          const action = "{{ short_url('node_types.store') }}";
+          const action = "{{ short_url('message_forms.store') }}";
           @endif
 
           const data = _.cloneDeep(this.mold.model);
           data.langcode = "{{ $context['content_langcode'] }}";
-          data.fields = this.mold.reservedFields.concat(this.mold.optionalFields, this.mold.globalFields);
-          data.fields.forEach((field, index) => { field.delta = index; })
+          data.fields = this.mold.fields.slice();
+          data.fields.forEach((field, index) => { field.delta = index; });
 
-          axios.{{ $model['id'] ? 'put' : 'post' }}(action, data)
-          .then((response) => {
-            window.location.href = "{{ short_url('node_types.index') }}";
-          }).catch((error) => {
-            loading.close();
-            console.error(error);
-            this.$message.error('发生错误，请查看日志');
-          });
+          axios.{{ $context['mode'] === 'edit' ? 'put' : 'post' }}(action, data)
+            .then((response) => {
+              window.location.href = "{{ short_url('message_forms.index') }}";
+            })
+            .catch((error) => {
+              loading.close();
+              console.error(error);
+              this.$message.error('发生错误，请查看日志');
+            });
         }).catch((error) => {
           loading.close();
           // console.error(error);

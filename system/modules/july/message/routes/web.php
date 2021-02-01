@@ -8,40 +8,31 @@ Route::group([
     'prefix' => config('app.management_prefix', 'admin'),
     'middleware' => ['admin','auth'],
 ], function() {
-    // // 字段
-    // Route::get('node_fields/exists/{id}', [Controllers\NodeFieldController::class, 'exists'])
-    //     ->name('node_fields.exists');
+    // 字段
+    Route::get('message_fields/exists/{id}', [Controllers\MessageFieldController::class, 'exists'])
+        ->name('message_fields.exists');
 
-    // Route::resource('node_fields', Controllers\NodeFieldController::class)
-    //     ->parameters(['node_fields' => 'nodeField'])
-    //     ->names('node_fields');
+    Route::resource('message_fields', Controllers\MessageFieldController::class)
+        ->parameters(['message_fields' => 'messageField'])
+        ->names('message_fields');
 
-    // // 内容类型
-    // Route::get('node_types/exists/{id}', [Controllers\NodeTypeController::class, 'exists'])
-    //     ->name('node_types.exists');
+    // 联系表单
+    Route::get('message_forms/exists/{id}', [Controllers\MessageFormController::class, 'exists'])
+        ->name('message_forms.exists');
 
-    // Route::resource('node_types', Controllers\NodeTypeController::class)
-    //     ->parameters(['node_types' => 'nodeType'])
-    //     ->names('node_types');
+    Route::resource('message_forms', Controllers\MessageFormController::class)
+        ->parameters(['message_forms' => 'messageForm'])
+        ->names('message_forms');
 
-    // // 内容
-    // Route::get('nodes/create/{nodeType}', [Controllers\NodeController::class, 'create'])
-    //     ->name('nodes.create');
+    // Route::post('messages/render', [Controllers\MessageController::class, 'render'])
+    //     ->name('messages.render');
 
-    // Route::get('nodes/mold', [Controllers\NodeController::class, 'chooseMold'])
-    //     ->name('nodes.choose_mold');
-
-    // Route::get('nodes/{node}/translate', [Controllers\NodeController::class, 'translateTo'])
-    //     ->name('nodes.translate_to');
-
-    // Route::get('nodes/{node}/translate/{langcode}', [Controllers\NodeController::class, 'edit'])
-    //     ->name('nodes.translate');
-
-    // Route::post('nodes/render', [Controllers\NodeController::class, 'render'])
-    //     ->name('nodes.render');
-
-    // Route::resource('nodes', Controllers\NodeController::class)
-    //     ->except(['create'])
-    //     ->parameters(['nodes' => 'node'])
-    //     ->names('nodes');
+    Route::resource('messages', Controllers\MessageController::class)
+        ->except(['create','edit','store','update'])
+        ->parameters(['messages' => 'message'])
+        ->names('messages');
 });
+
+// 消息
+Route::post('messages/send/{messageForm}', [Controllers\MessageController::class, 'send'])
+    ->name('message.send');

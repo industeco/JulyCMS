@@ -1,12 +1,12 @@
-@extends('backend::layout')
+@extends('layout')
 
-@section('h1', '内容类型')
+@section('h1', '联系表单')
 
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_url('node_types.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
-        <div class="md-ripple"><div class="md-button-content">新建类型</div></div>
+      <a href="{{ short_url('message_form.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
+        <div class="md-ripple"><div class="md-button-content">新建表单</div></div>
       </a>
     </div>
     {{-- <div class="jc-translate"></div> --}}
@@ -14,7 +14,7 @@
   <div id="main_list">
     <div class="jc-table-wrapper">
       <el-table class="jc-table with-operators"
-        :data="nodeTypes"
+        :data="models"
         @row-contextmenu="handleContextmenu">
         <el-table-column type="index" label="行号" width="80"></el-table-column>
         <el-table-column label="ID" prop="id" width="200" sortable></el-table-column>
@@ -87,7 +87,7 @@
 
     data() {
       return {
-        nodeTypes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+        models: @jjson(array_values($models), JSON_PRETTY_PRINT),
         contextmenu: {
           target: null,
           editUrl: null,
@@ -98,9 +98,9 @@
         },
 
         urlTemplates: {
-          editUrl: "{{ short_url('node_types.edit', '_ID_') }}",
-          deleteUrl: "{{ short_url('node_types.destroy', '_ID_') }}",
-          // {{-- translateUrl: "{{ short_url('node_types.translate', '_ID_') }}", --}}
+          editUrl: "{{ short_url('message_forms.edit', '_ID_') }}",
+          deleteUrl: "{{ short_url('message_forms.destroy', '_ID_') }}",
+          // {{-- translateUrl: "{{ short_url('message_forms.translate', '_ID_') }}", --}}
         },
       };
     },
@@ -145,14 +145,16 @@
             text: '正在删除 ...',
             background: 'rgba(0, 0, 0, 0.7)',
           });
-          axios.delete(this.urlTemplates.deleteUrl.replace('_ID_', id)).then(function(response) {
-            // console.log(response)
-            loading.spinner = 'el-icon-success';
-            loading.text = '已删除';
-            window.location.reload();
-          }).catch(function(error) {
-            console.error(error);
-          })
+          axios.delete(this.urlTemplates.deleteUrl.replace('_ID_', id))
+            .then((response) => {
+              // console.log(response)
+              loading.spinner = 'el-icon-success';
+              loading.text = '已删除';
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         }).catch((err) => {});
       },
     },

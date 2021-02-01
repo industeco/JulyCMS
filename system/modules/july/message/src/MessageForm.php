@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\EntityField\FieldTypes\FieldTypeManager;
 
-class Form extends EntityMoldBase
+class MessageForm extends EntityMoldBase
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'forms';
+    protected $table = 'message_forms';
 
     /**
      * 获取实体类

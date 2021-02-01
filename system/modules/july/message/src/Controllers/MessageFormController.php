@@ -5,10 +5,10 @@ namespace July\Message\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use July\Message\FormField;
-use July\Message\Form;
+use July\Message\MessageField;
+use July\Message\MessageForm;
 
-class FormController extends Controller
+class MessageFormController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -18,7 +18,7 @@ class FormController extends Controller
     public function index()
     {
         return view('message::form.index', [
-            'models' => Form::index(),
+            'models' => MessageForm::index(),
         ]);
     }
 
@@ -35,16 +35,13 @@ class FormController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \July\Message\Form  $form
+     * @param  \July\Message\MessageForm  $form
      * @return \Illuminate\Http\Response
      */
-    public function edit(Form $form)
+    public function edit(MessageForm $form)
     {
         $data = $this->getCreationContext();
-        $data['context']['fields'] = collect($data['context']['fields'])
-            ->merge(gather($form->fields)->keyBy('id'))
-            ->sortBy('delta')
-            ->all();
+        $data['context']['fields'] = gather($form->fields)->sortBy('delta')->keyBy('id')->all();
         $data['context']['mode'] = 'edit';
 
         return view('message::form.create-edit', $data);
@@ -57,12 +54,10 @@ class FormController extends Controller
      */
     protected function getCreationContext()
     {
-        $fields = MessageField::bisect();
         return [
-            'model' => Form::template(),
+            'model' => MessageForm::template(),
             'context' => [
-                'fields' => gather($fields->get('preseted'))->keyBy('id')->all(),
-                'optional_fields' => gather($fields->get('optional'))->keyBy('id')->all(),
+                'fields' => [],
                 'field_template' => MessageField::template(),
                 'content_langcode' => langcode('content'),
                 'mode' => 'create',
@@ -79,7 +74,7 @@ class FormController extends Controller
     public function store(Request $request)
     {
         // 创建类型
-        Form::create($request->all());
+        MessageForm::create($request->all());
 
         return response('');
     }
@@ -87,10 +82,10 @@ class FormController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Message\Form  $form
+     * @param  \July\Message\MessageForm  $form
      * @return \Illuminate\Http\Response
      */
-    public function show(Form $form)
+    public function show(MessageForm $form)
     {
         //
     }
@@ -99,10 +94,10 @@ class FormController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \July\Message\Form  $form
+     * @param  \July\Message\MessageForm  $form
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Form $form)
+    public function update(Request $request, MessageForm $form)
     {
         // 更新类型
         $form->update($request->all());
@@ -113,10 +108,10 @@ class FormController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \July\Message\Form  $form
+     * @param  \July\Message\MessageForm  $form
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Form $form)
+    public function destroy(MessageForm $form)
     {
         $form->delete();
 
@@ -132,7 +127,7 @@ class FormController extends Controller
     public function exists($id)
     {
         return response([
-            'exists' => !empty(Form::find($id)),
+            'exists' => !empty(MessageForm::find($id)),
         ]);
     }
 }
