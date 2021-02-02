@@ -2,9 +2,10 @@
 
 namespace July\Message;
 
+use App\Casts\Serialized;
 use App\Entity\EntityBase;
 use Illuminate\Support\Facades\Log;
-use Jenssegers\Agent\Agent;
+use IP2Location\Database as Location;
 
 class Message extends EntityBase
 {
@@ -23,6 +24,16 @@ class Message extends EntityBase
     protected $fillable = [
         'mold_id',
         'langcode',
+        'is_sent',
+        'user_agent',
+        'ip',
+        'trails',
+        '_server',
+    ];
+
+    protected $casts = [
+        'trails' => Serialized::class,
+        '_server' => Serialized::class,
     ];
 
     /**
@@ -31,9 +42,6 @@ class Message extends EntityBase
      * @var array
      */
     protected $appends = [
-        'trails_report',
-        'user_agent',
-        'ip',
         'location',
     ];
 
@@ -68,40 +76,20 @@ class Message extends EntityBase
     }
 
     /**
-     * trails_report 属性的 Accessor
+     * trails 属性的 Mutator
      *
+     * @param  string $trails
      * @return string
      */
-    public function getTrailsReportAttribute()
+    public function setTrailsAttribute($trails)
     {
-        //
-    }
+        if (empty($trails)) {
+            $trails = [];
+        } else {
+            $trails = $this->formatTrailsReport($trails);
+        }
 
-    /**
-     * user_agent 属性的 Accessor
-     *
-     * @return string
-     */
-    public function getUserAgentAttribute()
-    {
-        $agent = new Agent();
-
-        $browser = $agent->browser();
-        $browserVersion = $agent->version($browser);
-        $platform = $agent->platform();
-        $platformVersion = $agent->version($platform);
-
-        return "{$browser}[{$browserVersion}] on {$platform}[{$platformVersion}]";
-    }
-
-    /**
-     * ip 属性的 Accessor
-     *
-     * @return string
-     */
-    public function getIpAttribute()
-    {
-        //
+        $this->attributes['trails'] = serialize($trails);
     }
 
     /**
@@ -111,7 +99,16 @@ class Message extends EntityBase
      */
     public function getLocationAttribute()
     {
-        //
+        $ip = $this->ip;
+        if (! $ip) {
+            return 'Location: -/-/-';
+        }
+
+        $location = (new Location)->lookup($ip);
+        return 'Location: '.
+            ($location['countryName'] ?? '-').'/'.
+            ($location['regionName'] ?? '-').'/'.
+            ($location['cityName'] ?? '-');
     }
 
     /**
@@ -124,7 +121,12 @@ class Message extends EntityBase
         return $this->belongsTo(MessageForm::class, 'mold_id');
     }
 
-    public function send()
+    /**
+     * 以邮件形式发送消息
+     *
+     * @return void
+     */
+    public function sendMail()
     {
         //
     }
@@ -145,5 +147,26 @@ class Message extends EntityBase
         ];
 
         return app('twig')->render($view, $data);
+    }
+
+    /**
+     * 格式化浏览轨迹报告
+     *
+     * @param  string $report
+     * @return array
+     */
+    protected function formatTrailsReport(string $report)
+    {
+        $report = json_decode(stripslashes($report), true);
+
+        $trails = array_map(function ($record) {
+            $min = strval(intval($record[1]/60));
+            $sec = strval(intval($record[1]%60));
+            return "[{$min}m {$sec}s] ".$record[0];
+        }, $report['trace']);
+
+        $trails[] = '[-] '.$report['refer'];
+
+        return $trails;
     }
 }

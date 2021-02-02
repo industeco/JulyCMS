@@ -22,6 +22,21 @@ class CreateMessagesTable extends Migration
             // 源语言
             $table->string('langcode', 12);
 
+            // 是否已发送
+            $table->boolean('is_sent')->default(false);
+
+            // 用户代理描述
+            $table->string('user_agent');
+
+            // ip 地址
+            $table->string('ip');
+
+            // 浏览轨迹报告
+            $table->string('trails');
+
+            // 序列化的 $_SERVER 数组
+            $table->binary('_server');
+
             $table->timestamps();
         });
     }

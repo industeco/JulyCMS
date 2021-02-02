@@ -61,7 +61,8 @@
             "July\\Taxonomy\\": "modules/july/taxonomy/src/",
             "July\\Taxonomy\\Seeds\\": "modules/july/taxonomy/seeds/",
             "July\\Message\\": "modules/july/message/src/",
-            "July\\Message\\Seeds\\": "modules/july/message/seeds/"
+            "July\\Message\\Seeds\\": "modules/july/message/seeds/",
+            "IP2Location\\": "modules/ip2location/"
         },
         "classmap": [
             "database/seeds",

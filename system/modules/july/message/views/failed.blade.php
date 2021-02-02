@@ -57,7 +57,7 @@
   <div class="message-validation-result">
     <h1>Message Validation Failed</h1>
     <ol>
-      @foreach ($errors->messages() as $name => $messages)
+      @foreach ($errors as $name => $messages)
       <li>
         <p><b>{{ $fields[$name] ?? $name }}:</b></p>
         <ul class="errors">

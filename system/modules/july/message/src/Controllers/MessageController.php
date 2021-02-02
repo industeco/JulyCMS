@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
 use July\Message\Message;
 use July\Message\MessageForm;
 
@@ -50,20 +51,33 @@ class MessageController extends Controller
         if ($validator->fails()) {
             // dd($validator->errors());
             return view('message::failed', [
-                    'errors' => $validator->errors(),
-                    'fields' => $fields,
-                ]);
+                        'errors' => $validator->errors()->messages(),
+                        'fields' => $fields,
+                    ]);
         }
 
-        // 保存消息到数据库
-        $message = Message::create($attributes += [
+        // 补全字段值
+        $attributes = array_merge($attributes, [
             'mold_id' => $form->getKey(),
             'langcode' => langcode('request'),
+            'ip' => $request->ip(),
+            'user_agent' => $this->getUserAgent(),
+            'trails' => $attributes['trails'] ?? $attributes['track_report'] ?? $attributes['trace_report'] ?? '',
+            '_server' => $request->server(),
         ]);
 
         // 发送消息
         try {
-            $message->send();
+            // 保存消息到数据库
+            $message = Message::create($attributes);
+
+            // 以邮件方式发送消息
+            $message->sendMail();
+
+            // 消息标记为已发送
+            $message->is_sent = true;
+            $message->save();
+
         } catch (\Throwable $th) {
             //throw $th;
             Log::error($th->getMessage());
@@ -145,5 +159,22 @@ class MessageController extends Controller
         $message->delete();
 
         return response('');
+    }
+
+    /**
+     * 获取用户代理描述
+     *
+     * @return string
+     */
+    public function getUserAgent()
+    {
+        $agent = new Agent();
+
+        $browser = $agent->browser();
+        $browserVersion = $agent->version($browser);
+        $platform = $agent->platform();
+        $platformVersion = $agent->version($platform);
+
+        return "{$browser}[{$browserVersion}] on {$platform}[{$platformVersion}]";
     }
 }
