@@ -15,7 +15,7 @@ class MessageFormSeeder extends SeederBase
     protected $tables = ['message_forms'];
 
     /**
-     * 获取 node_types 表数据
+     * 获取 message_forms 表数据
      *
      * @return array
      */

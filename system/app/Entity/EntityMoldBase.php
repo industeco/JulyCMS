@@ -185,7 +185,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     public function syncFields(array $fields = null)
     {
         $fields = $fields ?? $this->raw['fields'] ?? [];
-        $keys = ['delta','label','description','is_required','helpertext','default_value','options'];
+        $keys = ['delta','label','description','is_required','helpertext','default_value','options','rules'];
         $relatedFields = [];
         foreach (array_values($fields) as $index => $field) {
             $field['delta'] = $index;

@@ -144,7 +144,7 @@
       @endif
       <x-menu-item title="删除" icon="remove_circle" click="deleteNode(contextmenu.target)" />
       <x-menu-item title="生成 HTML" icon="description" click="render(contextmenu.target)" />
-      <x-menu-item title="查看页面" icon="visibility" target="_blank" href="contextmenu.url" />
+      <x-menu-item title="查看页面" icon="visibility" href="contextmenu.url" target="_blank" />
     </jc-contextmenu>
   </div>
 @endsection

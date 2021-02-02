@@ -291,6 +291,12 @@ return [
                     'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
                     'children' => [],
                 ],
+                [
+                    'title' => '消息',
+                    'icon' => null,
+                    'route' => 'messages.index',
+                    'children' => [],
+                ],
             ],
         ],
 
@@ -310,6 +316,12 @@ return [
                     'title' => '目录',
                     'icon' => null,
                     'route' => 'catalogs.index',
+                    'children' => [],
+                ],
+                [
+                    'title' => '表单',
+                    'icon' => null,
+                    'route' => 'message_forms.index',
                     'children' => [],
                 ],
                 // [

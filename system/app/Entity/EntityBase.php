@@ -108,6 +108,34 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 获取所有实体，并附带指定的字段值
+     *
+     * @param  array $fields
+     *
+     */
+    public static function allWithFields(...$fields)
+    {
+        // 获取字段值
+        $fieldClass = static::getFieldClass();
+        $fieldValues = [];
+        foreach ($fields as $fieldId) {
+            if ($field = $fieldClass::find($fieldId)) {
+                $fieldValues[$fieldId] = $field->getValueModel()->newQuery()->pluck($fieldId, 'entity_id')->all();
+            }
+        }
+
+        // 获取所有消息数据，附带指定的字段值
+        return static::all()->map(function (EntityBase $entity) use ($fieldValues) {
+                $attributes = $entity->attributesToArray();
+                $id = $entity->getKey();
+                foreach ($fieldValues as $field => $values) {
+                    $attributes[$field] = $values[$id] ?? null;
+                }
+                return $attributes;
+            })->keyBy('id')->all();
+    }
+
+    /**
      * 获取实体路径别名（网址）
      *
      * @return string|null

@@ -15,11 +15,11 @@ class MessageFieldMessageFormSeeder extends SeederBase
     protected $tables = ['message_field_message_form'];
 
     /**
-     * 获取 node_field_node_type 表数据
+     * 获取 message_field_message_form 表数据
      *
      * @return array
      */
-    public function getNodeFieldNodeTypeTableRecords()
+    public function getMessageFieldMessageFormTableRecords()
     {
         // 所有字段信息
         $allFields = collect((new MessageFieldSeeder)->getMessageFieldsTableRecords())->keyBy('id')->map(function(array $field) {

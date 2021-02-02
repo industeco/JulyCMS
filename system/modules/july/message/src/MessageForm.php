@@ -3,10 +3,7 @@
 namespace July\Message;
 
 use App\Entity\EntityMoldBase;
-use App\Utils\Pocket;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\EntityField\FieldTypes\FieldTypeManager;
 
 class MessageForm extends EntityMoldBase
 {
@@ -28,69 +25,45 @@ class MessageForm extends EntityMoldBase
     }
 
     /**
-     * 获取字段拼图（与字段相关的一组信息，用于组成表单）
+     * 生成表单
      *
-     * @param  string|null $langcode
-     * @return array
+     * @return string
      */
-    public function retrieveFieldMaterials(string $langcode = null)
+    public function render()
     {
-        $langcode = $langcode ?: langcode('content');
+        /** @var \Twig\Environment */
+        $twig = app('twig');
 
-        $pocket = new Pocket($this, 'field_materials');
+        // 默认模板
+        $view = frontend_path('template/message/form--'.$this->getKey().'.twig');
+        $view = 'message/form--'.$this->getKey().'.twig';
 
-        if ($materials = $pocket->get()) {
-            $materials = $materials->value();
-        }
+        // 数据
+        $data = $this->gather();
+        $data['fields'] = gather($this->fields)->keyBy('id')->all();
+        $data['action'] = short_url('messages.send', $this->getKey());
 
-        $modified = last_modified(backend_path('template/components/'));
-        if (!$materials || $materials['created_at'] < $modified) {
-            $materials = [];
-            foreach ($this->fields as $field) {
-                $materials[$field->id] = FieldTypeManager::findOrFail($field->translateTo($langcode))->getMaterials();
-            }
-
-            $materials = [
-                'created_at' => time(),
-                'materials' => $materials,
-            ];
-
-            $pocket->put($materials);
-        }
-
-        return $materials['materials'];
+        return $twig->render($view, $data);
     }
 
     /**
-     * 更新类型字段
+     * 解析字段验证规则和定制的错误信息
      *
-     * @param  \Illuminate\Http\Request $request
-     * @return void
+     * @return array
      */
-    public function updateRelatedFields(array $data)
+    public function resolveFieldRules()
     {
-        DB::beginTransaction();
-
+        $rules = [];
+        $messages = [];
         $fields = [];
 
-        foreach ($data as $index => $field) {
-            $fields[$field['id']] = [
-                'delta' => $index,
-                'label' => $field['label'] ?? null,
-                'description' => $field['description'] ?? null,
-                'is_required' => boolval($field['is_required'] ?? false),
-                'helpertext' => $field['helpertext'] ?? null,
-            ];
+        foreach ($this->fields as $field) {
+            [$fieldRules, $fieldMessages] = $field->resolveRules();
+            $rules = array_merge($rules, $fieldRules);
+            $messages = array_merge($messages, $fieldMessages);
+            $fields[$field->getKey()] = $field->label;
         }
-        // Log::info($fields);
 
-        $this->fields()->sync($fields);
-
-        DB::commit();
-    }
-
-    public function get_nodes()
-    {
-        return NodeSet::make($this->nodes->keyBy('id')->all());
+        return [$rules, $messages, $fields];
     }
 }

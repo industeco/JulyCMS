@@ -5,14 +5,14 @@ namespace July\Message;
 use App\EntityField\FieldMoldPivotBase;
 use Illuminate\Support\Facades\DB;
 
-class NodeFieldNodeType extends FieldMoldPivotBase
+class MessageFieldMessageForm extends FieldMoldPivotBase
 {
     /**
      * 与模型关联的表名
      *
      * @var string
      */
-    protected $table = 'node_field_node_type';
+    protected $table = 'message_field_message_form';
 
     // /**
     //  * 统计字段被引用次数

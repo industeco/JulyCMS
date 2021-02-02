@@ -10,7 +10,7 @@
     :rules="mold.rules"
     label-position="top">
     <div id="main_form_left">
-      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="short_url('message_forms.exists', '_ID_')" />
+      <x-handle model="mold.model" :read-only="$context['mode'] === 'edit'" :unique-action="short_url('message_forms.exists', '_ID_')" />
       <x-label model="mold.model" label="名称" />
       <x-description model="mold.model" />
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
@@ -136,7 +136,7 @@
         },
 
         selectionData: {
-          fields: @jjson(array_values($context['optional_fields']), JSON_PRETTY_PRINT),
+          fields: @jjson(array_values($context['all_fields']), JSON_PRETTY_PRINT),
           selection: [],
         },
 
@@ -273,7 +273,7 @@
         this.$refs.main_form.validate().then(() => {
           const loading = this.$loading({
             lock: true,
-            text: '{{ $model['id'] ? "正在保存修改 ..." : "正在新建表单 ..." }}',
+            text: "{{ $context['mode'] === 'edit' ? '正在保存修改 ...' : '正在新建表单 ...' }}",
             background: 'rgba(255, 255, 255, 0.7)',
           });
 

@@ -44,38 +44,11 @@
       </el-table>
     </div>
     <jc-contextmenu ref="contextmenu">
-      <li class="md-list-item">
-        <a v-if="contextmenu.editable" :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
-            <span class="md-list-item-text">编辑</span>
-          </div>
-        </a>
-        <div v-else class="md-list-item-container md-button-clean" disabled>
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-accent md-theme-default">edit</i>
-            <span class="md-list-item-text">编辑</span>
-          </div>
-        </div>
-      </li>
-      {{-- @if (config('language.multiple'))
-      <li class="md-list-item">
-        <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-primary md-theme-default">translate</i>
-            <span class="md-list-item-text">翻译</span>
-          </div>
-        </a>
-      </li>
+      <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" disabled="!contextmenu.editable" />
+      {{-- @if (config('lang.multiple'))
+      <x-menu-item title="翻译" icon="translate" href="contextmenu.translateUrl" :disabled="!contextmenu.translatable" />
       @endif --}}
-      <li class="md-list-item">
-        <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteMold(contextmenu.target)">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
-            <span class="md-list-item-text">删除</span>
-          </div>
-        </div>
-      </li>
+      <x-menu-item title="删除" icon="remove_circle" click="deleteMold(contextmenu.target)" disabled="!contextmenu.deletable" />
     </jc-contextmenu>
   </div>
 @endsection

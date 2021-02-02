@@ -21,7 +21,7 @@ Route::group([
         ->name('message_forms.exists');
 
     Route::resource('message_forms', Controllers\MessageFormController::class)
-        ->parameters(['message_forms' => 'messageForm'])
+        ->parameters(['message_forms' => 'form'])
         ->names('message_forms');
 
     // Route::post('messages/render', [Controllers\MessageController::class, 'render'])
@@ -34,5 +34,5 @@ Route::group([
 });
 
 // 消息
-Route::post('messages/send/{messageForm}', [Controllers\MessageController::class, 'send'])
-    ->name('message.send');
+Route::post('messages/send/{form}', [Controllers\MessageController::class, 'send'])
+    ->name('messages.send');

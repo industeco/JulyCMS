@@ -65,7 +65,7 @@
 
   {{-- 默认值 --}}
   <el-form-item label="默认值" size="small" class="has-helptext" native-size="100">
-    <el-input v-model="{{ $model }}.default_value"></el-input>
+    <el-input v-model="{{ $model }}.default_value" native-size="100"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 字段默认值</span>
   </el-form-item>
 
@@ -74,12 +74,18 @@
     <el-input v-model="{{ $model }}.options" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个值以 "|" 分隔</span>
   </el-form-item>
+
+  {{-- 验证规则 --}}
+  <el-form-item label="验证" size="small" class="has-helptext">
+    <el-input v-model="{{ $model }}.rules" type="textarea" rows="3"></el-input>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个规则以 "|" 分隔</span>
+  </el-form-item>
 </el-form>
 
 @once
 @push('methods')
   handleFieldTypeChange(scope, type_id) {
-    const fieldTypes = @json(get_field_types(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    const fieldTypes = @jjson(get_field_types());
     const type = fieldTypes[type_id];
     this[scope].fieldTypeHelper = type ? type.description : '';
   },

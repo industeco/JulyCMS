@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_url('message_form.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_url('message_forms.create') }}" title="编辑" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建表单</div></div>
       </a>
     </div>
@@ -23,8 +23,7 @@
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <div class="jc-operators">
-              <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default"
-                :disabled="scope.row.id === 'basic'">
+              <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
               {{-- @if (config('language.multiple'))
@@ -44,38 +43,11 @@
       </el-table>
     </div>
     <jc-contextmenu ref="contextmenu">
-      <li class="md-list-item">
-        <a v-if="contextmenu.editable" :href="contextmenu.editUrl" class="md-list-item-link md-list-item-container md-button-clean">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-primary md-theme-default">edit</i>
-            <span class="md-list-item-text">编辑</span>
-          </div>
-        </a>
-        <div v-else class="md-list-item-container md-button-clean" disabled>
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-accent md-theme-default">edit</i>
-            <span class="md-list-item-text">编辑</span>
-          </div>
-        </div>
-      </li>
-      {{-- @if (config('language.multiple'))
-      <li class="md-list-item">
-        <a :href="contextmenu.translateUrl" class="md-list-item-link md-list-item-container md-button-clean" :disabled="!contextmenu.translatable">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-primary md-theme-default">translate</i>
-            <span class="md-list-item-text">翻译</span>
-          </div>
-        </a>
-      </li>
+      <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" disabled="!contextmenu.editable" />
+      {{-- @if (config('lang.multiple'))
+      <x-menu-item title="翻译" icon="translate" href="contextmenu.translateUrl" :disabled="!contextmenu.translatable" />
       @endif --}}
-      <li class="md-list-item">
-        <div class="md-list-item-container md-button-clean" :disabled="!contextmenu.deletable" @click.stop="deleteMold(contextmenu.target)">
-          <div class="md-list-item-content">
-            <i class="md-icon md-icon-font md-accent md-theme-default">remove_circle</i>
-            <span class="md-list-item-text">删除</span>
-          </div>
-        </div>
-      </li>
+      <x-menu-item title="删除" icon="remove_circle" click="deleteMold(contextmenu.target)" disabled="!contextmenu.deletable" />
     </jc-contextmenu>
   </div>
 @endsection
@@ -92,7 +64,7 @@
           target: null,
           editUrl: null,
           // translateUrl: null,
-          editable: false,
+          editable: true,
           translatable: false,
           deletable: false,
         },
@@ -114,7 +86,7 @@
         const _tar = this.contextmenu;
         _tar.target = row;
         _tar.editUrl = this.urlTemplates.editUrl.replace('_ID_', row.id);
-        _tar.editable = !row.is_reserved;
+        // _tar.editable = !row.is_reserved;
         _tar.deletable = row.referenced <= 0 && !row.is_reserved;
 
         // this.contextmenuTarget = row;
