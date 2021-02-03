@@ -207,14 +207,14 @@ if (! function_exists('str_diff')) {
     }
 }
 
-if (! function_exists('normalize_args')) {
+if (! function_exists('real_args')) {
     /**
      * 格式化传入参数
      *
      * @param array $args 文件名
      * @return array
      */
-    function normalize_args(array $args)
+    function real_args(array $args)
     {
         // 如果只有一个参数，而且是一个数组，则假设该数组才是用户真正想要传入的参数
         if (count($args) === 1 && is_array($args[0] ?? null)) {

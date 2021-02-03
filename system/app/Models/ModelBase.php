@@ -170,14 +170,12 @@ abstract class ModelBase extends Model
     /**
      * 获取模型列表数据
      *
-     * @return array[]
+     * @param  array $columns 选取的列
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
-    public static function index(array $keys = ['*'])
+    public static function index(array $columns = ['*'])
     {
-        $keyName = static::getModelKeyName();
-        return static::all()->map(function(ModelBase $model) use($keys) {
-            return $model->gather($keys);
-        })->keyBy($keyName)->all();
+        return static::query()->get($columns)->keyBy(static::getModelKeyName());
     }
 
     /**

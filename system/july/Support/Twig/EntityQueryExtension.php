@@ -106,7 +106,7 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      */
     public function nodes(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return NodeSet::findAll();
         }
@@ -124,7 +124,7 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      */
     public function node_types(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return NodeTypeSet::findAll();
         }
@@ -142,7 +142,7 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
      */
     public function catalogs(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return CatalogSet::findAll();
         }
@@ -160,7 +160,7 @@ class EntityQueryExtension extends AbstractExtension implements GlobalsInterface
     //  */
     // public function tags(...$args)
     // {
-    //     $args = normalize_args($args);
+    //     $args = real_args($args);
     //     if (empty($args)) {
     //         return TermSet::findAll();
     //     }

@@ -213,7 +213,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public function get_children(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             $args = [0];
         }
@@ -240,7 +240,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public function get_descendants(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             $args = [0];
         }
@@ -270,7 +270,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public function get_parent(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return new NodeSet;
         }
@@ -297,7 +297,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public function get_ancestors(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return new NodeSet;
         }
@@ -324,7 +324,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public function get_siblings(...$args)
     {
-        $args = normalize_args($args);
+        $args = real_args($args);
         if (empty($args)) {
             return new NodeSet;
         }

@@ -28,18 +28,18 @@ class MessageFieldMessageFormSeeder extends SeederBase
 
         // 类型关联字段
         $molds = [
-            'new_message' => ['subject', 'email', 'message'],
+            'new_message' => ['email', 'message'],
         ];
 
         // 生成记录
         $records = [];
         foreach ($molds as $id => $fields) {
             foreach ($fields as $index => $field) {
-                $records[] = $allFields->get($field) + [
+                $records[] = array_merge($allFields->get($field), [
                     'mold_id' => $id,
                     'field_id' => $field,
                     'delta' => $index,
-                ];
+                ]);
             }
         }
 

@@ -14,7 +14,7 @@
   <div id="main_list">
     <div class="jc-table-wrapper">
       <el-table class="jc-table with-operators"
-        :data="nodeTypes"
+        :data="models"
         @row-contextmenu="handleContextmenu">
         <el-table-column type="index" label="行号" width="80"></el-table-column>
         <el-table-column label="ID" prop="id" width="200" sortable></el-table-column>
@@ -60,7 +60,7 @@
 
     data() {
       return {
-        nodeTypes: @json(array_values($models), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+        models: @jjson($models->values()->all(), JSON_PRETTY_PRINT),
         contextmenu: {
           target: null,
           editUrl: null,

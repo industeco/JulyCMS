@@ -24,12 +24,6 @@ class MessageFieldSeeder extends SeederBase
     {
         $records = [
             [
-                'id' => 'subject',
-                'field_type_id' => 'input',
-                'label' => 'Subject',
-                'is_required' => true,
-            ],
-            [
                 'id' => 'email',
                 'field_type_id' => 'input',
                 'label' => 'E-mail',

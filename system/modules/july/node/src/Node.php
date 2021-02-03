@@ -2,17 +2,16 @@
 
 namespace July\Node;
 
-use App\Entity\EntityBase;
+use App\Entity\TranslatableEntityBase;
 use App\Utils\Html;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use App\EntityField\FieldBase;
 use July\Node\CatalogSet;
 use July\Taxonomy\Term;
 use July\Taxonomy\TermSet;
 
-class Node extends EntityBase
+class Node extends TranslatableEntityBase
 {
     /**
      * 与模型关联的表名
@@ -85,16 +84,6 @@ class Node extends EntityBase
         return NodeFieldNodeType::class;
     }
 
-    /**
-     * 实体所属类型
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function mold()
-    {
-        return $this->belongsTo(NodeType::class, 'mold_id');
-    }
-
     // /**
     //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
     //  */
@@ -140,59 +129,87 @@ class Node extends EntityBase
     }
 
     /**
-     * 附加属性 suggested_views 的 Get Mutator
+     * 获取所有实体，并附加指定的字段值
      *
+     * @param  array $fields
+     * @return \Illuminate\Support\Collection|array[]
+     */
+    public static function indexWithFields(...$fields)
+    {
+        // 允许以数组形式指定参数
+        $fields = array_merge(real_args($fields), ['view', 'url']);
+
+        // 字段值
+        $fieldValues = static::getFieldValues($fields);
+
+        // 获取所有消息数据，附带指定的字段值
+        return static::all()->map(function (Node $node) use ($fieldValues) {
+                $attributes = $node->attributesToArray();
+                $id = $attributes['id'];
+                foreach ($fieldValues as $field => $values) {
+                    $attributes[$field] = $values[$id] ?? null;
+                }
+                $attributes['suggested_templates'] = $node->getSuggestedTemplates($attributes['view'] ?? null, $attributes['url'] ?? null);
+                return $attributes;
+            })->keyBy('id');
+    }
+
+    /**
+     * 获取建议模板
+     *
+     * @param  string|null 指定的模板
+     * @param  string|null 节点网址
      * @return array
      */
-    public function getSuggestedViews()
+    public function getSuggestedTemplates(?string $view = null, ?string $url = null)
     {
         $localized = [];
-        $views = [];
+        $templates = [];
 
-        if ($view = $this->getView()) {
+        if ($view) {
             $localized[] = $view;
         }
 
         // 根据 id
         $localized[] = 'node--'.$this->id.'.{langcode}.twig';
-        $views[] = 'node--'.$this->id.'.twig';
+        $templates[] = 'node--'.$this->id.'.twig';
 
         // 根据 url
-        if ($url = $this->getPathAlias()) {
+        if ($url) {
             $url = str_replace('/', '_', trim($url, '\\/'));
-            // $views[] = 'url--'.$url.'.{langcode}.twig';
+            // $templates[] = 'url--'.$url.'.{langcode}.twig';
             $localized[] = 'url--'.$url.'.twig';
         }
 
         // // 根据目录位置
         // if ($parent = Catalog::default()->tree()->parent($this->id)) {
         //     $localized[] = 'under--' . $parent[0] . '.{langcode}.twig';
-        //     $views[] = 'under--' . $parent[0] . '.twig';
+        //     $templates[] = 'under--' . $parent[0] . '.twig';
         // }
 
         // 根据类型
         $localized[] = 'mold--'.$this->mold_id.'.{langcode}.twig';
-        $views[] = 'mold--'.$this->mold_id.'.twig';
+        $templates[] = 'mold--'.$this->mold_id.'.twig';
 
-        return array_merge($localized, $views);
+        return array_merge($localized, $templates);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function collectFields()
-    {
-        $fields = NodeField::groupbyPresetType()->get('preseted');
-        if ($this->exists) {
-            $fields = $fields->merge($this->fields->keyBy('id'));
-        } elseif ($mold = $this->getMold()) {
-            $fields = $fields->merge($mold->fields->keyBy('id'));
-        }
+    // /**
+    //  * {@inheritdoc}
+    //  */
+    // public function collectFields()
+    // {
+    //     $fields = NodeField::groupbyPresetType()->get('preseted');
+    //     if ($this->exists) {
+    //         $fields = $fields->merge($this->fields->keyBy('id'));
+    //     } elseif ($mold = $this->getMold()) {
+    //         $fields = $fields->merge($mold->fields->keyBy('id'));
+    //     }
 
-        return $fields->map(function(FieldBase $field) {
-                return $field->bindEntity($this);
-            })->sortBy('delta');
-    }
+    //     return $fields->map(function(FieldBase $field) {
+    //             return $field->bindEntity($this);
+    //         })->sortBy('delta');
+    // }
 
     /**
      * @return array
@@ -225,7 +242,7 @@ class Node extends EntityBase
      */
     public function render()
     {
-        $view = $this->getBestView();
+        $view = $this->getPreferredTemplate();
         if (! $view) {
             return '';
         }
@@ -254,10 +271,10 @@ class Node extends EntityBase
      *
      * @return string|null
      */
-    public function getBestView()
+    public function getPreferredTemplate()
     {
         $langcode = $this->getLangcode();
-        foreach ($this->getSuggestedViews() as $view) {
+        foreach ($this->getSuggestedTemplates() as $view) {
             $view = str_replace('{langcode}', $langcode, $view);
             if (is_file(frontend_path('template/'.$view))) {
                 return $view;

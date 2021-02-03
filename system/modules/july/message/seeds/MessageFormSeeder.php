@@ -25,7 +25,7 @@ class MessageFormSeeder extends SeederBase
             [
                 'id' => 'new_message',
                 'label' => '新消息',
-                'description' => '默认联系表单，不可删除。',
+                'description' => '默认表单，不可删除。',
                 'is_reserved' => true,
             ],
         ];

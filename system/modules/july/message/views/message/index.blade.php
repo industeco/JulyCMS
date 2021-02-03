@@ -94,7 +94,7 @@
 
     data() {
       return {
-        models: @jjson(array_values($models)),
+        models: @jjson($models->values()->all()),
         molds: @jjson($context['molds']),
         contextmenu: {
           target: null,
@@ -105,7 +105,7 @@
         filterValues: {
           title: null,
           mold: null,
-          langcode: "{{ langcode('frontend') }}",
+          langcode: "{{ $context['langcode'] }}",
         },
 
         // {{-- tags: @json($tags, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), --}}

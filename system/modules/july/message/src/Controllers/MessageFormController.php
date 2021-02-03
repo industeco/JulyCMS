@@ -60,6 +60,7 @@ class MessageFormController extends Controller
         return [
             'model' => MessageForm::template(),
             'context' => [
+                'entity_name' => MessageForm::getEntityClass()::getEntityName(),
                 'fields' => [],
                 'all_fields' => MessageField::index(),
                 'field_template' => MessageField::template(),

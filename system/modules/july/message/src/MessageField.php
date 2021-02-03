@@ -40,7 +40,7 @@ class MessageField extends FieldBase
         $key = $this->getKey();
         $required = false;
         foreach (explode('|', $entries) as $entry) {
-            $details = $this->resolveRuleEntry(trim($entry));
+            $details = $this->resolveRule(trim($entry));
             if ($details['name'] === 'required') {
                 $required = true;
             }
@@ -56,12 +56,18 @@ class MessageField extends FieldBase
         return [[$key => $rules], $messages];
     }
 
-    protected function resolveRuleEntry(string $entry)
+    /**
+     * 解析单条规则
+     *
+     * @param  string $rule
+     * @return array
+     */
+    protected function resolveRule(string $rule)
     {
-        $entry = explode('=>', $entry);
+        $rule = explode('=>', $rule);
         return [
-            'rule' => $entry[0],
-            'name' => explode(':', $entry[0])[0],
+            'rule' => $rule[0],
+            'name' => explode(':', $rule[0])[0],
             'message' => $rule[1] ?? null,
         ];
     }

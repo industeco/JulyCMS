@@ -13,10 +13,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-abstract class EntityBase extends ModelBase implements TranslatableInterface
+abstract class EntityBase extends ModelBase
 {
-    use TranslatableTrait;
-
     protected static $fieldKeys = [];
 
     /**
@@ -108,21 +106,18 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * 获取所有实体，并附带指定的字段值
+     * 获取所有实体，并附加指定的字段值
      *
      * @param  array $fields
-     *
+     * @return \Illuminate\Support\Collection|array[]
      */
-    public static function allWithFields(...$fields)
+    public static function indexWithFields(...$fields)
     {
-        // 获取字段值
-        $fieldClass = static::getFieldClass();
-        $fieldValues = [];
-        foreach ($fields as $fieldId) {
-            if ($field = $fieldClass::find($fieldId)) {
-                $fieldValues[$fieldId] = $field->getValueModel()->newQuery()->pluck($fieldId, 'entity_id')->all();
-            }
-        }
+        // 允许以数组形式指定参数
+        $fields = real_args($fields);
+
+        // 字段值
+        $fieldValues = static::getFieldValues($fields);
 
         // 获取所有消息数据，附带指定的字段值
         return static::all()->map(function (EntityBase $entity) use ($fieldValues) {
@@ -132,7 +127,32 @@ abstract class EntityBase extends ModelBase implements TranslatableInterface
                     $attributes[$field] = $values[$id] ?? null;
                 }
                 return $attributes;
-            })->keyBy('id')->all();
+            })->keyBy('id');
+    }
+
+    /**
+     * 获取指定字段的值
+     *
+     * @param  array $fields 指定的字段列表
+     * @return array
+     */
+    public static function getFieldValues(array $fields)
+    {
+        // 字段值
+        $fieldValues = [];
+
+        // 获取字段值
+        if ($fields) {
+            $fieldClass = static::getFieldClass();
+            foreach ($fieldClass::findMany($fields) as $field) {
+                $id = $field->getKey();
+                $valueModel = $field->getValueModel();
+                $column = $valueModel->getValueColumn();
+                $fieldValues[$id] = $valueModel->newQuery()->pluck($column, 'entity_id')->all();
+            }
+        }
+
+        return $fieldValues;
     }
 
     /**

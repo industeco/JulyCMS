@@ -21,11 +21,10 @@ class NodeController extends Controller
      */
     public function index()
     {
-        $keys = ['id','mold_id','is_red','is_green','is_blue','updated_at','created_at','title','url','suggested_views',];
         $data = [
-            'models' => Node::index($keys),
+            'models' => Node::indexWithFields(['title','url']),
             'context' => [
-                'node_types' => NodeType::query()->pluck('label', 'id')->all(),
+                'molds' => NodeType::query()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::query()->pluck('label', 'id')->all(),
                 'languages' => Lang::getTranslatableLangnames(),
                 // 'catalogs' => ['main' => '默认目录'],

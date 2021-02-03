@@ -2,6 +2,7 @@
   'scope',
   'model' => 'model',
   'mode' => 'creation',
+  'entity',
 ])
 
 <el-form ref="field_{{ $mode }}_form" :model="{{ $model }}" label-width="108px">
@@ -11,7 +12,7 @@
   <el-form-item label="字段类型" prop="field_type_id" size="small" class="has-helptext"
     :rules="[{ required:true, message:'『字段类型』不能为空', trigger:'submit' }]">
     <el-select v-model="{{ $model }}.field_type_id" placeholder="--选择字段类型--" @change="handleFieldTypeChange('{{ $scope }}', $event)">
-      @foreach (get_field_types() as $type)
+      @foreach (get_field_types($entity) as $type)
       <el-option label="{{ $type['label'] }}" value="{{ $type['id'] }}"></el-option>
       @endforeach
     </el-select>

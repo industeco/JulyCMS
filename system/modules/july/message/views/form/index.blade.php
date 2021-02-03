@@ -59,7 +59,7 @@
 
     data() {
       return {
-        models: @jjson(array_values($models), JSON_PRETTY_PRINT),
+        models: @jjson($models->values()->all(), JSON_PRETTY_PRINT),
         contextmenu: {
           target: null,
           editUrl: null,

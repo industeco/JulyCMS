@@ -41,10 +41,12 @@ class NodeTypeController extends Controller
     public function edit(NodeType $nodeType)
     {
         $data = $this->getCreationContext();
+        $data['model'] = $nodeType->gather();
         $data['context']['fields'] = collect($data['context']['fields'])
             ->merge(gather($nodeType->fields)->keyBy('id'))
             ->sortBy('delta')
             ->all();
+        $data['context']['mode'] = 'edit';
 
         return view('node::node_type.create-edit', $data);
     }
@@ -60,10 +62,12 @@ class NodeTypeController extends Controller
         return [
             'model' => NodeType::template(),
             'context' => [
+                'entity_name' => NodeType::getEntityClass()::getEntityName(),
                 'fields' => gather($fields->get('preseted'))->keyBy('id')->all(),
                 'optional_fields' => gather($fields->get('optional'))->keyBy('id')->all(),
                 'field_template' => NodeField::template(),
                 'content_langcode' => langcode('content'),
+                'mode' => 'create',
             ],
         ];
     }

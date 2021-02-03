@@ -16,6 +16,9 @@ class CreateMessagesTable extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
 
+            // 主题
+            $table->string('subject');
+
             // 消息类型（表单）
             $table->string('mold_id');
 

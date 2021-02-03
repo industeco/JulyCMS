@@ -3,11 +3,9 @@
 namespace July\Node\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use July\Node\Catalog;
 use July\Node\Node;
-use July\Node\NodeField;
 
 class CatalogController extends Controller
 {

@@ -4,7 +4,9 @@ namespace July\Message;
 
 use App\Casts\Serialized;
 use App\Entity\EntityBase;
+use Illuminate\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use IP2Location\Database as Location;
 
@@ -24,6 +26,7 @@ class Message extends EntityBase
      */
     protected $fillable = [
         'mold_id',
+        'subject',
         'langcode',
         'is_sent',
         'user_agent',
@@ -85,12 +88,10 @@ class Message extends EntityBase
     public function setTrailsAttribute($trails)
     {
         if (empty($trails)) {
-            $trails = [];
+            $this->attributes['trails'] = null;
         } else {
-            $trails = $this->formatTrailsReport($trails);
+            $this->attributes['trails'] = serialize($this->formatTrails($trails));
         }
-
-        $this->attributes['trails'] = serialize($trails);
     }
 
     /**
@@ -125,7 +126,10 @@ class Message extends EntityBase
      */
     public function sendMail()
     {
-        //
+        return Mail::raw($this->render(), function(MailMessage $message) {
+            $message->subject($this->subject ?? 'New Message')
+                ->to(config('mail.to.address'), config('mail.to.name'));
+        });
     }
 
     /**
@@ -152,7 +156,7 @@ class Message extends EntityBase
      * @param  string $report
      * @return array
      */
-    protected function formatTrailsReport(string $report)
+    protected function formatTrails(string $report)
     {
         $report = json_decode(stripslashes($report), true);
 
@@ -168,7 +172,7 @@ class Message extends EntityBase
     }
 
     /**
-     * location 属性的 Accessor
+     * 从 ip 获取位置信息
      *
      * @return array
      */

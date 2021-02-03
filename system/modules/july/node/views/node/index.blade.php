@@ -20,7 +20,7 @@
         <el-select v-model="filterBy" size="small" class="jc-filterby" @change="handleFilterByChange">
           <el-option label="-- 显示全部 --" value=""></el-option>
           <el-option label="按标题" value="title"></el-option>
-          <el-option label="按类型" value="node_type"></el-option>
+          <el-option label="按类型" value="mold"></el-option>
           <el-option label="按网址" value="url"></el-option>
           <el-option label="按颜色" value="color"></el-option>
           @if (config('lang.multiple'))
@@ -34,9 +34,9 @@
           native-size="20"
           placeholder="内容标题"
           @input="filterNodes"></el-input>
-        <el-select v-if="filterBy=='node_type'" v-model="filterValues.node_type" size="small" placeholder="选择内容类型" @change="filterNodes">
+        <el-select v-if="filterBy=='mold'" v-model="filterValues.mold" size="small" placeholder="选择内容类型" @change="filterNodes">
           <el-option
-            v-for="(label, id) in nodeTypes"
+            v-for="(label, id) in molds"
             :key="id"
             :label="label"
             :value="id">
@@ -65,7 +65,7 @@
       </div>
       <div class="jc-option">
         <label>显示『建议模板』：</label>
-        <el-switch v-model="showSuggestedViews"></el-switch>
+        <el-switch v-model="showSuggestedTemplates"></el-switch>
       </div>
       <div class="jc-option">
         <label for="nodes_view">呈现方式：</label>
@@ -101,14 +101,14 @@
             <el-switch style="margin-right: 1em" v-model="scope.row.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="建议模板" prop="suggested_views" width="auto" v-if="showSuggestedViews">
+        <el-table-column label="建议模板" prop="suggested_templates" width="auto" v-if="showSuggestedTemplates">
           <template slot-scope="scope">
-            <span class="jc-suggested-template" v-for="view in scope.row.suggested_views" :key="view">@{{ view }}</span>
+            <span class="jc-suggested-template" v-for="template in scope.row.suggested_templates" :key="template">@{{ template }}</span>
           </template>
         </el-table-column>
         <el-table-column label="类型" prop="mold_id" width="120" sortable>
           <template slot-scope="scope">
-            <span>@{{ nodeTypes[scope.row.mold_id] }}</span>
+            <span>@{{ molds[scope.row.mold_id] }}</span>
           </template>
         </el-table-column>
         </el-table-column>
@@ -156,10 +156,10 @@
 
     data() {
       return {
-        nodes: @jjson(array_values($models), JSON_PRETTY_PRINT),
-        nodeTypes: @jjson($context['node_types'], JSON_PRETTY_PRINT),
+        nodes: @jjson($models->values()->all(), JSON_PRETTY_PRINT),
+        molds: @jjson($context['molds'], JSON_PRETTY_PRINT),
         selected: [],
-        showSuggestedViews: false,
+        showSuggestedTemplates: false,
         contextmenu: {
           target: null,
           url: null,
@@ -170,7 +170,7 @@
         filterBy: '',
         filterValues: {
           title: null,
-          node_type: null,
+          mold: null,
           url: true,
           langcode: "{{ langcode('content') }}",
           color: '',
@@ -186,7 +186,7 @@
     },
 
     created() {
-      this.initialData = _.cloneDeep(this.nodes);
+      this.original_models = _.cloneDeep(this.nodes);
     },
 
     methods: {
@@ -255,7 +255,7 @@
           if (value) {
             this.filterValues[value] = null;
           }
-          this.$set(this.$data, 'nodes', clone(this.initialData));
+          this.$set(this.$data, 'nodes', _.cloneDeep(this.original_models));
         }
       },
 
@@ -265,8 +265,8 @@
           case 'title':
             nodes = this.filterByTitle(value);
           break;
-          case 'node_type':
-            nodes = this.filterByNodeType(value);
+          case 'mold':
+            nodes = this.filterByMold(value);
           break;
           case 'url':
             nodes = this.filterByUrl(value);
@@ -278,17 +278,17 @@
             nodes = this.filterByLangcode(value);
           break;
         }
-        this.$set(this.$data, 'nodes', nodes || clone(this.initialData));
+        this.$set(this.$data, 'nodes', nodes || _.cloneDeep(this.original_models));
       },
 
       filterByTitle(value) {
         if (!value || !value.trim()) {
-          return clone(this.initialData);
+          return _.cloneDeep(this.original_models);
         }
 
         const nodes = [];
         value = value.trim().toLowerCase();
-        this.initialData.forEach(node => {
+        this.original_models.forEach(node => {
           if (node.title.toLowerCase().indexOf(value) >= 0) {
             nodes.push(clone(node));
           }
@@ -297,13 +297,13 @@
         return nodes;
       },
 
-      filterByNodeType(value) {
+      filterByMold(value) {
         if (!value) {
-          return clone(this.initialData);
+          return _.cloneDeep(this.original_models);
         }
 
         const nodes = [];
-        this.initialData.forEach(node => {
+        this.original_models.forEach(node => {
           if (node.mold_id === value) {
             nodes.push(clone(node));
           }
@@ -314,7 +314,7 @@
 
       filterByUrl(value) {
         const nodes = [];
-        this.initialData.forEach(node => {
+        this.original_models.forEach(node => {
           if ((value && node.url) || (!value && !node.url)) {
             nodes.push(clone(node));
           }
@@ -325,7 +325,7 @@
 
       filterByColor(value) {
         const nodes = [];
-        this.initialData.forEach(node => {
+        this.original_models.forEach(node => {
           if (node[value]) {
             nodes.push(clone(node));
           }
@@ -336,11 +336,11 @@
 
       filterByLangcode(langcode) {
         if (!value) {
-          return clone(this.initialData);
+          return _.cloneDeep(this.original_models);
         }
 
         const nodes = [];
-        this.initialData.forEach(node => {
+        this.original_models.forEach(node => {
           if (node.langcode === langcode) {
             nodes.push(clone(node));
           }

@@ -22,7 +22,7 @@ class MessageController extends Controller
     public function index()
     {
         $data = [
-            'models' => Message::allWithFields('subject'),
+            'models' => Message::index(),
             'context' => [
                 'molds' => MessageForm::query()->pluck('label', 'id')->all(),
                 'languages' => Lang::getTranslatableLangnames(),
@@ -49,7 +49,6 @@ class MessageController extends Controller
 
         // 执行验证，如果未通过，则返回验证错误页
         if ($validator->fails()) {
-            // dd($validator->errors());
             return view('message::failed', [
                         'errors' => $validator->errors()->messages(),
                         'fields' => $fields,
@@ -62,7 +61,7 @@ class MessageController extends Controller
             'langcode' => langcode('request'),
             'ip' => $request->ip(),
             'user_agent' => $this->getUserAgent(),
-            'trails' => $attributes['trails'] ?? $attributes['track_report'] ?? $attributes['trace_report'] ?? '',
+            'trails' => $attributes['trails'] ?? $attributes['track_report'] ?? $attributes['trace_report'] ?? null,
             '_server' => $request->server(),
         ]);
 
