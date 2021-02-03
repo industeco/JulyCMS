@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use July\Message\MessageField;
 use July\Message\Seeds\MessageFieldSeeder;
 
 class CreateMessageFieldsTable extends Migration
@@ -75,6 +76,10 @@ class CreateMessageFieldsTable extends Migration
      */
     public function down()
     {
+        foreach (MessageField::all() as $field) {
+            $field->tableDown();
+        }
+
         Schema::dropIfExists('message_fields');
     }
 

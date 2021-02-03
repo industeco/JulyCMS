@@ -34,7 +34,7 @@ class NodeFieldSeeder extends SeederBase
             ],
             [
                 'id' => 'view',
-                'field_type_id' => 'view',
+                'field_type_id' => 'reserved.view',
                 'is_reserved' => true,
                 'is_global' => true,
                 'group_title' => '网址和模板',

@@ -11,7 +11,7 @@ class View extends FieldTypeBase
      *
      * @var string
      */
-    protected $id = 'view';
+    protected $id = 'reserved.view';
 
     /**
      * 字段类型标签
