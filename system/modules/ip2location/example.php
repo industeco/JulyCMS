@@ -1,6 +1,6 @@
 <?php
 
-require_once 'IP2Location.php';
+require_once 'Database.php';
 /*
    Cache whole database into system memory and share among other scripts & websites
    WARNING: Please make sure your system have sufficient RAM to enable this feature

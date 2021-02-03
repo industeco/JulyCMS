@@ -5,6 +5,7 @@ namespace App\EntityField\FieldTypes;
 use App\Contracts\ManagerInterface;
 use App\EntityField\Exceptions\FieldTypeNotFoundException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 final class FieldTypeManager implements ManagerInterface
 {
@@ -30,8 +31,7 @@ final class FieldTypeManager implements ManagerInterface
      */
     public static function register($classes)
     {
-        $classes = Arr::wrap($classes);
-        foreach ($classes as $class) {
+        foreach (Arr::wrap($classes) as $class) {
             if (class_exists($class)) {
                 static::$fieldTypes[$class::get('id')] = $class;
             }
@@ -50,7 +50,7 @@ final class FieldTypeManager implements ManagerInterface
     }
 
     /**
-     * 获取字段类型列表
+     * 获取字段类型注册表
      *
      * @return array
      */
@@ -62,12 +62,16 @@ final class FieldTypeManager implements ManagerInterface
     /**
      * 获取字段类型列表
      *
+     * @param  string $scope 类型的作用范围，通常是实体名
      * @return array
      */
-    public static function details()
+    public static function details(string $scope = 'default')
     {
         $types = [];
         foreach (static::$fieldTypes as $id => $class) {
+            if (strpos($id, '.') > 0 && !Str::startsWith($id, $scope.'.')) {
+                continue;
+            }
             $types[$id] = [
                 'id' => $id,
                 'label' => $class::get('label'),

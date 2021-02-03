@@ -5,6 +5,7 @@ namespace July\Message;
 use App\Casts\Serialized;
 use App\Entity\EntityBase;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use IP2Location\Database as Location;
 
 class Message extends EntityBase
@@ -104,11 +105,7 @@ class Message extends EntityBase
             return 'Location: -/-/-';
         }
 
-        $location = (new Location)->lookup($ip);
-        return 'Location: '.
-            ($location['countryName'] ?? '-').'/'.
-            ($location['regionName'] ?? '-').'/'.
-            ($location['cityName'] ?? '-');
+        return 'Location: '.join('/', static::getLocation($ip));
     }
 
     /**
@@ -168,5 +165,20 @@ class Message extends EntityBase
         $trails[] = '[-] '.$report['refer'];
 
         return $trails;
+    }
+
+    /**
+     * location 属性的 Accessor
+     *
+     * @return array
+     */
+    public static function getLocation(string $ip)
+    {
+        $record = (new Location)->lookup($ip, Location::ALL);
+        $location = [];
+        foreach (['countryName', 'regionName', 'cityName'] as $name) {
+            $location[$name] = $record[$name] ?? '-';
+        }
+        return $location;
     }
 }
