@@ -9,15 +9,15 @@
         <label>筛选：</label>
         <el-select v-model="filterBy" size="small" class="jc-filterby" @change="handleFilterByChange">
           <el-option label="-- 显示全部 --" value=""></el-option>
-          <el-option label="按主题" value="title"></el-option>
+          <el-option label="按主题" value="subject"></el-option>
           <el-option label="按类型" value="mold"></el-option>
           @if (config('lang.multiple'))
           <el-option label="按语言" value="langcode"></el-option>
           @endif
         </el-select>
         <el-input
-          v-if="filterBy=='title'"
-          v-model="filterValues.title"
+          v-if="filterBy=='subject'"
+          v-model="filterValues.subject"
           size="small"
           native-size="20"
           placeholder="消息主题"
@@ -103,7 +103,7 @@
 
         filterBy: '',
         filterValues: {
-          title: null,
+          subject: null,
           mold: null,
           langcode: "{{ $context['langcode'] }}",
         },
@@ -181,8 +181,8 @@
       filterModels(value) {
         let models = null;
         switch (this.filterBy) {
-          case 'title':
-            models = this.filterByTitle(value);
+          case 'subject':
+            models = this.filterBySubject(value);
           break;
           case 'mold':
             models = this.filterByMold(value);
@@ -194,7 +194,7 @@
         this.$set(this.$data, 'models', models || this.original_models.slice());
       },
 
-      filterByTitle(value) {
+      filterBySubject(value) {
         if (!value || !value.trim()) {
           return this.original_models.slice();
         }
@@ -202,8 +202,8 @@
         const models = [];
         value = value.trim().toLowerCase();
         this.original_models.forEach(model => {
-          if (model.title.toLowerCase().indexOf(value) >= 0) {
-            models.push(_.cloneDeep(model));
+          if (model.subject.toLowerCase().indexOf(value) >= 0) {
+            models.push(model);
           }
         });
 
@@ -218,7 +218,7 @@
         const models = [];
         this.original_models.forEach(model => {
           if (model.mold_id === value) {
-            models.push(_.cloneDeep(model));
+            models.push(model);
           }
         });
 
@@ -233,7 +233,7 @@
         const models = [];
         this.original_models.forEach(model => {
           if (model.langcode === langcode) {
-            models.push(_.cloneDeep(model));
+            models.push(model);
           }
         });
 
