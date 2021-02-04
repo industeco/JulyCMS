@@ -27,7 +27,8 @@ class NodeFieldNodeTypeSeeder extends SeederBase
         }, true);
 
         // 全部预设字段
-        $reserved = ['title'];
+        // $reserved = ['title'];
+        $reserved = [];
 
         // 全局字段
         $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];

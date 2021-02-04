@@ -3,9 +3,6 @@
 namespace July\Node;
 
 use App\Entity\TranslatableEntityBase;
-use App\Utils\Arr;
-use App\Utils\Html;
-use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Node\CatalogSet;
@@ -29,10 +26,25 @@ class Node extends TranslatableEntityBase
      */
     protected $fillable = [
         'mold_id',
-        'langcode',
+        'title',
         'is_red',
         'is_green',
         'is_blue',
+        'langcode',
+        'created_at',
+        'updated_at',
+    ];
+
+    /**
+     * 哪些字段不可更新（黑名单）
+     *
+     * @var array
+     */
+    protected $updateExcept = [
+        'mold_id',
+        'langcode',
+        'created_at',
+        'updated_at',
     ];
 
     /**

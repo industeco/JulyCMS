@@ -22,9 +22,6 @@ class CreateMessagesTable extends Migration
             // 消息类型（表单）
             $table->string('mold_id');
 
-            // 源语言
-            $table->string('langcode', 12);
-
             // 是否已发送
             $table->boolean('is_sent')->default(false);
 
@@ -39,6 +36,9 @@ class CreateMessagesTable extends Migration
 
             // 序列化的 $_SERVER 数组
             $table->binary('_server');
+
+            // 源语言
+            $table->string('langcode', 12);
 
             $table->timestamps();
         });

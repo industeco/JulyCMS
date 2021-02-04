@@ -23,7 +23,7 @@ class NodeController extends Controller
     public function index()
     {
         $data = [
-            'models' => Node::indexWithFields(['title','url']),
+            'models' => Node::indexWithFields(['url']),
             'context' => [
                 'molds' => NodeType::query()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::query()->pluck('label', 'id')->all(),

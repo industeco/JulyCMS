@@ -10,9 +10,14 @@
     :rules="rules"
     label-position="top">
     <div id="main_form_left">
-      @foreach ($context['local_fields'] as $field)
-      {!! $field->render($model[$field['id']] ?? null) !!}
-      @endforeach
+      <el-form-item prop="title" size="small" class="has-helptext"
+      :rules="[{required:true, message:'标题不能为空', trigger:'blur'}]">
+      <el-tooltip slot="label" content="title" placement="right" effect="dark" popper-class="jc-twig-output">
+        <span>标题</span>
+      </el-tooltip>
+      <el-input v-model="model.title" native-size="100"></el-input>
+      <span class="jc-form-item-help"><i class="el-icon-info"></i> 标题，可用作链接文字等。</span>
+      </el-form-item>
       <el-form-item size="small" label="红绿蓝">
         <el-tooltip popper-class="jc-twig-output" effect="dark" content="is_red" placement="top">
           <el-switch style="margin-right: 1em" v-model="model.is_red" active-color="#F44336" inactive-color="#FFCDD2"></el-switch>
@@ -24,6 +29,9 @@
           <el-switch style="margin-right: 1em" v-model="model.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
         </el-tooltip>
       </el-form-item>
+      @foreach ($context['local_fields'] as $field)
+      {!! $field->render($model[$field['id']] ?? null) !!}
+      @endforeach
       <div id="main_form_bottom" class="is-button-item">
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="submit">
           <div class="md-button-content">保存</div>
@@ -87,9 +95,9 @@
     app.recieveMediaUrl(url)
   }
 
-  function recieveFieldValue(id) {
-    return document.getElementById('field__'+id).innerHTML;
-  }
+  // function recieveFieldValue(id) {
+  //   return document.getElementById('field__'+id).innerHTML;
+  // }
 
   let app = new Vue({
     el: '#main_content',
@@ -123,18 +131,18 @@
     },
 
     created: function() {
-      this.initial_model = _.cloneDeep(this.model);
+      this.original_model = _.cloneDeep(this.model);
     },
 
     methods: {
-      handleCollapseChange(activeNames) {
-        // this.$set(this.$data, 'expanded', activeNames);
-      },
+      // handleCollapseChange(activeNames) {
+      //   this.$set(this.$data, 'expanded', activeNames);
+      // },
 
       getChanged() {
         const changed = [];
         for (const key in this.model) {
-          if (! _.isEqual(this.model[key], this.initial_model[key])) {
+          if (! _.isEqual(this.model[key], this.original_model[key])) {
             changed.push(key);
           }
         }

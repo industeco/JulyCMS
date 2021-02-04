@@ -12,19 +12,19 @@ abstract class ModelBase extends Model
 {
     use CacheResultTrait;
 
-    // /**
-    //  * 哪些字段可更新（白名单）
-    //  *
-    //  * @var array
-    //  */
-    // protected $updateOnly = [];
+    /**
+     * 哪些字段可更新（白名单）
+     *
+     * @var array
+     */
+    protected $updateOnly = [];
 
-    // /**
-    //  * 哪些字段不可更新（黑名单）
-    //  *
-    //  * @var array
-    //  */
-    // protected $updateExcept = [];
+    /**
+     * 哪些字段不可更新（黑名单）
+     *
+     * @var array
+     */
+    protected $updateExcept = [];
 
     /**
      * 新建或更新时传入的原始数据
@@ -102,27 +102,27 @@ abstract class ModelBase extends Model
         return parent::fill($attributes);
     }
 
-    // /**
-    //  * Update the model in the database.
-    //  *
-    //  * @param  array  $attributes
-    //  * @param  array  $options
-    //  * @return bool
-    //  */
-    // public function update(array $attributes = [], array $options = [])
-    // {
-    //     if (! $this->exists) {
-    //         return false;
-    //     }
+    /**
+     * Update the model in the database.
+     *
+     * @param  array  $attributes
+     * @param  array  $options
+     * @return bool
+     */
+    public function update(array $attributes = [], array $options = [])
+    {
+        if (! $this->exists) {
+            return false;
+        }
 
-    //     if ($this->updateOnly) {
-    //         $attributes = Arr::only($attributes, $this->updateOnly);
-    //     } elseif ($this->updateExcept) {
-    //         $attributes = Arr::except($attributes, $this->updateExcept);
-    //     }
+        if ($this->updateOnly) {
+            $attributes = Arr::only($attributes, $this->updateOnly);
+        } elseif ($this->updateExcept) {
+            $attributes = Arr::except($attributes, $this->updateExcept);
+        }
 
-    //     return $this->fill($attributes)->save($options);
-    // }
+        return $this->fill($attributes)->save($options);
+    }
 
     /**
      * 转换属性值
