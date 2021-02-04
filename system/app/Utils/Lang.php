@@ -87,6 +87,9 @@ class Lang
             // 原始的请求语言
             case 'request.original':
                 return config('lang.request');
+
+            case 'rendering':
+                return config('rendering_langcode');
         }
 
         return null;

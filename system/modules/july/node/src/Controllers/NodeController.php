@@ -10,6 +10,7 @@ use July\Node\Catalog;
 use July\Node\Node;
 use July\Node\NodeType;
 use July\Node\NodeField;
+use July\Node\TwigExtensions\NodeQueryExtension;
 use July\Taxonomy\Tag;
 
 class NodeController extends Controller
@@ -203,7 +204,7 @@ class NodeController extends Controller
     public function render(Request $request)
     {
         // $contents = Node::carryAll();
-        if ($ids = $request->input('selected_nodes')) {
+        if ($ids = $request->input('nodes')) {
             $nodes = Node::find($ids);
         } else {
             $nodes = Node::all();
@@ -216,15 +217,20 @@ class NodeController extends Controller
             $langs = [langcode('frontend')];
         }
 
+        /** @var \Twig\Environment */
+        $twig = app('twig');
+        $twig->addExtension(new NodeQueryExtension);
+
         $success = [];
         foreach ($nodes as $node) {
             $result = [];
             foreach ($langs as $langcode) {
                 try {
-                    $node->translateTo($langcode)->render();
+                    $node->translateTo($langcode)->render($twig);
                     $result[$langcode] = true;
                 } catch (\Throwable $th) {
                     $result[$langcode] = false;
+                    Log::error($th->getMessage());
                 }
             }
             $success[$node->id] = $result;

@@ -32,16 +32,6 @@ abstract class FieldValueBase extends ModelBase
     // protected $guarded = [];
 
     /**
-     * 判断是否动态模型
-     *
-     * @return bool
-     */
-    public static function isDynamic()
-    {
-        return false;
-    }
-
-    /**
      * 获取值列名
      *
      * @return string
@@ -59,6 +49,16 @@ abstract class FieldValueBase extends ModelBase
     public function setValueColumn($column)
     {
         $this->value_column = $column;
+    }
+
+    /**
+     * 判断是否动态模型
+     *
+     * @return bool
+     */
+    public static function isDynamic()
+    {
+        return false;
     }
 
     /**
@@ -219,6 +219,27 @@ abstract class FieldValueBase extends ModelBase
         }
 
         return $results;
+    }
+
+    /**
+     * 获取所有字段值
+     *
+     * @return array
+     */
+    public function values()
+    {
+        $conditions = [
+            'langcode' => $this->field->getLangcode(),
+        ];
+        if (in_array('entity_name', $this->fillable)) {
+            $conditions['entity_name'] = $this->field->getBoundEntityName();
+        }
+
+        return $this->newQuery()
+            ->where($conditions)
+            ->get(['entity_id', $this->value_column])
+            ->pluck($this->value_column, 'entity_id')
+            ->all();
     }
 
     /**

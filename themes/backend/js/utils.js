@@ -117,12 +117,17 @@ function unique(action) {
   };
 }
 
-// 检查 url 是否已存在
-function uniqueUrl(action) {
+// 检查是否已存在
+function exists(action, except) {
   return function(rule, value, callback) {
-    axios.post(action, {url: value}).then(function(response) {
+    console.log(except)
+    console.log(value)
+    if (!value || value == except) {
+      return callback();
+    }
+    axios.post(action, {value:value}).then(function(response) {
       if (response.data.exists) {
-        callback(new Error('URL 已存在'));
+        callback(new Error('已存在'));
       } else {
         callback();
       }

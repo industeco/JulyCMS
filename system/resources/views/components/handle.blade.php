@@ -3,8 +3,8 @@
   'label' => 'ID',
   'size' => 60,
   'readOnly' => false,
+  'autoReadOnly' => null,
   'helpertext' => '只能使用小写字母、数字和下划线，且不能以数字开头',
-  'readOnlyHelper' => '不可修改',
   'model' => 'model',
   'uniqueAction',
 ])
@@ -21,8 +21,12 @@
     v-model="{{ $model }}.{{ $name }}"
     name="{{ $name }}"
     native-size="{{ $size }}"
-    {{ $readOnly ? 'disabled' : '' }}></el-input>
+    @if ($autoReadOnly)
+    :disabled="{{ $autoReadOnly }}"
+    @else
+    {{ $readOnly ? 'disabled' : '' }}
+    @endif></el-input>
   <span class="jc-form-item-help">
-    <i class="el-icon-info"></i> {{ $readOnly ? $readOnlyHelper : $helpertext }}
+    <i class="el-icon-info"></i> {{ $helpertext }}
   </span>
 </el-form-item>

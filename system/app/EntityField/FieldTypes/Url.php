@@ -28,7 +28,7 @@ class Url extends FieldTypeBase
     /**
      * {@inheritdoc}
      */
-    public function getRules()
+    public function getRules($value = null)
     {
         $rules = parent::getRules();
         $rules[] = "{type:'url', message:'网址格式不正确', trigger:'blur'}";

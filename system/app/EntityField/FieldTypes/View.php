@@ -23,9 +23,16 @@ class View extends FieldTypeBase
     /**
      * 字段类型描述
      *
-     * @var string|null
+     * @var string
      */
     protected $description = '视图（模板）文件名';
+
+    /**
+     * 视图
+     *
+     * @var string
+     */
+    protected $view = 'field_type.view';
 
     /**
      * 字段值模型类
@@ -50,6 +57,6 @@ class View extends FieldTypeBase
         $views = EntityView::query()->where('langcode', $this->field->getLangcode())->pluck('view');
         $data['views'] = array_values($views->sort()->unique()->all());
 
-        return view('field_type.'.$this->id, $data)->render();
+        return view($this->getView(), $data)->render();
     }
 }

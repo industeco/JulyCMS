@@ -3,11 +3,13 @@
 namespace July\Node;
 
 use App\Entity\TranslatableEntityBase;
+use App\Utils\Arr;
 use App\Utils\Html;
 use App\Utils\Pocket;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Node\CatalogSet;
+use July\Node\TwigExtensions\NodeQueryExtension;
 use July\Taxonomy\Term;
 use July\Taxonomy\TermSet;
 
@@ -83,30 +85,6 @@ class Node extends TranslatableEntityBase
     {
         return NodeFieldNodeType::class;
     }
-
-    // /**
-    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    //  */
-    // public function catalogs()
-    // {
-    //     return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog_id')
-    //                 ->withPivot([
-    //                     'parent_id',
-    //                     'prev_id',
-    //                     'path',
-    //                 ]);
-    // }
-
-    // /**
-    //  * 关联标签
-    //  *
-    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    //  */
-    // public function tags()
-    // {
-    //     return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
-    //         ->wherePivot('langcode', $this->getLangcode());
-    // }
 
     /**
      * 组合属性：is_black
@@ -194,23 +172,6 @@ class Node extends TranslatableEntityBase
         return array_merge($localized, $templates);
     }
 
-    // /**
-    //  * {@inheritdoc}
-    //  */
-    // public function collectFields()
-    // {
-    //     $fields = NodeField::groupbyPresetType()->get('preseted');
-    //     if ($this->exists) {
-    //         $fields = $fields->merge($this->fields->keyBy('id'));
-    //     } elseif ($mold = $this->getMold()) {
-    //         $fields = $fields->merge($mold->fields->keyBy('id'));
-    //     }
-
-    //     return $fields->map(function(FieldBase $field) {
-    //             return $field->bindEntity($this);
-    //         })->sortBy('delta');
-    // }
-
     /**
      * @return array
      */
@@ -226,21 +187,22 @@ class Node extends TranslatableEntityBase
     {
         parent::boot();
 
-        static::deleting(function(Node $node) {
-            Pocket::make($node)->clear('html');
-        });
+        // static::deleting(function(Node $node) {
+        //     $node->pocketClear('html');
+        // });
 
-        static::updated(function(Node $node) {
-            Pocket::make($node)->clear('html');
-        });
+        // static::updated(function(Node $node) {
+        //     $node->pocketClear('html');
+        // });
     }
 
     /**
      * Get content as a string of HTML.
      *
+     * @param  \Twig\Environment|null $twig
      * @return string
      */
-    public function render()
+    public function render($twig = null)
     {
         $view = $this->getPreferredTemplate();
         if (! $view) {
@@ -250,20 +212,31 @@ class Node extends TranslatableEntityBase
         $data = $this->gather();
 
         /** @var \Twig\Environment */
-        $twig = app('twig');
+        if (! $twig) {
+            $twig = app('twig');
+            $twig->addExtension(new NodeQueryExtension);
+        }
 
         $twig->addGlobal('_node', $this);
         $twig->addGlobal('_path', $this->get_path());
-        $twig->addGlobal('_canonical', $this->getCanonical($data['url'] ?? '/'.$this->getEntityPath()));
 
-        config()->set('render_langcode', $this->getLangcode());
+        $url = $data['url'] ?? '/'.$this->getEntityPath();
+        $twig->addGlobal('_canonical', $this->getCanonical($url));
+
+        config()->set('rendering_langcode', $this->getLangcode());
 
         // 生成 html
         $html = $twig->render($view, $data);
 
-        config()->set('render_langcode', null);
+        config()->set('rendering_langcode', null);
 
-        return preg_replace('/\n\s+/', "\n", $html);
+        $html = preg_replace('/\n\s+/', "\n", $html);
+
+        if (preg_match('/\.html?$/i', $url)) {
+            Storage::disk('public')->put($url, $html);
+        }
+
+        return $html;
     }
 
     /**
@@ -274,7 +247,7 @@ class Node extends TranslatableEntityBase
     public function getPreferredTemplate()
     {
         $langcode = $this->getLangcode();
-        foreach ($this->getSuggestedTemplates() as $view) {
+        foreach ($this->getSuggestedTemplates($this->view, $this->url) as $view) {
             $view = str_replace('{langcode}', $langcode, $view);
             if (is_file(frontend_path('template/'.$view))) {
                 return $view;
@@ -302,61 +275,6 @@ class Node extends TranslatableEntityBase
     }
 
     /**
-     * 查找坏掉的链接
-     *
-     * @return array
-     */
-    public function findInvalidLinks()
-    {
-        $langcode = $this->getLangcode();
-
-        $pocket = new Pocket($this, 'html');
-        $html = $pocket->get() ?? $this->render();
-        if (! $html) {
-            return [];
-        }
-        $html = new Html($html);
-
-        $links = [];
-        $nodeInfo = [
-            'node_id' => $this->id,
-            'node_title' => $this->title,
-            'url' => $this->url,
-            'langcode' => $langcode,
-        ];
-
-        $disk = Storage::disk('public');
-
-        // images
-        foreach ($html->extractImageLinks() as $link) {
-            if (! $disk->exists($link)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
-            }
-        }
-
-        // PDFs
-        foreach ($html->extractPdfLinks() as $link) {
-            if (! $disk->exists($link)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
-            }
-        }
-
-        // hrefs
-        $disk = Storage::disk('storage');
-        foreach ($html->extractPageLinks() as $link) {
-            $url = $link;
-            if (substr($url, -5) !== '.html') {
-                $url = rtrim($url, '/').'/index.html';
-            }
-            if (!$disk->exists('pages'.$url) && !$disk->exists('pages/'.$langcode.$url)) {
-                $links[] = array_merge($nodeInfo, ['link' => $link]);
-            }
-        }
-
-        return $links;
-    }
-
-    /**
      * 在指定的目录中，获取当前节点集的直接子节点
      *
      * @param mixed $catalog
@@ -364,7 +282,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_children($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_children($this->id);
+        return CatalogSet::fetch($catalog)->get_children($this->id);
     }
 
     public function get_under($catalog = null)
@@ -380,7 +298,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_descendants($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_descendants($this->id);
+        return CatalogSet::fetch($catalog)->get_descendants($this->id);
     }
 
     public function get_below($catalog = null)
@@ -396,7 +314,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_parent($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_parent($this->id);
+        return CatalogSet::fetch($catalog)->get_parent($this->id);
     }
 
     public function get_over($catalog = null)
@@ -412,7 +330,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_ancestors($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_ancestors($this->id);
+        return CatalogSet::fetch($catalog)->get_ancestors($this->id);
     }
 
     public function get_above($catalog = null)
@@ -428,7 +346,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_siblings($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_siblings($this->id);
+        return CatalogSet::fetch($catalog)->get_siblings($this->id);
     }
 
     public function get_around($catalog = null)
@@ -444,7 +362,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_prev($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_prev($this->id);
+        return CatalogSet::fetch($catalog)->get_prev($this->id);
     }
 
     /**
@@ -455,7 +373,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_next($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_next($this->id);
+        return CatalogSet::fetch($catalog)->get_next($this->id);
     }
 
     /**
@@ -466,7 +384,7 @@ class Node extends TranslatableEntityBase
      */
     public function get_path($catalog = null)
     {
-        return CatalogSet::find($catalog)->get_path($this->id);
+        return CatalogSet::fetch($catalog)->get_path($this->id);
     }
 
     /**
@@ -490,6 +408,53 @@ class Node extends TranslatableEntityBase
         return CatalogSet::make($catalogs);
     }
 
+    public function get_url()
+    {
+        return rtrim(config('app.url'), '/').$this->url;
+    }
+
+
+    // /**
+    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    //  */
+    // public function catalogs()
+    // {
+    //     return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog_id')
+    //                 ->withPivot([
+    //                     'parent_id',
+    //                     'prev_id',
+    //                     'path',
+    //                 ]);
+    // }
+
+    // /**
+    //  * 关联标签
+    //  *
+    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    //  */
+    // public function tags()
+    // {
+    //     return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
+    //         ->wherePivot('langcode', $this->getLangcode());
+    // }
+
+    // /**
+    //  * {@inheritdoc}
+    //  */
+    // public function collectFields()
+    // {
+    //     $fields = NodeField::groupbyPresetType()->get('preseted');
+    //     if ($this->exists) {
+    //         $fields = $fields->merge($this->fields->keyBy('id'));
+    //     } elseif ($mold = $this->getMold()) {
+    //         $fields = $fields->merge($mold->fields->keyBy('id'));
+    //     }
+
+    //     return $fields->map(function(FieldBase $field) {
+    //             return $field->bindEntity($this);
+    //         })->sortBy('delta');
+    // }
+
     // /**
     //  * 获取内容标签
     //  *
@@ -502,8 +467,58 @@ class Node extends TranslatableEntityBase
     //     return TermSet::make($tags);
     // }
 
-    public function get_url()
-    {
-        return rtrim(config('app.url'), '/').$this->url;
-    }
+    // /**
+    //  * 查找坏掉的链接
+    //  *
+    //  * @return array
+    //  */
+    // public function findInvalidLinks()
+    // {
+    //     $langcode = $this->getLangcode();
+
+    //     $pocket = new Pocket($this, 'html');
+    //     $html = $pocket->get() ?? $this->render();
+    //     if (! $html) {
+    //         return [];
+    //     }
+    //     $html = new Html($html);
+
+    //     $links = [];
+    //     $nodeInfo = [
+    //         'node_id' => $this->id,
+    //         'node_title' => $this->title,
+    //         'url' => $this->url,
+    //         'langcode' => $langcode,
+    //     ];
+
+    //     $disk = Storage::disk('public');
+
+    //     // images
+    //     foreach ($html->extractImageLinks() as $link) {
+    //         if (! $disk->exists($link)) {
+    //             $links[] = array_merge($nodeInfo, ['link' => $link]);
+    //         }
+    //     }
+
+    //     // PDFs
+    //     foreach ($html->extractPdfLinks() as $link) {
+    //         if (! $disk->exists($link)) {
+    //             $links[] = array_merge($nodeInfo, ['link' => $link]);
+    //         }
+    //     }
+
+    //     // hrefs
+    //     $disk = Storage::disk('storage');
+    //     foreach ($html->extractPageLinks() as $link) {
+    //         $url = $link;
+    //         if (substr($url, -5) !== '.html') {
+    //             $url = rtrim($url, '/').'/index.html';
+    //         }
+    //         if (!$disk->exists('pages'.$url) && !$disk->exists('pages/'.$langcode.$url)) {
+    //             $links[] = array_merge($nodeInfo, ['link' => $link]);
+    //         }
+    //     }
+
+    //     return $links;
+    // }
 }

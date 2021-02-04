@@ -2,12 +2,9 @@
 
 namespace Specs\FieldTypeDefinitions;
 
-use App\Concerns\HasAttributesTrait;
-use App\Utils\Types;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use July\Core\EntityField\EntityFieldBase;
 
 /**
  * 模型字段类型定义类，简称定义类

@@ -35,10 +35,13 @@ class PathAlias extends FieldTypeBase
     /**
      * {@inheritdoc}
      */
-    public function getRules()
+    public function getRules($value = null)
     {
         $rules = parent::getRules();
         $rules[] = "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/, message:'格式不正确', trigger:'blur'}";
+
+        $exists = short_url('path_alias.exists');
+        $rules[] = "{validator:exists('{$exists}', '{$value}'), trigger:'blur'}";
 
         return $rules;
     }

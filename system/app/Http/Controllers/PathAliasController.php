@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\PathAlias;
+use App\EntityField\EntityPathAlias;
 
 class PathAliasController extends Controller
 {
@@ -33,10 +33,10 @@ class PathAliasController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\PathAlias  $url
+     * @param  \App\EntityField\EntityPathAlias  $url
      * @return \Illuminate\Http\Response
      */
-    public function show(PathAlias $url)
+    public function show(EntityPathAlias $url)
     {
         //
     }
@@ -66,10 +66,10 @@ class PathAliasController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\PathAlias  $url
+     * @param  \App\EntityField\EntityPathAlias  $url
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PathAlias $url)
+    public function destroy(EntityPathAlias $url)
     {
         //
     }
@@ -82,10 +82,8 @@ class PathAliasController extends Controller
      */
     public function exists(Request $request)
     {
-        $item = PathAlias::query()->where('alias',$request->input('url'))->first();
-        $path = $item ? $item->path : '';
         return response([
-            'exists' => $path && $path !== $request->input('path'),
+            'exists' => !is_null(EntityPathAlias::ofAlias($request->input('value'))->first()),
         ]);
     }
 }

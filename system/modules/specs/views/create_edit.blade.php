@@ -149,61 +149,6 @@
           show-word-limit></el-input>
         <span class="jc-form-item-help"><i class="el-icon-info"></i> 默认值</span>
       </el-form-item>
-      {{--
-      <el-form-item label="预设值" size="small" class="has-helptext">
-        <div class="jc-table-wrapper">
-          <table class="jc-table jc-dense is-editable with-operators with-line-number">
-            <colgroup>
-              <col width="80px">
-              <col width="auto">
-              <col width="120px">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>行号</th>
-                <th><label>预设值</label></th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody
-              is="draggable"
-              v-model="currentField.options"
-              :animation="150"
-              ghost-class="jc-drag-ghost"
-              handle=".jc-drag-handle"
-              tag="tbody">
-              <tr v-for="(item, index) in currentField.options" :key="index">
-                <th class="jc-drag-handle">@{{index+1}}</th>
-                <td scope="row">
-                  <input type="text" class="jc-input-intable" v-model="item.value">
-                </td>
-                <td>
-                  <div class="jc-operators">
-                    <button
-                      type="button"
-                      class="md-button md-icon-button md-primary md-theme-default"
-                      @click.stop="addOption(index)">
-                      <i class="md-icon md-icon-font md-theme-default">add_circle</i>
-                    </button>
-                    <button
-                      type="button"
-                      class="md-button md-icon-button md-accent md-theme-default"
-                      :disabled="currentField.parameters.options.length < 2"
-                      @click.stop="removeOption(index)">
-                      <i class="md-icon md-icon-font md-theme-default">remove_circle</i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <span class="jc-form-item-help"><i class="el-icon-info"></i> 预设值列表</span>
-      </el-form-item>
-      <el-form-item label="数值唯一" size="small">
-        <el-switch v-model="currentField.is_unique" :disabled="!isEditable"></el-switch>
-      </el-form-item>
-      --}}
       <el-form-item label="可分组" size="small">
         <el-switch v-model="currentField.is_groupable"></el-switch>
       </el-form-item>
@@ -228,11 +173,11 @@
     el: '#main_content',
     data() {
       return {
-        spec: @json($spec, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        fields: @json($fields, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
-        fieldTypes: @json($fieldTypes, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        spec: @jjson($spec),
+        fields: @jjson($fields),
+        fieldTypes: @jjson($fieldTypes),
 
-        currentField: @json($emptyField, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        currentField: @jjson($emptyField),
 
         specRules: {
           @if (!$spec['id'])
@@ -350,7 +295,7 @@
       },
 
       createField() {
-        Vue.set(this.$data, 'currentField', @json($emptyField, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+        Vue.set(this.$data, 'currentField', @jjson($emptyField));
         this.currentField.old_field_id = null;
 
         this.fieldEditing = false;
@@ -373,16 +318,6 @@
             }
           }
         });
-      },
-
-      addOption(index) {
-        this.currentField.options.splice(index + 1, 0, {value:''});
-      },
-
-      removeOption(index) {
-        if (this.currentField.options.length > 1) {
-          this.currentField.options.splice(index, 1);
-        }
       },
 
       submitMainForm() {

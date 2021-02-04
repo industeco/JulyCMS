@@ -53,18 +53,19 @@ class EntityPathAlias extends FieldValueBase
      */
     public function scopeOfAlias($query, $alias)
     {
-        $alias = trim(str_replace('\\', '/', $alias), "/ \t\n\r\0\x0B");
+        $alias = '/'.trim(trim(str_replace('\\', '/', $alias)), '/');
         $condition = [
-            ['alias', '=', '/'.$alias, 'or'],
+            ['alias', '=', $alias, 'or'],
+            ['entity_path', '=', trim($alias, '/'), 'or'],
         ];
 
-        if (! preg_match('/\.(html?|php)$/i', $alias)) {
-            $condition[] = ['alias', '=', ($alias ? '/'.$alias : '').'/index.html', 'or'];
-        }
+        // if (! preg_match('/\.(html?|php)$/i', $alias)) {
+        //     $condition[] = ['alias', '=', ($alias ? '/'.$alias : '').'/index.html', 'or'];
+        // }
 
-        if (config('app.entity_path_accessible')) {
-            $condition[] = ['path', '=', $alias, 'or'];
-        }
+        // if (config('app.entity_path_accessible')) {
+        //     $condition[] = ['path', '=', $alias, 'or'];
+        // }
 
         return $query->where($condition);
     }

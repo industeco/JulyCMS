@@ -3,11 +3,20 @@
 namespace July\Node;
 
 use Illuminate\Support\Facades\DB;
-use App\Entity\EntitySetBase;
+use App\Models\ModelSetBase;
+use App\Utils\Arr;
 
-class NodeSet extends EntitySetBase
+class NodeSet extends ModelSetBase
 {
-    protected static $entity = Node::class;
+    /**
+     * 获取绑定的模型
+     *
+     * @return string
+     */
+    public static function getModelClass()
+    {
+        return Node::class;
+    }
 
     // protected static function collectMany(array $args)
     // {
@@ -41,13 +50,13 @@ class NodeSet extends EntitySetBase
     /**
      * 在指定的树中，获取当前节点集的直接子节点
      *
-     * @param mixed $catalog
+     * @param  mixed $catalog
      * @return \July\Node\NodeSet
      */
     public function get_children($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        return CatalogSet::find($catalog)->get_children(...$ids);
+        return CatalogSet::fetch($catalog)->get_children(...$ids);
     }
 
     public function get_under($catalog = null)
@@ -64,7 +73,7 @@ class NodeSet extends EntitySetBase
     public function get_descendants($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        return CatalogSet::find($catalog)->get_descendants(...$ids);
+        return CatalogSet::fetch($catalog)->get_descendants(...$ids);
     }
 
     public function get_below($catalog = null)
@@ -81,7 +90,7 @@ class NodeSet extends EntitySetBase
     public function get_parent($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        return CatalogSet::find($catalog)->get_parent(...$ids);
+        return CatalogSet::fetch($catalog)->get_parent(...$ids);
     }
 
     public function get_over($catalog = null)
@@ -98,7 +107,7 @@ class NodeSet extends EntitySetBase
     public function get_ancestors($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        return CatalogSet::find($catalog)->get_ancestors(...$ids);
+        return CatalogSet::fetch($catalog)->get_ancestors(...$ids);
     }
 
     public function get_above($catalog = null)
@@ -115,7 +124,7 @@ class NodeSet extends EntitySetBase
     public function get_siblings($catalog = null)
     {
         $ids = $this->pluck('id')->all();
-        return CatalogSet::find($catalog)->get_siblings(...$ids);
+        return CatalogSet::fetch($catalog)->get_siblings(...$ids);
     }
 
     public function get_around($catalog = null)
@@ -123,17 +132,17 @@ class NodeSet extends EntitySetBase
         return $this->get_siblings($catalog);
     }
 
-    public function get_types()
+    public function get_molds()
     {
-        $types = $this->pluck('node_type_id')->unique()->all();
-        return NodeTypeSet::find($types);
+        $molds = $this->pluck('mold_id')->unique()->all();
+        return NodeTypeSet::fetch($molds);
     }
 
-    public function get_catalog()
-    {
-        $types = $this->pluck('content_type')->unique()->all();
-        return NodeTypeSet::find($types);
-    }
+    // public function get_catalog()
+    // {
+    //     $types = $this->pluck('content_type')->unique()->all();
+    //     return NodeTypeSet::find($types);
+    // }
 
     // public function get_tags()
     // {

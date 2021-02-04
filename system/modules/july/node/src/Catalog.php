@@ -9,6 +9,13 @@ use App\Utils\Tree;
 class Catalog extends ModelBase implements GetNodesInterface
 {
     /**
+     * 缓存的默认目录
+     *
+     * @var \July\Node\Catalog|null
+     */
+    protected static $defaultCatalog = null;
+
+    /**
      * 与模型关联的表名
      *
      * @var string
@@ -84,7 +91,7 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public static function default()
     {
-        return static::findOrFail('main');
+        return static::$defaultCatalog ?? static::$defaultCatalog = static::findOrFail('main');
     }
 
     /**
@@ -134,19 +141,19 @@ class Catalog extends ModelBase implements GetNodesInterface
         });
     }
 
-    public function nodesMerged()
-    {
-        $nodes = [];
-        foreach ($this->nodes as $node) {
-            $values = $node->entityToArray();
-            $values['parent_id'] = $node->pivot->parent_id;
-            $values['prev_id'] = $node->pivot->prev_id;
-            $values['path'] = $node->pivot->path;
-            $nodes[] = $values;
-        }
+    // public function nodesMerged()
+    // {
+    //     $nodes = [];
+    //     foreach ($this->nodes as $node) {
+    //         $values = $node->entityToArray();
+    //         $values['parent_id'] = $node->pivot->parent_id;
+    //         $values['prev_id'] = $node->pivot->prev_id;
+    //         $values['path'] = $node->pivot->path;
+    //         $nodes[] = $values;
+    //     }
 
-        return $nodes;
-    }
+    //     return $nodes;
+    // }
 
     public static function allPositions()
     {
@@ -160,11 +167,11 @@ class Catalog extends ModelBase implements GetNodesInterface
         return $positions;
     }
 
-    public function retrieveNodePositions()
-    {
-        return CatalogNode::query()->where('catalog_id', $this->getKey())
-                ->get(['node_id','parent_id','prev_id','path'])->toArray();
-    }
+    // public function retrieveNodePositions()
+    // {
+    //     return CatalogNode::query()->where('catalog_id', $this->getKey())
+    //             ->get(['node_id','parent_id','prev_id','path'])->toArray();
+    // }
 
     public function updatePositions(array $positions)
     {
@@ -224,7 +231,7 @@ class Catalog extends ModelBase implements GetNodesInterface
             $ids = array_merge($ids, $tree->children($id));
         }
 
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     public function get_under(...$args)
@@ -251,7 +258,7 @@ class Catalog extends ModelBase implements GetNodesInterface
             $ids = array_merge($ids, $tree->descendants($id));
         }
 
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     /**
@@ -278,10 +285,12 @@ class Catalog extends ModelBase implements GetNodesInterface
         $tree = $this->tree();
         $ids = [];
         foreach ($args as $id) {
-            $ids = array_merge($ids, $tree->parent($id));
+            if ($parent = $tree->parent($id)) {
+                $ids[] = $parent;
+            }
         }
 
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     public function get_over(...$args)
@@ -308,7 +317,7 @@ class Catalog extends ModelBase implements GetNodesInterface
             $ids = array_merge($ids, $tree->ancestors($id));
         }
 
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     public function get_above(...$args)
@@ -335,7 +344,7 @@ class Catalog extends ModelBase implements GetNodesInterface
             $ids = array_merge($ids, $tree->siblings($id));
         }
 
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     public function get_around(...$args)
@@ -356,7 +365,7 @@ class Catalog extends ModelBase implements GetNodesInterface
         }
 
         if ($id = $this->tree()->prev($id)) {
-            return Node::carry($id);
+            return NodeSet::fetch([$id])->first();
         }
 
         return null;
@@ -375,7 +384,7 @@ class Catalog extends ModelBase implements GetNodesInterface
         }
 
         if ($id = $this->tree()->next($id)) {
-            return Node::carry($id);
+            return NodeSet::fetch([$id])->first();
         }
 
         return null;
@@ -384,7 +393,7 @@ class Catalog extends ModelBase implements GetNodesInterface
     public function get_nodes()
     {
         $ids = array_keys($this->tree()->getNodes());
-        return NodeSet::find($ids);
+        return NodeSet::fetch($ids);
     }
 
     /**
@@ -398,7 +407,6 @@ class Catalog extends ModelBase implements GetNodesInterface
         if (!$id) {
             return collect();
         }
-
-        return collect($this->tree()->ancestors($id));
+        return collect(array_merge($this->tree()->ancestors($id), [$id]));
     }
 }

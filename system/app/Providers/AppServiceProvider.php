@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Entity\EntityManager;
-use App\EntityField\FieldTypes\FieldTypeManager;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -82,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
 
             $parts = explode(',', $expression);
 
-            $options = 'JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE'.(isset($parts[1]) ? ' | '.trim($parts[1]) : '');
+            $options = 'JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE'.(isset($parts[1]) ? '|'.trim($parts[1]) : '');
 
             $depth = isset($parts[2]) ? trim($parts[2]) : 512;
 

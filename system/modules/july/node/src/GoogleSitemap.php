@@ -1,12 +1,8 @@
 <?php
 
-namespace July\Utils;
+namespace July\Node;
 
 use App\Utils\Html;
-use App\Utils\Pocket;
-use Illuminate\Support\Facades\DB;
-use July\Core\Config\PathAlias;
-use July\Core\Node\Catalog;
 
 class GoogleSitemap
 {
@@ -31,7 +27,7 @@ class GoogleSitemap
 
         $xml .= '<url><loc>'.$home.'/'.'</loc></url>'.PHP_EOL;
 
-        $urls = Pocket::make(static::class)->takeout('urls');
+        $urls = NodeField::find('url')->getValueModel()->values();
 
         // 生成 xml 内容
         foreach (Catalog::default()->get_nodes() as $node) {
@@ -63,13 +59,5 @@ class GoogleSitemap
         $xml .= '</urlset>';
 
         return $xml;
-    }
-
-    public static function takeoutUrls($langcode)
-    {
-        return PathAlias::query()
-            ->where('langcode', $langcode)
-            ->pluck('alias', 'path')
-            ->all();
     }
 }

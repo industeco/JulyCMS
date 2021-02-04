@@ -5,17 +5,28 @@ namespace App\Entity;
 use App\EntityField\EntityPathAlias;
 use App\EntityField\EntityView;
 use App\EntityField\FieldBase;
-use App\Services\Translation\TranslatableInterface;
-use App\Services\Translation\TranslatableTrait;
 use App\Models\ModelBase;
 use App\Utils\Arr;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 abstract class EntityBase extends ModelBase
 {
-    protected static $fieldKeys = [];
+    /**
+     * 实体字段值缓存
+     *
+     * @var array
+     */
+    protected static $fieldValuesCache = [];
+
+    /**
+     * 实体字段名缓存
+     *
+     * @var array
+     */
+    protected static $fieldKeysCache = [];
 
     /**
      * 获取实体类型类
@@ -106,6 +117,16 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
+     * 缓存实体字段值
+     *
+     * @return void
+     */
+    public static function cacheFieldValues()
+    {
+        static::getFieldValues();
+    }
+
+    /**
      * 获取所有实体，并附加指定的字段值
      *
      * @param  array $fields
@@ -136,23 +157,28 @@ abstract class EntityBase extends ModelBase
      * @param  array $fields 指定的字段列表
      * @return array
      */
-    public static function getFieldValues(array $fields)
+    public static function getFieldValues(array $fields = ['*'])
     {
-        // 字段值
-        $fieldValues = [];
+        // 获取具体的字段列表
+        if (empty($fields) || $fields == ['*']) {
+            $fields = static::getFieldKeys();
+        }
 
-        // 获取字段值
-        if ($fields) {
-            $fieldClass = static::getFieldClass();
-            foreach ($fieldClass::findMany($fields) as $field) {
-                $id = $field->getKey();
-                $valueModel = $field->getValueModel();
-                $column = $valueModel->getValueColumn();
-                $fieldValues[$id] = $valueModel->newQuery()->pluck($column, 'entity_id')->all();
+        // 获取当前缓存
+        $cache = self::$fieldValuesCache[static::getEntityName()] ?? [];
+
+        // 排除已缓存的字段
+        if ($uncachedFields = array_diff($fields, array_keys($cache))) {
+            // 将新获取的字段值列表添加到缓存
+            foreach (static::getFieldClass()::findMany($uncachedFields) as $field) {
+                $cache[$field->getKey()] = $field->getValueModel()->values();
             }
         }
 
-        return $fieldValues;
+        // 缓存结果
+        self::$fieldValuesCache[static::getEntityName()] = $cache;
+
+        return Arr::only($cache, $fields);
     }
 
     /**
@@ -250,58 +276,16 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
-     * 获取字段属性名表
-     *
-     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
-     */
-    public function getFields()
-    {
-        // 获取关联字段集合
-        if ($this->exists) {
-            $fields = $this->fields;
-        } elseif ($mold = $this->getMold()) {
-            $fields = $mold->fields;
-        } else {
-            $fields = static::getFieldClass()::isPreseted()->get();
-        }
-
-        // 字段表主键名
-        $keyName = static::getFieldClass()::getModelKeyName();
-
-        // 为字段绑定当前实体对象，排序等
-        return $fields->map(function(FieldBase $field) {
-                return $field->bindEntity($this);
-            })->keyBy($keyName)->sortBy('delta');
-    }
-
-    /**
      * 获取所有字段的 id
      *
      * @return array
      */
-    public function getFieldKeys()
+    public static function getFieldKeys()
     {
-        if (! static::$fieldKeys) {
-            $pivot = static::getPivotClass();
-            $mold_id = $pivot::getMoldKeyName();
-            $field_id = $pivot::getFieldKeyName();
-
-            $moldFields = DB::table($pivot::getModelTable())->get([$mold_id, $field_id])
-                ->groupBy($mold_id)
-                ->map(function($group) use($field_id) {
-                    return $group->map(function($field) use($field_id) {
-                        return $field->$field_id;
-                    })->all();
-                })->all();
-
-            $fieldClass = static::getFieldClass();
-            $fields = $fieldClass::isPreseted()->pluck($fieldClass::getModelKeyName())->all();
-
-            static::$fieldKeys = array_merge($moldFields, [':preseted' => $fields]);
+        if (static::$fieldKeysCache) {
+            return static::$fieldKeysCache;
         }
-
-        $group = $this->attributes[static::getMoldKeyName()] ?? ':preseted';
-        return static::$fieldKeys[$group] ?? [];
+        return static::$fieldKeysCache = static::getFieldClass()::query()->pluck('id')->all();
     }
 
     /**
@@ -310,7 +294,7 @@ abstract class EntityBase extends ModelBase
      * @param  string|int $key
      * @return bool
      */
-    public function hasField($key)
+    public function isField($key)
     {
         return in_array($key, $this->getFieldKeys());
     }
@@ -323,10 +307,9 @@ abstract class EntityBase extends ModelBase
      */
     public function getFieldValue($key)
     {
-        /** @var \App\EntityField\FieldBase */
-        $field = $this->getFields()->get($key);
+        $values = $this->getFieldValues([$key])[$key] ?? [];
 
-        return $this->transformAttributeValue($key, $field->getValue());
+        return $this->transformAttributeValue($key, $values[$this->getKey()] ?? null);
     }
 
     /**
@@ -336,9 +319,12 @@ abstract class EntityBase extends ModelBase
      */
     public function fieldsToArray()
     {
+        $fieldValues = static::getFieldValues();
+
+        $id = $this->getEntityId();
         $attributes = [];
-        foreach ($this->getFields() as $key => $field) {
-            $attributes[$key] = $field->getValue();
+        foreach ($fieldValues as $field => $values) {
+            $attributes[$field] = $values[$id] ?? null;
         }
 
         return $this->transformAttributesArray($attributes);
@@ -356,7 +342,7 @@ abstract class EntityBase extends ModelBase
             return;
         }
 
-        if ($this->hasField($key)) {
+        if ($this->isField($key)) {
             return $this->getFieldValue($key);
         }
 
@@ -364,28 +350,11 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
-     * 实体保存
-     *
-     * @param  array  $options
-     * @return bool
-     */
-    public function save(array $options = [])
-    {
-        $saved = parent::save($options);
-
-        DB::transaction(function () {
-            $this->updateFields();
-        });
-
-        return $saved;
-    }
-
-    /**
      * 更新实体字段
      *
      * @return void
      */
-    protected function updateFields()
+    public function updateFields()
     {
         $this->fields->each(function(FieldBase $field) {
             if (array_key_exists($id = $field->getKey(), $this->raw)) {
@@ -411,7 +380,15 @@ abstract class EntityBase extends ModelBase
      */
     public function fetchHtml()
     {
-        return $this->pocketPipe('render', 'html')->value();
+        if ($html = $this->pocketGet('html')) {
+            return $html->value();
+        }
+
+        if ($html = $this->render()) {
+            return $this->pocketPut($html, 'html');
+        }
+
+        return null;
     }
 
     /**
@@ -446,6 +423,19 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
+     * 移除生成的 html 文件
+     *
+     * @return void
+     */
+    public function removeHtmlFile()
+    {
+        $url = $this->url;
+        if (preg_match('/\.html?$/i', $url)) {
+            Storage::disk('public')->delete($url);
+        }
+    }
+
+    /**
      * Bootstrap the model and its traits.
      *
      * @return void
@@ -455,17 +445,63 @@ abstract class EntityBase extends ModelBase
         parent::boot();
 
         static::deleting(function(EntityBase $entity) {
+            $entity->removeHtmlFile();
+            $entity->pocketClear('html', 'gather');
             $entity->fields->each(function (FieldBase $field) use($entity) {
                 $field->bindEntity($entity)->deleteValue();
             });
         });
 
         static::saved(function(EntityBase $entity) {
+            $entity->removeHtmlFile();
             $entity->pocketClear('html', 'gather');
-        });
 
-        static::deleted(function(EntityBase $entity) {
-            $entity->pocketClear('html', 'gather');
+            // 更新字段
+            DB::beginTransaction();
+            $entity->updateFields();
+            DB::commit();
         });
     }
+
+    /**
+     * 获取实体字段
+     *
+     * @return \Illuminate\Support\Collection|\App\EntityField\FieldBase[]
+     */
+    public function getFields()
+    {
+        // 获取关联字段集合
+        if ($this->exists) {
+            $fields = $this->fields;
+        } elseif ($mold = $this->getMold()) {
+            $fields = $mold->fields;
+        } else {
+            $fields = static::getFieldClass()::isPreseted()->get();
+        }
+
+        // 字段表主键名
+        $keyName = static::getFieldClass()::getModelKeyName();
+
+        // 为字段绑定当前实体对象，排序等
+        return $fields->map(function(FieldBase $field) {
+                return $field->bindEntity($this);
+            })->keyBy($keyName)->sortBy('delta');
+    }
+
+    // /**
+    //  * 实体保存
+    //  *
+    //  * @param  array  $options
+    //  * @return bool
+    //  */
+    // public function save(array $options = [])
+    // {
+    //     $saved = parent::save($options);
+
+    //     DB::transaction(function () {
+    //         $this->updateFields();
+    //     });
+
+    //     return $saved;
+    // }
 }

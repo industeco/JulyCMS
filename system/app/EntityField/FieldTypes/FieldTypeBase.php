@@ -38,6 +38,13 @@ abstract class FieldTypeBase
     protected $description;
 
     /**
+     * 视图
+     *
+     * @var string|null
+     */
+    protected $view;
+
+    /**
      * 字段值类型转换器
      *
      * @var string
@@ -66,18 +73,6 @@ abstract class FieldTypeBase
     protected $field = null;
 
     /**
-     * 静态方式获取属性
-     *
-     * @param  string $key
-     * @param  mixed $default
-     * @return mixed
-     */
-    public static function get(string $key, $default = null)
-    {
-        return (new static)->$key ?? $default;
-    }
-
-    /**
      * @param \App\EntityField\FieldBase|null $field
      */
     public function __construct(FieldBase $field = null)
@@ -93,6 +88,18 @@ abstract class FieldTypeBase
         if (! $this->label) {
             $this->label = preg_replace('/Type$/', '', class_basename(static::class));
         }
+    }
+
+    /**
+     * 静态方式获取属性
+     *
+     * @param  string $key
+     * @param  mixed $default
+     * @return mixed
+     */
+    public static function get(string $key, $default = null)
+    {
+        return (new static)->$key ?? $default;
     }
 
     /**
@@ -136,6 +143,16 @@ abstract class FieldTypeBase
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * 获取视图
+     *
+     * @return string|null
+     */
+    public function getView()
+    {
+        return $this->view ?? $this->view = 'field_type.'.$this->id;
     }
 
     /**
@@ -219,34 +236,24 @@ abstract class FieldTypeBase
         $data = $this->field->gather();
         $data['value'] = $value;
         $data['helpertext'] = $data['helpertext'] ?: $data['description'];
-        $data['rules'] = $this->getRules();
+        $data['rules'] = $this->getRules($value);
 
-        return view('field_type.'.$this->id, $data)->render();
+        return view($this->getView(), $data)->render();
     }
 
     /**
      * 获取验证规则（用于前端 js 验证）
      *
+     * @param  mixed $value 字段值
      * @return array
      */
-    public function getRules()
+    public function getRules($value = null)
     {
         $rules = [];
         if ($this->field->is_required) {
             $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
         }
         return $rules;
-    }
-
-    /**
-     * 获取验证器（用于后端验证）
-     *
-     * @param  array|null $parameters 字段参数
-     * @return array
-     */
-    public function getValidator()
-    {
-        return [];
     }
 
     /**
@@ -275,23 +282,34 @@ abstract class FieldTypeBase
         ];
     }
 
-    /**
-     * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
-     *
-     * @return array
-     */
-    public function getMaterials()
-    {
-        return [
-            'id' => $this->field->getKey(),
-            'field_type_id' => $this->id,
-            'value' => $this->field->getValue(),
-            'element' => $this->render(),
-        ];
-    }
-
     public function __get($name)
     {
         return $this->$name ?? null;
     }
+
+    // /**
+    //  * 获取验证器（用于后端验证）
+    //  *
+    //  * @param  array|null $parameters 字段参数
+    //  * @return array
+    //  */
+    // public function getValidator()
+    // {
+    //     return [];
+    // }
+
+    // /**
+    //  * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
+    //  *
+    //  * @return array
+    //  */
+    // public function getMaterials()
+    // {
+    //     return [
+    //         'id' => $this->field->getKey(),
+    //         'field_type_id' => $this->id,
+    //         'value' => $this->field->getValue(),
+    //         'element' => $this->render(),
+    //     ];
+    // }
 }

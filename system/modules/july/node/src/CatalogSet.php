@@ -3,11 +3,19 @@
 namespace July\Node;
 
 use Illuminate\Support\Arr;
-use App\Entity\EntitySetBase;
+use App\Models\ModelSetBase;
 
-class CatalogSet extends EntitySetBase
+class CatalogSet extends ModelSetBase
 {
-    protected static $entity = Catalog::class;
+    /**
+     * 获取绑定的模型
+     *
+     * @return string
+     */
+    public static function getModelClass()
+    {
+        return Catalog::class;
+    }
 
     /**
      * Get the first item from the collection passing the given truth test.

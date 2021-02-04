@@ -26,6 +26,7 @@ class MessageController extends Controller
             'context' => [
                 'molds' => MessageForm::query()->pluck('label', 'id')->all(),
                 'languages' => Lang::getTranslatableLangnames(),
+                'langcode' => langcode('frontend'),
             ],
         ];
 

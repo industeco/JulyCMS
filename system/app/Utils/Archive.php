@@ -285,7 +285,7 @@ class Archive
         }
 
         $zip = new ZipArchive();
-        $zip->open($this->getFullPath($fileName), ZipArchive::OVERWRITE);
+        $zip->open($this->getFullPath($fileName), ZipArchive::OVERWRITE|ZipArchive::CREATE);
 
         foreach ($this->getFiles() as $path => $newPath) {
             $fullPath = $this->getFullPath($path);

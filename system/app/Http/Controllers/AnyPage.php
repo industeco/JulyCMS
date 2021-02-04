@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\EntityField\EntityPathAlias;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use July\Core\Config\PathAlias;
-use July\Utils\GoogleSitemap;
+use July\Node\GoogleSitemap;
 
 class AnyPage extends Controller
 {
@@ -102,8 +102,8 @@ class AnyPage extends Controller
 
     protected function getHtml($url, $langcode)
     {
-        if ($entity = PathAlias::findEntity($url)) {
-            return $entity->translateTo($langcode)->retrieveHtml();
+        if ($entity = EntityPathAlias::findEntity($url)) {
+            return $entity->translateTo($langcode)->fetchHtml();
         }
 
         return null;
