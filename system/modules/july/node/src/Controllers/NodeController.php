@@ -23,7 +23,7 @@ class NodeController extends Controller
     public function index()
     {
         $data = [
-            'models' => Node::indexWith(['url']),
+            'models' => Node::indexWith(['url'])->all(),
             'context' => [
                 'molds' => NodeType::query()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::query()->pluck('label', 'id')->all(),
@@ -39,10 +39,10 @@ class NodeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \July\Node\Node  $content
+     * @param  \July\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
-    public function show(Node $content)
+    public function show(Node $node)
     {
         //
     }
@@ -55,7 +55,7 @@ class NodeController extends Controller
     public function chooseMold()
     {
         $data = [
-            'models' => NodeType::all(),
+            'models' => NodeType::all()->all(),
         ];
 
         return view('node::node.choose_mold', $data);

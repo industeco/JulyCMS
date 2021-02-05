@@ -7,6 +7,13 @@
   'editFieldMethod' => 'editField',
 ])
 
+@if ($caption)
+<tbody>
+  <tr>
+    <th colspan="6">{{ $caption }}</th>
+  </tr>
+</tbody>
+@endif
 <tbody
   @if ($sortable)
   is="draggable"
@@ -16,9 +23,6 @@
   handle=".jc-drag-handle"
   tag="tbody"
   @endif>
-  <tr>
-    <td :rowspan="{{ $model }}.length+1" style="background:#f5f5f2;">{{ $caption }}</td>
-  </tr>
   <tr v-for="field in {{ $model }}" :key="field.id">
     <td>
       @if ($sortable)

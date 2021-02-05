@@ -23,7 +23,7 @@ class CreateNodesTable extends Migration
             $table->string('title');
 
             // 视图文件
-            $table->string('view');
+            $table->string('view')->nullable();
 
             // 属性三原色
             $table->boolean('is_red')->default(false);

@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('h1')
-  {{ $model['id'] ? '编辑内容类型' : '新建内容类型' }}
+  {{ __('backend.'.$context['mode']) }}内容类型
 @endsection
 
 @section('main_content')
@@ -10,7 +10,7 @@
     :rules="mold.rules"
     label-position="top">
     <div id="main_form_left">
-      <x-handle model="mold.model" :read-only="!!$model['id']" :unique-action="short_url('node_types.exists', '_ID_')" />
+      <x-handle model="mold.model" :read-only="$context['mode']==='edit'" :unique-action="short_url('node_types.exists', '_ID_')" />
       <x-label model="mold.model" label="名称" />
       <x-description model="mold.model" />
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
@@ -30,7 +30,6 @@
           <div class="jc-table-wrapper">
             <table class="jc-table jc-dense is-draggable with-drag-handle with-operators">
               <colgroup>
-                <col width="100px">
                 <col width="50px">
                 <col width="150px">
                 <col width="150px">
@@ -40,7 +39,6 @@
               </colgroup>
               <thead>
                 <tr>
-                  <th>字段组</th>
                   <th></th>
                   <th>ID</th>
                   <th>标签</th>
@@ -50,7 +48,7 @@
                 </tr>
               </thead>
               <x-mold.field-list model="mold.globalFields" caption="全局" />
-              <x-mold.field-list model="mold.reservedFields" :sortable="false" caption="预设" />
+              {{-- <x-mold.field-list model="mold.reservedFields" :sortable="false" caption="预设" /> --}}
               <x-mold.field-list model="mold.optionalFields" :deletable="true" caption="可选" />
             </table>
           </div>
@@ -121,7 +119,7 @@
     data() {
       return {
         mold: {
-          model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          model: @jjson($model, JSON_PRETTY_PRINT),
           globalFields: [],
           reservedFields: [],
           optionalFields: [],
@@ -129,7 +127,7 @@
         },
 
         field: {
-          model: @json($context['field_template'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           dialogVisible: false,
         },
@@ -140,12 +138,12 @@
         },
 
         selectionData: {
-          fields: @json(array_values($context['optional_fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          fields: @jjson(array_values($context['optional_fields']), JSON_PRETTY_PRINT),
           selection: [],
         },
 
         newField: {
-          model: @json($context['field_template'], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           fieldTypeHelper: '选择字段类型',
         },
@@ -153,7 +151,7 @@
     },
 
     created: function() {
-      const fields = @json(array_values($context['fields']), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+      const fields = @jjson(array_values($context['fields']));
       fields.forEach(field => {
         if (field.is_global) {
           this.mold.globalFields.push(field);
@@ -277,7 +275,7 @@
       },
 
       submit() {
-        @if ($model['id'])
+        @if ($context['mode']==='edit')
         if (_.isEqual(this.original_mold, this.mold)) {
           window.location.href = "{{ short_url('node_types.index') }}";
           return;
@@ -285,33 +283,33 @@
         @endif
 
         this.$refs.main_form.validate().then(() => {
-          const loading = app.$loading({
+          const loading = this.$loading({
             lock: true,
-            text: '{{ $model['id'] ? "正在保存修改 ..." : "正在新建类型 ..." }}',
+            text: "{{ $context['mode']==='edit' ? '正在保存修改 ...' : '正在新建类型 ...' }}",
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          @if ($model['id'])
+          @if ($context['mode']==='edit')
           const action = "{{ short_url('node_types.update', $model['id']) }}";
           @else
           const action = "{{ short_url('node_types.store') }}";
           @endif
 
           const data = _.cloneDeep(this.mold.model);
-          data.langcode = "{{ $context['content_langcode'] }}";
+          data.langcode = "{{ $context['langcode'] }}";
           data.fields = this.mold.reservedFields.concat(this.mold.optionalFields, this.mold.globalFields);
           data.fields.forEach((field, index) => { field.delta = index; })
 
-          axios.{{ $model['id'] ? 'put' : 'post' }}(action, data)
-          .then((response) => {
-            window.location.href = "{{ short_url('node_types.index') }}";
-          }).catch((error) => {
-            loading.close();
-            console.error(error);
-            this.$message.error('发生错误，请查看日志');
-          });
+          axios.{{ $context['mode']==='edit' ? 'put' : 'post' }}(action, data)
+            .then((response) => {
+              window.location.href = "{{ short_url('node_types.index') }}";
+            }).catch((error) => {
+              loading.close();
+              console.error(error);
+              this.$message.error('发生错误，请查看日志');
+            });
         }).catch((error) => {
-          loading.close();
+          // loading.close();
           // console.error(error);
         });
       },

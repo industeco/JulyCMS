@@ -5,6 +5,7 @@ namespace July\Node\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use July\Node\Node;
 use July\Node\NodeField;
 use July\Node\NodeType;
 
@@ -18,7 +19,7 @@ class NodeTypeController extends Controller
     public function index()
     {
         return view('node::node_type.index', [
-            'models' => NodeType::index(),
+            'models' => NodeType::index()->all(),
         ]);
     }
 
@@ -29,7 +30,9 @@ class NodeTypeController extends Controller
      */
     public function create()
     {
-        return view('node::node_type.create-edit', $this->getCreationContext());
+        $data = $this->getCreationContext();
+
+        return view('node::node_type.create-edit', $data);
     }
 
     /**
@@ -62,11 +65,11 @@ class NodeTypeController extends Controller
         return [
             'model' => NodeType::template(),
             'context' => [
-                'entity_name' => NodeType::getEntityClass()::getEntityName(),
+                'entity_name' => Node::getEntityName(),
                 'fields' => gather($fields->get('preseted'))->keyBy('id')->all(),
                 'optional_fields' => gather($fields->get('optional'))->keyBy('id')->all(),
                 'field_template' => NodeField::template(),
-                'content_langcode' => langcode('content'),
+                'langcode' => langcode('content'),
                 'mode' => 'create',
             ],
         ];

@@ -100,7 +100,8 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     /**
      * 获取模型列表数据
      *
-     * @return array[]
+     * @param  array $columns 选取的列
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
     public static function index(array $keys = ['*'])
     {
@@ -108,14 +109,14 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         $referenced = static::referencedByEntity();
 
         // 获取模型列表
-        $molds = parent::index($keys);
+        $molds = parent::index($keys)->all();
 
         // 补充引用计数
         foreach ($molds as $key => &$mold) {
             $mold['referenced'] = $referenced[$key] ?? 0;
         }
 
-        return $molds;
+        return collect($molds);
     }
 
     /**

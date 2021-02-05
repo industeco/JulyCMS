@@ -52,7 +52,7 @@ abstract class ModelSetBase extends Collection
 
         self::$modelsCache[$class] = array_merge($cache, $models);
 
-        return new static($class);
+        return new static($models);
     }
 
     /**

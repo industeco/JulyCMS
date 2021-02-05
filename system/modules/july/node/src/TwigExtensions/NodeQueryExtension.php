@@ -91,6 +91,14 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
                 }
                 return $nodes;
             }, ['is_variadic' => true]),
+
+            // 获取联系表单对象
+            new TwigFilter('form', function($form = null) {
+                if (! $form) {
+                    return MessageForm::default();
+                }
+                return MessageForm::find($form) ?? MessageForm::default();
+            }),
         ];
     }
 
@@ -147,21 +155,6 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
         }
         return CatalogSet::fetch($args);
     }
-
-    /**
-     * 获取节点树集
-     *
-     * @param string|int 表单 id
-     * @return \July\Message\MessageForm
-     */
-    public function form($form = null)
-    {
-        if (! $form) {
-            return MessageForm::default();
-        }
-        return MessageForm::find($form) ?? MessageForm::default();
-    }
-
 
 
     // /**

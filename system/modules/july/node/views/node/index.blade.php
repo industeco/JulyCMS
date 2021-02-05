@@ -156,7 +156,7 @@
 
     data() {
       return {
-        nodes: @jjson($models->values()->all(), JSON_PRETTY_PRINT),
+        nodes: @jjson(array_values($models), JSON_PRETTY_PRINT),
         molds: @jjson($context['molds'], JSON_PRETTY_PRINT),
         selected: [],
         showSuggestedTemplates: false,

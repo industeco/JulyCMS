@@ -25,7 +25,8 @@
       @endforeach
 
       {{-- 视图文件 --}}
-      <el-form-item prop="view" size="small" class="has-helptext">
+      <el-form-item prop="view" size="small" class="has-helptext"
+        :rules="[{pattern:/^(?:[a-z0-9\-_]+\/)*[a-z0-9\-_]+\.twig$/, message:'格式不正确', trigger:'change'}]">
         <el-tooltip slot="label" content="view" placement="right" effect="dark" popper-class="jc-twig-output">
           <span>模板</span>
         </el-tooltip>

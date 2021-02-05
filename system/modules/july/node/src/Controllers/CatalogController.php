@@ -17,7 +17,7 @@ class CatalogController extends Controller
     public function index()
     {
         return view('node::catalog.index', [
-            'models' => Catalog::index(),
+            'models' => Catalog::index()->all(),
         ]);
     }
 
@@ -115,7 +115,7 @@ class CatalogController extends Controller
             'model' => $catalog,
             'context' => [
                 'positions' => $catalog->tree()->getNodes(),
-                'nodes' => Node::allWithFields('title'),
+                'nodes' => Node::index()->all(),
             ],
         ];
 
