@@ -132,7 +132,7 @@ abstract class EntityBase extends ModelBase
      * @param  array $fields
      * @return \Illuminate\Support\Collection|array[]
      */
-    public static function indexWithFields(...$fields)
+    public static function indexWith(...$fields)
     {
         // 允许以数组形式指定参数
         $fields = real_args($fields);
@@ -163,6 +163,8 @@ abstract class EntityBase extends ModelBase
         if (empty($fields) || $fields == ['*']) {
             $fields = static::getFieldKeys();
         }
+        // 去除重复值
+        $fields = array_unique($fields);
 
         // 获取当前缓存
         $cache = self::$fieldValuesCache[static::getEntityName()] ?? [];
@@ -189,16 +191,6 @@ abstract class EntityBase extends ModelBase
     public function getPathAlias()
     {
         return EntityPathAlias::make()->getValue($this);
-    }
-
-    /**
-     * 获取实体视图
-     *
-     * @return string|null
-     */
-    public function getView()
-    {
-        return EntityView::make()->getValue($this);
     }
 
     /**

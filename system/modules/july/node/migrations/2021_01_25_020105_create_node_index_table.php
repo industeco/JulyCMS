@@ -18,7 +18,7 @@ class CreateNodeIndexTable extends Migration
             $table->id();
 
             // 节点 id
-            $table->unsignedBigInteger('node_id');
+            $table->unsignedBigInteger('entity_id');
 
             // 字段 id
             $table->string('field_id');

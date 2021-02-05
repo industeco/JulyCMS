@@ -23,7 +23,7 @@ class NodeController extends Controller
     public function index()
     {
         $data = [
-            'models' => Node::indexWithFields(['url']),
+            'models' => Node::indexWith(['url']),
             'context' => [
                 'molds' => NodeType::query()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::query()->pluck('label', 'id')->all(),
@@ -85,6 +85,7 @@ class NodeController extends Controller
                 'mold' => $nodeType,
                 'global_fields' => $fields->get('global'),
                 'local_fields' => $fields->get('local'),
+                'views' => Node::query()->pluck('view')->filter()->unique()->all(),
                 'mode' => 'create',
                 // 'catalog_nodes' => Catalog::allPositions(),
                 // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
@@ -118,6 +119,7 @@ class NodeController extends Controller
                 'mold' => $node->mold,
                 'global_fields' => $fields->get('global'),
                 'local_fields' => $fields->get('local'),
+                'views' => Node::query()->pluck('view')->filter()->unique()->all(),
                 'mode' => $node->isTranslated() ? 'translate' : 'edit',
                 // 'catalog_nodes' => Catalog::allPositions(),
                 // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),

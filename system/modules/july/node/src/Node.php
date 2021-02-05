@@ -27,6 +27,7 @@ class Node extends TranslatableEntityBase
     protected $fillable = [
         'mold_id',
         'title',
+        'view',
         'is_red',
         'is_green',
         'is_blue',
@@ -124,10 +125,13 @@ class Node extends TranslatableEntityBase
      * @param  array $fields
      * @return \Illuminate\Support\Collection|array[]
      */
-    public static function indexWithFields(...$fields)
+    public static function indexWith(...$fields)
     {
         // 允许以数组形式指定参数
-        $fields = array_merge(real_args($fields), ['view', 'url']);
+        $fields = real_args($fields);
+        if (! in_array('url', $fields)) {
+            $fields[] = 'url';
+        }
 
         // 字段值
         $fieldValues = static::getFieldValues($fields);
@@ -139,7 +143,7 @@ class Node extends TranslatableEntityBase
                 foreach ($fieldValues as $field => $values) {
                     $attributes[$field] = $values[$id] ?? null;
                 }
-                $attributes['suggested_templates'] = $node->getSuggestedTemplates($attributes['view'] ?? null, $attributes['url'] ?? null);
+                $attributes['suggested_templates'] = $node->getSuggestedTemplates($attributes['url'] ?? null);
                 return $attributes;
             })->keyBy('id');
     }
@@ -147,38 +151,40 @@ class Node extends TranslatableEntityBase
     /**
      * 获取建议模板
      *
-     * @param  string|null 指定的模板
      * @param  string|null 节点网址
      * @return array
      */
-    public function getSuggestedTemplates(?string $view = null, ?string $url = null)
+    public function getSuggestedTemplates(?string $url = null)
     {
         $localized = [];
         $templates = [];
 
-        if ($view) {
-            $localized[] = $view;
+        if ($this->view) {
+            $localized[] = $this->view;
         }
 
         // 根据 id
-        $localized[] = 'node--'.$this->id.'.{langcode}.twig';
+        $localized[] = 'node--'.$this->id.'.{lang}.twig';
         $templates[] = 'node--'.$this->id.'.twig';
 
         // 根据 url
+        if (func_num_args() === 0) {
+            $url = $this->url;
+        }
         if ($url) {
             $url = str_replace('/', '_', trim($url, '\\/'));
-            // $templates[] = 'url--'.$url.'.{langcode}.twig';
+            // $templates[] = 'url--'.$url.'.{lang}.twig';
             $localized[] = 'url--'.$url.'.twig';
         }
 
         // // 根据目录位置
         // if ($parent = Catalog::default()->tree()->parent($this->id)) {
-        //     $localized[] = 'under--' . $parent[0] . '.{langcode}.twig';
+        //     $localized[] = 'under--' . $parent[0] . '.{lang}.twig';
         //     $templates[] = 'under--' . $parent[0] . '.twig';
         // }
 
         // 根据类型
-        $localized[] = 'mold--'.$this->mold_id.'.{langcode}.twig';
+        $localized[] = 'mold--'.$this->mold_id.'.{lang}.twig';
         $templates[] = 'mold--'.$this->mold_id.'.twig';
 
         return array_merge($localized, $templates);
@@ -259,8 +265,8 @@ class Node extends TranslatableEntityBase
     public function getPreferredTemplate()
     {
         $langcode = $this->getLangcode();
-        foreach ($this->getSuggestedTemplates($this->view, $this->url) as $view) {
-            $view = str_replace('{langcode}', $langcode, $view);
+        foreach ($this->getSuggestedTemplates() as $view) {
+            $view = str_replace('{lang}', $langcode, $view);
             if (is_file(frontend_path('template/'.$view))) {
                 return $view;
             }

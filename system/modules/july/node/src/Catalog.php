@@ -91,7 +91,11 @@ class Catalog extends ModelBase implements GetNodesInterface
      */
     public static function default()
     {
-        return static::$defaultCatalog ?? static::$defaultCatalog = static::findOrFail('main');
+        if (app()->has('catalog.default')) {
+            return app('catalog.default');
+        }
+        app()->instance('catalog.default', $catalog = static::findOrFail('main'));
+        return $catalog;
     }
 
     /**

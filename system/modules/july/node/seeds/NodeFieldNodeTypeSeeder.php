@@ -22,16 +22,27 @@ class NodeFieldNodeTypeSeeder extends SeederBase
     public function getNodeFieldNodeTypeTableRecords()
     {
         // 所有字段信息
-        $allFields = collect((new NodeFieldSeeder)->getNodeFieldsTableRecords())->keyBy('id')->map(function(array $field) {
-            return Arr::only($field, ['label','description','is_required','helpertext','default_value','options','rules']);
-        }, true);
+        $allFields = collect((new NodeFieldSeeder)->getNodeFieldsTableRecords())
+            ->keyBy('id')
+            ->map(function(array $field) {
+                return Arr::only($field, [
+                    'label',
+                    'description',
+                    'is_required',
+                    'helpertext',
+                    'default_value',
+                    'options',
+                    'rules',
+                ]);
+            }, true);
 
         // 全部预设字段
         // $reserved = ['title'];
         $reserved = [];
 
         // 全局字段
-        $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
+        // $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
+        $global = ['url', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
 
         // 类型关联字段
         $molds = [

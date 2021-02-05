@@ -7,7 +7,6 @@ use App\Entity\EntityBase;
 use Illuminate\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use IP2Location\Database as Location;
 
 class Message extends EntityBase

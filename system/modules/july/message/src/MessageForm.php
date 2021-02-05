@@ -3,10 +3,12 @@
 namespace July\Message;
 
 use App\Entity\EntityMoldBase;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class MessageForm extends EntityMoldBase
 {
+
     /**
      * 与模型关联的表名
      *
@@ -22,6 +24,20 @@ class MessageForm extends EntityMoldBase
     public static function getEntityClass()
     {
         return Message::class;
+    }
+
+    /**
+     * 获取默认表单
+     *
+     * @return \July\Message\MessageForm|static
+     */
+    public static function default()
+    {
+        if (app()->has('message_form.default')) {
+            return app('message_form.default');
+        }
+        app()->instance('message_form.default', $form = static::findOrFail('new_message'));
+        return $form;
     }
 
     /**

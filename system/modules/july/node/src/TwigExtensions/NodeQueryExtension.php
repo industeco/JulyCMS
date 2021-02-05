@@ -3,6 +3,7 @@
 namespace July\Node\TwigExtensions;
 
 use Illuminate\Support\Str;
+use July\Message\MessageForm;
 use July\Node\Catalog;
 use July\Node\CatalogSet;
 use July\Node\NodeSet;
@@ -146,6 +147,22 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
         }
         return CatalogSet::fetch($args);
     }
+
+    /**
+     * 获取节点树集
+     *
+     * @param string|int 表单 id
+     * @return \July\Message\MessageForm
+     */
+    public function form($form = null)
+    {
+        if (! $form) {
+            return MessageForm::default();
+        }
+        return MessageForm::find($form) ?? MessageForm::default();
+    }
+
+
 
     // /**
     //  * 获取标签集

@@ -10,14 +10,34 @@
     :rules="rules"
     label-position="top">
     <div id="main_form_left">
-      <el-form-item prop="title" size="small" class="has-helptext"
-      :rules="[{required:true, message:'标题不能为空', trigger:'blur'}]">
-      <el-tooltip slot="label" content="title" placement="right" effect="dark" popper-class="jc-twig-output">
-        <span>标题</span>
-      </el-tooltip>
-      <el-input v-model="model.title" native-size="100"></el-input>
-      <span class="jc-form-item-help"><i class="el-icon-info"></i> 标题，可用作链接文字等。</span>
+      {{-- 标题字段 --}}
+      <el-form-item prop="title" size="small" class="has-helptext" :rules="[{required:true, message:'标题不能为空', trigger:'blur'}]">
+        <el-tooltip slot="label" content="title" placement="right" effect="dark" popper-class="jc-twig-output">
+          <span>标题</span>
+        </el-tooltip>
+        <el-input v-model="model.title" native-size="100"></el-input>
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> 标题，可用作链接文字等。</span>
       </el-form-item>
+
+      {{-- 自定义字段 --}}
+      @foreach ($context['local_fields'] as $field)
+      {!! $field->render($model[$field['id']] ?? null) !!}
+      @endforeach
+
+      {{-- 视图文件 --}}
+      <el-form-item prop="view" size="small" class="has-helptext">
+        <el-tooltip slot="label" content="view" placement="right" effect="dark" popper-class="jc-twig-output">
+          <span>模板</span>
+        </el-tooltip>
+        <el-select v-model="model.view" filterable allow-create default-first-option style="width:100%;max-width:360px">
+          @foreach ($context['views'] as $view)
+          <el-option value="{{ $view }}"></el-option>
+          @endforeach
+        </el-select>
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> 指定模板</span>
+      </el-form-item>
+
+      {{-- 颜色属性 --}}
       <el-form-item size="small" label="红绿蓝">
         <el-tooltip popper-class="jc-twig-output" effect="dark" content="is_red" placement="top">
           <el-switch style="margin-right: 1em" v-model="model.is_red" active-color="#F44336" inactive-color="#FFCDD2"></el-switch>
@@ -29,9 +49,8 @@
           <el-switch style="margin-right: 1em" v-model="model.is_blue" active-color="#2196F3" inactive-color="#BBDEFB"></el-switch>
         </el-tooltip>
       </el-form-item>
-      @foreach ($context['local_fields'] as $field)
-      {!! $field->render($model[$field['id']] ?? null) !!}
-      @endforeach
+
+      {{-- 保存按钮 --}}
       <div id="main_form_bottom" class="is-button-item">
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="submit">
           <div class="md-button-content">保存</div>
@@ -40,6 +59,8 @@
     </div>
     <div id="main_form_right">
       <h2 class="jc-form-info-item">通用非必填项</h2>
+
+      {{-- 右侧全局字段 --}}
       <el-collapse :value="expanded">
         @foreach ($context['global_fields']->groupBy('group_title') as $groupTitle => $globalFields)
         <el-collapse-item name="{{ $groupTitle }}" title="{{ $groupTitle }}">
