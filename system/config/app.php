@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'zh-Hans',
 
     /*
     |--------------------------------------------------------------------------
@@ -171,7 +171,13 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        July\JulyServiceProvider::class,
+        // July\JulyServiceProvider::class,
+
+        // Modules
+        Installer\ModuleServiceProvider::class,
+        July\Node\ModuleServiceProvider::class,
+        July\Message\ModuleServiceProvider::class,
+        Specs\ModuleServiceProvider::class,
     ],
 
     /*
@@ -187,7 +193,7 @@ return [
 
     'aliases' => [
         'App' => Illuminate\Support\Facades\App::class,
-        'Arr' => App\Utils\Arr::class,
+        'Arr' => Illuminate\Support\Arr::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
         'Auth' => Illuminate\Support\Facades\Auth::class,
         'Blade' => Illuminate\Support\Facades\Blade::class,
@@ -224,13 +230,158 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
-    /**
-     * 安装标记
-     */
+    // 管理类
+    'managers' => [
+        \App\Entity\EntityManager::class,
+        \App\EntityField\FieldTypes\FieldTypeManager::class,
+    ],
+
+    // 安装标记
     'is_installed' => env('APP_INSTALLED', false),
 
-    /**
-     * demo 模式
-     */
+    // demo 模式
     'is_demo' => env('APP_DEMO', false),
+
+    // 指定主题
+    'theme' => 'backend',
+
+    // 管理前缀
+    'management_prefix' => 'manage',
+
+    // 登记配置管理类
+    'settings' => [
+        \App\Services\Settings\Language::class,
+        \App\Services\Settings\SiteInformation::class,
+        // \App\Services\Settings\UserInterface::class,
+        \App\Services\Settings\Redirections::class,
+    ],
+
+    // 登记实体
+    'entities' => [
+        \July\Node\Node::class,
+        \July\Message\Message::class,
+    ],
+
+    // 登记实体字段类型
+    'field_types' => [
+        // \App\EntityField\FieldTypes\Any::class,
+        \App\EntityField\FieldTypes\Input::class,
+        \App\EntityField\FieldTypes\Text::class,
+        \App\EntityField\FieldTypes\File::class,
+        \App\EntityField\FieldTypes\Html::class,
+        \App\EntityField\FieldTypes\Image::class,
+        \App\EntityField\FieldTypes\Url::class,
+        \App\EntityField\FieldTypes\PathAlias::class,
+        // \App\EntityField\FieldTypes\View::class,
+    ],
+
+    // 是否允许通过实体路径访问
+    'entity_path_accessible' => false,
+
+    // 主菜单
+    'main_menu' => [
+        // 内容
+        'content' => [
+            'title' => '内容',
+            'icon' => 'create',
+            'route' => null,
+            'children' => [
+                [
+                    'title' => '内容',
+                    'icon' => null,
+                    'route' => 'nodes.index',   // 路由名，或数组（格式：[路由名, 参数 1, 参数 2, ...]），下同
+                    'children' => [],
+                ],
+                [
+                    'title' => '消息',
+                    'icon' => null,
+                    'route' => 'messages.index',
+                    'children' => [],
+                ],
+            ],
+        ],
+
+        // 结构
+        'structure' => [
+            'title' => '结构',
+            'icon' => 'device_hub',
+            'route' => null,
+            'children' => [
+                [
+                    'title' => '类型',
+                    'icon' => null,
+                    'route' => 'node_types.index',
+                    'children' => [],
+                ],
+                [
+                    'title' => '目录',
+                    'icon' => null,
+                    'route' => 'catalogs.index',
+                    'children' => [],
+                ],
+                [
+                    'title' => '表单',
+                    'icon' => null,
+                    'route' => 'message_forms.index',
+                    'children' => [],
+                ],
+                // [
+                //     'title' => '标签',
+                //     'icon' => null,
+                //     'route' => 'tags.index',
+                //     'children' => [],
+                // ],
+            ],
+        ],
+
+        // 组件
+        'modules' => [
+            'title' => '组件',
+            'icon' => 'view_column',
+            'route' => null,
+            'children' => [
+                [
+                    'title' => '规格',
+                    'icon' => null,
+                    'route' => 'specs.index',
+                    'children' => [],
+                ],
+            ],
+        ],
+
+        // 文件管理
+        'file_manager' => [
+            'title' => '文件',
+            'icon' => 'folder',
+            'route' => 'media.index',
+            'children' => [],
+        ],
+
+        // 配置管理
+        'settings' => [
+            'title' => '配置',
+            'icon' => 'settings',
+            'route' => null,
+            'children' => [],
+        ],
+    ],
+
+    // 表单验证
+    'validation' => [
+        'file_bundles' => [
+            'image' => [
+                'png','jpg','jpeg','webp','bmp','svg','gif','ico',
+            ],
+
+            'file' => [
+                'pdf', 'doc', 'ppt', 'xls', 'dwg',
+            ],
+        ],
+
+        'patterns' => [
+            'url' => '/^(\\/[a-z0-9\\-_]+)+\\.html$/',
+            'twig' => '/^(\\/[a-z0-9\\-_]+)+(\\.html)?\\.twig$/',
+            'email' => '\'email\'',
+        ],
+    ],
 ];

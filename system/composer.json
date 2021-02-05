@@ -48,19 +48,23 @@
     },
     "autoload": {
         "files": [
-            "app/helpers.php",
-            "july/helpers.php"
+            "app/helpers.php"
         ],
         "psr-4": {
             "App\\": "app/",
-            "July\\": "july/",
-            "Installer\\": "modules/installer/src/"
+            "Database\\Seeds\\": "database/seeds/",
+            "Installer\\": "modules/installer/src/",
+            "Specs\\": "modules/specs/src/",
+            "July\\Node\\": "modules/july/node/src/",
+            "July\\Node\\Seeds\\": "modules/july/node/seeds/",
+            "July\\Taxonomy\\": "modules/july/taxonomy/src/",
+            "July\\Taxonomy\\Seeds\\": "modules/july/taxonomy/seeds/",
+            "July\\Message\\": "modules/july/message/src/",
+            "July\\Message\\Seeds\\": "modules/july/message/seeds/",
+            "IP2Location\\": "modules/ip2location/"
         },
         "classmap": [
-            "database/seeds",
-            "database/factories",
-            "plugins/*/core",
-            "plugins/*/seeds"
+            "database/seeds"
         ]
     },
     "autoload-dev": {

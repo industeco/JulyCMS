@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\EntityField\EntityPathAlias;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use July\Core\Config\PathAlias;
-use July\Utils\GoogleSitemap;
+use July\Node\GoogleSitemap;
 
 class AnyPage extends Controller
 {
@@ -34,7 +34,7 @@ class AnyPage extends Controller
         $url = trim(str_replace('\\', '/', $url), '/');
 
         $langcode = langcode('frontend');
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             if (!lang($langcode)->isAccessible()) {
                 abort(404);
             }
@@ -63,7 +63,7 @@ class AnyPage extends Controller
 
     protected function getRedirectiton(Request $request)
     {
-        $redirection = config('redirections', [])[$request->getRequestUri()] ?? null;
+        $redirection = config('site.redirections', [])[$request->getRequestUri()] ?? null;
         if ($redirection && $redirection['to']) {
             $host = $request->getSchemeAndHttpHost();
             if (! Str::startsWith($redirection['to'], $host)) {
@@ -102,8 +102,8 @@ class AnyPage extends Controller
 
     protected function getHtml($url, $langcode)
     {
-        if ($entity = PathAlias::findEntityByAlias($url)) {
-            return $entity->translateTo($langcode)->retrieveHtml();
+        if ($entity = EntityPathAlias::findEntity($url)) {
+            return $entity->translateTo($langcode)->fetchHtml();
         }
 
         return null;

@@ -10,25 +10,28 @@
   export default {
     data() {
       return {
-        visible: false,
         left: 0,
         top: 0,
+        visible: false,
       };
     },
 
     methods: {
-      show(event) {
-        event.preventDefault()
-        this.top = event.clientY;
-        this.left = event.clientX;
+      show(event, el) {
+        event.preventDefault();
         this.visible = true;
+
+        const rect = el.getClientRects()[0];
+        if (rect) {
+          this.top = Math.min(event.clientY, window.innerHeight-rect.height-20);
+          this.left = Math.min(event.clientX, window.innerWidth-rect.width-20);
+        } else {
+          this.top = event.clientY;
+          this.left = event.clientX;
+        }
 
         const _m = this;
         function hideContextMenu(e) {
-          // if (! _m.$refs.contextmenu.contains(e.target)) {
-          //   _m.visible = false;
-          //   document.removeEventListener('click', hideContextMenu);
-          // }
           _m.visible = false;
           document.removeEventListener('click', hideContextMenu);
         }

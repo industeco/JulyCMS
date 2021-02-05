@@ -96,7 +96,7 @@ class CommandController extends Controller
      */
     public function buildGoogleSitemap()
     {
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             $langcodes = lang()->getAccessibleLangcodes();
         } else {
             $langcodes = [langcode('page')];
@@ -162,7 +162,7 @@ class CommandController extends Controller
 
     public function findInvalidLinks()
     {
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             $langcodes = lang()->getAccessibleLangcodes();
         } else {
             $langcodes = [langcode('page')];

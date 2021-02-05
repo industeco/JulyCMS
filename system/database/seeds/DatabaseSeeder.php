@@ -1,7 +1,8 @@
 <?php
 
-use App\Database\SeederManager;
+use Database\Seeds;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +22,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         DB::beginTransaction();
+        $this->call(Seeds\UserSeeder::class);
         $this->call(static::$seeders);
         DB::commit();
 
@@ -33,8 +35,13 @@ class DatabaseSeeder extends Seeder
         static::$seeders = [];
     }
 
-    public function registerSeeders(array $seeders)
+    /**
+     * 登记数据填充器
+     *
+     * @param  string|array $seeders
+     */
+    public function register($seeders)
     {
-        static::$seeders = array_merge(static::$seeders, $seeders);
+        static::$seeders = array_merge(static::$seeders, Arr::wrap($seeders));
     }
 }

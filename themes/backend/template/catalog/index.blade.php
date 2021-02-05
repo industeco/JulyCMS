@@ -102,7 +102,7 @@
         _tar.deletable = !row.is_necessary;
 
         // this.contextmenuTarget = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       getUrl(route, id) {

@@ -2,13 +2,11 @@
 
 namespace App\Providers;
 
-use App\Database\SeederManager;
-use App\Plugin\Plugin;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Closure;
-use DatabaseSeeder;
-use Symfony\Component\Finder\Finder;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,13 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // $this->app->singleton('events_book', function() {
-        //     return new EventsBook();
-        // });
-
-        // $this->app->terminating(function() {
-        //     events()->store();
-        // });
+        // 注册 twig 单例
+        $this->registerTwig();
     }
 
     /**
@@ -35,56 +28,63 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // 添加视图命名空间
-        view()->addNamespace('backend', backend_path('template'));
+        // 启动管理类
+        $this->bootManagers();
 
-        // 启动插件
-        $this->bootPlugins();
+        // 添加视图命名空间
+        View::addNamespace('backend', backend_path('template'));
+
+        $this->extendBlade();
     }
 
     /**
-     * 加载插件
-     *
-     * @return void
+     * 注册 twig 单例
      */
-    protected function bootPlugins()
+    protected function registerTwig()
     {
-        foreach (Plugin::all() as $plugin) {
-            // 融合插件设置
-            $this->mergeConfigFrom($plugin->getConfigFile(), $plugin->getName());
+        $this->app->singleton('twig', function () {
+            $loader = new \Twig\Loader\FilesystemLoader('template', frontend_path());
+            $twig = new \Twig\Environment($loader, ['debug' => config('app.debug')]);
 
-            // 添加翻译文本目录
-            $this->loadTranslationsFrom($plugin->getTranslationsPath(), $plugin->getName());
+            if ($twig->isDebug()) {
+                $twig->addExtension(new \Twig\Extension\DebugExtension);
+            }
+            $twig->addExtension(new \Twig\Extension\StringLoaderExtension);
+            // $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
 
-            // 添加视图目录
-            $this->loadViewsFrom($plugin->getViewsPath(), $plugin->getName());
+            return $twig;
+        });
+    }
 
-            // 登记迁移路径
-            $this->loadMigrationsFrom($plugin->getMigrationsPath());
-
-            // 登记数据填充器路径
-            $this->loadSeedersFrom($plugin->getSeedersPath(), $plugin->getNamespace().'\\seeds\\');
+    /**
+     * 启动管理类
+     */
+    protected function bootManagers()
+    {
+        foreach (config('app.managers') as $manager) {
+            if (class_exists($manager)) {
+                $manager::discoverIfNotDiscovered();
+            }
         }
     }
 
     /**
-     * 登记数据填充器路径
+     * 扩展 Blade
      */
-    protected function loadSeedersFrom($path, string $namespace = '')
+    protected function extendBlade()
     {
-        $this->callAfterResolving(DatabaseSeeder::class, function(DatabaseSeeder $seeder) use($path, $namespace) {
-            $seeders = [];
-            if (is_string($path)) {
-                foreach (Finder::create()->files()->name('*.php')->in($path)->depth(0) as $file) {
-                    if (class_exists($class = $namespace.$file->getBasename('.php'))) {
-                        $seeders[] = $class;
-                    }
-                }
-            } elseif ($path instanceof Closure) {
-                $seeders = $path();
+        Blade::directive('jjson', function ($expression) {
+            if (Str::startsWith($expression, '(')) {
+                $expression = substr($expression, 1, -1);
             }
 
-            $seeder->registerSeeders($seeders);
+            $parts = explode(',', $expression);
+
+            $options = 'JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE'.(isset($parts[1]) ? '|'.trim($parts[1]) : '');
+
+            $depth = isset($parts[2]) ? trim($parts[2]) : 512;
+
+            return "<?php echo json_encode($parts[0], $options, $depth) ?>";
         });
     }
 }

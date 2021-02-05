@@ -1,67 +1,68 @@
 
 function clone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return _.cloneDeep(obj);
+  // return JSON.parse(JSON.stringify(obj));
 }
 
-// 折叠数据
-function toTree(nodes) {
-  nodes = nodes || [];
-  if (nodes.length <= 1) {
-    return nodes;
-  }
+// // 折叠数据
+// function toTree(nodes) {
+//   nodes = nodes || [];
+//   if (nodes.length <= 1) {
+//     return nodes;
+//   }
 
-  const nodesById = {
-    0: {},
-  };
+//   const nodesById = {
+//     0: {},
+//   };
 
-  nodes.forEach(node => {
-    nodesById[node.id] = node;
-  });
+//   nodes.forEach(node => {
+//     nodesById[node.id] = node;
+//   });
 
-  nodes.forEach(node => {
-    if (node.prev_id) {
-      nodesById[node.prev_id].next_id = node.id;
-    } else {
-      const parent_id = node.parent_id || 0;
-      nodesById[parent_id].child_id = node.id;
-    }
-  });
+//   nodes.forEach(node => {
+//     if (node.prev_id) {
+//       nodesById[node.prev_id].next_id = node.id;
+//     } else {
+//       const parent_id = node.parent_id || 0;
+//       nodesById[parent_id].child_id = node.id;
+//     }
+//   });
 
-  return getChildNodes(nodesById, 0);
-}
+//   return getChildNodes(nodesById, 0);
+// }
 
-function getChildNodes(nodes, parent_id) {
-  const children = [];
-  const parent = nodes[parent_id];
-  let node = nodes[parent.child_id];
-  while (node) {
-    children.push(node);
-    node.children = getChildNodes(nodes, node.id);
-    node = nodes[node.next_id];
-  }
-  return children;
-}
+// function getChildNodes(nodes, parent_id) {
+//   const children = [];
+//   const parent = nodes[parent_id];
+//   let node = nodes[parent.child_id];
+//   while (node) {
+//     children.push(node);
+//     node.children = getChildNodes(nodes, node.id);
+//     node = nodes[node.next_id];
+//   }
+//   return children;
+// }
 
-// 拆分数据
-function toRecords(treeData, parent, prev, path) {
-  let records = [];
+// // 拆分数据
+// function toRecords(treeData, parent, prev, path) {
+//   let records = [];
 
-  path = path || '/';
-  treeData.forEach(node => {
-    records.push({
-      id: node.id,
-      parent_id: parent || null,
-      prev_id: prev || null,
-      path: path || '/',
-    });
-    if (node.children && node.children.length) {
-      records = records.concat(toRecords(node.children, node.id, null, path + node.id + '/'));
-    }
-    prev = node.id;
-  });
+//   path = path || '/';
+//   treeData.forEach(node => {
+//     records.push({
+//       id: node.id,
+//       parent_id: parent || null,
+//       prev_id: prev || null,
+//       path: path || '/',
+//     });
+//     if (node.children && node.children.length) {
+//       records = records.concat(toRecords(node.children, node.id, null, path + node.id + '/'));
+//     }
+//     prev = node.id;
+//   });
 
-  return records
-}
+//   return records
+// }
 
 function isEmptyObject(obj) {
   for (const key in obj) {
@@ -97,5 +98,41 @@ function isEqual(v1, v2) {
     }
     return false;
   }
-  return v1 == v2 || stringify(v1) == stringify(v2);
+  // return v1 == v2 || stringify(v1) == stringify(v2);
+  return _.isEqual(v1, v2);
+}
+
+// 检查 id 是否已存在
+function unique(action) {
+  return function(rule, value, callback) {
+    axios.get(action.replace('_ID_', value)).then(function(response) {
+      if (response.data.exists) {
+        callback(new Error('id 已存在'));
+      } else {
+        callback();
+      }
+    }).catch(function(error) {
+      console.error(error);
+    });
+  };
+}
+
+// 检查是否已存在
+function exists(action, except) {
+  return function(rule, value, callback) {
+    console.log(except)
+    console.log(value)
+    if (!value || value == except) {
+      return callback();
+    }
+    axios.post(action, {value:value}).then(function(response) {
+      if (response.data.exists) {
+        callback(new Error('已存在'));
+      } else {
+        callback();
+      }
+    }).catch(function(error) {
+      console.error(error);
+    });
+  };
 }

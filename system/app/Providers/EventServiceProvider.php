@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Utils\Arr;
 use App\Utils\Settings;
-use App\Utils\State;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -33,10 +31,5 @@ class EventServiceProvider extends ServiceProvider
     public function boot()
     {
         parent::boot();
-
-        Event::listen(Authenticated::class, function(Authenticated $event) {
-            // Log::info($event->user);
-            Settings::loadPreferences(app(), config(), $event->user);
-        });
     }
 }

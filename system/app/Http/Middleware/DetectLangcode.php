@@ -36,10 +36,10 @@ class DetectLangcode
     protected function getFrontendLangcode($request)
     {
         $uri = trim(str_replace('\\', '/', $request->getRequestUri()), '/');
-        if (strpos($uri, config('jc.site.backend_route_prefix', 'admin').'/') === 0) {
+        if (strpos($uri, config('app.management_prefix', 'admin').'/') === 0) {
             config()->set('request.is_backend', true);
             App::setLocale(langcode('backend'));
-            return config('jc.language.backend');
+            return config('language.backend');
         }
 
         $dirs = explode('/', $uri);
@@ -47,6 +47,6 @@ class DetectLangcode
             return $langcode;
         }
 
-        return config('jc.language.frontend');
+        return config('language.frontend');
     }
 }

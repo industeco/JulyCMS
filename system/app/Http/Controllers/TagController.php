@@ -16,7 +16,7 @@ class TagController extends Controller
      */
     public function index()
     {
-        if (config('jc.language.multiple')) {
+        if (config('language.multiple')) {
             $tags = Tag::all();
         } else {
             $tags = Tag::where('langcode', langcode('content'))->get();

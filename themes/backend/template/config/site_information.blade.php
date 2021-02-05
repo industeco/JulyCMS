@@ -23,7 +23,7 @@
     </el-form-item>
     @endforeach
     <div id="main_form_bottom" class="is-button-item">
-      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click="submit">
+      <button type="button" class="md-button md-raised md-dense md-primary md-theme-default" @click.stop="submit">
         <div class="md-button-content">保存</div>
       </button>
     </div>
@@ -54,7 +54,7 @@
             {required:true, message:'不能为空', trigger:'submit'},
             {type:'email', message:'格式错误', trigger:'blur'},
           ],
-          'jc.site.subject': [
+          'site.subject': [
             {required:true, message:'不能为空', trigger:'submit'},
           ],
         },

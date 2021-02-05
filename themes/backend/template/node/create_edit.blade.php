@@ -36,7 +36,7 @@
       <h2 class="jc-form-info-item">通用非必填项</h2>
       <el-collapse :value="expanded" @change="handleCollapseChange">
         {{-- <el-collapse-item name="taxonomy" id="node_tags_selector"
-          title="{{ config('jc.form.global_field_groups.taxonomy.label') }}">
+          title="{{ config('app.field_groups.taxonomy.label') }}">
           <el-form-item size="small" class="has-helptext">
             <el-select v-model="node.tags" placeholder="选择标签"
               multiple
@@ -53,7 +53,7 @@
           </el-form-item>
         </el-collapse-item> --}}
         <el-collapse-item name="page_present"
-          title="{{ config('jc.form.global_field_groups.page_present.label') }}">
+          title="{{ config('app.field_groups.page_present.label') }}">
           <el-form-item prop="url" size="small">
             <el-tooltip slot="label" popper-class="jc-twig-output" effect="dark" content="url" placement="right">
               <span>网址</span>
@@ -81,7 +81,7 @@
           </el-form-item>
         </el-collapse-item>
         <el-collapse-item name="page_meta"
-          title="{{ config('jc.form.global_field_groups.page_meta.label') }}">
+          title="{{ config('app.field_groups.page_meta.label') }}">
           {!! $fields['meta_title']['element'] !!}
           {!! $fields['meta_keywords']['element'] !!}
           {!! $fields['meta_description']['element'] !!}
@@ -219,7 +219,7 @@
       });
       this.db.templates = templates;
 
-      @foreach(config('jc.form.global_field_groups') as $group => $info)
+      @foreach(config('app.field_groups') as $group => $info)
       @if ($info['expanded'])
       this.expanded.push('{{ $group }}');
       @endif

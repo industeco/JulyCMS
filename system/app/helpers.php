@@ -1,9 +1,11 @@
 <?php
 
-use App\Utils\Types;
+use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Models\ModelBase;
 use App\Utils\Lang;
-use App\Utils\State;
+use App\Utils\Types;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 if (! function_exists('backend_path')) {
@@ -15,7 +17,7 @@ if (! function_exists('backend_path')) {
      */
     function backend_path($path = '')
     {
-        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('jc.theme.backend'), '\\/').
+        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('app.theme'), '\\/').
             ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
         return public_path($path);
@@ -31,7 +33,7 @@ if (! function_exists('frontend_path')) {
      */
     function frontend_path($path = '')
     {
-        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('jc.theme.frontend'), '\\/').
+        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('site.theme'), '\\/').
             ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
         return public_path($path);
@@ -68,19 +70,39 @@ if (! function_exists('lang')) {
     /**
      * 获取语言操作对象
      *
-     * @param string|null $langcode
+     * @param  string|null $alias
      * @return \App\Utils\Lang
      */
-    function lang(?string $langcode = null)
+    function lang(?string $alias = null)
     {
-        return new Lang($langcode);
+        return new Lang($alias);
     }
 }
 
 if (! function_exists('langcode')) {
-    function langcode($alias = null)
+    /**
+     * 获取语言代码
+     *
+     * @param  string  $alias
+     * @return string|null
+     */
+    function langcode(string $alias)
     {
-        return lang()->findLangcode($alias);
+        return lang($alias)->getCode();
+    }
+}
+
+if (! function_exists('langname')) {
+    /**
+     * 获取语言名称
+     *
+     * @param  string  $alias
+     * @param  string|null  $langcode 名称的语言版本
+     * @return string|null
+     */
+    function langname(string $alias, ?string $langcode = null)
+    {
+        return lang($alias)->getName($langcode);
     }
 }
 
@@ -185,14 +207,14 @@ if (! function_exists('str_diff')) {
     }
 }
 
-if (! function_exists('normalize_args')) {
+if (! function_exists('real_args')) {
     /**
      * 格式化传入参数
      *
      * @param array $args 文件名
      * @return array
      */
-    function normalize_args(array $args)
+    function real_args(array $args)
     {
         // 如果只有一个参数，而且是一个数组，则假设该数组才是用户真正想要传入的参数
         if (count($args) === 1 && is_array($args[0] ?? null)) {
@@ -213,27 +235,6 @@ if (! function_exists('short_md5')) {
     }
 }
 
-if (! function_exists('state')) {
-    /**
-     * @param  string|array|null $key
-     * @return mixed
-     */
-    function state($key = null)
-    {
-        if (is_null($key)) {
-            return new State;
-        }
-
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                State::set($k, $v);
-            }
-        }
-
-        return State::get($key);;
-    }
-}
-
 if (! function_exists('safe_get_contents')) {
     /**
      * @param  string $file
@@ -242,5 +243,38 @@ if (! function_exists('safe_get_contents')) {
     function safe_get_contents(string $file)
     {
         return is_file($file) ? file_get_contents($file) : '';
+    }
+}
+
+if (! function_exists('get_field_types')) {
+    /**
+     * 获取所有字段类型
+     *
+     * @return array
+     */
+    function get_field_types()
+    {
+        return FieldTypeManager::details();
+    }
+}
+
+if (! function_exists('gather')) {
+    /**
+     * 在模型或模型集上执行 gather
+     *
+     * @param  mixed $items
+     * @return \Illuminate\Support\Collection|array
+     */
+    function gather($items, array $keys = ['*'])
+    {
+        if ($items instanceof ModelBase) {
+            return $items->gather($keys);
+        }
+        if ($items instanceof Collection) {
+            return $items->map(function($item) use($keys) {
+                return gather($item, $keys);
+            });
+        }
+        return (array) $items;
     }
 }
