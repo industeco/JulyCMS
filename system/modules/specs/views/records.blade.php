@@ -465,7 +465,7 @@
       // 展示右键菜单
       handleContextmenu(row, column, event) {
         this.contextmenu.target = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       // 响应列选择改变

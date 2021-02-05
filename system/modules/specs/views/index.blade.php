@@ -101,7 +101,7 @@
         _tar.recordsUrl = this.recordsUrl.replace('_ID_', row.id);
 
         // this.contextmenuTarget = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       getUrl(route, key) {

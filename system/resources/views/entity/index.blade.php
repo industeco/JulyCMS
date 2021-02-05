@@ -276,7 +276,7 @@
         menu.editUrl = this.editUrl.replace('%id%', row.id);
         menu.translateUrl = this.translateUrl.replace('%id%', row.id);
 
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       handleSelectionChange(selected) {

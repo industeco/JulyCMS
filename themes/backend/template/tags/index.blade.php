@@ -218,7 +218,7 @@
 
       handleRowRightClick(row, column, event) {
         this.currentTag = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       diffForHumans(time) {

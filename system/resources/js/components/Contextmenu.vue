@@ -17,13 +17,18 @@
     },
 
     methods: {
-      show(event) {
+      show(event, el) {
         event.preventDefault();
         this.visible = true;
-        let rect = this.$refs.contextmenu.$el.getClientRects();
 
-        this.top = Math.min(event.clientY, window.innerHeight-rect.height-20);
-        this.left = Math.min(event.clientX, window.innerWidth-rect.width-20);
+        const rect = el.getClientRects()[0];
+        if (rect) {
+          this.top = Math.min(event.clientY, window.innerHeight-rect.height-20);
+          this.left = Math.min(event.clientX, window.innerWidth-rect.width-20);
+        } else {
+          this.top = event.clientY;
+          this.left = event.clientX;
+        }
 
         const _m = this;
         function hideContextMenu(e) {

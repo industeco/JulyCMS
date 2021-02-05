@@ -47,7 +47,7 @@
       {{-- @if (config('lang.multiple'))
       <x-menu-item title="翻译" icon="translate" href="contextmenu.translateUrl" :disabled="!contextmenu.translatable" />
       @endif --}}
-      <x-menu-item title="删除" icon="remove_circle" click="deleteMold(contextmenu.target)" disabled="!contextmenu.deletable" />
+      <x-menu-item title="删除" icon="remove_circle" theme="md-accent" click="deleteMold(contextmenu.target)" disabled="!contextmenu.deletable" />
     </jc-contextmenu>
   </div>
 @endsection
@@ -90,7 +90,7 @@
         _tar.deletable = row.referenced <= 0 && !row.is_reserved;
 
         // this.contextmenuTarget = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       getUrl(route, key) {

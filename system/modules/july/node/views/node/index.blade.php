@@ -123,15 +123,18 @@
               <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              @if (config('lang.multiple'))
+              {{-- @if (config('lang.multiple'))
               <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
-              @endif
+              @endif --}}
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click.stop="deleteNode(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
               </button>
+              <a :href="scope.row.url" target="_blank" title="预览页面" class="md-button md-fab md-dense md-primary md-theme-default">
+                <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">visibility</i></div></div>
+              </a>
             </div>
           </template>
         </el-table-column>
@@ -139,10 +142,10 @@
     </div>
     <jc-contextmenu ref="contextmenu">
       <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" />
-      @if (config('lang.multiple'))
+      {{-- @if (config('lang.multiple'))
       <x-menu-item title="翻译" icon="translate" href="contextmenu.translateUrl" />
-      @endif
-      <x-menu-item title="删除" icon="remove_circle" click="deleteNode(contextmenu.target)" />
+      @endif --}}
+      <x-menu-item title="删除" icon="remove_circle" theme="md-accent" click="deleteNode(contextmenu.target)" />
       <x-menu-item title="生成 HTML" icon="description" click="render(contextmenu.target)" />
       <x-menu-item title="查看页面" icon="visibility" href="contextmenu.url" target="_blank" />
     </jc-contextmenu>
@@ -240,7 +243,7 @@
         menu.editUrl = this.editUrl.replace('_ID_', row.id);
         menu.translateUrl = this.translateUrl.replace('_ID_', row.id);
 
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       handleSelectionChange(selected) {

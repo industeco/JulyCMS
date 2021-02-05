@@ -91,7 +91,7 @@
         _tar.deletable = row.referenced <= 0 && !row.is_reserved;
 
         // this.contextmenuTarget = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       getUrl(route, key) {

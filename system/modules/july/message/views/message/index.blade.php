@@ -82,7 +82,7 @@
     </div>
     <jc-contextmenu ref="contextmenu">
       <x-menu-item title="查看" icon="visibility" target="_blank" href="contextmenu.url" />
-      <x-menu-item title="删除" icon="remove_circle" click="deleteModel(contextmenu.target)" />
+      <x-menu-item title="删除" icon="remove_circle" theme="md-accent" click="deleteModel(contextmenu.target)" />
     </jc-contextmenu>
   </div>
 @endsection
@@ -168,7 +168,7 @@
         menu.url = row.url;
         menu.showUrl = this.showUrl.replace('_ID_', row.id);
 
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       handleFilterByChange(value) {

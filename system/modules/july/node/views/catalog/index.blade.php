@@ -40,7 +40,7 @@
     <jc-contextmenu ref="contextmenu">
       <x-menu-item title="编辑" icon="edit" href="contextmenu.editUrl" />
       <x-menu-item title="排序" icon="sort" href="contextmenu.treeUrl" />
-      <x-menu-item title="删除" icon="remove_circle" click="deleteCatalog(contextmenu.target)" disabled="!contextmenu.deletable" />
+      <x-menu-item title="删除" icon="remove_circle" theme="md-accent" click="deleteCatalog(contextmenu.target)" disabled="!contextmenu.deletable" />
     </jc-contextmenu>
   </div>
 @endsection
@@ -81,7 +81,7 @@
         _tar.deletable = !row.is_reserved;
 
         // this.contextmenuTarget = row;
-        this.$refs.contextmenu.show(event);
+        this.$refs.contextmenu.show(event, this.$refs.contextmenu.$el);
       },
 
       getUrl(route, id) {
