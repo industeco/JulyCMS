@@ -22,37 +22,32 @@ abstract class ModelSetBase extends Collection
     abstract public static function getModelClass();
 
     /**
+     * Create a new collection.
+     *
+     * @param  mixed  $items
+     * @return void
+     */
+    public function __construct($items = [])
+    {
+        // 解析模型
+        $items = $this->resolveModels($this->getArrayableItems($items));
+
+        // 模型主键名
+        $key = static::getModelClass()::getModelKeyName();
+
+        // 重新生成键名
+        $this->items = collect($items)->keyBy($key)->all();
+    }
+
+    /**
      * 获取指定模型实例并缓存
      *
-     * @param  string|int|array|\App\Models\ModelBase|null
+     * @param  array $args
      * @return \App\Models\ModelSetBase|\App\Models\ModelBase[]
      */
-    public static function fetch($args = null)
+    public static function fetch(...$args)
     {
-        // 格式化参数
-        $args = Arr::wrap($args);
-
-        $class = static::getModelClass();
-        $cache = self::$modelsCache[$class] ?? [];
-        if (empty($args)) {
-            return new static($cache);
-        }
-
-        $models = [];
-        foreach ($args as $arg) {
-            if (is_object($arg) && ($arg instanceof $class)) {
-                $models[$arg->getKey()] = $arg;
-            } elseif (isset($cache[$arg])) {
-                $arg = $cache[$arg];
-                $models[$arg->getKey()] = $arg;
-            } elseif ($instance = $class::find($arg)) {
-                $models[$instance->getKey()] = $instance;
-            }
-        }
-
-        self::$modelsCache[$class] = array_merge($cache, $models);
-
-        return new static($models);
+        return new static(real_args($args));
     }
 
     /**
@@ -62,13 +57,38 @@ abstract class ModelSetBase extends Collection
      */
     public static function fetchAll()
     {
-        $model = static::getModelClass();
-        $cache = self::$modelsCache[$model] ?? [];
-        foreach ($model::query()->whereKeyNot(array_keys($cache))->get() as $instance) {
-            $cache[$instance->getKey()] = $instance;
-        }
-        self::$modelsCache[$model] = $cache;
+        return new static(static::getModelClass()::all());
+    }
 
-        return new static($cache);
+    /**
+     * 将参数转换为模型组
+     *
+     * @return \App\Models\ModelBase[]
+     */
+    protected function resolveModels(array $items)
+    {
+        if (empty($items)) {
+            return [];
+        }
+
+        // 绑定的模型
+        $class = static::getModelClass();
+
+        $cache = self::$modelsCache[$class] ?? [];
+
+        $models = [];
+        foreach ($items as $item) {
+            if (is_object($item) && ($item instanceof $class)) {
+                $models['id_'.$item->getKey()] = $item;
+            } elseif ($instance = $cache[$item] ?? null) {
+                $models['id_'.$instance->getKey()] = $instance;
+            } elseif ($instance = $class::find($item)) {
+                $models['id_'.$instance->getKey()] = $instance;
+            }
+        }
+
+        self::$modelsCache[$class] = array_merge($cache, $models);
+
+        return $models;
     }
 }
