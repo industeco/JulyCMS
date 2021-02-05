@@ -225,9 +225,9 @@ class Catalog extends ModelBase implements GetNodesInterface
     public function get_children(...$args)
     {
         $args = real_args($args);
-        if (empty($args)) {
-            $args = [0];
-        }
+        // if (empty($args)) {
+        //     $args = [0];
+        // }
 
         $tree = $this->tree();
         $ids = [];

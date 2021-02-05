@@ -3,6 +3,7 @@
 namespace July\Node;
 
 use App\Models\ModelSetBase;
+use App\Utils\Arr;
 
 class NodeSet extends ModelSetBase
 {
@@ -41,7 +42,7 @@ class NodeSet extends ModelSetBase
      */
     public function get_descendants($catalog = null)
     {
-        $ids = $this->pluck('id')->all();
+        $ids = array_keys($this->items);
         return CatalogSet::fetch($catalog)->get_descendants(...$ids);
     }
 

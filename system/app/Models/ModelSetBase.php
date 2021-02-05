@@ -27,16 +27,20 @@ abstract class ModelSetBase extends Collection
      * @param  mixed  $items
      * @return void
      */
-    public function __construct($items = [])
+    public function __construct($items = [], $resolveModel = false)
     {
-        // 解析模型
-        $items = $this->resolveModels($this->getArrayableItems($items));
+        $this->items = $this->getArrayableItems($items);
 
-        // 模型主键名
-        $key = static::getModelClass()::getModelKeyName();
+        if ($resolveModel) {
+            // 解析模型
+            $items = $this->resolveModels($this->items);
 
-        // 重新生成键名
-        $this->items = collect($items)->keyBy($key)->all();
+            // 模型主键名
+            $key = static::getModelClass()::getModelKeyName();
+
+            // 重新生成键名
+            $this->items = collect($items)->keyBy($key)->all();
+        }
     }
 
     /**
@@ -47,7 +51,7 @@ abstract class ModelSetBase extends Collection
      */
     public static function fetch(...$args)
     {
-        return new static(real_args($args));
+        return new static(real_args($args), true);
     }
 
     /**
@@ -57,7 +61,7 @@ abstract class ModelSetBase extends Collection
      */
     public static function fetchAll()
     {
-        return new static(static::getModelClass()::all());
+        return new static(static::getModelClass()::all(), true);
     }
 
     /**
@@ -91,4 +95,6 @@ abstract class ModelSetBase extends Collection
 
         return $models;
     }
+
+
 }
