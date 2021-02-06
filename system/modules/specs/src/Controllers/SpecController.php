@@ -181,6 +181,7 @@ class SpecController extends Controller
     public function clearRecords(Spec $spec)
     {
         DB::table($spec->getDataTable())->delete();
+
         return response('');
     }
 
@@ -207,10 +208,9 @@ class SpecController extends Controller
      */
     public function search(Request $request, Spec $spec)
     {
-        return response([
-            'fields' => $spec->getFields()->all(),
-            'results' => $spec->search($request->input('keywords', ''), $request->input('fields', [])),
-        ]);
+        $results = $spec->search($request->input('keywords', ''), $request->input('fields', []));
+        $results['fields'] = $spec->getFields()->all();
+        return response($results);
     }
 
     /**
@@ -226,6 +226,19 @@ class SpecController extends Controller
         return view('specs::record', [
             'record' => $spec->getRecord($recordId),
         ]);
+    }
+
+    /**
+     * 获取指定规格的所有数据
+     *
+     * @param  \Specs\Spec  $spec
+     * @return \Illuminate\Http\Response
+     */
+    public function getRecords(Spec $spec)
+    {
+        $data = $spec->toSearchResults($spec->getRecords());
+        $data['fields'] = $spec->getFields()->all();
+        return response($data);
     }
 
     /**

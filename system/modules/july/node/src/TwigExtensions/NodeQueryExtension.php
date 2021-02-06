@@ -9,6 +9,7 @@ use July\Node\CatalogSet;
 use July\Node\NodeSet;
 use July\Node\NodeTypeSet;
 use July\Taxonomy\TermSet;
+use Specs\Spec;
 use Twig\TwigFunction;
 use Twig\TwigFilter;
 use Twig\Extension\AbstractExtension;
@@ -98,6 +99,11 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
                     return MessageForm::default();
                 }
                 return MessageForm::find($form) ?? MessageForm::default();
+            }),
+
+            // 获取联系表单对象
+            new TwigFilter('specs', function($id) {
+                return Spec::find($id);
             }),
         ];
     }

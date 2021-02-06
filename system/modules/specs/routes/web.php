@@ -31,9 +31,13 @@ Route::prefix(config('app.management_prefix', 'admin'))
         ->name('specs.records.clear');
 });
 
-// 搜索规格
-Route::get('specs/{spec}/search', [Controllers\SpecController::class, 'showSearch'])
-    ->name('specs.show_search');
+// // 显示规格搜索页
+// Route::get('specs/{spec}/search', [Controllers\SpecController::class, 'showSearch'])
+//     ->name('specs.show_search');
+
+// 获取所有规格
+Route::post('specs/{spec}', [Controllers\SpecController::class, 'getRecords'])
+    ->name('specs.data');
 
 // 搜索规格
 Route::post('specs/{spec}/search', [Controllers\SpecController::class, 'search'])

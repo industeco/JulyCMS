@@ -22,6 +22,9 @@ class CommandController extends Controller
         // 清除缓存
         Artisan::call('cache:clear');
 
+        // 清除视图缓存
+        Artisan::call('view:clear');
+
         return true;
     }
 

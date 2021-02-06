@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Schema;
 class Spec extends ModelBase
 {
     /**
+     * 缓存的字段列表
+     *
+     * @var \Illuminate\Support\Collection
+     */
+    protected static $fieldsCache = null;
+
+    /**
      * 与模型关联的表名
      *
      * @var string
@@ -135,7 +142,11 @@ class Spec extends ModelBase
      */
     public function getFields()
     {
-        return $this->fields->map(function(SpecField $field) {
+        if (static::$fieldsCache) {
+            return static::$fieldsCache;
+        }
+
+        return static::$fieldsCache = $this->fields->map(function(SpecField $field) {
             return $field->attributesToArray();
         })->keyBy('field_id');
     }
@@ -147,10 +158,11 @@ class Spec extends ModelBase
      */
     public function getRecords()
     {
-        return DB::table($this->getDataTable())->get()
-            ->map(function($record) {
-                return (array) $record;
-            });
+        return DB::table($this->getDataTable())
+                ->get()
+                ->map(function($record) {
+                    return (array) $record;
+                });
     }
 
     /**
@@ -199,11 +211,24 @@ class Spec extends ModelBase
                 return (array) $record;
             });
 
+        return $this->toSearchResults($records);
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection $records
+     * @return array
+     */
+    public function toSearchResults($records)
+    {
+        $fields = $this->getFields();
+
         $groups = [];
         if (! $records->isEmpty()) {
             foreach ($fields as $field_id => $field) {
                 if ($field['is_groupable']) {
-                    $groups[$field_id] = $records->countBy($field_id)->all();
+                    $groups[$field_id] = $records->groupBy($field_id)->map(function($group) {
+                        return $group->count();
+                    })->all();
                 }
             }
         }
