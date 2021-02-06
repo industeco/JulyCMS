@@ -44,7 +44,7 @@ class LoginController extends Controller
         //     return redirect(short_url('admin.home'));
         // }
 
-        return view('backend::auth.login');
+        return view('auth.login');
     }
 
     /**

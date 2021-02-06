@@ -65,6 +65,16 @@ class Catalog extends ModelBase implements GetNodesInterface
     ];
 
     /**
+     * 获取对应的模型集类
+     *
+     * @return string|null
+     */
+    public static function getModelSetClass()
+    {
+        return CatalogSet::class;
+    }
+
+    /**
      * 树状结构的目录数据
      *
      * @var \App\Utils\Tree

@@ -5,7 +5,7 @@ use July\Node\Controllers;
 
 // 组件的 web 路由
 Route::group([
-    'prefix' => config('app.management_prefix', 'admin'),
+    'prefix' => config('app.management_prefix', 'manage'),
     'middleware' => ['admin','auth'],
 ], function() {
     // 字段
@@ -59,4 +59,16 @@ Route::group([
         ->except(['create'])
         ->parameters(['nodes' => 'node'])
         ->names('nodes');
+
+    Route::post('nodes/build_index', [Controllers\NodeController::class, 'buildIndex'])
+    ->name('nodes.build_index');
+
+    Route::post('nodes/google-sitemap', [Controllers\NodeController::class, 'buildGoogleSitemap'])
+        ->name('nodes.build_google_sitemap');
+
+    Route::get('nodes/invalid-links', [Controllers\NodeController::class, 'findInvalidLinks'])
+        ->name('nodes.find_invalid_links');
 });
+
+Route::get('search', [Controllers\NodeController::class, 'search'])
+    ->name('nodes.search');

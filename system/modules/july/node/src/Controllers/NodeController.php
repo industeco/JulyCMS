@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Utils\Lang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use July\Node\Catalog;
+use July\Node\GoogleSitemap;
 use July\Node\Node;
 use July\Node\NodeType;
 use July\Node\NodeField;
+use July\Node\NodeIndex;
+use July\Node\NodeSet;
 use July\Node\TwigExtensions\NodeQueryExtension;
 use July\Taxonomy\Tag;
 
@@ -205,16 +209,14 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        // $contents = Node::carryAll();
+        $nodes = NodeSet::fetchAll();
         if ($ids = $request->input('nodes')) {
-            $nodes = Node::find($ids);
-        } else {
-            $nodes = Node::all();
+            $nodes = NodeSet::fetch($ids);
         }
 
         // 多语言生成
         if (config('lang.multiple')) {
-            $langs = $request->input('langcode') ?: Lang::getAccessibleLangcodes();
+            $langs = Lang::getAccessibleLangcodes();
         } else {
             $langs = [langcode('frontend')];
         }
@@ -239,5 +241,88 @@ class NodeController extends Controller
         }
 
         return response($success);
+    }
+
+    /**
+     * 重建索引
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function buildIndex()
+    {
+        return NodeIndex::rebuild();
+    }
+
+    /**
+     * 检索关键词
+     *
+     * @return string
+     */
+    public function search(Request $request)
+    {
+        $nodes = Node::all()->keyBy('id');
+
+        $results = NodeIndex::search($request->input('keywords'));
+        $results['title'] = 'Search';
+        $results['meta_title'] = 'Search Result';
+        $results['meta_keywords'] = 'Search';
+        $results['meta_description'] = 'Search Result';
+
+        foreach ($results['results'] as &$result) {
+            $result['node'] = $nodes->get($result['node_id']);
+        }
+
+        return app('twig')->render('search.twig', $results);
+    }
+
+    /**
+     * 生成谷歌站点地图（.xml 文件）
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function buildGoogleSitemap()
+    {
+        Storage::disk('public')->put('sitemap.xml', GoogleSitemap::build(langcode('frontend')));
+
+        return response('');
+
+        // if (config('lang.multiple')) {
+        //     $langcodes = lang()->getAccessibleLangcodes();
+        // } else {
+        //     $langcodes = [langcode('frontend')];
+        // }
+        // foreach ($langcodes as $langcode) {
+        //     $sitemap = GoogleSitemap::build($langcode);
+        //     Storage::disk('public')->put('pages/'.$langcode.'/sitemap.xml', $sitemap);
+        // }
+    }
+
+    /**
+     * 查找无效链接
+     *
+     * @return \Illuminate\View\View
+     */
+    public function findInvalidLinks()
+    {
+        $invalidLinks = [];
+        foreach (Node::fetchAll() as $node) {
+            $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks());
+        }
+
+        return view('node::node.invalid_links', [
+            'invalidLinks' => $invalidLinks,
+        ]);
+
+        // if (config('lang.multiple')) {
+        //     $langcodes = lang()->getAccessibleLangcodes();
+        // } else {
+        //     $langcodes = [langcode('frontend')];
+        // }
+        // $invalidLinks = [];
+        // foreach (Node::all() as $node) {
+        //     foreach ($langcodes as $langcode) {
+        //         $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks($langcode));
+        //     }
+        // }
     }
 }

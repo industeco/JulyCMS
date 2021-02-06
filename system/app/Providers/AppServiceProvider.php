@@ -28,13 +28,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // 扩展 Blade
+        $this->extendBlade();
+
         // 启动管理类
         $this->bootManagers();
 
         // 添加视图命名空间
-        View::addNamespace('backend', backend_path('template'));
-
-        $this->extendBlade();
+        // View::addNamespace('backend', backend_path('template'));
     }
 
     /**

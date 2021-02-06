@@ -282,6 +282,19 @@ abstract class FieldTypeBase
         ];
     }
 
+    /**
+     * 转为适合索引的内容
+     *
+     * @param  string $value 字段内容
+     * @return string
+     */
+    public function toIndex($value)
+    {
+        $value = preg_replace('/\s+/', ' ', $value);
+
+        return trim($value, ' ;');
+    }
+
     public function __get($name)
     {
         return $this->$name ?? null;

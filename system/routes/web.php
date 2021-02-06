@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +14,7 @@ use App\Http\Controllers;
 |
 */
 Route::group([
-    'prefix' => config('app.management_prefix', 'admin'),
+    'prefix' => config('app.management_prefix', 'manage'),
     'middleware' => ['admin'],
 ], function() {
     Route::get('login',  [Controllers\LoginController::class, 'showLoginForm'])->name('admin.login');
@@ -66,30 +66,17 @@ Route::group([
     Route::post('path_alias/exists', [Controllers\PathAliasController::class, 'exists'])
         ->name('path_alias.exists');
 
-
     // 执行命令
     Route::get('search', [Controllers\CommandController::class, 'searchDatabase'])
-        ->name('cmd.search');
+    ->name('action.search');
 
-    Route::post('cmd/update/password', [Controllers\CommandController::class, 'updateAdminPassword'])
-        ->name('cmd.updatePassword');
+    Route::post('action/change_password', [Controllers\CommandController::class, 'changeAdminPassword'])
+        ->name('action.change_password');
 
-    Route::get('cmd/clear/cache', [Controllers\CommandController::class, 'clearCache'])
-        ->name('cmd.clearCache');
-
-    Route::get('cmd/build/index', [Controllers\CommandController::class, 'buildIndex'])
-        ->name('cmd.buildIndex');
-
-    Route::get('cmd/build/google-sitemap', [Controllers\CommandController::class, 'buildGoogleSitemap'])
-        ->name('cmd.buildGoogleSitemap');
-
-    Route::get('cmd/find/invalid-links', [Controllers\CommandController::class, 'findInvalidLinks'])
-        ->name('cmd.findInvalidLinks');
+    Route::post('action/clear_cache', [Controllers\CommandController::class, 'clearCache'])
+        ->name('action.clear_cache');
 });
 
 // // 前台
 // Route::post('newmessage', [Controllers\CommandController::class, 'newMessage'])
 //     ->name('ajax.newmessage');
-
-Route::get('search', [Controllers\CommandController::class, 'search'])
-    ->name('ajax.search');

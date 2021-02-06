@@ -226,7 +226,7 @@ abstract class DefinitionBase implements DefinitionInterface
     //         $data['parameters']['helptext'] = $data['description'] ?? null;
     //     }
 
-    //     return view('backend::components.'.$this->getKey(), $data)->render();
+    //     return view('components.'.$this->getKey(), $data)->render();
     // }
 
     // /**

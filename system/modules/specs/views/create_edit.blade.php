@@ -1,4 +1,4 @@
-@extends('backend::layout')
+@extends('layout')
 
 @section('h1')
   {{ $spec['id'] ? '编辑规格类型' : '新建规格类型' }}
@@ -10,9 +10,9 @@
     :rules="specRules"
     label-position="top">
     <div id="main_form_left">
-      @include('backend::widgets.id', ['_model' => 'spec', '_readOnly' => (bool) $spec['id']])
-      @include('backend::widgets.label', ['_model' => 'spec', '_label'=>'名称'])
-      @include('backend::widgets.description', ['_model' => 'spec'])
+      @include('widgets.id', ['_model' => 'spec', '_readOnly' => (bool) $spec['id']])
+      @include('widgets.label', ['_model' => 'spec', '_label'=>'名称'])
+      @include('widgets.description', ['_model' => 'spec'])
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
         <div class="el-form-item__content">
           <div class="jc-embeded-field__header">
@@ -117,8 +117,8 @@
           :disabled="!isEditable"></el-input>
         <span class="jc-form-item-help"><i class="el-icon-info"></i> 只能使用小写字母、数字和下划线</span>
       </el-form-item>
-      @include('backend::widgets.label', ['_model'=> 'currentField'])
-      @include('backend::widgets.description', ['_model'=> 'currentField', '_rows'=>3])
+      @include('widgets.label', ['_model'=> 'currentField'])
+      @include('widgets.description', ['_model'=> 'currentField', '_rows'=>3])
       <el-form-item label="字段类型" prop="field_type_id" size="small" class="has-helptext">
         <el-select v-model="currentField.field_type_id" placeholder="--选择字段类型--" :disabled="!isEditable || fieldEditing">
           <el-option

@@ -34,6 +34,49 @@ abstract class ModelBase extends Model
     protected $raw = [];
 
     /**
+     * 获取对应的模型集类
+     *
+     * @return string|null
+     */
+    public static function getModelSetClass()
+    {
+        // if (class_exists($class = __NAMESPACE__.'\\'.class_basename(static::class).'Set')) {
+        //     return $class;
+        // }
+        return null;
+    }
+
+    /**
+     * 获取并缓存
+     *
+     * @param  mixed  $id
+     * @return \App\Models\ModelSetBase|\App\Models\ModelBase|\Illuminate\Database\Eloquent\Collection|static[]|static|null
+     */
+    public static function fetch($id)
+    {
+        if ($modelSet = static::getModelSetClass()) {
+            if (is_array($id)) {
+                return $modelSet::fetch($id);
+            }
+            return $modelSet::fetch($id)->first();
+        }
+        return static::find($id);
+    }
+
+    /**
+     * 获取所有并缓存
+     *
+     * @return \App\Models\ModelSetBase|\Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public static function fetchAll()
+    {
+        if ($modelSet = static::getModelSetClass()) {
+            return $modelSet::fetchAll();
+        }
+        return static::all();
+    }
+
+    /**
      * Find a model by its primary key.
      *
      * @param  mixed  $id

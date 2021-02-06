@@ -1,4 +1,4 @@
-@extends('backend::layout')
+@extends('layout')
 
 @section('h1', '内容类型')
 

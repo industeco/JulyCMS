@@ -92,17 +92,17 @@
             <div class="md-button-content">生成谷歌站点地图</div>
           </div>
         </button>
-        <a href="{{ short_url('cmd.findInvalidLinks') }}" target="_blank" class="md-button md-small md-primary md-theme-default">
+        {{-- <a href="{{ short_url('nodes.find_invalid_links') }}" target="_blank" class="md-button md-small md-primary md-theme-default">
           <div class="md-ripple">
             <div class="md-button-content">查找无效链接</div>
           </div>
-        </a>
+        </a> --}}
       </div>
 
       <!-- 导航栏右侧菜单 -->
       <div id="navbar_right">
         <!-- 搜索栏框 -->
-        <form action="{{ short_url('cmd.search') }}" method="GET" id="navbar_search">
+        <form action="{{ short_url('action.search') }}" method="GET" id="navbar_search">
           <input type="text" name="keywords" placeholder="搜索">
           <i class="md-icon md-icon-font md-theme-default">search</i>
         </form>
@@ -292,26 +292,28 @@
         process(config) {
           const loading = this.$loading({
             lock: true,
-            text: config.longdingText || '正在处理 ...',
+            text: config.text || '正在处理 ...',
             background: 'rgba(255, 255, 255, 0.7)',
           });
 
-          return axios[(config.method || 'get')](config.action).then(response => {
-            loading.close();
-            return response;
-          }).catch(error => {
-            loading.close();
-            console.error(error);
-            this.$message.error('发生错误！请查看控制台');
-            return error;
-          });
+          return axios[(config.method || 'get')](config.action)
+            .then(response => {
+              loading.close();
+              return response;
+            })
+            .catch(error => {
+              loading.close();
+              console.error(error);
+              this.$message.error('发生错误！请查看控制台');
+              return error;
+            });
         },
 
         rebuildIndex() {
           this.process({
-            loadingText: '正在重建索引 ...',
-            method: 'get',
-            action: "{{ short_url('cmd.buildIndex') }}",
+            text: '正在重建索引 ...',
+            method: 'post',
+            action: "{{ short_url('nodes.build_index') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -322,9 +324,9 @@
 
         clearCache() {
           this.process({
-            loadingText: '正在清除缓存 ...',
-            method: 'get',
-            action: "{{ short_url('cmd.clearCache') }}",
+            text: '正在清除缓存 ...',
+            method: 'post',
+            action: "{{ short_url('action.clear_cache') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -335,9 +337,9 @@
 
         buildGoogleSitemap() {
           this.process({
-            loadingText: '正在生成谷歌站点地图 ...',
-            method: 'get',
-            action: "{{ short_url('cmd.buildGoogleSitemap') }}",
+            text: '正在生成谷歌站点地图 ...',
+            method: 'post',
+            action: "{{ short_url('nodes.build_google_sitemap') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
@@ -369,7 +371,7 @@
 
           const form = this.$refs.pwdForm;
           form.validate().then(() => {
-            axios.post("{{ short_url('cmd.updatePassword') }}", clone(this.pwd.data)).then(response => {
+            axios.post("{{ short_url('action.change_password') }}", clone(this.pwd.data)).then(response => {
               loading.close();
               console.log(response)
               if (response.status === 200) {

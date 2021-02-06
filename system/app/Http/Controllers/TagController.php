@@ -21,7 +21,7 @@ class TagController extends Controller
         } else {
             $tags = Tag::where('langcode', langcode('content'))->get();
         }
-        return view_with_langcode('backend::tags.index', [
+        return view_with_langcode('tags.index', [
             'tags' => $tags->keyBy('tag')->toArray(),
         ]);
     }

@@ -6,7 +6,7 @@ use App\Entity\EntityBase;
 use App\Models\ModelBase;
 use App\Utils\Arr;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Support\Facades\DB;
 
 abstract class FieldValueBase extends ModelBase
 {
@@ -224,12 +224,13 @@ abstract class FieldValueBase extends ModelBase
     /**
      * 获取所有字段值
      *
+     * @param  string|null $langcode 指定语言版本
      * @return array
      */
-    public function values()
+    public function values(?string $langcode = null)
     {
         $conditions = [
-            'langcode' => $this->field->getLangcode(),
+            'langcode' => $langcode ?? $this->field->getLangcode(),
         ];
         if (in_array('entity_name', $this->fillable)) {
             $conditions['entity_name'] = $this->field->getBoundEntityName();
@@ -239,6 +240,31 @@ abstract class FieldValueBase extends ModelBase
             ->where($conditions)
             ->get(['entity_id', $this->value_column])
             ->pluck($this->value_column, 'entity_id')
+            ->all();
+    }
+
+    /**
+     * 获取所有字段值，不区分语言，不做转换
+     *
+     * @return array
+     */
+    public function records()
+    {
+        $conditions = [];
+        if (in_array('entity_name', $this->fillable)) {
+            $conditions['entity_name'] = $this->field->getBoundEntityName();
+        }
+
+        return DB::table($this->getTable())
+            ->where($conditions)
+            ->get([$this->value_column, 'langcode'])
+            ->map(function($record) {
+                return [
+                    'entity_id' => $record->entity_id,
+                    'value' => $record->{$this->value_column},
+                    'langcode' => $record->langcode,
+                ];
+            })
             ->all();
     }
 

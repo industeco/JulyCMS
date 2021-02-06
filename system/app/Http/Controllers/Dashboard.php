@@ -14,6 +14,6 @@ class Dashboard extends Controller
      */
     public function __invoke()
     {
-        return view('backend::home');
+        return view('home');
     }
 }

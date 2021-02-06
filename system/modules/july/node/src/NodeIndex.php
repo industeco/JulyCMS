@@ -20,10 +20,11 @@ class NodeIndex extends ModelBase
      * @var array
      */
     protected $fillable = [
-        'node_id',
+        'entity_id',
         'field_id',
-        'field_value',
+        'content',
         'langcode',
+        'weight',
     ];
 
     /**
@@ -43,7 +44,20 @@ class NodeIndex extends ModelBase
         DB::beginTransaction();
 
         DB::delete('DELETE FROM node_index;');
-        NodeField::searchableFields()->each(function (NodeField $field) {
+
+        // 索引标题
+        Node::all(['id','title','langcode'])->each(function(Node $node) {
+            DB::table('node_index')->insert([
+                'entity_id' => $node->getKey(),
+                'field_id' => 'title',
+                'content' => trim($node->title),
+                'langcode' => $node->langcode,
+                'weight' => 10,
+            ]);
+        });
+
+        // 索引其它字段
+        NodeField::searchable()->each(function (NodeField $field) {
             foreach (static::extractValueIndex($field) as $record) {
                 DB::table('node_index')->insert($record);
             }
@@ -62,58 +76,23 @@ class NodeIndex extends ModelBase
      */
     protected static function extractValueIndex(NodeField $field)
     {
-        $values = [];
+        // return $field->getValuesAll();
 
-        $key = $field->getKey();
-        $field_type = $field->field_type_id;
-        $weight = $field->weight;
-        $columns = collect($field->getValueColumns())->pluck('name')->all();
-        $nodeForeignKey = $field->getHostForeignKey();
+        $values = [];
+        $fieldId = $field->getKey();
+        $fieldType = $field->getFieldType();
+        $weight = $field->search_weight;
         foreach ($field->getValueRecords() as $record) {
-            foreach ($columns as $column) {
-                if (empty($record[$column])) {
-                    continue;
-                }
-                $values[] = [
-                    'node_id' => $record[$nodeForeignKey],
-                    'field_id' => $key,
-                    'field_value' => static::prepareValue($record[$column], $field_type),
-                    'langcode' => $record['langcode'],
-                    'weight' => $weight,
-                ];
-            }
+            $values[] = [
+                'entity_id' => $record['entity_id'],
+                'field_id' => $fieldId,
+                'content' => $fieldType->toIndex($record['value']),
+                'langcode' => $record['langcode'],
+                'weight' => $weight,
+            ];
         }
 
         return $values;
-    }
-
-    /**
-     * 净化 HTML 内容
-     *
-     * @param  string $content 字段内容
-     * @param  string $type 内容类型
-     * @return string
-     */
-    protected static function prepareValue($content, $type)
-    {
-        $content = preg_replace('/\s+/', ' ', $content);
-
-        if ($type === 'html') {
-            $blocks = [
-                'div','p','h1','h2','h3','h4','h5','h6',
-                'li','dt','dd','caption','th','td',
-                'section','nav','header','article','aside','footer','menuitem','address',
-                'br','hr',
-            ];
-
-            $content = preg_replace('/<('.implode('|', $blocks).')(?=\\s|>)/i', '; <$1', $content);
-            $content = strip_tags($content);
-            $content = preg_replace('/\s+/', ' ', $content);
-            $content = preg_replace('/[\s;]+;/', ';', $content);
-            $content = preg_replace('/([.,;?!]);\s/', '$1 ', $content);
-        }
-
-        return trim($content, ' ;');
     }
 
     /**
@@ -131,11 +110,13 @@ class NodeIndex extends ModelBase
             ];
         }
 
+        // 处理关键词
         $keywords = static::normalizeKeywords($keywords);
 
+        // 获取搜索结果
         $results = [];
         foreach (static::searchIndex($keywords) as $result) {
-            $node_id = $result->node_id;
+            $node_id = $result->entity_id;
             $field_id = $result->field_id;
 
             $result = $result->toSearchResult($keywords);
@@ -171,17 +152,15 @@ class NodeIndex extends ModelBase
      * @param  string|null $langcode
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
-    protected static function searchIndex(array $keywords, string $langcode = null)
+    protected static function searchIndex(array $keywords)
     {
-        $langcode = $langcode ?: langcode('frontend');
-
         $conditions = [];
         foreach ($keywords as $keyword => $weight) {
-            $conditions[] = ['field_value', 'like', '%'.$keyword.'%', 'or'];
+            $conditions[] = ['content', 'like', '%'.$keyword.'%', 'or'];
         }
 
         return static::query()
-            ->where('langcode', $langcode)
+            ->where('langcode', langcode('frontend'))
             ->where(function ($query) use ($conditions) {
                 $query->where($conditions);
             })
@@ -243,21 +222,6 @@ class NodeIndex extends ModelBase
         }
 
         return $combined;
-
-        // $weights = [];
-        // $words = [];
-        // foreach ($keywords as $index => $word) {
-        //     $words[] = $word;
-        //     $key = implode(' ', $words);
-        //     $weights[$key] = pow(2, $index + 1) - $offset/10;
-        // }
-
-        // $keywords = array_slice($keywords, 1);
-        // if ($keywords) {
-        //     $weights = array_merge($weights, static::combineKeywords($keywords, $offset + 1));
-        // }
-
-        // return $weights;
     }
 
     /**
@@ -271,7 +235,7 @@ class NodeIndex extends ModelBase
         // $this->tokenize($keywords);
         $tokens = $this->tokenizer($keywords);
 
-        $similar = $this->similar($this->attributes['field_value'], key($keywords));
+        $similar = $this->similar($this->attributes['content'], key($keywords));
         $weight = $this->weight*($this->attributes['weight'] ?? 1)*pow(10, pow($similar, 3));
 
         return [
@@ -289,9 +253,10 @@ class NodeIndex extends ModelBase
     protected function tokenizer(array $keywords)
     {
         $this->weight = 0;
-        $content = trim($this->attributes['field_value']);
+        $content = trim($this->attributes['content']);
         $tokens = [];
         foreach ($keywords as $keyword => $weight) {
+            $keyword = (string) $keyword;
             $pos = stripos($content, $keyword);
             while ($pos !== false) {
                 $tokens[] = substr($content, 0, $pos);
@@ -322,7 +287,7 @@ class NodeIndex extends ModelBase
      */
     protected function joinTokens(array $tokens)
     {
-        $content = trim($this->attributes['field_value']);
+        $content = trim($this->attributes['content']);
         if (strlen($content) <= 200) {
             return implode('', $tokens);
         }

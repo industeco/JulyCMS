@@ -24,6 +24,16 @@ class NodeType extends EntityMoldBase implements GetNodesInterface
         return Node::class;
     }
 
+    /**
+     * 获取对应的模型集类
+     *
+     * @return string|null
+     */
+    public static function getModelSetClass()
+    {
+        return NodeTypeSet::class;
+    }
+
     public function get_nodes()
     {
         return NodeSet::make($this->nodes->keyBy('id')->all());

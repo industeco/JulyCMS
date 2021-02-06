@@ -440,6 +440,32 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * 获取所有字段值
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        if ($value = $this->cachePipe(__FUNCTION__)) {
+            return $value->value();
+        }
+        return $this->getValueModel()->values();
+    }
+
+    /**
+     * 获取所有字段值，不区分语言
+     *
+     * @return array[]
+     */
+    public function getValueRecords()
+    {
+        if ($value = $this->cachePipe(__FUNCTION__)) {
+            return $value->value();
+        }
+        return $this->getValueModel()->records();
+    }
+
+    /**
      * 获取字段值
      *
      * @return mixed
@@ -587,16 +613,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         static::deleting(function(FieldBase $field) {
             $field->tableDown();
         });
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getValueRecords()
-    {
-        return DB::table($this->getValueTable())->get()->map(function ($record) {
-            return (array) $record;
-        })->all();
     }
 
     /**

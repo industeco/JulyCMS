@@ -100,6 +100,16 @@ class Node extends TranslatableEntityBase
     }
 
     /**
+     * 获取对应的模型集类
+     *
+     * @return string|null
+     */
+    public static function getModelSetClass()
+    {
+        return NodeSet::class;
+    }
+
+    /**
      * 组合属性：is_black
      *
      * @return bool
