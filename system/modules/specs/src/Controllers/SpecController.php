@@ -209,8 +209,12 @@ class SpecController extends Controller
     public function search(Request $request, Spec $spec)
     {
         $results = $spec->search($request->input('keywords', ''), $request->input('fields', []));
-        $results['fields'] = $spec->getFields()->all();
-        return response($results);
+        $data = array_merge([
+                'spec' => $spec->attributesToArray(),
+                'fields' => $spec->getFields()->all(),
+            ], $results);
+
+        return response($data);
     }
 
     /**
@@ -236,8 +240,12 @@ class SpecController extends Controller
      */
     public function getRecords(Spec $spec)
     {
-        $data = $spec->toSearchResults($spec->getRecords());
-        $data['fields'] = $spec->getFields()->all();
+        $results = $spec->toSearchResults($spec->getRecords());
+        $data = array_merge([
+                'spec' => $spec->attributesToArray(),
+                'fields' => $spec->getFields()->all(),
+            ], $results);
+
         return response($data);
     }
 
