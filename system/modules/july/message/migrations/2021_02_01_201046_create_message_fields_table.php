@@ -59,6 +59,9 @@ class CreateMessageFieldsTable extends Migration
             // 验证规则
             $table->string('rules')->nullable();
 
+            // 字段占位符
+            $table->string('placeholder')->nullable();
+
             // 初始语言版本
             $table->string('langcode', 12);
 

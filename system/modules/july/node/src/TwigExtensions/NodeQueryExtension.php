@@ -41,8 +41,11 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
             // 获取目录集
             new TwigFunction('catalogs', [$this, 'catalogs']),
 
-            // 获取标签集
-            // new TwigFunction('tags', [$this, 'tags']),
+            // 获取消息表单
+            new TwigFunction('forms', [$this, 'forms']),
+
+            // 获取规格类型
+            new TwigFunction('specs', [$this, 'specs']),
         ];
     }
 
@@ -92,19 +95,6 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
                 }
                 return $nodes;
             }, ['is_variadic' => true]),
-
-            // 获取联系表单对象
-            new TwigFilter('form', function($form = null) {
-                if (! $form) {
-                    return MessageForm::default();
-                }
-                return MessageForm::find($form) ?? MessageForm::default();
-            }),
-
-            // 获取联系表单对象
-            new TwigFilter('specs', function($id) {
-                return Spec::find($id);
-            }),
         ];
     }
 
@@ -162,6 +152,27 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
         return CatalogSet::fetch($args);
     }
 
+    /**
+     * 获取联系表单对象
+     *
+     * @param  string $form 表单 id
+     * @return \July\Message\MessageForm
+     */
+    public function forms($form)
+    {
+        return MessageForm::find($form) ?? MessageForm::default();
+    }
+
+    /**
+     * 获取规格类型
+     *
+     * @param  string $id 规格类型 id
+     * @return \Specs\Spec
+     */
+    public function specs($id)
+    {
+        return Spec::find($id);
+    }
 
     // /**
     //  * 获取标签集

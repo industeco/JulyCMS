@@ -30,6 +30,9 @@ class CreateNodeFieldNodeTypeTable extends Migration
             $table->string('label')->nullable();
             $table->string('description')->nullable();
 
+            // 建议长度
+            $table->unsignedSmallInteger('maxlength')->default(0);
+
             // 是否必填
             $table->boolean('is_required')->default(false);
 
@@ -44,6 +47,9 @@ class CreateNodeFieldNodeTypeTable extends Migration
 
             // 验证规则
             $table->string('rules')->nullable();
+
+            // 字段占位符
+            $table->string('placeholder')->nullable();
 
             // 字段 + 类型 唯一
             $table->unique(['mold_id', 'field_id']);

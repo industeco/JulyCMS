@@ -70,5 +70,5 @@ Route::group([
         ->name('nodes.find_invalid_links');
 });
 
-Route::get('search', [Controllers\NodeController::class, 'search'])
-    ->name('nodes.search');
+// Route::get('search', [Controllers\NodeController::class, 'search'])
+//     ->name('nodes.search');

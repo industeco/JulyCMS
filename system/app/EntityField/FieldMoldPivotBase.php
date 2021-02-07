@@ -3,6 +3,7 @@
 namespace App\EntityField;
 
 use App\Models\PivotBase;
+use App\Utils\Arr;
 
 abstract class FieldMoldPivotBase extends PivotBase
 {
@@ -24,11 +25,13 @@ abstract class FieldMoldPivotBase extends PivotBase
         'delta',
         'label',
         'description',
+        'maxlength',
         'is_required',
         'helpertext',
         'default_value',
         'options',
         'rules',
+        'placeholder',
     ];
 
     /**
@@ -59,6 +62,16 @@ abstract class FieldMoldPivotBase extends PivotBase
     public static function getFieldKeyName()
     {
         return 'field_id';
+    }
+
+    /**
+     * 获取所有参数字段
+     *
+     * @return array
+     */
+    public static function getParameterFields()
+    {
+        return Arr::except((new static)->getFillable(), [static::getMoldKeyName(), static::getFieldKeyName()]);
     }
 
     // /**

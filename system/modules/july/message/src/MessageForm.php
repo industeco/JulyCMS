@@ -17,6 +17,20 @@ class MessageForm extends EntityMoldBase
     protected $table = 'message_forms';
 
     /**
+     * 可批量赋值的属性。
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'id',
+        'label',
+        'description',
+        'langcode',
+        'subject',
+        'is_reserved',
+    ];
+
+    /**
      * 获取实体类
      *
      * @return string
@@ -43,9 +57,10 @@ class MessageForm extends EntityMoldBase
     /**
      * 生成表单
      *
+     * @param  array $values
      * @return string
      */
-    public function render()
+    public function render($values = [])
     {
         /** @var \Twig\Environment */
         $twig = app('twig');
@@ -56,8 +71,12 @@ class MessageForm extends EntityMoldBase
 
         // 数据
         $data = $this->gather();
-        $data['fields'] = gather($this->fields)->keyBy('id')->all();
         $data['action'] = short_url('messages.send', $this->getKey());
+
+        $data['fields'] = gather($this->fields)->keyBy('id')->all();
+        foreach ($data['fields'] as $key => &$field) {
+            $field['value'] = $values[$key] ?? null;
+        }
 
         return $twig->render($view, $data);
     }

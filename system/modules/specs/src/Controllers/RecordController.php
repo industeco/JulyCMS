@@ -5,6 +5,8 @@ namespace Specs\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use July\Node\Node;
+use July\Node\NodeField;
 use Specs\Record;
 use Specs\Spec;
 
@@ -64,19 +66,19 @@ class RecordController extends Controller
         return response('');
     }
 
-    /**
-     * 规格搜索界面
-     *
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function showSearch(Spec $spec)
-    {
-        return view('specs::search', [
-            'fields' => $spec->getFields()->all(),
-            'spec_id' => $spec->id,
-        ]);
-    }
+    // /**
+    //  * 规格搜索界面
+    //  *
+    //  * @param  \Specs\Spec  $spec
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function showSearch(Spec $spec)
+    // {
+    //     return view('specs::search', [
+    //         'fields' => $spec->getFields()->all(),
+    //         'spec_id' => $spec->id,
+    //     ]);
+    // }
 
     /**
      * 检索规格
@@ -102,7 +104,11 @@ class RecordController extends Controller
 
         // return app('twig')->render('search.twig', $results);
 
+        $relatedSpec = NodeField::find('related_spec')->getValueModel()
+            ->newQuery()->where('related_spec', $spec->getKey())->first();
+
         return app('twig')->render('specs/record.twig', [
+            'relatedNode' => Node::find($relatedSpec->entity_id),
             'spec' => $spec,
             'record' => $spec->getRecord($recordId),
         ]);
@@ -117,6 +123,12 @@ class RecordController extends Controller
     public function search(Request $request)
     {
         $results = Record::search($request->input('keywords'));
+
+        $results['keywords'] = $request->input('keywords');
+        $results['title'] = 'Search';
+        $results['meta_title'] = 'Search Result';
+        $results['meta_keywords'] = 'Search';
+        $results['meta_description'] = 'Search Result';
 
         return app('twig')->render('specs/search.twig', $results);
     }

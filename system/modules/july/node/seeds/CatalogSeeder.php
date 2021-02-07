@@ -25,7 +25,8 @@ class CatalogSeeder extends SeederBase
             [
                 'id' => 'main',
                 'is_reserved' => true,
-                'label' => '默认目录，不可删除',
+                'label' => '默认目录',
+                'description' => '默认目录，不可删除',
             ],
         ];
 

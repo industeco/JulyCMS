@@ -13,6 +13,13 @@
       <x-handle model="mold.model" :read-only="$context['mode'] === 'edit'" :unique-action="short_url('message_forms.exists', '_ID_')" />
       <x-label model="mold.model" label="名称" />
       <x-description model="mold.model" />
+      <el-form-item label="默认主题" prop="subject" size="small" class="has-helptext">
+      <el-input
+        v-model="mold.model.subject"
+        name="subject"
+        native-size="100"></el-input>
+        <span class="jc-form-item-help"><i class="el-icon-info"></i> 邮件默认主题</span>
+      </el-form-item>
       <div class="el-form-item el-form-item--small has-helptext jc-embeded-field">
         <div class="el-form-item__content">
           <div class="jc-embeded-field__header">
@@ -30,21 +37,21 @@
           <div class="jc-table-wrapper">
             <table class="jc-table jc-dense is-draggable with-drag-handle with-operators">
               <colgroup>
-                <col width="100px">
                 <col width="50px">
                 <col width="150px">
                 <col width="150px">
                 <col width="auto">
+                <col width="300px">
                 <col width="120px">
                 <col width="120px">
               </colgroup>
               <thead>
                 <tr>
-                  <th>字段组</th>
                   <th></th>
                   <th>ID</th>
                   <th>标签</th>
                   <th>描述</th>
+                  <th>验证规则</th>
                   <th>类型</th>
                   <th>操作</th>
                 </tr>
@@ -88,7 +95,7 @@
         </el-table>
       </el-tab-pane>
       <el-tab-pane label="新建字段" name="creation" class="md-scrollbar md-theme-default">
-        <x-field.create-edit scope="newField" model="newField.model" mode="creation" entity="$context['entity_name']" />
+        <x-message_field.create-edit scope="newField" model="newField.model" mode="creation" entity="$context['entity_name']" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -103,7 +110,7 @@
     :visible.sync="field.dialogVisible" class="jc-dialog-form">
     <div class="md-scrollbar md-theme-default js-scroll-wrapper"
       style="max-height:600px; overflow:hidden auto; padding:0 20px">
-      <x-field.create-edit scope="field" model="field.model" mode="editing" entity="$context['entity_name']" />
+      <x-message_field.create-edit scope="field" model="field.model" mode="editing" entity="$context['entity_name']" />
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click.stop="field.dialogVisible = false">取 消</el-button>
@@ -144,6 +151,7 @@
           model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           fieldTypeHelper: '选择字段类型',
+          template: @jjson($context['field_template'], JSON_PRETTY_PRINT),
         },
       }
     },
@@ -246,19 +254,22 @@
 
           const field = _.cloneDeep(this.newField.model);
 
-          axios.post("{{ short_url('node_fields.store') }}", field).then((response) => {
-            // console.log(response)
-            this.mold.fields.push(field);
-            this.selectionData.fields.push(_.cloneDeep(field));
-            form.resetFields();
-            loading.close();
-            this.tabs.visible = false;
-          }).catch((error) => {
-            loading.close();
-            console.error(error);
-          })
+          axios.post("{{ short_url('message_fields.store') }}", field)
+            .then((response) => {
+              // console.log(response)
+              this.mold.fields.push(field);
+              this.selectionData.fields.push(_.cloneDeep(field));
+              form.resetFields();
+              this.newField.model = _.cloneDeep(this.newField.template);
+              loading.close();
+              this.tabs.visible = false;
+            })
+            .catch((error) => {
+              loading.close();
+              console.error(error);
+            });
         }).catch((error) => {
-          console.error(error);
+          // console.error(error);
         });
       },
 

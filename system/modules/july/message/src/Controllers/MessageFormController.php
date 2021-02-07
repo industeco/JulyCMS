@@ -40,8 +40,6 @@ class MessageFormController extends Controller
      */
     public function edit(MessageForm $form)
     {
-        return $form->render();
-
         $data = $this->getCreationContext();
         $data['model'] = $form->gather();
         $data['context']['fields'] = gather($form->fields)->sortBy('delta')->keyBy('id')->all();
@@ -62,7 +60,7 @@ class MessageFormController extends Controller
             'context' => [
                 'entity_name' => MessageForm::getEntityClass()::getEntityName(),
                 'fields' => [],
-                'all_fields' => MessageField::index(),
+                'all_fields' => MessageField::index()->all(),
                 'field_template' => MessageField::template(),
                 'content_langcode' => langcode('content'),
                 'mode' => 'create',

@@ -58,6 +58,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         'default_value',
         'options',
         'rules',
+        'placeholder',
         'langcode',
     ];
 
@@ -111,6 +112,8 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             'helpertext' => null,
             'default_value' => null,
             'options' => null,
+            'rules' => null,
+            'placeholder' => null,
             'langcode' => langcode('content'),
         ];
     }
@@ -310,6 +313,20 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
+     * maxlength 属性的 Get Mutator
+     *
+     * @param  string|null $maxlength
+     * @return string
+     */
+    public function getMaxlengthAttribute($maxlength)
+    {
+        if ($this->pivot) {
+            $maxlength = $this->pivot->maxlength;
+        }
+        return (int) $maxlength;
+    }
+
+    /**
      * is_required 属性的 Get Mutator
      *
      * @param  bool|int $required
@@ -366,19 +383,6 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * delta 属性的 Get Mutator
-     *
-     * @return int
-     */
-    public function getDeltaAttribute()
-    {
-        if ($this->pivot) {
-            return $this->pivot->delta;
-        }
-        return 0;
-    }
-
-    /**
      * rules 属性的 Get Mutator
      *
      * @return int
@@ -389,6 +393,33 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return $this->pivot->rules;
         }
         return $rules;
+    }
+
+    /**
+     * placeholder 属性的 Get Mutator
+     *
+     * @param  string|null $placeholder
+     * @return string
+     */
+    public function getPlaceholderAttribute($placeholder)
+    {
+        if ($this->pivot) {
+            $placeholder = $this->pivot->placeholder;
+        }
+        return trim($placeholder);
+    }
+
+    /**
+     * delta 属性的 Get Mutator
+     *
+     * @return int
+     */
+    public function getDeltaAttribute()
+    {
+        if ($this->pivot) {
+            return $this->pivot->delta;
+        }
+        return 0;
     }
 
     /**

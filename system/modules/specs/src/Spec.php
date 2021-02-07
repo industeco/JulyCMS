@@ -13,13 +13,6 @@ use Illuminate\Support\Facades\Schema;
 class Spec extends ModelBase
 {
     /**
-     * 缓存的字段列表
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    protected static $fieldsCache = null;
-
-    /**
      * 与模型关联的表名
      *
      * @var string
@@ -142,11 +135,7 @@ class Spec extends ModelBase
      */
     public function getFields()
     {
-        if (static::$fieldsCache) {
-            return static::$fieldsCache;
-        }
-
-        return static::$fieldsCache = $this->fields->map(function(SpecField $field) {
+        return $this->fields->map(function(SpecField $field) {
             return $field->attributesToArray();
         })->keyBy('field_id');
     }
@@ -220,7 +209,7 @@ class Spec extends ModelBase
                 });
         }
 
-        return $this->toSearchResults($fields, $records);
+        return $this->toSearchResults($records);
     }
 
     /**
@@ -228,11 +217,9 @@ class Spec extends ModelBase
      * @param  \Illuminate\Support\Collection $records
      * @return array
      */
-    public function toSearchResults($fields, $records)
+    public function toSearchResults($records)
     {
-        $fields = $fields->map(function(SpecField $field) {
-            return $field->attributesToArray();
-        })->keyBy('field_id')->all();
+        $fields = $this->getFields()->all();
 
         $fields['category'] = [
             'id' => 'category',

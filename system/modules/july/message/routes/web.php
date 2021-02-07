@@ -32,7 +32,3 @@ Route::group([
         ->parameters(['messages' => 'message'])
         ->names('messages');
 });
-
-// 消息
-Route::post('messages/send/{form}', [Controllers\MessageController::class, 'send'])
-    ->name('messages.send');

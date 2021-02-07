@@ -151,16 +151,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         $pivot = static::getPivotClass();
         $pivotTable = $pivot::getModelTable();
         return $this->belongsToMany(static::getFieldClass(), $pivotTable, $pivot::getMoldKeyName(), $pivot::getFieldKeyName())
-            ->withPivot([
-                'delta',
-                'label',
-                'description',
-                'is_required',
-                'helpertext',
-                'default_value',
-                'options',
-                'rules',
-            ])
+            ->withPivot($pivot::getParameterFields())
             ->orderBy($pivotTable.'.delta');
     }
 
@@ -186,7 +177,7 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     public function syncFields(array $fields = null)
     {
         $fields = $fields ?? $this->raw['fields'] ?? [];
-        $keys = ['delta','label','description','is_required','helpertext','default_value','options','rules'];
+        $keys = static::getPivotClass()::getParameterFields();
         $relatedFields = [];
         foreach (array_values($fields) as $index => $field) {
             $field['delta'] = $index;

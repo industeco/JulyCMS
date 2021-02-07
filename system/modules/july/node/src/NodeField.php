@@ -23,21 +23,4 @@ class NodeField extends FieldBase
     {
         return Node::class;
     }
-
-    // /**
-    //  * 获取使用过当前字段的所有类型
-    //  *
-    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    //  */
-    // public function nodeTypes()
-    // {
-    //     return $this->belongsToMany(NodeType::class, 'node_field_node_type', 'node_field_id', 'node_type_id')
-    //                 ->orderBy('node_field_node_type.delta')
-    //                 ->withPivot([
-    //                     'delta',
-    //                     // 'weight',
-    //                     'label',
-    //                     'description',
-    //                 ]);
-    // }
 }

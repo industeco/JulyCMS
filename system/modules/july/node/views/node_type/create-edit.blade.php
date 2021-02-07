@@ -34,6 +34,7 @@
                 <col width="150px">
                 <col width="150px">
                 <col width="auto">
+                <col width="200px">
                 <col width="120px">
                 <col width="120px">
               </colgroup>
@@ -43,6 +44,7 @@
                   <th>ID</th>
                   <th>标签</th>
                   <th>描述</th>
+                  <th>验证规则</th>
                   <th>类型</th>
                   <th>操作</th>
                 </tr>
@@ -146,6 +148,7 @@
           model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
           fieldTypeHelper: '选择字段类型',
+          template: @jjson($context['field_template'], JSON_PRETTY_PRINT),
         },
       }
     },
@@ -263,6 +266,7 @@
             this.mold.optionalFields.push(field);
             this.selectionData.fields.push(_.cloneDeep(field));
             form.resetFields();
+            this.newField.model = _.cloneDeep(this.newField.template);
             loading.close();
             this.tabs.visible = false;
           }).catch((error) => {

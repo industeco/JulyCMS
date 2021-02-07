@@ -32,6 +32,7 @@
     <td><span>@{{ field.id }}</span></td>
     <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
     <td><span>@{{ field.description }}</span></td>
+    <td><span>@{{ field.rules }}</span></td>
     <td><span>@{{ field.field_type_id }}</span></td>
     <td>
       <div class="jc-operators">

@@ -21,6 +21,9 @@ class CreateMessageFormsTable extends Migration
             $table->string('description')->nullable();
             $table->string('langcode', 12);
 
+            // 默认主题
+            $table->string('subject')->nullable();
+
             // 是否预设：
             //  - 不可删除
             //  - 只能通过程序添加
