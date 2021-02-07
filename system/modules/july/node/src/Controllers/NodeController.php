@@ -223,7 +223,7 @@ class NodeController extends Controller
 
         /** @var \Twig\Environment */
         $twig = app('twig');
-        $twig->addExtension(new NodeQueryExtension);
+        // $twig->addExtension(new NodeQueryExtension);
 
         $success = [];
         foreach ($nodes as $node) {
@@ -260,7 +260,7 @@ class NodeController extends Controller
      */
     public function search(Request $request)
     {
-        $nodes = Node::all()->keyBy('id');
+        $nodes = NodeSet::fetchAll()->keyBy('id');
 
         $results = NodeIndex::search($request->input('keywords'));
         $results['title'] = 'Search';
@@ -305,7 +305,7 @@ class NodeController extends Controller
     public function findInvalidLinks()
     {
         $invalidLinks = [];
-        foreach (Node::fetchAll() as $node) {
+        foreach (NodeSet::fetchAll() as $node) {
             $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks());
         }
 

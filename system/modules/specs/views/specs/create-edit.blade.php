@@ -190,7 +190,7 @@
                 if (!value || !value.length) {
                   callback();
                 } else {
-                  const action = "{{ short_url('specs.exists', '_ID_') }}".replace('_ID_', value);
+                  const action = "{{ short_url('manage.specs.exists', '_ID_') }}".replace('_ID_', value);
                   axios.get(action).then(function(response) {
                     if (response.data.exists) {
                       callback(new Error('类型 id 已存在'));
@@ -333,7 +333,7 @@
 
           @if ($spec['id'])
           if (app.initial_spec === JSON.stringify(app.spec) && app.initial_fields === JSON.stringify(app.fields)) {
-            window.location.href = "{{ short_url('specs.index') }}";
+            window.location.href = "{{ short_url('manage.specs.index') }}";
             return;
           }
           @endif
@@ -353,13 +353,13 @@
           });
 
           @if ($spec['id'])
-          const action = "{{ short_url('specs.update', $spec['id']) }}";
+          const action = "{{ short_url('manage.specs.update', $spec['id']) }}";
           @else
-          const action = "{{ short_url('specs.store') }}";
+          const action = "{{ short_url('manage.specs.store') }}";
           @endif
 
           axios.{{ $spec['id'] ? 'put' : 'post' }}(action, spec).then(function(response) {
-            window.location.href = "{{ short_url('specs.index') }}";
+            window.location.href = "{{ short_url('manage.specs.index') }}";
           }).catch(function(error) {
             loading.close();
             console.error(error);

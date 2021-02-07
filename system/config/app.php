@@ -262,6 +262,10 @@ return [
         \July\Message\Message::class,
     ],
 
+    'twig_extensions' => [
+        \July\Node\TwigExtensions\NodeQueryExtension::class,
+    ],
+
     // 登记实体字段类型
     'field_types' => [
         // \App\EntityField\FieldTypes\Any::class,
@@ -343,7 +347,7 @@ return [
                 [
                     'title' => '规格',
                     'icon' => null,
-                    'route' => 'specs.index',
+                    'route' => 'manage.specs.index',
                     'children' => [],
                 ],
             ],

@@ -96,8 +96,8 @@ class Spec extends ModelBase
     public function upsertRecords(array $records)
     {
         $now = Carbon::now();
-        $table = $this->getDataTable();
-        $fields = $this->fields()->get('field_id')->pluck('field_id')->all();
+        $table = $this->getRecordsTable();
+        $fields = $this->fields()->pluck('field_id')->all();
 
         DB::beginTransaction();
         foreach ($records as $record) {
@@ -158,7 +158,7 @@ class Spec extends ModelBase
      */
     public function getRecords()
     {
-        return DB::table($this->getDataTable())
+        return DB::table($this->getRecordsTable())
                 ->get()
                 ->map(function($record) {
                     return (array) $record;
@@ -173,7 +173,7 @@ class Spec extends ModelBase
      */
     public function getRecord($id)
     {
-        if ($record = DB::table($this->getDataTable())->where('id', $id)->first()) {
+        if ($record = DB::table($this->getRecordsTable())->where('id', $id)->first()) {
             return (array) $record;
         }
         return null;
@@ -183,6 +183,7 @@ class Spec extends ModelBase
      * 搜索规格数据
      *
      * @param  string $keywords
+     * @param  \Illuminate\Database\Eloquent\Collection|\Specs\SpecField[]
      * @return array $result
      *
      * $result 结构：
@@ -191,36 +192,62 @@ class Spec extends ModelBase
      *      'records' => array
      *  ]
      */
-    public function search(string $keywords)
+    public function search(?string $keywords = null, $fields = null)
     {
-        $fields = $this->getFields();
-
-        $conditions = [];
-        foreach ($fields as $field_id => $field) {
-            if ($field['is_searchable'] ?? false) {
-                $conditions[] = [
-                    $field_id, 'like', '%'.$keywords.'%', 'or'
-                ];
-            }
+        if ($fields) {
+            $fields = $fields->keyBy('field_id');
+        } else {
+            $fields = $this->fields()->get()->keyBy('field_id');
         }
 
-        $records = DB::table($this->getDataTable())
-            ->where($conditions)
-            ->get()
-            ->map(function($record) {
-                return (array) $record;
-            });
+        if (empty($keywords)) {
+            $records = $this->getRecords();
+        } else {
+            $conditions = [];
+            foreach ($fields as $id => $field) {
+                if ($field->is_searchable) {
+                    $conditions[] = [
+                        $id, 'like', '%'.$keywords.'%', 'or'
+                    ];
+                }
+            }
 
-        return $this->toSearchResults($records);
+            $records = DB::table($this->getRecordsTable())
+                ->where($conditions)
+                ->get()
+                ->map(function($record) {
+                    return (array) $record;
+                });
+        }
+
+        return $this->toSearchResults($fields, $records);
     }
 
     /**
+     * @param  \Illuminate\Database\Eloquent\Collection|\Specs\SpecField[]
      * @param  \Illuminate\Support\Collection $records
      * @return array
      */
-    public function toSearchResults($records)
+    public function toSearchResults($fields, $records)
     {
-        $fields = $this->getFields();
+        $fields = $fields->map(function(SpecField $field) {
+            return $field->attributesToArray();
+        })->keyBy('field_id')->all();
+
+        $fields['category'] = [
+            'id' => 'category',
+            'label' => 'Category',
+            'description' => null,
+            'is_groupable' => true,
+            'is_searchable' => false,
+            'delta' => 0,
+        ];
+
+        $records = $records->map(function($record) {
+            $record['category'] = $this->attributes['label'];
+            $record['spec_id'] = $this->attributes['id'];
+            return $record;
+        });
 
         $groups = [];
         if (! $records->isEmpty()) {
@@ -232,8 +259,12 @@ class Spec extends ModelBase
                 }
             }
         }
+        $groups['category'] = [
+            $this->attributes['label'] => $records->count(),
+        ];
 
         return [
+            'fields' => $fields,
             'groups' => $groups,
             'records' => $records->all(),
         ];
@@ -244,7 +275,7 @@ class Spec extends ModelBase
      *
      * @return string
      */
-    public function getDataTable()
+    public function getRecordsTable()
     {
         return 'spec_'.$this->getkey().'__data';
     }
@@ -257,7 +288,7 @@ class Spec extends ModelBase
     public function tableUp()
     {
         // 获取表名，判断是否存在
-        $tableName = $this->getDataTable();
+        $tableName = $this->getRecordsTable();
         if (Schema::hasTable($tableName)) {
             $this->tableUpdate();
             return;
@@ -292,7 +323,7 @@ class Spec extends ModelBase
     public function tableUpdate()
     {
         // 获取表名，判断是否存在
-        $tableName = $this->getDataTable();
+        $tableName = $this->getRecordsTable();
         if (! Schema::hasTable($tableName)) {
             $this->tableUp();
             return;
@@ -308,7 +339,7 @@ class Spec extends ModelBase
             }
         }
 
-        Schema::table($this->getDataTable(), function(Blueprint $table) use($columns) {
+        Schema::table($this->getRecordsTable(), function(Blueprint $table) use($columns) {
             foreach($columns as $column) {
                 $table->addColumn($column['type'], $column['name'], $column['parameters'] ?? []);
             }
@@ -322,7 +353,7 @@ class Spec extends ModelBase
      */
     public function tableDown()
     {
-        Schema::dropIfExists($this->getDataTable());
+        Schema::dropIfExists($this->getRecordsTable());
     }
 
     /**

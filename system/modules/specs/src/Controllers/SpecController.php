@@ -3,10 +3,7 @@
 namespace Specs\Controllers;
 
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Specs\FieldType;
 use Specs\FieldTypeDefinitions\DefinitionInterface;
 use Specs\Spec;
@@ -25,7 +22,7 @@ class SpecController extends Controller
             return $spec->attributesToArray();
         })->all();
 
-        return view('specs::index', [
+        return view('specs::specs.index', [
             'specs' => $specs,
         ]);
     }
@@ -48,7 +45,7 @@ class SpecController extends Controller
 
         // dd($fieldTypes);
 
-        return view('specs::create_edit', $data);
+        return view('specs::specs.create-edit', $data);
     }
 
     /**
@@ -92,7 +89,7 @@ class SpecController extends Controller
             'emptyField' => SpecField::defaultAttributes(),
         ];
 
-        return view('specs::create_edit', $data);
+        return view('specs::specs.create-edit', $data);
     }
 
     /**
@@ -120,133 +117,6 @@ class SpecController extends Controller
         $spec->delete();
 
         return response('');
-    }
-
-    /**
-     * 浏览/编辑数据
-     *
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function records(Spec $spec)
-    {
-        $records = DB::table($spec->getDataTable())
-            ->orderByDesc('id')->get()
-            ->map(function($record) {
-                return (array) $record;
-            })->all();
-
-        $data = [
-            'spec_id' => $spec->getKey(),
-            'records' => $records,
-            'fields' => $spec->getFields()->all(),
-            'template' => $spec->getRecordTemplate(),
-        ];
-
-        return view('specs::records', $data);
-    }
-
-    /**
-     * 保存数据
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function upsertRecords(Request $request, Spec $spec)
-    {
-        $records = $spec->upsertRecords(array_reverse($request->input('records')));
-        return response($records);
-    }
-
-    /**
-     * 删除指定的规格数据
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function removeRecords(Request $request, Spec $spec)
-    {
-        DB::table($spec->getDataTable())->whereIn('id', $request->input('records'))->delete();
-        return response('');
-    }
-
-    /**
-     * 清空规格数据
-     *
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function clearRecords(Spec $spec)
-    {
-        DB::table($spec->getDataTable())->delete();
-
-        return response('');
-    }
-
-    /**
-     * 规格搜索界面
-     *
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function showSearch(Spec $spec)
-    {
-        return view('specs::search', [
-            'fields' => $spec->getFields()->all(),
-            'spec_id' => $spec->id,
-        ]);
-    }
-
-    /**
-     * 检索规格
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function search(Request $request, Spec $spec)
-    {
-        $results = $spec->search($request->input('keywords', ''), $request->input('fields', []));
-        $data = array_merge([
-                'spec' => $spec->attributesToArray(),
-                'fields' => $spec->getFields()->all(),
-            ], $results);
-
-        return response($data);
-    }
-
-    /**
-     * 检索规格
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Specs\Spec  $spec
-     * @param  string  $recordId
-     * @return \Illuminate\Http\Response
-     */
-    public function showRecord(Spec $spec, string $recordId)
-    {
-        return view('specs::record', [
-            'record' => $spec->getRecord($recordId),
-        ]);
-    }
-
-    /**
-     * 获取指定规格的所有数据
-     *
-     * @param  \Specs\Spec  $spec
-     * @return \Illuminate\Http\Response
-     */
-    public function getRecords(Spec $spec)
-    {
-        $results = $spec->toSearchResults($spec->getRecords());
-        $data = array_merge([
-                'spec' => $spec->attributesToArray(),
-                'fields' => $spec->getFields()->all(),
-            ], $results);
-
-        return response($data);
     }
 
     /**

@@ -51,7 +51,10 @@ class AppServiceProvider extends ServiceProvider
                 $twig->addExtension(new \Twig\Extension\DebugExtension);
             }
             $twig->addExtension(new \Twig\Extension\StringLoaderExtension);
-            // $twig->addExtension(new \July\Support\Twig\EntityQueryExtension);
+
+            foreach (config('app.twig_extensions') as $extension) {
+                $twig->addExtension(new $extension);
+            }
 
             return $twig;
         });

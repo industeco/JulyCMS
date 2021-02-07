@@ -59,7 +59,11 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function loadModuleRoutes()
     {
+        // 加载 web 路由
         Route::middleware('web')->group($this->getModulePath('routes/web.php'));
+
+        // 加载 api 路由
+        Route::middleware('api')->group($this->getModulePath('routes/api.php'));
     }
 
     /**
@@ -81,6 +85,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
     protected function getModuleRoot()
     {
         $ref = new ReflectionClass(static::class);
+
         return dirname(dirname($ref->getFileName()));
     }
 
@@ -92,6 +97,7 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
     protected function getModuleName()
     {
         $relativePath = substr($this->getModuleRoot(), strlen(base_path('modules/')));
+
         return str_replace('\\', '/', $relativePath);
     }
 }

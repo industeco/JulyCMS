@@ -5,7 +5,7 @@
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
-      <a href="{{ short_url('specs.create') }}" title="新建" class="md-button md-dense md-raised md-primary md-theme-default">
+      <a href="{{ short_url('manage.specs.create') }}" title="新建" class="md-button md-dense md-raised md-primary md-theme-default">
         <div class="md-ripple"><div class="md-button-content">新建规格</div></div>
       </a>
     </div>
@@ -76,16 +76,16 @@
 
     data() {
       return {
-        specs: @json(array_values($specs), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        specs: @jjson(array_values($specs)),
         contextmenu: {
           target: null,
           editUrl: null,
           recordsUrl: null,
         },
 
-        editUrl: "{{ short_url('specs.edit', '_ID_') }}",
-        deleteUrl: "{{ short_url('specs.destroy', '_ID_') }}",
-        recordsUrl: "{{ short_url('specs.records', '_ID_') }}",
+        editUrl: "{{ short_url('manage.specs.edit', '_ID_') }}",
+        deleteUrl: "{{ short_url('manage.specs.destroy', '_ID_') }}",
+        recordsUrl: "{{ short_url('manage.specs.records.index', '_ID_') }}",
       };
     },
 

@@ -265,7 +265,7 @@
             this.selectedRecords = [];
           }
 
-          axios.post("{{ short_url('specs.records.remove', $spec_id) }}", {
+          axios.post("{{ short_url('manage.specs.records.destroy', $spec_id) }}", {
             records: records.map(rec => rec.id),
           }).then(response => {
             records.forEach(rec => {
@@ -364,7 +364,7 @@
           return;
         }
 
-        return axios.post("{{ short_url('specs.records.upsert', $spec_id) }}", {
+        return axios.post("{{ short_url('manage.specs.records.upsert', $spec_id) }}", {
           records: records,
         }).then(response => {
           this.syncRecords(records, this.mapRecords(Array.isArray(response.data) ? response.data : []));

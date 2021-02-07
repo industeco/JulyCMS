@@ -239,10 +239,8 @@ class Node extends TranslatableEntityBase
 
         $data = $this->gather();
 
-        /** @var \Twig\Environment */
         if (! $twig) {
             $twig = app('twig');
-            $twig->addExtension(new NodeQueryExtension);
         }
 
         $twig->addGlobal('_node', $this);
