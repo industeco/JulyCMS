@@ -123,7 +123,7 @@ class RecordController extends Controller
      */
     public function search(Request $request)
     {
-        $results = Record::search($request->input('keywords'));
+        $results = Record::search($request->input('limit', 0), $request->input('keywords'));
 
         $results['keywords'] = $request->input('keywords');
         $results['title'] = 'Search';
@@ -143,7 +143,6 @@ class RecordController extends Controller
     public function fetch(Request $request)
     {
         $limit = $request->input('limit', 0);
-        Log::info($limit);
 
         $spec_id = $request->input('spec_id') ?: $request->input('category');
         if ($spec_id && $spec = Spec::find($spec_id)) {
