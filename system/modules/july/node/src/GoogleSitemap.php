@@ -31,12 +31,12 @@ class GoogleSitemap
 
         // 生成 xml 内容
         foreach (Catalog::default()->get_nodes() as $node) {
-            $url = $urls[$node->getEntityPath()] ?? null;
+            $url = $urls[$node->getKey()] ?? null;
             if (!$url || $url === '/404.html') {
                 continue;
             }
 
-            $html = $node->translateTo($langcode)->retrieveHtml();
+            $html = $node->translateTo($langcode)->fetchHtml();
             if (empty($html)) {
                 continue;
             }
