@@ -5,6 +5,7 @@ namespace Specs\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use July\Node\Node;
 use July\Node\NodeField;
 use Specs\Record;
@@ -141,11 +142,14 @@ class RecordController extends Controller
      */
     public function fetch(Request $request)
     {
+        $limit = $request->input('limit', 0);
+        Log::info($limit);
+
         $spec_id = $request->input('spec_id') ?: $request->input('category');
         if ($spec_id && $spec = Spec::find($spec_id)) {
-            $results = $spec->search(null);
+            $results = $spec->search($limit);
         } else {
-            $results = Record::search();
+            $results = Record::search($limit);
         }
 
         return response($results);

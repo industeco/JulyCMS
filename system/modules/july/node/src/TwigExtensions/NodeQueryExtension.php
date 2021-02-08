@@ -46,6 +46,9 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
 
             // 获取规格类型
             new TwigFunction('specs', [$this, 'specs']),
+
+            // 获取路由短网址
+            new TwigFunction('short_url', [$this, 'short_url']),
         ];
     }
 
@@ -172,6 +175,18 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
     public function specs($id)
     {
         return Spec::find($id);
+    }
+
+    /**
+     * 获取路由短网址
+     *
+     * @param  string $name 路由名
+     * @param  array $parameters 路由参数
+     * @return \Specs\Spec
+     */
+    public function short_url($name, ...$parameters)
+    {
+        return short_url($name, $parameters);
     }
 
     // /**

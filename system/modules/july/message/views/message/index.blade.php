@@ -56,6 +56,11 @@
             <span>@{{ molds[scope.row.mold_id] }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="发送状态" prop="mold_id" width="200" sortable>
+          <template slot-scope="scope">
+            <span>@{{ scope.row.is_sent ? '已发送' : '未发送' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间" prop="created_at" width="240" sortable>
           <template slot-scope="scope">
             <span>@{{ diffForHumans(scope.row.created_at) }}</span>

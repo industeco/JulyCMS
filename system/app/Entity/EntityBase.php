@@ -99,6 +99,11 @@ abstract class EntityBase extends ModelBase
         return static::getEntityName().'/'.$this->getEntityId();
     }
 
+    public function getLangcode()
+    {
+        return $this->attributes['langcode'] ?? langcode('content');
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -348,11 +353,15 @@ abstract class EntityBase extends ModelBase
      */
     public function updateFields()
     {
+        DB::beginTransaction();
+
         $this->fields->each(function(FieldBase $field) {
             if (array_key_exists($id = $field->getKey(), $this->raw)) {
                 $field->bindEntity($this)->setValue($this->raw[$id]);
             }
         });
+
+        DB::commit();
     }
 
     /**
@@ -447,11 +456,7 @@ abstract class EntityBase extends ModelBase
         static::saved(function(EntityBase $entity) {
             $entity->removeHtmlFile();
             $entity->pocketClear('html', 'gather');
-
-            // 更新字段
-            DB::beginTransaction();
             $entity->updateFields();
-            DB::commit();
         });
     }
 

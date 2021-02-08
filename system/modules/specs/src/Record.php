@@ -7,10 +7,11 @@ class Record
     /**
      * 检索规格数据
      *
+     * @param  int $limit 限额
      * @param  string|null $keywords 关键词
      * @return array
      */
-    public static function search($keywords = null)
+    public static function search($limit, $keywords = null)
     {
         [$label, $keywords] = static::resolveKeywords($keywords);
         $specFields = static::resolveFields($label);
@@ -18,7 +19,10 @@ class Record
         $results = [];
         foreach ($specFields as $spec_id => $fields) {
             if ($spec = Spec::find($spec_id)) {
-                $results = static::mergeResults($results, $spec->search($keywords, $fields));
+                $results = static::mergeResults($results, $spec->search($limit, $keywords, $fields));
+                if ($limit > 0 && count($results['records']) >= $limit) {
+                    break;
+                }
             }
         }
 

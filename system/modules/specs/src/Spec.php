@@ -143,11 +143,13 @@ class Spec extends ModelBase
     /**
      * 获取规格数据
      *
+     * @param  int $limit
      * @return \Illuminate\Support\Collection
      */
-    public function getRecords()
+    public function getRecords($limit = 0)
     {
         return DB::table($this->getRecordsTable())
+                ->limit($limit>0 ? $limit : -1)
                 ->get()
                 ->map(function($record) {
                     return (array) $record;
@@ -171,6 +173,7 @@ class Spec extends ModelBase
     /**
      * 搜索规格数据
      *
+     * @param  int $limit
      * @param  string $keywords
      * @param  \Illuminate\Database\Eloquent\Collection|\Specs\SpecField[]
      * @return array $result
@@ -181,7 +184,7 @@ class Spec extends ModelBase
      *      'records' => array
      *  ]
      */
-    public function search(?string $keywords = null, $fields = null)
+    public function search($limit, ?string $keywords = null, $fields = null)
     {
         if ($fields) {
             $fields = $fields->keyBy('field_id');
@@ -190,7 +193,7 @@ class Spec extends ModelBase
         }
 
         if (empty($keywords)) {
-            $records = $this->getRecords();
+            $records = $this->getRecords($limit);
         } else {
             $conditions = [];
             foreach ($fields as $id => $field) {
@@ -203,6 +206,7 @@ class Spec extends ModelBase
 
             $records = DB::table($this->getRecordsTable())
                 ->where($conditions)
+                ->limit($limit > 0 ? $limit : -1)
                 ->get()
                 ->map(function($record) {
                     return (array) $record;
