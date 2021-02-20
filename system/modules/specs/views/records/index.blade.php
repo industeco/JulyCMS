@@ -2,6 +2,12 @@
 
 @section('h1', '内容类型')
 
+@section('inline-style')
+<style>
+  #main_list td>.cell>a.is-invalid{color: #ff5200}
+</style>
+@endsection
+
 @section('main_content')
   <div id="main_tools">
     <div class="jc-btn-group">
@@ -39,10 +45,11 @@
           <el-option label="大于" value="gt"></el-option>
           <el-option label="小于" value="lt"></el-option>
           <el-option label="正则" value="regexp"></el-option>
+          <el-option label="无效图片" value="invalid-image" v-if="filter.field == 'image'"></el-option>
         </el-select>
       </div>
       <div class="jc-option">
-        <el-input v-model="filter.value" size="small" native-size="25" @keyup.enter.native="applyFilter()"></el-input>
+        <el-input v-model="filter.value" size="small" native-size="25" @keyup.enter.native="applyFilter()" :disabled="filter.method=='invalid-image'"></el-input>
       </div>
       <div class="jc-option">
         <button type="button" class="md-button md-raised md-dense md-primary md-theme-default"
@@ -70,7 +77,15 @@
         <el-table-column type="index" label="行号" width="60" fixed></el-table-column>
         <el-table-column type="selection" width="50"></el-table-column>
         @foreach ($fields as $field)
+        @if ($field['field_id'] == 'image')
+        <el-table-column label="{{ $field['label'] }}" prop="{{ $field['field_id'] }}" sortable>
+          <template slot-scope="scope">
+            <a :href="scope.row.image" target="_blank" rel="noopener noreferrer" :class="{'is-invalid':scope.row.image_invalid}">@{{ scope.row.image }}</a>
+          </template>
+        </el-table-column>
+        @else
         <el-table-column label="{{ $field['label'] }}" prop="{{ $field['field_id'] }}" sortable></el-table-column>
+        @endif
         @endforeach
       </el-table>
     </div>
@@ -165,12 +180,12 @@
 
     data() {
       return {
-        allRecords: @json(array_values($records), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        allRecords: @jjson(array_values($records)),
         presentRecords: [],
         selectedRecords: [],
 
         record: {
-          data: @json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+          data: @jjson($template),
           dialogVisible: false,
         },
         port: {
@@ -205,7 +220,7 @@
       this.allRecordsMap = this.mapRecords(this.allRecords);
       this.resetFilter();
       this.pagination.total = this.presentRecords.length;
-      this._templateMd5 = this.getRecordMd5(@json($template, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      this._templateMd5 = this.getRecordMd5(@jjson($template));
     },
 
     computed: {
@@ -218,7 +233,7 @@
       // 筛选按钮是否可用
       canFilter() {
         const f = this.filter;
-        return f.field && f.method && (f.value.length || f.method === 'eq' || f.method === 'not_eq');
+        return f.field && f.method && (f.value.length || f.method === 'eq' || f.method === 'not_eq' || f.method === 'invalid-image');
       },
     },
 
@@ -556,6 +571,9 @@
           case 'regexp':
             value = new RegExp(value);
             filter = rec => value.test(rec[field]);
+            break;
+          case 'invalid-image':
+            filter = rec => rec.image_invalid;
             break;
           default: break;
         }

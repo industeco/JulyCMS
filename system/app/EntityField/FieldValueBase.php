@@ -257,7 +257,7 @@ abstract class FieldValueBase extends ModelBase
 
         return DB::table($this->getTable())
             ->where($conditions)
-            ->get([$this->value_column, 'langcode'])
+            ->get([$this->value_column, 'langcode', 'entity_id'])
             ->map(function($record) {
                 return [
                     'entity_id' => $record->entity_id,

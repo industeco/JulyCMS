@@ -66,8 +66,7 @@ class MessageForm extends EntityMoldBase
         $twig = app('twig');
 
         // 默认模板
-        $view = frontend_path('template/message/form--'.$this->getKey().'.twig');
-        $view = 'message/form--'.$this->getKey().'.twig';
+        $view = 'message/form/'.$this->getKey().'.twig';
 
         // 数据
         $data = $this->gather();

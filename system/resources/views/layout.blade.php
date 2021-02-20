@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/themes/backend/vendor/vue-material/vue-material.min.css">
   <link rel="stylesheet" href="/themes/backend/vendor/vue-material/theme/default.min.css">
   <link rel="stylesheet" href="/themes/backend/css/july.css">
+  @yield('inline-style')
 </head>
 <body>
   <script src="/themes/backend/js/svg.js"></script>

@@ -21,11 +21,16 @@ class RecordController extends Controller
      */
     public function index(Spec $spec)
     {
-        $records = DB::table($spec->getRecordsTable())
-            ->orderByDesc('id')->get()
-            ->map(function($record) {
-                return (array) $record;
-            })->all();
+        $images = [];
+        $records = [];
+        foreach (DB::table($spec->getRecordsTable())->orderByDesc('id')->get() as $record) {
+            $record = (array) $record;
+            $record['image_invalid'] = true;
+            if ($image = $record['image'] ?? '') {
+                $record['image_invalid'] = $images[$image] ?? $images[$image] = !is_file(public_path(ltrim($image, '\\/')));
+            }
+            $records[] = $record;
+        }
 
         $data = [
             'spec_id' => $spec->getKey(),
@@ -62,24 +67,9 @@ class RecordController extends Controller
         if (!empty($records = $request->input('records'))) {
             DB::table($spec->getRecordsTable())->whereIn('id', $records)->delete();
         }
-        // DB::table($spec->getRecordsTable())->delete();
 
         return response('');
     }
-
-    // /**
-    //  * 规格搜索界面
-    //  *
-    //  * @param  \Specs\Spec  $spec
-    //  * @return \Illuminate\Http\Response
-    //  */
-    // public function showSearch(Spec $spec)
-    // {
-    //     return view('specs::search', [
-    //         'fields' => $spec->getFields()->all(),
-    //         'spec_id' => $spec->id,
-    //     ]);
-    // }
 
     /**
      * 检索规格
@@ -91,20 +81,6 @@ class RecordController extends Controller
      */
     public function show(Spec $spec, $recordId)
     {
-        // $nodes = NodeSet::fetchAll()->keyBy('id');
-
-        // $results = NodeIndex::search($request->input('keywords'));
-        // $results['title'] = 'Search';
-        // $results['meta_title'] = 'Search Result';
-        // $results['meta_keywords'] = 'Search';
-        // $results['meta_description'] = 'Search Result';
-
-        // foreach ($results['results'] as &$result) {
-        //     $result['node'] = $nodes->get($result['node_id']);
-        // }
-
-        // return app('twig')->render('search.twig', $results);
-
         $relatedSpec = NodeField::find('related_spec')->getValueModel()
             ->newQuery()->where('related_spec', $spec->getKey())->first();
 

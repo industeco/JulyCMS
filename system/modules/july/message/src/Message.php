@@ -138,7 +138,7 @@ class Message extends EntityBase
      */
     public function render()
     {
-        $view = 'message/content--'.$this->mold_id.'.twig';
+        $view = 'message/content/'.$this->mold_id.'.twig';
         $data = [
             'message' => $this->attributesToArray(),
             'fields' => $this->fields->map(function (MessageField $field) {
