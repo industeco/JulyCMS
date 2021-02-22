@@ -72,12 +72,9 @@ class MessageController extends Controller
             $message = Message::create($attributes);
 
             // 以邮件方式发送消息
-            $message->sendMail();
-
-            // 消息标记为已发送
-            $message->is_sent = true;
-            $message->save();
-
+            if (! $message->sendMail()) {
+                Log::error('发送失败');
+            }
         } catch (\Throwable $th) {
             //throw $th;
             Log::error($th->getMessage());

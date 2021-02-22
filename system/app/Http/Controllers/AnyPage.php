@@ -25,7 +25,7 @@ class AnyPage extends Controller
 
         $url = $request->getPathInfo();
         if (preg_match('/[A-Z]/', $url)) {
-            if (null !== $qs = $this->getQueryString()) {
+            if (null !== $qs = $request->getQueryString()) {
                 $qs = '?'.$qs;
             }
             return Redirect::to(strtolower($url).$qs);

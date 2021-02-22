@@ -121,14 +121,24 @@ class Message extends EntityBase
     /**
      * 以邮件形式发送消息
      *
-     * @return void
+     * @return bool
      */
     public function sendMail()
     {
-        return Mail::raw($this->render(), function(MailMessage $message) {
-            $message->subject($this->subject ?? 'New Message')
-                ->to(config('mail.to.address'), config('mail.to.name'));
+        $content = $this->render();
+        $subject = $this->subject ?? 'New Message';
+        $success = Mail::raw($content, function(MailMessage $message) use($subject) {
+            $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
         });
+
+        if (! $success) {
+            $success = mail(config('mail.to.address'), $subject, $content);
+        } elseif (!$this->is_sent) {
+            $this->is_sent = true;
+            $this->save();
+        }
+
+        return $success;
     }
 
     /**
