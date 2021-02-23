@@ -127,13 +127,22 @@ class Message extends EntityBase
     {
         $content = $this->render();
         $subject = $this->subject ?? 'New Message';
-        $success = Mail::raw($content, function(MailMessage $message) use($subject) {
-            $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
-        });
+
+        try {
+            Mail::raw($content, function(MailMessage $message) use($subject) {
+                $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
+            });
+            $success = true;
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage());
+            $success = false;
+        }
 
         if (! $success) {
             $success = mail(config('mail.to.address'), $subject, $content);
-        } elseif (!$this->is_sent) {
+        }
+
+        if ($success && !$this->is_sent) {
             $this->is_sent = true;
             $this->save();
         }

@@ -66,18 +66,11 @@ class MessageController extends Controller
             '_server' => $request->server(),
         ]);
 
-        // 发送消息
-        try {
-            // 保存消息到数据库
-            $message = Message::create($attributes);
+        // 保存消息到数据库
+        $message = Message::create($attributes);
 
-            // 以邮件方式发送消息
-            if (! $message->sendMail()) {
-                Log::error('发送失败');
-            }
-        } catch (\Throwable $th) {
-            //throw $th;
-            Log::error($th->getMessage());
+        // 以邮件方式发送消息
+        if (! $message->sendMail()) {
             Log::info($attributes);
         }
 
