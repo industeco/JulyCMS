@@ -63,9 +63,6 @@ Route::group([
     Route::post('nodes/build_index', [Controllers\NodeController::class, 'buildIndex'])
     ->name('nodes.build_index');
 
-    Route::post('nodes/google-sitemap', [Controllers\NodeController::class, 'buildGoogleSitemap'])
-        ->name('nodes.build_google_sitemap');
-
     Route::get('nodes/invalid-links', [Controllers\NodeController::class, 'findInvalidLinks'])
         ->name('nodes.find_invalid_links');
 });

@@ -63,10 +63,16 @@ class Html
     /**
      * 提取指定模式的内容
      *
+     * @param  string $pattern 模式
+     * @param  int $capture = 1 指定分组
      * @return array
      */
     public function extract($pattern, $capture = 1)
     {
+        if (! $this->html) {
+            return [];
+        }
+
         preg_match_all($pattern, $this->html, $matches, PREG_PATTERN_ORDER);
         return array_values(array_unique($matches[$capture]));
     }

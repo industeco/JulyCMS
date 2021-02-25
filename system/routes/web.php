@@ -75,6 +75,9 @@ Route::group([
 
     Route::post('action/clear_cache', [Controllers\CommandController::class, 'clearCache'])
         ->name('action.clear_cache');
+
+    Route::post('action/build/google-sitemap', [Controllers\CommandController::class, 'buildGoogleSitemap'])
+        ->name('action.build.google-sitemap');
 });
 
 // // 前台

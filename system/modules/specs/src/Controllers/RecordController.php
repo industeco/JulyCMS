@@ -84,11 +84,11 @@ class RecordController extends Controller
         $relatedSpec = NodeField::find('related_spec')->getValueModel()
             ->newQuery()->where('related_spec', $spec->getKey())->first();
 
-        return app('twig')->render('specs/record.twig', [
+        return html_compress(app('twig')->render('specs/record.twig', [
             'relatedNode' => Node::find($relatedSpec->entity_id),
             'spec' => $spec,
             'record' => $spec->getRecord($recordId),
-        ]);
+        ]));
     }
 
     /**
@@ -107,7 +107,7 @@ class RecordController extends Controller
         $results['meta_keywords'] = 'Search';
         $results['meta_description'] = 'Search Result';
 
-        return app('twig')->render('specs/search.twig', $results);
+        return html_compress(app('twig')->render('specs/search.twig', $results));
     }
 
     /**

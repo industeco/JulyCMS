@@ -256,7 +256,7 @@ class Node extends TranslatableEntityBase
 
         config()->set('rendering_langcode', null);
 
-        $html = preg_replace('/\n\s+/', "\n", $html);
+        $html = html_compress($html);
 
         if (preg_match('/\.html?$/i', $url)) {
             Storage::disk('public')->put($url, $html);

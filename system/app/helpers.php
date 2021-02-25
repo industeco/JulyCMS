@@ -278,3 +278,16 @@ if (! function_exists('gather')) {
         return (array) $items;
     }
 }
+
+if (! function_exists('html_compress')) {
+    /**
+     * 压缩 html（简单的去除每行前导空白）
+     *
+     * @param  string $html
+     * @return string
+     */
+    function html_compress($html)
+    {
+        return preg_replace('/>\n\s+/', ">\n", trim($html));
+    }
+}

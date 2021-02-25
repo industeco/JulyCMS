@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use App\EntityField\EntityPathAlias;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use July\Node\GoogleSitemap;
 
 class AnyPage extends Controller
 {
@@ -46,7 +44,7 @@ class AnyPage extends Controller
         }
 
         if ($url === 'sitemap.xml') {
-            return $this->getGoogleSitemap($langcode);
+            abort(404);
         }
 
         $url = $this->normalizeUrl($url);
@@ -71,20 +69,6 @@ class AnyPage extends Controller
             }
         }
         return $redirection;
-    }
-
-    protected function getGoogleSitemap($langcode)
-    {
-        $file = 'pages/'.$langcode.'/sitemap.xml';
-        $disk = Storage::disk('storage');
-        if ($disk->exists($file)) {
-            return $disk->get($file);
-        }
-
-        $content = GoogleSitemap::build($langcode);
-        $disk->put($file, $content);
-
-        return $content;
     }
 
     protected function normalizeUrl($url)

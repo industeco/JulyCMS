@@ -340,7 +340,7 @@
           this.process({
             text: '正在生成谷歌站点地图 ...',
             method: 'post',
-            action: "{{ short_url('nodes.build_google_sitemap') }}",
+            action: "{{ short_url('action.build.google-sitemap') }}",
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {

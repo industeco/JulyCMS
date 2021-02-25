@@ -276,28 +276,6 @@ class NodeController extends Controller
     }
 
     /**
-     * 生成谷歌站点地图（.xml 文件）
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function buildGoogleSitemap()
-    {
-        Storage::disk('public')->put('sitemap.xml', GoogleSitemap::build(langcode('frontend')));
-
-        return response('');
-
-        // if (config('lang.multiple')) {
-        //     $langcodes = lang()->getAccessibleLangcodes();
-        // } else {
-        //     $langcodes = [langcode('frontend')];
-        // }
-        // foreach ($langcodes as $langcode) {
-        //     $sitemap = GoogleSitemap::build($langcode);
-        //     Storage::disk('public')->put('pages/'.$langcode.'/sitemap.xml', $sitemap);
-        // }
-    }
-
-    /**
      * 查找无效链接
      *
      * @return \Illuminate\View\View
@@ -312,17 +290,5 @@ class NodeController extends Controller
         return view('node::node.invalid_links', [
             'invalidLinks' => $invalidLinks,
         ]);
-
-        // if (config('lang.multiple')) {
-        //     $langcodes = lang()->getAccessibleLangcodes();
-        // } else {
-        //     $langcodes = [langcode('frontend')];
-        // }
-        // $invalidLinks = [];
-        // foreach (Node::all() as $node) {
-        //     foreach ($langcodes as $langcode) {
-        //         $invalidLinks = array_merge($invalidLinks, $node->findInvalidLinks($langcode));
-        //     }
-        // }
     }
 }
