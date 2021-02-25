@@ -49,6 +49,7 @@ class GoogleSitemap
             }
         }
 
-        return html_compress(view('google-sitemap', $data)->render());
+        // return html_compress(view('google-sitemap', $data)->render());
+        return html_compress(app('twig')->render('google-sitemap.twig', $data));
     }
 }
