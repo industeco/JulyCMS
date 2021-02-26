@@ -146,9 +146,9 @@
       };
 
       return {
-        model: @json($model, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        model: @jjson($model),
         rules: {},
-        expanded: @json($context['global_fields']->pluck('group_title')->unique()->values()->all(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),
+        expanded: @jjson($context['global_fields']->pluck('group_title')->unique()->values()->all()),
       };
     },
 
@@ -189,12 +189,10 @@
           background: 'rgba(255, 255, 255, 0.7)',
         });
 
-        for (const key in this.mode) {
-          if (this.$refs['ckeditor_'+key]) {
-            const editor = this.$refs['ckeditor_'+key];
-            if (editor.instance && editor.instance.mode !== 'wysiwyg') {
-              editor.instance.setMode('wysiwyg');
-            }
+        for (const key in this.model) {
+          const editor = this.$refs['ckeditor_'+key];
+          if (editor && editor.instance && editor.instance.mode !== 'wysiwyg') {
+            editor.instance.setMode('wysiwyg');
           }
         }
 
