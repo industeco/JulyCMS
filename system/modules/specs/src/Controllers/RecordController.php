@@ -99,7 +99,7 @@ class RecordController extends Controller
      */
     public function search(Request $request)
     {
-        $results = Record::search($request->input('limit', 0), $request->input('keywords'));
+        $results = Record::search($request->input('limit', 0), urldecode($request->input('keywords')));
 
         $results['keywords'] = $request->input('keywords');
         $results['title'] = 'Search';
