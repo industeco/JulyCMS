@@ -2,27 +2,13 @@
 
 namespace App\Services\Translation;
 
-interface TranslatableInterface
+interface TranslatableInterface extends HasLangcodeInterface
 {
     /**
-     * 设置实例语言版本
+     * 翻译实例语言
      *
      * @param  string $langcode 语言代码
      * @return $this
      */
     public function translateTo(string $langcode);
-
-    /**
-     * 获取实例当前语言
-     *
-     * @return string|null
-     */
-    public function getLangcode();
-
-    /**
-     * 获取实例源语言
-     *
-     * @return string|null
-     */
-    public function getOriginalLangcode();
 }
