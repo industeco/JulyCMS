@@ -1,12 +1,11 @@
 <?php
 
-namespace App\MigrationBase;
+namespace App\BaseMigrations;
 
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFieldParametersTableBase extends MigrationBase
+class CreateFieldMoldTPivotableBase extends MigrationBase
 {
     /**
      * Run the migrations.
@@ -18,23 +17,25 @@ class CreateFieldParametersTableBase extends MigrationBase
         Schema::create($this->model::getModelTable(), function (Blueprint $table) {
             $table->id();
 
+            // 类型 id
+            $table->string('mold_id');
+
             // 字段 id
             $table->string('field_id');
 
-            // 实体类型 id
-            $table->string('mold_id')->nullable();
+            $table->string('label')->nullable();
+            $table->string('description')->nullable();
 
-            // 语言版本
-            $table->string('langcode', 12);
+            // 顺序号
+            $table->unsignedSmallInteger('delta')->default(0);
 
             // 字段参数
             $table->binary('parameters')->nullable();
 
-            // 时间戳
-            $table->timestamps();
+            // 字段 + 类型 唯一
+            $table->unique(['mold_id', 'field_id']);
         });
 
-        // 填充数据
         $this->seed();
     }
 }

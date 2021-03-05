@@ -6,7 +6,6 @@ use App\Concerns\CacheResultTrait;
 use App\Utils\Arr;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 abstract class ModelBase extends Model
 {
@@ -40,9 +39,9 @@ abstract class ModelBase extends Model
      */
     public static function getModelSetClass()
     {
-        // if (class_exists($class = __NAMESPACE__.'\\'.class_basename(static::class).'Set')) {
-        //     return $class;
-        // }
+        if (class_exists($class = static::class.'Set')) {
+            return $class;
+        }
         return null;
     }
 
@@ -268,6 +267,19 @@ abstract class ModelBase extends Model
     }
 
     /**
+     * Merge new casts with existing casts on the model.
+     *
+     * @param  array  $casts
+     * @return $this
+     */
+    public function mergeCasts($casts)
+    {
+        $this->casts = array_merge($this->casts, $casts);
+
+        return $this;
+    }
+
+    /**
      * Handle dynamic static method calls into the model.
      *
      * @param  string  $method
@@ -276,9 +288,7 @@ abstract class ModelBase extends Model
      */
     public static function __callStatic($method, $parameters)
     {
-        if (Str::startsWith($method, 'getModel')) {
-            $method = 'get'.substr($method, strlen('getModel'));
-        }
+        $method = preg_replace('/^getModel/', 'get', $method);
 
         return (new static)->$method(...$parameters);
     }

@@ -49,6 +49,8 @@ abstract class FieldValueBase extends ModelBase
     public function setValueColumn($column)
     {
         $this->value_column = $column;
+
+        return $this;
     }
 
     /**
@@ -70,9 +72,10 @@ abstract class FieldValueBase extends ModelBase
     public function bindField(FieldBase $field)
     {
         $this->field = $field;
-        $fieldType = $field->getFieldType();
 
         if ($this->isDynamic()) {
+            $fieldType = $field->getFieldType();
+
             // 设置模型表
             $this->setTable($field->getDynamicValueTable());
 
@@ -280,11 +283,7 @@ abstract class FieldValueBase extends ModelBase
         // This method just provides a convenient way for us to generate fresh model
         // instances of this current model. It is particularly useful during the
         // hydration of new objects via the Eloquent query builder instances.
-        $model = new static;
-
-        $model->fillable($this->getFillable());
-
-        $model->fill((array) $attributes);
+        $model = (new static)->fillable($this->getFillable())->fill((array) $attributes);
 
         $model->exists = $exists;
 
