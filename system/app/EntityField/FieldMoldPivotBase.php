@@ -22,16 +22,10 @@ abstract class FieldMoldPivotBase extends PivotBase
     protected $fillable = [
         'mold_id',
         'field_id',
-        'delta',
         'label',
         'description',
-        'maxlength',
-        'is_required',
-        'helpertext',
-        'default_value',
-        'options',
-        'rules',
-        'placeholder',
+        'delta',
+        'parameters',
     ];
 
     /**
@@ -41,7 +35,7 @@ abstract class FieldMoldPivotBase extends PivotBase
      */
     protected $casts = [
         'delta' => 'int',
-        'is_required' => 'boolean',
+        'parameters' => Serialized::class,
     ];
 
     /**
@@ -71,7 +65,12 @@ abstract class FieldMoldPivotBase extends PivotBase
      */
     public static function getParameterFields()
     {
-        return Arr::except((new static)->getFillable(), [static::getMoldKeyName(), static::getFieldKeyName()]);
+        return [
+            'label',
+            'description',
+            'delta',
+            'parameters',
+        ];
     }
 
     // /**

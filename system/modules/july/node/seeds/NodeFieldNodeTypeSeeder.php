@@ -21,28 +21,22 @@ class NodeFieldNodeTypeSeeder extends SeederBase
      */
     public function getNodeFieldNodeTypeTableRecords()
     {
-        // 所有字段信息
-        $allFields = collect((new NodeFieldSeeder)->getNodeFieldsTableRecords())
-            ->keyBy('id')
-            ->map(function(array $field) {
-                return Arr::only($field, [
-                    'label',
-                    'description',
-                    'is_required',
-                    'helpertext',
-                    'default_value',
-                    'options',
-                    'rules',
-                ]);
-            }, true);
-
-        // 全部预设字段
-        // $reserved = ['title'];
-        $reserved = [];
+        // 所有字段
+        $allFields = [];
 
         // 全局字段
-        // $global = ['url', 'view', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
-        $global = ['url', 'meta_title', 'meta_keywords', 'meta_description', 'meta_canonical'];
+        $globalFields = [];
+
+        foreach ((new NodeFieldSeeder)->getNodeFieldsTableRecords() as $field) {
+            $allFields[$field['id']] = Arr::only($field, [
+                'label',
+                'description',
+                'parameters',
+            ]);
+            if ($field['is_global'] ?? false) {
+                $globalFields[] = $field['id'];
+            }
+        }
 
         // 类型关联字段
         $molds = [
@@ -54,12 +48,11 @@ class NodeFieldNodeTypeSeeder extends SeederBase
 
         // 生成记录
         $records = [];
-        foreach ($molds as $id => $fields) {
-            $fields = array_merge($reserved, $fields, $global);
-            foreach ($fields as $index => $field) {
-                $records[] = $allFields->get($field) + [
-                    'mold_id' => $id,
-                    'field_id' => $field,
+        foreach ($molds as $mold_id => $moldFields) {
+            foreach (array_merge($moldFields, $globalFields) as $index => $field_id) {
+                $records[] = $allFields[$field_id] + [
+                    'mold_id' => $mold_id,
+                    'field_id' => $field_id,
                     'delta' => $index,
                 ];
             }

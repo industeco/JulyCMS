@@ -45,20 +45,14 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     protected $fillable = [
         'id',
-        'field_type_id',
-        'is_reserved',
-        'is_global',
-        'group_title',
-        'search_weight',
-        'maxlength',
+        'field_type',
         'label',
         'description',
-        'is_required',
-        'helpertext',
-        'default_value',
-        'options',
-        'rules',
-        'placeholder',
+        'is_reserved',
+        'is_global',
+        'group',
+        'weight',
+        'parameters',
         'langcode',
     ];
 
@@ -68,11 +62,10 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      * @var array
      */
     protected $casts = [
-        'is_reserved' => 'boolean',
-        'is_global' => 'boolean',
-        'search_weight' => 'int',
-        'maxlength' => 'int',
-        'is_required' => 'boolean',
+        'is_reserved' => 'bool',
+        'is_global' => 'bool',
+        'weight' => 'int',
+        'parameters' => Serialized::class
     ];
 
     /**
@@ -100,20 +93,14 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     {
         return [
             'id' => null,
-            'field_type_id' => null,
+            'field_type' => null,
             'label' => null,
             'description' => null,
             'is_reserved' => false,
             'is_global' => false,
-            'group_title' => null,
-            'search_weight' => 0,
-            'maxlength' => 0,
-            'is_required' => false,
-            'helpertext' => null,
-            'default_value' => null,
-            'options' => null,
-            'rules' => null,
-            'placeholder' => null,
+            'group' => null,
+            'weight' => 0,
+            'parameters' => null,
             'langcode' => langcode('content'),
         ];
     }

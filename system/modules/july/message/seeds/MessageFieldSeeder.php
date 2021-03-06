@@ -2,6 +2,7 @@
 
 namespace July\Message\Seeds;
 
+use App\EntityField\FieldTypes;
 use Database\Seeds\SeederBase;
 use Illuminate\Support\Facades\Date;
 use July\Message\MessageField;
@@ -25,23 +26,23 @@ class MessageFieldSeeder extends SeederBase
         $records = [
             [
                 'id' => 'email',
-                'field_type_id' => 'input',
+                'field_type' => FieldTypes\Input::class,
                 'label' => 'E-mail',
                 'is_required' => true,
             ],
             [
                 'id' => 'name',
-                'field_type_id' => 'input',
+                'field_type' => FieldTypes\Input::class,
                 'label' => 'Name',
             ],
             [
                 'id' => 'phone',
-                'field_type_id' => 'input',
+                'field_type' => FieldTypes\Input::class,
                 'label' => 'Phone',
             ],
             [
                 'id' => 'message',
-                'field_type_id' => 'text',
+                'field_type' => 'text',
                 'label' => 'Message',
                 'is_required' => true,
             ],

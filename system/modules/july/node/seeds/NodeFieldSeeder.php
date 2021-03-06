@@ -2,6 +2,7 @@
 
 namespace July\Node\Seeds;
 
+use App\EntityField\FieldTypes;
 use Database\Seeds\SeederBase;
 use Illuminate\Support\Facades\Date;
 use July\Node\NodeField;
@@ -25,93 +26,72 @@ class NodeFieldSeeder extends SeederBase
         $records = [
             [
                 'id' => 'url',
-                'field_type_id' => 'path_alias',
-                'is_reserved' => true,
-                'is_global' => true,
-                'group_title' => '网址',
+                'field_type' => FieldTypes\PathAlias::class,
                 'label' => '网址',
                 'description' => null,
-            ],
-            // [
-            //     'id' => 'view',
-            //     'field_type_id' => 'reserved.view',
-            //     'is_reserved' => true,
-            //     'is_global' => true,
-            //     'group_title' => '网址和模板',
-            //     'label' => '模板',
-            //     'description' => 'twig 模板',
-            // ],
-            [
-                'id' => 'meta_title',
-                'field_type_id' => 'input',
                 'is_reserved' => true,
                 'is_global' => true,
-                'group_title' => 'SEO 信息',
-                'maxlength' => 60,
+                'field_group' => '网址',
+            ],
+            [
+                'id' => 'meta_title',
+                'field_type' => FieldTypes\Input::class,
                 'label' => '标题',
                 'description' => '标题建议控制在 60 个字符以内。',
+                'is_reserved' => true,
+                'is_global' => true,
+                'field_group' => 'SEO 信息',
             ],
             [
                 'id' => 'meta_keywords',
-                'field_type_id' => 'text',
-                'is_reserved' => true,
-                'is_global' => true,
-                'group_title' => 'SEO 信息',
-                'maxlength' => 160,
+                'field_type' => FieldTypes\Text::class,
                 'label' => '关键词',
                 'description' => '关键词建议控制在 160 个字符以内。',
+                'is_reserved' => true,
+                'is_global' => true,
+                'field_group' => 'SEO 信息',
             ],
             [
                 'id' => 'meta_description',
-                'field_type_id' => 'text',
-                'is_reserved' => true,
-                'is_global' => true,
-                'group_title' => 'SEO 信息',
-                'maxlength' => 160,
+                'field_type' => FieldTypes\Text::class,
                 'label' => '描述',
                 'description' => '描述建议控制在 160 个字符以内。',
+                'is_reserved' => true,
+                'is_global' => true,
+                'field_group' => 'SEO 信息',
             ],
             [
                 'id' => 'meta_canonical',
-                'field_type_id' => 'url',
-                'is_reserved' => true,
-                'is_global' => true,
-                'group_title' => 'SEO 信息',
+                'field_type' => FieldTypes\Url::class,
                 'label' => '权威页面',
                 'description' => null,
+                'is_reserved' => true,
+                'is_global' => true,
+                'field_group' => 'SEO 信息',
             ],
-            // [
-            //     'id' => 'title',
-            //     'field_type_id' => 'input',
-            //     'is_reserved' => true,
-            //     'search_weight' => 10,
-            //     'label' => '标题',
-            //     'description' => '内容标题，通常用作链接文字。',
-            //     'is_required' => true,
-            // ],
             [
                 'id' => 'content',
-                'field_type_id' => 'html',
-                'search_weight' => 1,
+                'field_type' => FieldTypes\Html::class,
                 'label' => '内容',
                 'description' => null,
+                'weight' => 1,
             ],
             [
                 'id' => 'summary',
-                'field_type_id' => 'text',
-                'search_weight' => 1,
+                'field_type' => FieldTypes\Text::class,
                 'label' => '内容摘要',
                 'description' => null,
+                'weight' => 1,
             ],
             [
                 'id' => 'image_src',
-                'field_type_id' => 'image',
+                'field_type' => FieldTypes\Image::class,
                 'label' => '主图',
                 'description' => null,
             ],
             [
                 'id' => 'image_alt',
-                'field_type_id' => 'input',
+                'field_type' => FieldTypes\Input::class,
                 'label' => '主图 alt',
                 'description' => null,
             ],
@@ -125,7 +105,11 @@ class NodeFieldSeeder extends SeederBase
         ];
 
         return array_map(function($record) use($share) {
-            return $record + $share;
+            $record += $share;
+            if ($record['parameters'] ?? null) {
+                $record['parameters'] = serialize($record['parameters']);
+            }
+            return $record;
         }, $records);
     }
 
