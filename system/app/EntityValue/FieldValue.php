@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EntityField;
+namespace App\EntityValue;
 
 class FieldValue extends FieldValueBase
 {

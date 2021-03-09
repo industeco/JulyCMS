@@ -15,7 +15,7 @@ class CreateFieldsTableBase extends MigrationBase
      */
     public function up()
     {
-        Schema::create($this->model::getModelTable(), function (Blueprint $table) {
+        Schema::create($this->getTable(), function (Blueprint $table) {
             // 字段 id
             $table->string('id')->primary();
 
@@ -25,9 +25,7 @@ class CreateFieldsTableBase extends MigrationBase
             $table->string('label');
             $table->string('description')->nullable();
 
-            // 是否预设：
-            // - 不可删除
-            // - 只能通过程序添加，如安装或更新
+            // 是否预设：预设字段由开发人员维护，用户不可删除
             $table->boolean('is_reserved')->default(false);
 
             // 是否全局字段：全局字段会在新建模型时默认出现在全局字段列表
@@ -39,8 +37,8 @@ class CreateFieldsTableBase extends MigrationBase
             // 搜索权重
             $table->unsignedTinyInteger('weight')->default(0);
 
-            // 字段参数
-            $table->binary('parameters')->nullable();
+            // 字段元数据
+            $table->binary('field_meta')->nullable();
 
             // 初始语言版本
             $table->string('langcode', 12);
@@ -64,6 +62,6 @@ class CreateFieldsTableBase extends MigrationBase
             $field->tableDown();
         }
 
-        Schema::dropIfExists($this->model::getModelTable());
+        Schema::dropIfExists($this->getTable());
     }
 }

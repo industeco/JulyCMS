@@ -2,8 +2,7 @@
 
 namespace App\Entity;
 
-use App\EntityField\EntityPathAlias;
-use App\EntityField\EntityView;
+use App\EntityValue\EntityPathAlias;
 use App\EntityField\FieldBase;
 use App\Models\ModelBase;
 use App\Utils\Arr;

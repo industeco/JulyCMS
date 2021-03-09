@@ -19,12 +19,10 @@
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^1.0",
         "guzzlehttp/guzzle": "^6.3",
-        "intervention/image": "^2.5",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.0",
-        "nwidart/laravel-modules": "^7.0",
         "symfony/validator": "^5.0",
         "twig/twig": "^3.0"
     },

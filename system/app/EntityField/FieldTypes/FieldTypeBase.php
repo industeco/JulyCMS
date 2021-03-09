@@ -63,7 +63,7 @@ abstract class FieldTypeBase
      *
      * @var string
      */
-    protected $valueModel = \App\EntityField\FieldValue::class;
+    protected $valueModel = \App\EntityValue\FieldValue::class;
 
     /**
      * 绑定的字段对象
@@ -178,7 +178,7 @@ abstract class FieldTypeBase
     /**
      * 获取字段值模型，用于管理字段值的增删改查等
      *
-     * @return \App\EntityField\FieldValueBase
+     * @return \App\EntityValue\FieldValueBase
      */
     public function getValueModel()
     {
@@ -265,6 +265,7 @@ abstract class FieldTypeBase
     public function toValue(array $record)
     {
         $value = $record[$this->getColumn()['name']] ?? null;
+
         return Types::cast($value, $this->caster);
     }
 

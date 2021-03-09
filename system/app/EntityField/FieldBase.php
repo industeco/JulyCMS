@@ -2,7 +2,6 @@
 
 namespace App\EntityField;
 
-use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Entity\EntityBase;
 use App\Entity\Exceptions\InvalidEntityException;
 use App\Models\ModelBase;
@@ -50,9 +49,9 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         'description',
         'is_reserved',
         'is_global',
-        'group',
+        'field_group',
         'weight',
-        'parameters',
+        'field_meta',
         'langcode',
     ];
 
@@ -65,7 +64,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         'is_reserved' => 'bool',
         'is_global' => 'bool',
         'weight' => 'int',
-        'parameters' => Serialized::class
+        'field_meta' => Serialized::class
     ];
 
     /**
@@ -98,9 +97,9 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             'description' => null,
             'is_reserved' => false,
             'is_global' => false,
-            'group' => null,
+            'field_group' => null,
             'weight' => 0,
-            'parameters' => null,
+            'field_meta' => null,
             'langcode' => langcode('content'),
         ];
     }
@@ -179,7 +178,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function scopeSearchable($query)
     {
-        return $query->where('search_weight', '>', 0);
+        return $query->where('weight', '>', 0);
     }
 
     /**
@@ -300,100 +299,20 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     }
 
     /**
-     * maxlength 属性的 Get Mutator
+     * field_meta 属性的 Get Mutator
      *
-     * @param  string|null $maxlength
+     * @param  array $field_meta
      * @return string
      */
-    public function getMaxlengthAttribute($maxlength)
+    public function getFieldMetaAttribute($field_meta)
     {
         if ($this->pivot) {
-            $maxlength = $this->pivot->maxlength;
+            $field_meta = $this->pivot->field_meta;
         }
-        return (int) $maxlength;
-    }
-
-    /**
-     * is_required 属性的 Get Mutator
-     *
-     * @param  bool|int $required
-     * @return bool
-     */
-    public function getIsRequiredAttribute($required)
-    {
-        if ($this->pivot) {
-            $required = $this->pivot->is_required;
+        if (is_string($field_meta)) {
+            $field_meta = unserialize($field_meta);
         }
-        return (bool) $required;
-    }
-
-    /**
-     * helpertext 属性的 Get Mutator
-     *
-     * @param  string|null $helpertext
-     * @return string
-     */
-    public function getHelpertextAttribute($helpertext)
-    {
-        if ($this->pivot) {
-            $helpertext = $this->pivot->helpertext;
-        }
-        return trim($helpertext);
-    }
-
-    /**
-     * default_value 属性的 Get Mutator
-     *
-     * @param  string|null $defaultValue
-     * @return string
-     */
-    public function getDefaultValueAttribute($defaultValue)
-    {
-        if ($this->pivot) {
-            $defaultValue = $this->pivot->default_value;
-        }
-        return Types::cast($defaultValue, $this->getFieldType()->getCaster());
-    }
-
-    /**
-     * options 属性的 Get Mutator
-     *
-     * @param  string|null $options
-     * @return string
-     */
-    public function getOptionsAttribute($options)
-    {
-        if ($this->pivot) {
-            $options = $this->pivot->options;
-        }
-        return trim($options);
-    }
-
-    /**
-     * rules 属性的 Get Mutator
-     *
-     * @return int
-     */
-    public function getRulesAttribute($rules)
-    {
-        if ($this->pivot) {
-            return $this->pivot->rules;
-        }
-        return $rules;
-    }
-
-    /**
-     * placeholder 属性的 Get Mutator
-     *
-     * @param  string|null $placeholder
-     * @return string
-     */
-    public function getPlaceholderAttribute($placeholder)
-    {
-        if ($this->pivot) {
-            $placeholder = $this->pivot->placeholder;
-        }
-        return trim($placeholder);
+        return $field_meta;
     }
 
     /**
@@ -416,11 +335,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getFieldType()
     {
-        // 尝试从缓存获取数据
-        if ($result = $this->cachePipe(__FUNCTION__)) {
-            return $result->value();
-        }
-        return FieldTypeManager::findOrFail($this->attributes['field_type_id'])->bindField($this);
+        return (new $this->attributes['field_type'])->bindField($this);
     }
 
     /**
@@ -437,7 +352,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * 获取字段值模型
      *
-     * @return \App\EntityField\FieldValueBase
+     * @return \App\EntityValue\FieldValueBase
      */
     public function getValueModel()
     {
@@ -640,29 +555,29 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getParameters()
     {
-        // 尝试从缓存获取数据
-        if ($result = $this->cachePipe(__FUNCTION__)) {
-            return $result->value();
-        }
+        // // 尝试从缓存获取数据
+        // if ($result = $this->cachePipe(__FUNCTION__)) {
+        //     return $result->value();
+        // }
 
-        $parameters = null;
+        // $parameters = null;
 
-        // 获取翻译过的模型字段参数
-        if ($this->entity && $this->entity->getMold()->isTranslated()) {
-            $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
-        }
+        // // 获取翻译过的模型字段参数
+        // if ($this->entity && $this->entity->getMold()->isTranslated()) {
+        //     $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
+        // }
 
-        // 获取翻译过的字段参数
-        elseif (!$this->entity && $this->isTranslated()) {
-            $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
-        }
+        // // 获取翻译过的字段参数
+        // elseif (!$this->entity && $this->isTranslated()) {
+        //     $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
+        // }
 
-        if ($parameters) {
-            return [
-                'default_value' => $parameters->default_value,
-                'options' => $parameters->options,
-            ];
-        }
+        // if ($parameters) {
+        //     return [
+        //         'default_value' => $parameters->default_value,
+        //         'options' => $parameters->options,
+        //     ];
+        // }
 
         return [];
     }

@@ -31,7 +31,7 @@ class NodeFieldNodeTypeSeeder extends SeederBase
             $allFields[$field['id']] = Arr::only($field, [
                 'label',
                 'description',
-                'parameters',
+                'field_meta',
             ]);
             if ($field['is_global'] ?? false) {
                 $globalFields[] = $field['id'];

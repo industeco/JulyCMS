@@ -190,8 +190,10 @@
         });
 
         for (const key in this.model) {
-          const editor = this.$refs['ckeditor_'+key];
-          if (editor && editor.instance && editor.instance.mode !== 'wysiwyg') {
+          const editor = this.$refs['ckeditor_' + key];
+          // console.log('ckeditor_' + key);
+          // console.log(editor);
+          if (editor && editor.instance && editor.instance.mode != 'wysiwyg') {
             editor.instance.setMode('wysiwyg');
           }
         }
@@ -216,11 +218,11 @@
 
           axios.{{ $context['mode'] !== 'create' ? 'put' : 'post' }}(action, model)
             .then((response) => {
-              // console.log(response)
+              // console.log(response);
               window.location.href = "{{ short_url('nodes.index') }}";
             })
             .catch((error) => {
-              loading.close()
+              loading.close();
               this.$message.error(error);
             });
         }).catch((error) => {

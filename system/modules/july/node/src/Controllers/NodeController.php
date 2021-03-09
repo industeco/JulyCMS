@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Node\Catalog;
-use July\Node\GoogleSitemap;
 use July\Node\Node;
 use July\Node\NodeType;
 use July\Node\NodeField;

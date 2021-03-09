@@ -32,20 +32,16 @@ class Node extends TranslatableEntityBase
         'is_green',
         'is_blue',
         'langcode',
-        'created_at',
-        'updated_at',
     ];
 
     /**
-     * 哪些字段不可更新（黑名单）
+     * 不可更新字段
      *
      * @var array
      */
-    protected $updateExcept = [
+    protected $immutable = [
         'mold_id',
         'langcode',
-        'created_at',
-        'updated_at',
     ];
 
     /**

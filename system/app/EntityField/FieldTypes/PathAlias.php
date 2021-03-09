@@ -30,7 +30,7 @@ class PathAlias extends FieldTypeBase
      *
      * @var string
      */
-    protected $valueModel = \App\EntityField\EntityPathAlias::class;
+    protected $valueModel = \App\EntityValue\EntityPathAlias::class;
 
     /**
      * {@inheritdoc}

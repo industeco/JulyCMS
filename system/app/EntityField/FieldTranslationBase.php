@@ -6,7 +6,7 @@ use App\Casts\Serialized;
 use App\Models\ModelBase;
 use App\Utils\Types;
 
-abstract class FieldTranslationsBase extends ModelBase
+abstract class FieldTranslationBase extends ModelBase
 {
     /**
      * 可批量赋值的属性
@@ -17,7 +17,7 @@ abstract class FieldTranslationsBase extends ModelBase
         'field_id',
         'mold_id',
         'langcode',
-        'parameters',
+        'field_meta',
     ];
 
     /**
@@ -26,6 +26,13 @@ abstract class FieldTranslationsBase extends ModelBase
      * @var array
      */
     protected $casts = [
-        'parameters' => Serialized::class,
+        'field_meta' => Serialized::class,
     ];
+
+    /**
+     * 获取绑定的字段类
+     *
+     * @return string
+     */
+    abstract public function getFieldClass();
 }

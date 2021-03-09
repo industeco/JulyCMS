@@ -1,31 +1,19 @@
 <?php
 
+use App\BaseMigrations\CreateFieldTranslationsTableBase;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNodeFieldTranslationsTable extends Migration
+class CreateNodeFieldTranslationsTable extends CreateFieldTranslationsTableBase
 {
     /**
-     * Run the migrations.
+     * 获取本次迁移使用的表名
      *
-     * @return void
+     * @return string
      */
-    public function up()
+    public function getTable()
     {
-        Schema::create('node_field_translations', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('node_field_translations');
+        return 'node_field_translations';
     }
 }

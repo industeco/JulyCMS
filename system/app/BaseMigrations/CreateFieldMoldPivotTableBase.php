@@ -5,7 +5,7 @@ namespace App\BaseMigrations;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFieldMoldTPivotableBase extends MigrationBase
+class CreateFieldMoldPivotTableBase extends MigrationBase
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class CreateFieldMoldTPivotableBase extends MigrationBase
      */
     public function up()
     {
-        Schema::create($this->model::getModelTable(), function (Blueprint $table) {
+        Schema::create($this->getTable(), function (Blueprint $table) {
             $table->id();
 
             // 类型 id
@@ -29,8 +29,8 @@ class CreateFieldMoldTPivotableBase extends MigrationBase
             // 顺序号
             $table->unsignedSmallInteger('delta')->default(0);
 
-            // 字段参数
-            $table->binary('parameters')->nullable();
+            // 字段元数据
+            $table->binary('field_meta')->nullable();
 
             // 字段 + 类型 唯一
             $table->unique(['mold_id', 'field_id']);

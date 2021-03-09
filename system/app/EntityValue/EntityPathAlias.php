@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EntityField;
+namespace App\EntityValue;
 
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;

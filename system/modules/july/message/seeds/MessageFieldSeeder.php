@@ -28,7 +28,9 @@ class MessageFieldSeeder extends SeederBase
                 'id' => 'email',
                 'field_type' => FieldTypes\Input::class,
                 'label' => 'E-mail',
-                'is_required' => true,
+                'field_meta' => [
+                    'required' => true,
+                ],
             ],
             [
                 'id' => 'name',
@@ -44,19 +46,22 @@ class MessageFieldSeeder extends SeederBase
                 'id' => 'message',
                 'field_type' => 'text',
                 'label' => 'Message',
-                'is_required' => true,
+                'field_meta' => [
+                    'required' => true,
+                ],
             ],
         ];
 
-        $now = Date::now();
         $share = [
             'langcode' => langcode('frontend'),
-            'created_at' => $now,
-            'updated_at' => $now,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
 
         return array_map(function($record) use($share) {
-            return $record + $share;
+            return array_merge($record, $share, [
+                'field_meta' => isset($record['field_meta']) ? serialize($record['field_meta']) : null,
+            ]);
         }, $records);
     }
 

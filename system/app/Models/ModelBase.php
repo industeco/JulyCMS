@@ -13,18 +13,11 @@ abstract class ModelBase extends Model
     use CacheResultTrait;
 
     /**
-     * 哪些字段可更新（白名单）
+     * 不可更新字段
      *
      * @var array
      */
-    protected $updateOnly = [];
-
-    /**
-     * 哪些字段不可更新（黑名单）
-     *
-     * @var array
-     */
-    protected $updateExcept = [];
+    protected $immutable = [];
 
     /**
      * 新建或更新时传入的原始数据
@@ -40,9 +33,6 @@ abstract class ModelBase extends Model
      */
     public static function getModelSetClass()
     {
-        // if (class_exists($class = __NAMESPACE__.'\\'.class_basename(static::class).'Set')) {
-        //     return $class;
-        // }
         return null;
     }
 
@@ -158,10 +148,8 @@ abstract class ModelBase extends Model
             return false;
         }
 
-        if ($this->updateOnly) {
-            $attributes = Arr::only($attributes, $this->updateOnly);
-        } elseif ($this->updateExcept) {
-            $attributes = Arr::except($attributes, $this->updateExcept);
+        if ($this->immutable) {
+            $attributes = Arr::except($attributes, $this->immutable);
         }
 
         return $this->fill($attributes)->save($options);
@@ -230,17 +218,6 @@ abstract class ModelBase extends Model
     {
         return array_fill_keys((new static)->getFillable(), null);
     }
-
-    // /**
-    //  * 排除指定属性
-    //  *
-    //  * @param  array $columns
-    //  * @return array
-    //  */
-    // public function except(array $columns = [])
-    // {
-    //     return Arr::except($this->gather(), $columns);
-    // }
 
     /**
      * 获取属性集，可指定属性名单

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\EntityField;
+namespace App\EntityValue;
 
 use App\Entity\EntityBase;
+use App\EntityField\FieldBase;
 use App\Models\ModelBase;
 use App\Utils\Arr;
 use Illuminate\Support\Facades\Log;
@@ -194,7 +195,7 @@ abstract class FieldValueBase extends ModelBase
         // 正在查询的字段的信息
         $field = [
             'field_id' => $this->field->getKey(),
-            'field_type_id' => $this->field->field_type_id,
+            'field_type' => $this->field->field_type,
             'label' => $this->field->label,
             'description' => $this->field->description,
             'entity_name' => $this->field->getBoundEntityName(),

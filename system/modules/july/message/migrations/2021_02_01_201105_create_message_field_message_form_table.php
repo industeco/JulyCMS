@@ -1,8 +1,8 @@
 <?php
 
-use App\BaseMigrations\CreateFieldMoldTPivotableBase;
+use App\BaseMigrations\CreateFieldMoldPivotTableBase;
 
-class CreateNodeFieldNodeTypeTable extends CreateFieldMoldTPivotableBase
+class CreateNodeFieldNodeTypeTable extends CreateFieldMoldPivotTableBase
 {
     /**
      * 模型名

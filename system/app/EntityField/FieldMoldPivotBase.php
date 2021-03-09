@@ -25,7 +25,7 @@ abstract class FieldMoldPivotBase extends PivotBase
         'label',
         'description',
         'delta',
-        'parameters',
+        'field_meta',
     ];
 
     /**
@@ -35,7 +35,7 @@ abstract class FieldMoldPivotBase extends PivotBase
      */
     protected $casts = [
         'delta' => 'int',
-        'parameters' => Serialized::class,
+        'field_meta' => Serialized::class,
     ];
 
     /**
@@ -63,27 +63,13 @@ abstract class FieldMoldPivotBase extends PivotBase
      *
      * @return array
      */
-    public static function getParameterFields()
+    public static function getMetaAttributes()
     {
         return [
             'label',
             'description',
             'delta',
-            'parameters',
+            'field_meta',
         ];
     }
-
-    // /**
-    //  * options 属性的 Set Mutator
-    //  *
-    //  * @param  array|null $options
-    //  * @return array
-    //  */
-    // public function setOptionsAttribute($options)
-    // {
-    //     if (is_array($options)) {
-    //         $options = implode('|', $options);
-    //     }
-    //     $this->attributes['options'] = $options;
-    // }
 }

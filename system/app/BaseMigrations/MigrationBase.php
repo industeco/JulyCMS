@@ -36,7 +36,7 @@ abstract class MigrationBase extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists($this->model::getModelTable());
+        Schema::dropIfExists($this->getTable());
     }
 
     /**
@@ -55,5 +55,15 @@ abstract class MigrationBase extends Migration
                 $this->seeder::afterSeeding();
             }
         }
+    }
+
+    /**
+     * 获取本次迁移使用的表名，默认从绑定的模型获取
+     *
+     * @return string
+     */
+    public function getTable()
+    {
+        return $this->model::getModelTable();
     }
 }

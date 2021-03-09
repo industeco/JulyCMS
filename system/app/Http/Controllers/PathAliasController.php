@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\EntityField\EntityPathAlias;
+use App\EntityValue\EntityPathAlias;
 
 class PathAliasController extends Controller
 {
@@ -33,7 +33,7 @@ class PathAliasController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\EntityField\EntityPathAlias  $url
+     * @param  \App\EntityValue\EntityPathAlias  $url
      * @return \Illuminate\Http\Response
      */
     public function show(EntityPathAlias $url)
@@ -66,7 +66,7 @@ class PathAliasController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\EntityField\EntityPathAlias  $url
+     * @param  \App\EntityValue\EntityPathAlias  $url
      * @return \Illuminate\Http\Response
      */
     public function destroy(EntityPathAlias $url)

@@ -15,7 +15,7 @@ class CreateFieldTranslationsTableBase extends MigrationBase
      */
     public function up()
     {
-        Schema::create($this->model::getModelTable(), function (Blueprint $table) {
+        Schema::create($this->getTable(), function (Blueprint $table) {
             $table->id();
 
             // 字段 id
@@ -28,7 +28,7 @@ class CreateFieldTranslationsTableBase extends MigrationBase
             $table->string('langcode', 12);
 
             // 字段参数
-            $table->binary('parameters')->nullable();
+            $table->binary('field_meta')->nullable();
 
             // 时间戳
             $table->timestamps();

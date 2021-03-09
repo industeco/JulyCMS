@@ -14,7 +14,7 @@ class CreateMoldsTableBase extends MigrationBase
      */
     public function up()
     {
-        Schema::create($this->model::getModelTable(), function (Blueprint $table) {
+        Schema::create($this->getTable(), function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('label');
             $table->string('description')->nullable();

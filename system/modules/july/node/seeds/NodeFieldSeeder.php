@@ -97,19 +97,16 @@ class NodeFieldSeeder extends SeederBase
             ],
         ];
 
-        $now = Date::now();
         $share = [
             'langcode' => langcode('content.default'),
-            'created_at' => $now,
-            'updated_at' => $now,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
 
         return array_map(function($record) use($share) {
-            $record += $share;
-            if ($record['parameters'] ?? null) {
-                $record['parameters'] = serialize($record['parameters']);
-            }
-            return $record;
+            return array_merge($record, $share, [
+                'field_meta' => isset($record['field_meta']) ? serialize($record['field_meta']) : null,
+            ]);
         }, $records);
     }
 

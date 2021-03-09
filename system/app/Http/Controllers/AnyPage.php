@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\EntityField\EntityPathAlias;
+use App\EntityValue\EntityPathAlias;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
