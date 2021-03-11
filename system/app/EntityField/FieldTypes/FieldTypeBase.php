@@ -3,26 +3,16 @@
 namespace App\EntityField\FieldTypes;
 
 use App\EntityField\FieldBase;
+use App\Utils\Rule;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * 模型字段类型定义类，简称定义类
- * 定义类主要用途：
- *  1. 辅助创建字段
- *  2. 构建字段数据表列
- *  3. 构建字段表单控件
+ * 模型字段类型类
  */
 abstract class FieldTypeBase
 {
-    /**
-     * 字段类型 id
-     *
-     * @var string
-     */
-    protected $id;
-
     /**
      * 字段类型标签
      *
@@ -35,7 +25,7 @@ abstract class FieldTypeBase
      *
      * @var string|null
      */
-    protected $description;
+    protected $description = null;
 
     /**
      * 视图
@@ -47,7 +37,7 @@ abstract class FieldTypeBase
     /**
      * 字段值类型转换器
      *
-     * @var string
+     * @var string|\Closure
      */
     protected $caster = 'string';
 
@@ -73,20 +63,71 @@ abstract class FieldTypeBase
     protected $field = null;
 
     /**
+     * 字段构造元数据
+     *
+     * @var array
+     */
+    protected $meta = [];
+
+    /**
+     * 字段元数据结构
+     *
+     * @var array
+     */
+    protected $metaSchema = [
+        'label' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'description' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'maxlength' => [
+            'type' => 'int',
+            'default' => null,
+        ],
+        'required' => [
+            'type' => 'bool',
+            'default' => false,
+        ],
+        'rules' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'options' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'value' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'helptext' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'placeholder' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+    ];
+
+    /**
      * @param \App\EntityField\FieldBase|null $field
      */
     public function __construct(FieldBase $field = null)
     {
         $this->field = $field;
-
-        // 生成 id
-        if (! $this->id) {
-            $this->id = preg_replace('/_type$/', '', Str::snake(class_basename(static::class)));
+        if ($field) {
+            $this->meta = $field->getMeta();
         }
+
+        $classBaseName = preg_replace('/Type$/', '', class_basename(static::class));
 
         // 生成标签
         if (! $this->label) {
-            $this->label = preg_replace('/Type$/', '', class_basename(static::class));
+            $this->label = $classBaseName;
         }
     }
 
@@ -113,16 +154,6 @@ abstract class FieldTypeBase
         $this->field = $field;
 
         return $this;
-    }
-
-    /**
-     * 获取类型 id
-     *
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -190,20 +221,39 @@ abstract class FieldTypeBase
     }
 
     /**
+     * 获取字段值模型，用于管理字段值的增删改查等
+     *
+     * @return array
+     */
+    public function getMetaSchema()
+    {
+        $schema = is_array($this->metaSchema) ? $this->metaSchema : [];
+        $schema['value'] = [
+            'type' => $this->getCaster(),
+            'default' => $schema['value']['default'] ?? null,
+        ];
+
+        return $schema;
+    }
+
+    /**
      * 从表单数据中提取字段参数，主要用于类型翻译
      *
      * @param array $raw 包含表单数据的数组
      * @return array
      */
-    public function extractParameters(array $raw)
+    public function extractMeta(array $raw)
     {
-        return [
-            // 默认值
-            'default_value' => $raw['default_value'] ?? null,
+        $meta = [];
+        foreach ($this->getMetaSchema() as $key => $schema) {
+            if (isset($raw[$key])) {
+                $meta[$key] = Types::cast($raw[$key], $schema['type']);
+            } elseif ($schema['default'] ?? null) {
+                $meta[$key] = $schema['default'];
+            }
+        }
 
-            // 可选项
-            'options' => $raw['options'] ?? '',
-        ];
+        return $meta;
     }
 
     /**
@@ -233,26 +283,39 @@ abstract class FieldTypeBase
      */
     public function render($value = null)
     {
-        $data = $this->field->gather();
-        $data['value'] = $value;
-        $data['helpertext'] = $data['helpertext'] ?: $data['description'];
-        $data['rules'] = $this->getRules($value);
+        $meta = $this->field->getMeta();
+        $meta['value'] = $value;
+        $meta['rules'] = $this->getRules($meta);
 
-        return view($this->getView(), $data)->render();
+        return view($this->getView(), $meta)->render();
     }
 
     /**
      * 获取验证规则（用于前端 js 验证）
      *
-     * @param  mixed $value 字段值
+     * @param  array $meta 字段值
      * @return array
      */
-    public function getRules($value = null)
+    public function getRules(array $meta)
     {
         $rules = [];
-        if ($this->field->is_required) {
-            $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
+
+        if ($meta['required'] ?? false) {
+            $rules['required'] = ['', '不能为空'];
+            // $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
         }
+
+        if ($meta['maxlength'] ?? null) {
+            $rules['max'] = [$meta['maxlength'], "最多 {$meta['maxlength']} 个字符"];
+        }
+
+        foreach (explode('|', $meta['rules'] ?? '') as $rule) {
+            [$name, $params, $message] = Rule::normalize($rule);
+            if ($name) {
+                $rules[$name] = [$params, $message];
+            }
+        }
+
         return $rules;
     }
 

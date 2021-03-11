@@ -112,6 +112,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     abstract public static function getEntityClass();
 
     /**
+     * 获取实体类
+     *
+     * @return string
+     */
+    abstract public static function getTranslationClass();
+
+    /**
      * 获取实体字段类
      *
      * @return string
@@ -326,6 +333,23 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             return $this->pivot->delta;
         }
         return 0;
+    }
+
+    /**
+     * 获取字段构造元数据
+     *
+     * @return array
+     */
+    public function getMeta()
+    {
+        // if ($this->isTranslated() && $translation = static::getTranslationClass()::ofField($this)->first()) {
+        //     return $translation->field_meta;
+        // }
+
+        return array_merge([
+            'label' => $this->label,
+            'description' => $this->description,
+        ], $this->field_meta);
     }
 
     /**
@@ -546,39 +570,5 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         static::deleting(function(FieldBase $field) {
             $field->tableDown();
         });
-    }
-
-    /**
-     * 获取字段参数
-     *
-     * @return array
-     */
-    public function getParameters()
-    {
-        // // 尝试从缓存获取数据
-        // if ($result = $this->cachePipe(__FUNCTION__)) {
-        //     return $result->value();
-        // }
-
-        // $parameters = null;
-
-        // // 获取翻译过的模型字段参数
-        // if ($this->entity && $this->entity->getMold()->isTranslated()) {
-        //     $parameters = FieldParameters::ofField($this)->where('mold_id', $this->entity->mold_id)->first();
-        // }
-
-        // // 获取翻译过的字段参数
-        // elseif (!$this->entity && $this->isTranslated()) {
-        //     $parameters = FieldParameters::ofField($this)->where('mold_id', null)->first();
-        // }
-
-        // if ($parameters) {
-        //     return [
-        //         'default_value' => $parameters->default_value,
-        //         'options' => $parameters->options,
-        //     ];
-        // }
-
-        return [];
     }
 }
