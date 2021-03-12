@@ -7,13 +7,6 @@ use Illuminate\Support\Facades\Log;
 class Input extends FieldTypeBase
 {
     /**
-     * 字段类型 id
-     *
-     * @var string
-     */
-    protected $id = 'input';
-
-    /**
      * 字段类型标签
      *
      * @var string

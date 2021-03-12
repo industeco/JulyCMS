@@ -30,7 +30,7 @@ abstract class FieldTypeBase
     /**
      * 视图
      *
-     * @var string|null
+     * @var string
      */
     protected $view;
 
@@ -129,6 +129,11 @@ abstract class FieldTypeBase
         if (! $this->label) {
             $this->label = $classBaseName;
         }
+
+        // 指定视图
+        if (! $this->view) {
+            $this->view = 'field_type.'.Str::kebab($classBaseName);
+        }
     }
 
     /**
@@ -152,6 +157,7 @@ abstract class FieldTypeBase
     public function bindField(FieldBase $field)
     {
         $this->field = $field;
+        $this->meta = $field->getMeta();
 
         return $this;
     }
@@ -183,7 +189,7 @@ abstract class FieldTypeBase
      */
     public function getView()
     {
-        return $this->view ?? $this->view = 'field_type.'.$this->id;
+        return $this->view;
     }
 
     /**
@@ -225,6 +231,19 @@ abstract class FieldTypeBase
      *
      * @return array
      */
+    public function getMeta()
+    {
+        if (!$this->meta && $this->field) {
+            return $this->meta = $this->field->getMeta();
+        }
+        return $this->meta ?? [];
+    }
+
+    /**
+     * 获取字段值模型，用于管理字段值的增删改查等
+     *
+     * @return array
+     */
     public function getMetaSchema()
     {
         $schema = is_array($this->metaSchema) ? $this->metaSchema : [];
@@ -239,15 +258,15 @@ abstract class FieldTypeBase
     /**
      * 从表单数据中提取字段参数，主要用于类型翻译
      *
-     * @param array $raw 包含表单数据的数组
+     * @param array $formData 包含表单数据的数组
      * @return array
      */
-    public function extractMeta(array $raw)
+    public function extractMeta(array $formData)
     {
         $meta = [];
         foreach ($this->getMetaSchema() as $key => $schema) {
-            if (isset($raw[$key])) {
-                $meta[$key] = Types::cast($raw[$key], $schema['type']);
+            if (isset($formData[$key])) {
+                $meta[$key] = Types::cast($formData[$key], $schema['type']);
             } elseif ($schema['default'] ?? null) {
                 $meta[$key] = $schema['default'];
             }
@@ -283,9 +302,9 @@ abstract class FieldTypeBase
      */
     public function render($value = null)
     {
-        $meta = $this->field->getMeta();
+        $meta = $this->meta;
         $meta['value'] = $value;
-        $meta['rules'] = $this->getRules($meta);
+        $meta['rules'] = array_values($this->getRules($meta));
 
         return view($this->getView(), $meta)->render();
     }
@@ -300,19 +319,20 @@ abstract class FieldTypeBase
     {
         $rules = [];
 
+        // 补充 required 规则
         if ($meta['required'] ?? false) {
-            $rules['required'] = ['', '不能为空'];
-            // $rules[] = "{required:true, message:'不能为空', trigger:'submit'}";
+            $meta['rules'] = ($meta['rules'] ?? '').'|required';
         }
 
+        // 补充 max 规则
         if ($meta['maxlength'] ?? null) {
-            $rules['max'] = [$meta['maxlength'], "最多 {$meta['maxlength']} 个字符"];
+            $meta['rules'] = ($meta['rules'] ?? '').'|max:'.$meta['maxlength'];
         }
 
         foreach (explode('|', $meta['rules'] ?? '') as $rule) {
-            [$name, $params, $message] = Rule::normalize($rule);
-            if ($name) {
-                $rules[$name] = [$params, $message];
+            $rule = Rule::normalize($rule);
+            if ($rule[0]) {
+                $rules[$rule[0]] = $rule;
             }
         }
 

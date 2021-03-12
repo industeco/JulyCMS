@@ -5,13 +5,6 @@ namespace App\EntityField\FieldTypes;
 class Image extends File
 {
     /**
-     * 字段类型 id
-     *
-     * @var string
-     */
-    protected $id = 'image';
-
-    /**
      * 字段类型标签
      *
      * @var string

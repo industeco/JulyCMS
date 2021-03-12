@@ -5,13 +5,6 @@ namespace App\EntityField\FieldTypes;
 class PathAlias extends FieldTypeBase
 {
     /**
-     * 字段类型 id
-     *
-     * @var string
-     */
-    protected $id = 'path_alias';
-
-    /**
      * 字段类型标签
      *
      * @var string
@@ -35,14 +28,15 @@ class PathAlias extends FieldTypeBase
     /**
      * {@inheritdoc}
      */
-    public function getRules($value = null)
+    public function getRules(array $meta)
     {
-        $rules = parent::getRules();
-        $rules[] = "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/, message:'格式不正确', trigger:'blur'}";
+        $value = $meta['value'] ?? null;
+        $meta['rules'] = ($meta['rules'] ?? '').'|pathAlias|checkExists:path_alias.exists,'.$value;
 
-        $exists = short_url('path_alias.exists');
-        $rules[] = "{validator:exists('{$exists}', '{$value}'), trigger:'blur'}";
+        return parent::getRules($meta);
 
-        return $rules;
+        // $rules[] = "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/, message:'格式不正确', trigger:'blur'}";
+
+        // $rules[] = "{validator:exists('{$exists}', '{$value}'), trigger:'blur'}";
     }
 }

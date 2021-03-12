@@ -5,13 +5,6 @@ namespace App\EntityField\FieldTypes;
 class Html extends FieldTypeBase
 {
     /**
-     * 字段类型 id
-     *
-     * @var string
-     */
-    protected $id = 'html';
-
-    /**
      * 字段类型标签
      *
      * @var string
