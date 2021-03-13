@@ -20,7 +20,7 @@
       </el-form-item>
 
       {{-- 自定义字段 --}}
-      @foreach ($context['local_fields'] as $field)
+      @foreach ($context['local_fields'] ?? [] as $field)
       {!! $field->render($model[$field['id']] ?? null) !!}
       @endforeach
 

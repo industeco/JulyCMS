@@ -99,22 +99,6 @@ class Tree
 
         // 排序节点
         $this->sortNodes();
-
-        // try {
-        //     $sorted = $this->sortPositions($this->preparePositions($this->nodes));
-        //     if (error_get_last()) {
-        //         throw new \UnexpectedValueException();
-        //     }
-        //     if (count($sorted) === count($this->nodes)) {
-        //         // Log::info('Nodes are correct.');
-        //         return $sorted;
-        //     }
-        // } catch (\Throwable $th) {
-        //     //throw $th;
-        // }
-
-        // Log::info('Nodes not correct.');
-        // return $this->sortPositions($this->correctPositions($this->nodes));
     }
 
     /**

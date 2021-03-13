@@ -3,6 +3,7 @@
 namespace App\EntityField\FieldTypes;
 
 use App\EntityField\FieldBase;
+use App\Services\Validation\Rules;
 use App\Utils\Rule;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
@@ -317,26 +318,19 @@ abstract class FieldTypeBase
      */
     public function getRules(array $meta)
     {
-        $rules = [];
+        $rules = $meta['rules'] ?? '';
 
         // 补充 required 规则
         if ($meta['required'] ?? false) {
-            $meta['rules'] = ($meta['rules'] ?? '').'|required';
+            $rules .= '|required';
         }
 
         // 补充 max 规则
         if ($meta['maxlength'] ?? null) {
-            $meta['rules'] = ($meta['rules'] ?? '').'|max:'.$meta['maxlength'];
+            $rules .= '|max:'.$meta['maxlength'];
         }
 
-        foreach (explode('|', $meta['rules'] ?? '') as $rule) {
-            $rule = Rule::normalize($rule);
-            if ($rule[0]) {
-                $rules[$rule[0]] = $rule;
-            }
-        }
-
-        return $rules;
+        return Rules::make($rules, $this->field->getKey())->toJsRules();
     }
 
     /**
