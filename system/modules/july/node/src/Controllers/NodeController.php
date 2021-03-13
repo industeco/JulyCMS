@@ -86,8 +86,8 @@ class NodeController extends Controller
             'model' => $model,
             'context' => [
                 'mold' => $nodeType,
-                'global_fields' => $fields->get('global'),
-                'local_fields' => $fields->get('local'),
+                'global_fields' => $fields->get('global', []),
+                'local_fields' => $fields->get('local', []),
                 'views' => Node::query()->pluck('view')->filter()->unique()->all(),
                 'mode' => 'create',
                 // 'catalog_nodes' => Catalog::allPositions(),
