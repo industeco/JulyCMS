@@ -8,18 +8,18 @@ use Database\Seeds\SeederBase;
 class NodeFieldNodeTypeSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['node_field_node_type'];
+    protected $table = 'node_field_node_type';
 
     /**
-     * 获取 node_field_node_type 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    public function getNodeFieldNodeTypeTableRecords()
+    public static function getRecords()
     {
         // 所有字段
         $allFields = [];
@@ -27,7 +27,7 @@ class NodeFieldNodeTypeSeeder extends SeederBase
         // 全局字段
         $globalFields = [];
 
-        foreach ((new NodeFieldSeeder)->getNodeFieldsTableRecords() as $field) {
+        foreach (NodeFieldSeeder::getRecords() as $field) {
             $allFields[$field['id']] = Arr::only($field, [
                 'label',
                 'description',

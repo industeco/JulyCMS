@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Date;
 class NodeTypeSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['node_types'];
+    protected $table = 'node_types';
 
     /**
-     * 获取 node_types 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    protected function getNodeTypesTableRecords()
+    public static function getRecords()
     {
         $records = [
             [

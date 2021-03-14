@@ -126,19 +126,29 @@ abstract class FieldValueBase extends ModelBase
      * @param  \App\Entity\EntityBase $entity
      * @return mixed
      */
-    public function getValue(?EntityBase $entity = null)
+    public function getInstance(?EntityBase $entity = null)
     {
         // 如果未指定实体，或实体未保存，返回默认值
         if (!$entity || !$entity->exists) {
-            return $this->attributes[$this->value_column] ?? null;
+            return null;
         }
 
-        // 查找字段表
-        if ($value = $this->newQuery()->ofEntity($entity)->first()) {
-            return $value->{$this->value_column};
-        }
+        return $this->newQuery()->ofEntity($entity)->first();
+    }
 
-        return null;
+    /**
+     * 获取字段值
+     *
+     * @param  \App\Entity\EntityBase $entity
+     * @return mixed
+     */
+    public function getValue(?EntityBase $entity = null)
+    {
+        // if ($value = $this->getInstance($entity)) {
+        //     return $value->{$this->value_column};
+        // }
+
+        return $this->{$this->value_column};
     }
 
     /**

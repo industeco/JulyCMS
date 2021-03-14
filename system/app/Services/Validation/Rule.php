@@ -2,6 +2,7 @@
 
 namespace App\Services\Validation;
 
+use App\Services\Validation\RuleFormats\FormatBase;
 use App\Utils\Makable;
 use Illuminate\Support\Str;
 
@@ -23,7 +24,7 @@ class Rule
     ];
 
     /**
-     * 规则所在的字段名
+     * 规则作用的字段名
      *
      * @var string
      */
@@ -63,12 +64,12 @@ class Rule
      * @param  string $rule
      * @param  string $field
      */
-    public function __construct(string $rule, string $field)
+    public function __construct(string $rule, ?string $field = null)
     {
         $this->rule = $rule;
         $this->field = $field;
 
-        $this->resolve();
+        $this->init();
     }
 
     /**
@@ -76,9 +77,23 @@ class Rule
      *
      * @return $this
      */
-    protected function resolve()
+    protected function init()
     {
-        $rule = $this->rule ? explode(':', $this->rule) : [];
+        $rule = trim($this->rule ?? '');
+        if (empty($rule)) {
+            $this->name = '';
+            $this->parameters = null;
+            $this->message = null;
+
+            return $this;
+        }
+
+        if (false === strpos($rule, '\\')) {
+            $rule = explode(':', $rule);
+        } else {
+            $rule = str_replace('\\:', '{COLON}', str_replace('\\\\', '{SLASH}', $rule));
+            $rule = str_replace(['{SLASH}', '{COLON}'], ['\\', ':'], explode(':', $rule));
+        }
 
         $this->name = array_shift($rule);
         $this->message = count($rule) > 1 ? array_pop($rule) : null;
@@ -111,7 +126,7 @@ class Rule
     }
 
     /**
-     * 获取规则名
+     * 获取规则参数
      *
      * @return string
      */
@@ -121,7 +136,7 @@ class Rule
     }
 
     /**
-     * 获取规则名
+     * 获取消息模板
      *
      * @return string
      */
@@ -131,7 +146,7 @@ class Rule
     }
 
     /**
-     * 获取规则名
+     * 获取消息键
      *
      * @return string
      */
@@ -141,37 +156,14 @@ class Rule
     }
 
     /**
-     * 获取规则的 Laravel 形式
+     * 将规则转换为指定格式
      *
-     * @return array|null
+     * @param  \App\Services\Validation\FormatBase\FormatBase $format
+     * @return mixed
      */
-    public function toLaravelRule()
+    public function parseTo(FormatBase $format)
     {
-        if (!$this->name) {
-            return null;
-        }
-
-        $rule = $this->{'get'.Str::studly($this->name).'LaravelRule'}() ?? [];
-        return [
-            $rule[0] ?? $this->name.($this->parameters ? ':'.$this->parameters : ''),
-            [$this->getMessageKey() => $rule[1] ?? $this->resolveMessage()],
-        ];
-    }
-
-    /**
-     * 获取规则的 js 形式
-     *
-     * @param  array $rule
-     * @return string|null
-     */
-    public function toJsRule()
-    {
-        if (!$this->name) {
-            return null;
-        }
-
-        return $this->{'get'.Str::studly($this->name).'JsRule'}() ??
-            "{type:'{$this->name}', message:'{$this->resolveMessage()}', trigger:'submit'}";
+        return $format->parse($this);
     }
 
     /**
@@ -192,115 +184,6 @@ class Rule
         return preg_replace_callback('/\{(.*?)\}/', function ($maches) use ($context) {
             return $context[trim($maches[1])] ?? '{'.$maches[1].'}';
         }, $message);
-    }
-
-    /**
-     * 获取 Laravel 版 required 规则
-     *
-     * @return array
-     */
-    protected function getRequiredLaravelRule()
-    {
-        return ['required', $this->resolveMessage()];
-    }
-
-    /**
-     * 获取 js 版 required 规则
-     *
-     * @return string
-     */
-    protected function getRequiredJsRule()
-    {
-        return "{required:true, message:'{$this->resolveMessage()}', trigger:'submit'}";
-    }
-
-    /**
-     * 获取 Laravel 版 max 规则
-     *
-     * @return array
-     */
-    protected function getMaxLaravelRule()
-    {
-        $max = (int) $this->parameters;
-
-        return ['max:'.$max, $this->resolveMessage(compact('max'))];
-    }
-
-    /**
-     * 获取 js 版 max 规则
-     *
-     * @return string
-     */
-    protected function getMaxJsRule()
-    {
-        $max = (int) $this->parameters;
-        $message = $this->resolveMessage(compact('max'));
-
-        return "{max:{$max}, message:'{$message}', trigger:'change'}";
-    }
-
-    /**
-     * 获取 Laravel 版 email 规则
-     *
-     * @return array
-     */
-    protected function getEmailLaravelRule()
-    {
-        return ['email', $this->resolveMessage()];
-    }
-
-    /**
-     * 获取 js 版 email 规则
-     *
-     * @return string
-     */
-    protected function getEmailJsRule()
-    {
-        return "{type:'email', message:'{$this->resolveMessage()}', trigger:'blur'}";
-    }
-
-    /**
-     * 获取 Laravel 版 url 规则
-     *
-     * @return array
-     */
-    protected function getUrlLaravelRule()
-    {
-        return ['url', $this->resolveMessage()];
-    }
-
-    /**
-     * 获取 js 版 url 规则
-     *
-     * @return string
-     */
-    protected function getUrlJsRule()
-    {
-        return "{type:'url', message:'{$this->resolveMessage()}', trigger:'blur'}";
-    }
-
-    /**
-     * 获取 Laravel 版 pattern 规则
-     *
-     * @return array
-     */
-    protected function getPatternLaravelRule()
-    {
-        $pattern = trim($this->parameters);
-
-        return ['regex:'.$pattern, $this->resolveMessage()];
-    }
-
-    /**
-     * 获取 js 版 pattern 规则
-     *
-     * @return string
-     */
-    protected function getPatternJsRule()
-    {
-        $pattern = trim($this->parameters);
-
-        return "{pattern:{$pattern}, message:'{$this->resolveMessage()}', trigger:'blur'}";
     }
 
     public function __call($name, $arguments)

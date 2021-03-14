@@ -9,20 +9,18 @@ use Illuminate\Support\Facades\Log;
 class UserSeeder extends SeederBase
 {
     /**
-     * 待填充数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = [
-        'users'
-    ];
+    protected $table = 'users';
 
     /**
-     * 获取 users 表数据
+     * 获取初始数据
      *
      * @return array[]
      */
-    protected function getUsersTableRecords()
+    public static function getRecords()
     {
         return [
             [

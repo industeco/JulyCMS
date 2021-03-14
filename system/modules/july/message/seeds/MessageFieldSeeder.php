@@ -10,18 +10,18 @@ use July\Message\MessageField;
 class MessageFieldSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['message_fields'];
+    protected $table = 'message_fields';
 
     /**
-     * 获取 message_fields 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    public function getMessageFieldsTableRecords()
+    public static function getRecords()
     {
         $records = [
             [
@@ -30,21 +30,29 @@ class MessageFieldSeeder extends SeederBase
                 'label' => 'E-mail',
                 'field_meta' => [
                     'required' => true,
+                    'rules' => 'email',
                 ],
             ],
             [
                 'id' => 'name',
                 'field_type' => FieldTypes\Input::class,
                 'label' => 'Name',
+                'field_meta' => [
+                    'required' => true,
+                    'rules' => 'max:35',
+                ],
             ],
             [
                 'id' => 'phone',
                 'field_type' => FieldTypes\Input::class,
                 'label' => 'Phone',
+                'field_meta' => [
+                    'rules' => 'max:35',
+                ],
             ],
             [
                 'id' => 'message',
-                'field_type' => 'text',
+                'field_type' => FieldTypes\Text::class,
                 'label' => 'Message',
                 'field_meta' => [
                     'required' => true,

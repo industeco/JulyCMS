@@ -10,18 +10,18 @@ use July\Node\NodeField;
 class NodeFieldSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['node_fields'];
+    protected $table = 'node_fields';
 
     /**
-     * 获取 node_fields 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    public function getNodeFieldsTableRecords()
+    public static function getRecords()
     {
         $records = [
             [

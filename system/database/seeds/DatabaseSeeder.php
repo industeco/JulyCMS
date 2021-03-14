@@ -12,7 +12,9 @@ class DatabaseSeeder extends Seeder
      *
      * @var array
      */
-    protected static $seeders = [];
+    protected static $seeders = [
+        Seeds\UserSeeder::class,
+    ];
 
     /**
      * Seed the application's database.
@@ -22,7 +24,6 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         DB::beginTransaction();
-        $this->call(Seeds\UserSeeder::class);
         $this->call(static::$seeders);
         DB::commit();
 
@@ -40,7 +41,7 @@ class DatabaseSeeder extends Seeder
      *
      * @param  string|array $seeders
      */
-    public function register($seeders)
+    public static function register($seeders)
     {
         static::$seeders = array_merge(static::$seeders, Arr::wrap($seeders));
     }

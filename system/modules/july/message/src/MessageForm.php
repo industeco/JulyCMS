@@ -92,10 +92,11 @@ class MessageForm extends EntityMoldBase
         $fields = [];
 
         foreach ($this->fields as $field) {
+            $id = $field->getKey();
             [$fieldRules, $fieldMessages] = $field->resolveRules();
-            $rules = array_merge($rules, $fieldRules);
+            $rules[$id] = $fieldRules;
             $messages = array_merge($messages, $fieldMessages);
-            $fields[$field->getKey()] = $field->label;
+            $fields[$id] = $field->label;
         }
 
         return [$rules, $messages, $fields];

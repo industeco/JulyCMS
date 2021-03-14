@@ -9,19 +9,11 @@ use Illuminate\Support\Str;
 abstract class SeederBase extends Seeder
 {
     /**
-     * 待填充数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = [];
-
-    /**
-     * 静态执行数据填充
-     */
-    public static function seed()
-    {
-        (new static)->run();
-    }
+    protected $table;
 
     /**
      * Seed the application's database.
@@ -30,25 +22,28 @@ abstract class SeederBase extends Seeder
      */
     public function run()
     {
-        foreach ($this->tables as $table) {
-            foreach ($this->getTableRecords($table) as $record) {
-                DB::table($table)->insert($record);
-            }
+        foreach (static::getRecords() as $record) {
+            DB::table($this->table)->insert($record);
         }
     }
 
     /**
-     * 获取数据库表记录
+     * 静态执行数据填充
      *
-     * @param  string $table 表名
+     * @return void
+     */
+    public static function seed()
+    {
+        (new static)->run();
+    }
+
+    /**
+     * 获取初始数据
+     *
      * @return array[]
      */
-    protected function getTableRecords(string $table)
+    public static function getRecords()
     {
-        $method = 'get'.Str::studly($table).'TableRecords';
-        if (method_exists($this, $method)) {
-            return $this->$method();
-        }
         return [];
     }
 

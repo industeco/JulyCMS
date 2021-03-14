@@ -8,23 +8,29 @@ use Database\Seeds\SeederBase;
 class MessageFieldMessageFormSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['message_field_message_form'];
+    protected $table = 'message_field_message_form';
 
     /**
-     * 获取 message_field_message_form 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    public function getMessageFieldMessageFormTableRecords()
+    public static function getRecords()
     {
-        // 所有字段信息
-        $allFields = collect((new MessageFieldSeeder)->getMessageFieldsTableRecords())->keyBy('id')->map(function(array $field) {
-            return Arr::only($field, ['label','description','is_required','helpertext','default_value','options','rules']);
-        }, true);
+        // 所有字段
+        $allFields = [];
+
+        foreach (MessageFieldSeeder::getRecords() as $field) {
+            $allFields[$field['id']] = Arr::only($field, [
+                'label',
+                'description',
+                'field_meta',
+            ]);
+        }
 
         // 类型关联字段
         $molds = [
@@ -35,7 +41,7 @@ class MessageFieldMessageFormSeeder extends SeederBase
         $records = [];
         foreach ($molds as $id => $fields) {
             foreach ($fields as $index => $field) {
-                $records[] = array_merge($allFields->get($field), [
+                $records[] = array_merge($allFields[$field], [
                     'mold_id' => $id,
                     'field_id' => $field,
                     'delta' => $index,

@@ -23,4 +23,14 @@ class NodeField extends FieldBase
     {
         return Node::class;
     }
+
+    /**
+     * 获取翻译类
+     *
+     * @return string
+     */
+    public static function getTranslationClass()
+    {
+        return NodeFieldTranslation::class;
+    }
 }

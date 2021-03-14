@@ -2,6 +2,7 @@
 
 namespace App\BaseMigrations;
 
+use DatabaseSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -47,13 +48,7 @@ abstract class MigrationBase extends Migration
     protected function seed()
     {
         if ($this->seeder) {
-            DB::beginTransaction();
-            $this->seeder::seed();
-            DB::commit();
-
-            if (method_exists($this->seeder, 'afterSeeding')) {
-                $this->seeder::afterSeeding();
-            }
+            DatabaseSeeder::register($this->seeder);
         }
     }
 

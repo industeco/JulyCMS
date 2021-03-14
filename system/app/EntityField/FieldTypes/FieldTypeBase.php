@@ -3,8 +3,8 @@
 namespace App\EntityField\FieldTypes;
 
 use App\EntityField\FieldBase;
-use App\Services\Validation\Rules;
-use App\Utils\Rule;
+use App\Services\Validation\RuleFormats\JsRule;
+use App\Services\Validation\RuleGroup;
 use App\Utils\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -305,7 +305,7 @@ abstract class FieldTypeBase
     {
         $meta = $this->meta;
         $meta['value'] = $value;
-        $meta['rules'] = array_values($this->getRules($meta));
+        $meta['rules'] = array_values($this->getRules($meta)->parseTo(new JsRule));
 
         return view($this->getView(), $meta)->render();
     }
@@ -313,24 +313,26 @@ abstract class FieldTypeBase
     /**
      * 获取验证规则（用于前端 js 验证）
      *
-     * @param  array $meta 字段值
-     * @return array
+     * @param  array|null $meta 字段元数据
+     * @return \App\Services\Validation\RuleGroup
      */
-    public function getRules(array $meta)
+    public function getRules(array $meta = null)
     {
-        $rules = $meta['rules'] ?? '';
+        $meta = $meta ?? $this->field->getMeta();
+
+        $rules = RuleGroup::make($meta['rules'] ?? '', $this->field->getKey());
 
         // 补充 required 规则
-        if ($meta['required'] ?? false) {
-            $rules .= '|required';
+        if (($meta['required'] ?? false) && !$rules->hasRule('required')) {
+            $rules->addRules('required');
         }
 
         // 补充 max 规则
-        if ($meta['maxlength'] ?? null) {
-            $rules .= '|max:'.$meta['maxlength'];
+        if (($meta['maxlength'] ?? null) && !$rules->hasRule('max')) {
+            $rules->addRules('max:'.$meta['maxlength']);
         }
 
-        return Rules::make($rules, $this->field->getKey())->toJsRules();
+        return $rules;
     }
 
     /**
@@ -387,20 +389,5 @@ abstract class FieldTypeBase
     // public function getValidator()
     // {
     //     return [];
-    // }
-
-    // /**
-    //  * 获取用于构建「字段生成/编辑表单」的材料，包括 HTML 片段，前端验证规则等
-    //  *
-    //  * @return array
-    //  */
-    // public function getMaterials()
-    // {
-    //     return [
-    //         'id' => $this->field->getKey(),
-    //         'field_type_id' => $this->id,
-    //         'value' => $this->field->getValue(),
-    //         'element' => $this->render(),
-    //     ];
     // }
 }

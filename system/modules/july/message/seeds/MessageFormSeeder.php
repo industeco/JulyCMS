@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Date;
 class MessageFormSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['message_forms'];
+    protected $table = 'message_forms';
 
     /**
-     * 获取 message_forms 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    protected function getMessageFormsTableRecords()
+    public static function getRecords()
     {
         $records = [
             [
@@ -30,11 +30,10 @@ class MessageFormSeeder extends SeederBase
             ],
         ];
 
-        $now = Date::now();
         $share = [
             'langcode' => langcode('frontend'),
-            'created_at' => $now,
-            'updated_at' => $now,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
 
         return array_map(function($record) use($share) {

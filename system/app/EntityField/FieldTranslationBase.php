@@ -4,7 +4,6 @@ namespace App\EntityField;
 
 use App\Casts\Serialized;
 use App\Models\ModelBase;
-use App\Utils\Types;
 
 abstract class FieldTranslationBase extends ModelBase
 {

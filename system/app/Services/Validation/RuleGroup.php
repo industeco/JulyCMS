@@ -2,9 +2,12 @@
 
 namespace App\Services\Validation;
 
+use App\Services\Validation\RuleFormats\FormatBase;
 use App\Utils\Makable;
+use ArrayIterator;
+use IteratorAggregate;
 
-class Rules
+class RuleGroup implements IteratorAggregate
 {
     use Makable;
 
@@ -29,7 +32,7 @@ class Rules
      */
     protected $rules;
 
-    public function __construct(string $raw, string $field)
+    public function __construct(string $raw, ?string $field = null)
     {
         $this->raw = [];
         $this->field = $field;
@@ -86,6 +89,16 @@ class Rules
     }
 
     /**
+     * 获取规则名
+     *
+     * @return string
+     */
+    public function hasRule(string $name)
+    {
+        return isset($this->rules[$name]);
+    }
+
+    /**
      * 解析规则字符串
      *
      * @param  string $raw
@@ -93,46 +106,34 @@ class Rules
      */
     public function explode(string $raw)
     {
-        $raw = str_replace('\\|', '{#LINE#}', str_replace('\\\\', '{#SLASH#}', trim($raw)));
+        if (false === strpos($raw, '\\')) {
+            return explode('|', $raw);
+        }
 
+        $raw = str_replace('\\|', '{LINE}', str_replace('\\\\', '{SLASH}', trim($raw)));
         return array_map(function($rule) {
-            return str_replace(['{#SLASH#}', '{#LINE#}'], ['\\', '|'], $rule);
+            return str_replace(['{SLASH}', '{LINE}'], ['\\\\', '|'], $rule);
         }, explode('|', $raw));
     }
 
     /**
-     * 整体转换为 Laravel 规则
+     * 将规则整体转换为指定格式
      *
-     * @return array
+     * @param  \App\Services\Validation\RuleFormats\FormatBase $format
+     * @return mixed
      */
-    public function toLaravelRules()
+    public function parseTo(FormatBase $format)
     {
-        $rules = [];
-        $messages = [];
-        foreach ($this->rules as $rule) {
-            if ($rule = $rule->toLaravelRule()) {
-                $rules[] = $rule[0];
-                $messages = array_merge($messages, $rule[1]);
-            }
-        }
-
-        return compact('rules', 'messages');
+        return $format->parseGroup($this);
     }
 
     /**
-     * 整体转换为 js 规则
+     * Get an iterator for the rules.
      *
-     * @return array
+     * @return \ArrayIterator
      */
-    public function toJsRules()
+    public function getIterator()
     {
-        $rules = [];
-        foreach ($this->rules as $rule) {
-            if ($rule = $rule->toJsRule()) {
-                $rules[] = $rule;
-            }
-        }
-
-        return $rules;
+        return new ArrayIterator($this->rules);
     }
 }

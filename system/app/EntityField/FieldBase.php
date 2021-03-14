@@ -7,6 +7,7 @@ use App\Entity\Exceptions\InvalidEntityException;
 use App\Models\ModelBase;
 use App\Services\Translation\TranslatableInterface;
 use App\Services\Translation\TranslatableTrait;
+use App\Utils\Arr;
 use App\Utils\Types;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -84,6 +85,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     protected $entity;
 
     /**
+     * 字段所属实体
+     *
+     * @var \App\EntityValue\FieldValueBase|null
+     */
+    protected $value = null;
+
+    /**
      * 获取模型模板数据
      *
      * @return array
@@ -112,7 +120,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     abstract public static function getEntityClass();
 
     /**
-     * 获取实体类
+     * 获取翻译类
      *
      * @return string
      */
@@ -309,17 +317,19 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      * field_meta 属性的 Get Mutator
      *
      * @param  array $field_meta
-     * @return string
+     * @return array
      */
     public function getFieldMetaAttribute($field_meta)
     {
         if ($this->pivot) {
             $field_meta = $this->pivot->field_meta;
         }
+
         if (is_string($field_meta)) {
             $field_meta = unserialize($field_meta);
         }
-        return $field_meta;
+
+        return is_array($field_meta) ? $field_meta : [];
     }
 
     /**
@@ -349,7 +359,17 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         return array_merge([
             'label' => $this->label,
             'description' => $this->description,
-        ], $this->field_meta);
+        ], $this->field_meta ?? []);
+    }
+
+    /**
+     * 获取字段构造元数据
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->getMeta();
     }
 
     /**
@@ -429,10 +449,15 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getValue()
     {
-        if ($value = $this->cachePipe(__FUNCTION__)) {
-            return $value->value();
+        if (!$this->value && $this->entity) {
+            $this->value = $this->getValueModel()->ofEntity($this->entity)->first();
         }
-        return $this->getValueModel()->getValue($this->entity);
+
+        if ($this->value) {
+            return $this->value->getValue();
+        }
+
+        return null;
     }
 
     /**

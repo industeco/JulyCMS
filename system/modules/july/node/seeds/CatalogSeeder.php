@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Date;
 class CatalogSeeder extends SeederBase
 {
     /**
-     * 待填充的数据库表
+     * 指定数据表
      *
-     * @var array
+     * @var string|string[]
      */
-    protected $tables = ['catalogs'];
+    protected $table = 'catalogs';
 
     /**
-     * 获取 catalogs 表数据
+     * 获取初始数据
      *
-     * @return array
+     * @return array[]
      */
-    protected function getCatalogsTableRecords()
+    public static function getRecords()
     {
         $records = [
             [
