@@ -15,6 +15,13 @@ use Illuminate\Support\Str;
 abstract class FieldTypeBase
 {
     /**
+     * 类型标志，由小写字符+数字+下划线组成
+     *
+     * @var string
+     */
+    protected $handle;
+
+    /**
      * 字段类型标签
      *
      * @var string
@@ -84,13 +91,25 @@ abstract class FieldTypeBase
             'type' => 'string',
             'default' => null,
         ],
-        'maxlength' => [
-            'type' => 'int',
-            'default' => null,
-        ],
         'required' => [
             'type' => 'bool',
             'default' => false,
+        ],
+        'default' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'placeholder' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'helptext' => [
+            'type' => 'string',
+            'default' => null,
+        ],
+        'maxlength' => [
+            'type' => 'int',
+            'default' => null,
         ],
         'rules' => [
             'type' => 'string',
@@ -100,15 +119,11 @@ abstract class FieldTypeBase
             'type' => 'string',
             'default' => null,
         ],
-        'value' => [
+        'entity' => [
             'type' => 'string',
             'default' => null,
         ],
-        'helptext' => [
-            'type' => 'string',
-            'default' => null,
-        ],
-        'placeholder' => [
+        'entity_type' => [
             'type' => 'string',
             'default' => null,
         ],
@@ -120,11 +135,13 @@ abstract class FieldTypeBase
     public function __construct(FieldBase $field = null)
     {
         $this->field = $field;
-        if ($field) {
-            $this->meta = $field->getMeta();
-        }
 
-        $classBaseName = preg_replace('/Type$/', '', class_basename(static::class));
+        $classBaseName = basename(str_replace('\\', '/', static::class), 'Type');
+
+        // 生成标志
+        if (! $this->handle) {
+            $this->handle = Str::snake($classBaseName);
+        }
 
         // 生成标签
         if (! $this->label) {
@@ -135,6 +152,17 @@ abstract class FieldTypeBase
         if (! $this->view) {
             $this->view = 'field_type.'.Str::kebab($classBaseName);
         }
+    }
+
+    /**
+     * 判断类型在指定范围是否可用
+     *
+     * @param  string $scope 使用范围
+     * @return bool
+     */
+    public static function available(string $scope)
+    {
+        return true;
     }
 
     /**
@@ -158,7 +186,7 @@ abstract class FieldTypeBase
     public function bindField(FieldBase $field)
     {
         $this->field = $field;
-        $this->meta = $field->getMeta();
+        $this->meta = null;
 
         return $this;
     }
@@ -232,6 +260,16 @@ abstract class FieldTypeBase
      *
      * @return array
      */
+    public function getMetaKeys()
+    {
+        return [];
+    }
+
+    /**
+     * 获取字段值模型，用于管理字段值的增删改查等
+     *
+     * @return array
+     */
     public function getMeta()
     {
         if (!$this->meta && $this->field) {
@@ -248,9 +286,9 @@ abstract class FieldTypeBase
     public function getMetaSchema()
     {
         $schema = is_array($this->metaSchema) ? $this->metaSchema : [];
-        $schema['value'] = [
+        $schema['default'] = [
             'type' => $this->getCaster(),
-            'default' => $schema['value']['default'] ?? null,
+            'default' => $schema['default']['default'] ?? null,
         ];
 
         return $schema;
@@ -296,16 +334,15 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取表单组件（element-ui component）
+     * 渲染字段
      *
-     * @param  mixed $value 字段值
      * @return string
      */
-    public function render($value = null)
+    public function render()
     {
-        $meta = $this->meta;
-        $meta['value'] = $value;
-        $meta['rules'] = array_values($this->getRules($meta)->parseTo(new JsRule));
+        $meta = $this->getMeta();
+        $meta['helptext'] = $meta['helptext'] ?? $meta['description'] ?? null;
+        $meta['rules'] = $this->getRules($meta)->parseTo(new JsRule);
 
         return view($this->getView(), $meta)->render();
     }
@@ -316,9 +353,9 @@ abstract class FieldTypeBase
      * @param  array|null $meta 字段元数据
      * @return \App\Services\Validation\RuleGroup
      */
-    public function getRules(array $meta = null)
+    public function getRules(?array $meta = null)
     {
-        $meta = $meta ?? $this->field->getMeta();
+        $meta = $meta ?? $this->getMeta();
 
         $rules = RuleGroup::make($meta['rules'] ?? '', $this->field->getKey());
 

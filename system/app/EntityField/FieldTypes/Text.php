@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Log;
 class Text extends FieldTypeBase
 {
     /**
-     * 字段类型 id
+     * 类型标志，由小写字符+数字+下划线组成
      *
      * @var string
      */
-    protected $id = 'text';
+    protected $handle = 'text';
 
     /**
      * 字段类型标签

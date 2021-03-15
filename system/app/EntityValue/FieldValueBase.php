@@ -23,7 +23,7 @@ abstract class FieldValueBase extends ModelBase
      *
      * @var string
      */
-    protected $value_column;
+    protected $valueColumn = 'value';
 
     /**
      * The attributes that aren't mass assignable.
@@ -39,7 +39,7 @@ abstract class FieldValueBase extends ModelBase
      */
     public function getValueColumn()
     {
-        return $this->value_column;
+        return $this->valueColumn;
     }
 
     /**
@@ -49,7 +49,7 @@ abstract class FieldValueBase extends ModelBase
      */
     public function setValueColumn($column)
     {
-        $this->value_column = $column;
+        $this->valueColumn = $column;
     }
 
     /**
@@ -60,6 +60,19 @@ abstract class FieldValueBase extends ModelBase
     public static function isDynamic()
     {
         return false;
+    }
+
+    /**
+     * 获取值
+     *
+     * @param  \App\Entity\EntityBase $entity
+     * @return mixed
+     */
+    public function getValueAttribute()
+    {
+        $column = $this->getValueColumn();
+
+        return $this->castAttribute($column, $this->attributes[$column] ?? null);
     }
 
     /**
@@ -78,23 +91,23 @@ abstract class FieldValueBase extends ModelBase
             $this->setTable($field->getDynamicValueTable());
 
             // 获取列名
-            $this->value_column = $fieldType->getColumn()['name'];
+            $this->valueColumn = $fieldType->getColumn()['name'];
 
             $this->attributes = [
-                $this->value_column => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
+                $this->valueColumn => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
             ];
 
             // 设置 fillable
             $this->fillable([
                 'entity_id',
-                $this->value_column,
+                $this->valueColumn,
                 'langcode',
                 'updated_at',
             ]);
 
             // 设置字段值转换
             $this->casts = [
-                $this->value_column => $fieldType->getCaster(),
+                $this->valueColumn => $fieldType->getCaster(),
             ];
         }
 
@@ -142,13 +155,9 @@ abstract class FieldValueBase extends ModelBase
      * @param  \App\Entity\EntityBase $entity
      * @return mixed
      */
-    public function getValue(?EntityBase $entity = null)
+    public function getValue()
     {
-        // if ($value = $this->getInstance($entity)) {
-        //     return $value->{$this->value_column};
-        // }
-
-        return $this->{$this->value_column};
+        return $this->{$this->getValueColumn()};
     }
 
     /**
@@ -174,7 +183,7 @@ abstract class FieldValueBase extends ModelBase
         }
 
         $values = array_merge(array_fill_keys($this->fillable, null), [
-            $this->value_column => $value,
+            $this->valueColumn => $value,
         ]);
 
         return $this->newQuery()->updateOrCreate(
@@ -213,7 +222,7 @@ abstract class FieldValueBase extends ModelBase
 
         // 查询条件
         $condition = [
-            [$this->value_column, 'like', '%'.$needle.'%'],
+            [$this->valueColumn, 'like', '%'.$needle.'%'],
         ];
         if (in_array('entity_name', $this->fillable)) {
             $condition[] = ['entity_name', '=', $field['entity_name']];
@@ -225,7 +234,7 @@ abstract class FieldValueBase extends ModelBase
             $results[] = $field + [
                 'entity_id' => $value->entity_id,
                 'langcode' => $value->langcode,
-                'field_value' => $value->{$this->value_column},
+                'field_value' => $value->{$this->valueColumn},
             ];
         }
 
@@ -249,8 +258,8 @@ abstract class FieldValueBase extends ModelBase
 
         return $this->newQuery()
             ->where($conditions)
-            ->get(['entity_id', $this->value_column])
-            ->pluck($this->value_column, 'entity_id')
+            ->get(['entity_id', $this->valueColumn])
+            ->pluck($this->valueColumn, 'entity_id')
             ->all();
     }
 
@@ -268,11 +277,11 @@ abstract class FieldValueBase extends ModelBase
 
         return DB::table($this->getTable())
             ->where($conditions)
-            ->get([$this->value_column, 'langcode', 'entity_id'])
+            ->get([$this->valueColumn, 'langcode', 'entity_id'])
             ->map(function($record) {
                 return [
                     'entity_id' => $record->entity_id,
-                    'value' => $record->{$this->value_column},
+                    'value' => $record->{$this->valueColumn},
                     'langcode' => $record->langcode,
                 ];
             })

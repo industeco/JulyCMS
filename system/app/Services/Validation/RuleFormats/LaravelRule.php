@@ -66,4 +66,15 @@ class LaravelRule extends FormatBase
 
         return ['regex:'.$pattern, [$rule->getMessageKey() => $rule->resolveMessage()]];
     }
+
+    /**
+     * path-alias
+     *
+     * @param  \App\Services\Validation\Rule $rule
+     * @return string
+     */
+    protected function pathAlias(Rule $rule)
+    {
+        return ['regex:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/', [$rule->getMessageKey() => $rule->resolveMessage()]];
+    }
 }

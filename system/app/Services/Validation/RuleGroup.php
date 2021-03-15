@@ -111,9 +111,7 @@ class RuleGroup implements IteratorAggregate
         }
 
         $raw = str_replace('\\|', '{LINE}', str_replace('\\\\', '{SLASH}', trim($raw)));
-        return array_map(function($rule) {
-            return str_replace(['{SLASH}', '{LINE}'], ['\\\\', '|'], $rule);
-        }, explode('|', $raw));
+        return str_replace(['{SLASH}', '{LINE}'], ['\\\\', '|'], explode('|', $raw));
     }
 
     /**

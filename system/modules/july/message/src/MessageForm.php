@@ -3,7 +3,6 @@
 namespace July\Message;
 
 use App\Entity\EntityMoldBase;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class MessageForm extends EntityMoldBase

@@ -5,11 +5,11 @@ namespace App\EntityField\FieldTypes;
 class Url extends FieldTypeBase
 {
     /**
-     * 字段类型 id
+     * 类型标志，由小写字符+数字+下划线组成
      *
      * @var string
      */
-    protected $id = 'url';
+    protected $handle = 'url';
 
     /**
      * 字段类型标签
@@ -28,11 +28,8 @@ class Url extends FieldTypeBase
     /**
      * {@inheritdoc}
      */
-    public function getRules($value = null)
+    public function getRules(?array $meta = null)
     {
-        $rules = parent::getRules();
-        $rules[] = "{type:'url', message:'网址格式不正确', trigger:'blur'}";
-
-        return $rules;
+        return parent::getRules()->addRules('url');
     }
 }

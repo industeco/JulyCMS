@@ -13,6 +13,6 @@
   @endif
   @endforeach
   @foreach ($pdfs as $pdf => $name)
-    <url><loc>{{ $pdf }}</loc></url>
+  <url><loc>{{ $pdf }}</loc></url>
   @endforeach
 </urlset>

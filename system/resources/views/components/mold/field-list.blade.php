@@ -10,7 +10,7 @@
 @if ($caption)
 <tbody>
   <tr>
-    <th colspan="6">{{ $caption }}</th>
+    <th colspan="7">{{ $caption }}</th>
   </tr>
 </tbody>
 @endif
@@ -33,7 +33,7 @@
     <td><span :class="{'jc-label':true,'is-required':field.is_required}">@{{ field.label }}</span></td>
     <td><span>@{{ field.description }}</span></td>
     <td><span>@{{ field.rules }}</span></td>
-    <td><span>@{{ field.field_type_id }}</span></td>
+    <td><span>@{{ field.field_type }}</span></td>
     <td>
       <div class="jc-operators">
         <button

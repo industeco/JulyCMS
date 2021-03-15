@@ -33,7 +33,7 @@ final class FieldTypeManager implements ManagerInterface
     {
         foreach (Arr::wrap($classes) as $class) {
             if (class_exists($class)) {
-                static::$fieldTypes[$class::get('id')] = $class;
+                static::$fieldTypes[] = $class;
             }
         }
     }
@@ -68,15 +68,14 @@ final class FieldTypeManager implements ManagerInterface
     public static function details(string $scope = 'default')
     {
         $types = [];
-        foreach (static::$fieldTypes as $id => $class) {
-            if (strpos($id, '.') > 0 && !Str::startsWith($id, $scope.'.')) {
-                continue;
+        foreach (static::$fieldTypes as $class) {
+            if ($class::available($scope)) {
+                $types[$class] = [
+                    'class' => $class,
+                    'label' => $class::get('label'),
+                    'description' => $class::get('description'),
+                ];
             }
-            $types[$id] = [
-                'id' => $id,
-                'label' => $class::get('label'),
-                'description' => $class::get('description'),
-            ];
         }
         return $types;
     }

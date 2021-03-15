@@ -63,8 +63,8 @@
 
       {{-- 右侧全局字段 --}}
       <el-collapse :value="expanded">
-        @foreach ($context['global_fields']->groupBy('group_title') as $groupTitle => $globalFields)
-        <el-collapse-item name="{{ $groupTitle }}" title="{{ $groupTitle }}">
+        @foreach ($context['global_fields']->groupBy('field_group') as $fieldGroup => $globalFields)
+        <el-collapse-item name="{{ $fieldGroup }}" title="{{ $fieldGroup }}">
           @foreach ($globalFields as $field)
           {!! $field->render($model[$field['id']] ?? null) !!}
           @endforeach
@@ -148,7 +148,7 @@
       return {
         model: @jjson($model),
         rules: {},
-        expanded: @jjson($context['global_fields']->pluck('group_title')->unique()->values()->all()),
+        expanded: @jjson($context['global_fields']->pluck('field_group')->unique()->values()->all()),
       };
     },
 

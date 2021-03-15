@@ -30,7 +30,7 @@ abstract class FormatBase
     }
 
     /**
-     * 默认转换规则
+     * 默认转换
      *
      * @param  \App\Services\Validation\Rule $rule
      * @return mixed

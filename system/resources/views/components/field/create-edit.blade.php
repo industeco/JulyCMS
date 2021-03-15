@@ -9,11 +9,11 @@
 
   {{-- 字段类型 --}}
   @if ($mode === 'creation')
-  <el-form-item label="字段类型" prop="field_type_id" size="small" class="has-helptext"
-    :rules="[{ required:true, message:'『字段类型』不能为空', trigger:'submit' }]">
-    <el-select v-model="{{ $model }}.field_type_id" placeholder="--选择字段类型--" @change="handleFieldTypeChange('{{ $scope }}', $event)">
+  <el-form-item label="字段类型" prop="field_type" size="small" class="has-helptext"
+    :rules="[{required:true,message:'『字段类型』不能为空',trigger:'submit'}]">
+    <el-select v-model="{{ $model }}.field_type" placeholder="--选择字段类型--" @change="handleFieldTypeChange('{{ $scope }}', $event)">
       @foreach (get_field_types($entity) as $type)
-      <el-option label="{{ $type['label'] }}" value="{{ $type['id'] }}"></el-option>
+      <el-option label="{{ $type['label'] }}" value="{{ $type['class'] }}"></el-option>
       @endforeach
     </el-select>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ '{'.'{ '.$scope.'.fieldTypeHelper }'.'}' }}</span>
@@ -34,28 +34,36 @@
     <el-switch v-model="{{ $model }}.is_required"></el-switch>
   </el-form-item>
 
+  {{-- 帮助文本 --}}
+  <el-form-item label="帮助" prop="helptext" size="small" class="has-helptext">
+    <el-input
+      v-model="{{ $model }}.helptext"
+      type="textarea"
+      rows="3"></el-input>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 在字段下方显示的提示文字，如果为空，则显示『描述』</span>
+  </el-form-item>
+
   {{-- 搜索权重 --}}
   <el-form-item label="搜索权重" size="small" class="has-helptext">
     <el-input-number
-      v-model="{{ $model }}.search_weight"
+      v-model="{{ $model }}.weight"
       size="small"
       controls-position="right"
       :min="0" :step="1" :precision="0"></el-input-number>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 用于对搜索结果排序，权重越高，搜索结果越靠前；0 表示不允许搜索。</span>
   </el-form-item>
 
-  {{-- 帮助文本 --}}
-  <el-form-item label="帮助" prop="helpertext" size="small" class="has-helptext">
-    <el-input
-      v-model="{{ $model }}.helpertext"
-      type="textarea"
-      rows="3"></el-input>
-    <span class="jc-form-item-help"><i class="el-icon-info"></i> 在字段下方显示的提示文字，如果为空，则显示『描述』</span>
+  {{-- 默认值 --}}
+  @if ($metaKeys->has('default'))
+  <el-form-item v-if="{{ $model }}.field_type" label="默认值" size="small" class="has-helptext" native-size="100">
+    <el-input v-model="{{ $model }}.default" native-size="100"></el-input>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 字段默认值</span>
   </el-form-item>
+  @endif
 
   {{-- 建议最大字数 --}}
-  <el-form-item label="字数" prop="maxlength" size="small" class="has-helptext"
-    v-if="{{ $model }}.field_type_id=='text'">
+  @if ($metaKeys->has('maxlength'))
+  <el-form-item v-if="{{ $model }}.field_type" label="字数" prop="maxlength" size="small" class="has-helptext">
     <el-input-number
       v-model="{{ $model }}.maxlength"
       size="small"
@@ -63,24 +71,35 @@
       :min="0"></el-input-number>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 建议的字数限制，主要作为输入提示，不是强制约束。</span>
   </el-form-item>
-
-  {{-- 默认值 --}}
-  <el-form-item label="默认值" size="small" class="has-helptext" native-size="100">
-    <el-input v-model="{{ $model }}.default_value" native-size="100"></el-input>
-    <span class="jc-form-item-help"><i class="el-icon-info"></i> 字段默认值</span>
-  </el-form-item>
+  @endif
 
   {{-- 预选值 --}}
-  <el-form-item label="预选值" size="small" class="has-helptext">
+  @if ($metaKeys->has('options'))
+  <el-form-item v-if="{{ $model }}.field_type" label="预选值" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.options" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个值以 "|" 分隔</span>
   </el-form-item>
+  @endif
 
   {{-- 验证规则 --}}
-  <el-form-item label="验证" size="small" class="has-helptext">
+  @if ($metaKeys->has('rules'))
+  <el-form-item v-if="{{ $model }}.field_type" label="验证" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.rules" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个规则以 "|" 分隔</span>
   </el-form-item>
+  @endif
+
+  {{-- 验证规则 --}}
+  @if ($metaKeys->has('reference'))
+  <el-form-item v-if="{{ $model }}.entity" label="实体" prop="entity" size="small"
+    :rules="[{required:true,message:'『实体』不能为空',trigger:'submit'}]">
+    <el-select v-model="{{ $model }}.entity" placeholder="--选择要引用的实体--" @change="handleEntityChange('{{ $scope }}', $event)">
+      @foreach (get_entities() as $type)
+      <el-option label="{{ $type['label'] }}" value="{{ $type['class'] }}"></el-option>
+      @endforeach
+    </el-select>
+  </el-form-item>
+  @endif
 </el-form>
 
 @once

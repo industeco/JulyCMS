@@ -54,4 +54,30 @@ class JsRule extends FormatBase
 
         return "{pattern:{$pattern},message:'{$rule->resolveMessage()}',trigger:'blur'}";
     }
+
+    /**
+     * path-alias
+     *
+     * @param  \App\Services\Validation\Rule $rule
+     * @return string
+     */
+    protected function pathAlias(Rule $rule)
+    {
+        return "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/,message:'{$rule->resolveMessage()}',trigger:'blur'}";
+    }
+
+    /**
+     * pattern
+     *
+     * @param  \App\Services\Validation\Rule $rule
+     * @return string
+     */
+    protected function exists(Rule $rule)
+    {
+        $params = explode($rule->getParameters(), ',', 2);
+        $route = htmlspecialchars($params[0], ENT_QUOTES|ENT_HTML5);
+        $except = htmlspecialchars($params[1] ?? '', ENT_QUOTES|ENT_HTML5);
+
+        return "{validator:exists('{$route}','{$except}'),trigger:'blur'}";
+    }
 }

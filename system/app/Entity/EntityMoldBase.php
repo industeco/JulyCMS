@@ -151,7 +151,12 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         $pivot = static::getPivotClass();
         $pivotTable = $pivot::getModelTable();
         return $this->belongsToMany(static::getFieldClass(), $pivotTable, $pivot::getMoldKeyName(), $pivot::getFieldKeyName())
-            ->withPivot($pivot::getParameterFields())
+            ->withPivot([
+                'label',
+                'description',
+                'delta',
+                'field_meta',
+            ])
             ->orderBy($pivotTable.'.delta');
     }
 

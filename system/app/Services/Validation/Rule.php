@@ -21,6 +21,8 @@ class Rule
         'email' => '邮件格式不正确',
         'url' => '网址格式不正确',
         'pattern' => '格式不正确',
+        'pathAlias' => '网址格式不正确',
+        'exists' => '已存在',
     ];
 
     /**
@@ -176,14 +178,14 @@ class Rule
     public function resolveMessage(array $context = null)
     {
         $message = $this->message ?? static::$messageTemplates[$this->name] ?? '';
-        if (empty($message) || !preg_match('/\{.*?\}/', $message)) {
-            return $message;
+        if (preg_match('/\{.*?\}/', $message)) {
+            $context = $context ?? [$this->name => $this->parameters];
+            $message = preg_replace_callback('/\{(.*?)\}/', function ($maches) use ($context) {
+                return $context[trim($maches[1])] ?? '{'.$maches[1].'}';
+            }, $message);
         }
 
-        $context = $context ?? [$this->name => $this->parameters];
-        return preg_replace_callback('/\{(.*?)\}/', function ($maches) use ($context) {
-            return $context[trim($maches[1])] ?? '{'.$maches[1].'}';
-        }, $message);
+        return htmlspecialchars($message, ENT_QUOTES|ENT_HTML5);
     }
 
     public function __call($name, $arguments)

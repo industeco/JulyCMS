@@ -89,7 +89,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      *
      * @var \App\EntityValue\FieldValueBase|null
      */
-    protected $value = null;
+    protected $valueModel = null;
 
     /**
      * 获取模型模板数据
@@ -356,10 +356,20 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         //     return $translation->field_meta;
         // }
 
-        return array_merge([
-            'label' => $this->label,
-            'description' => $this->description,
-        ], $this->field_meta ?? []);
+        // 'id',
+        // 'field_type',
+        // 'label',
+        // 'description',
+        // 'is_reserved',
+        // 'is_global',
+        // 'field_group',
+        // 'weight',
+        // 'field_meta',
+        // 'langcode',
+
+        $meta = Arr::except($this->attributesToArray(), ['field_meta']);
+
+        return array_merge($meta, $this->field_meta ?? []);
     }
 
     /**
@@ -413,7 +423,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getDefaultValue()
     {
-        return $this->getDefaultValueAttribute($this->attributes['default_value'] ?? null);
+        return $this->field_meta['default'] ?? null;
     }
 
     /**
@@ -449,12 +459,13 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getValue()
     {
-        if (!$this->value && $this->entity) {
-            $this->value = $this->getValueModel()->ofEntity($this->entity)->first();
+        if (!$this->valueModel && $this->entity) {
+            $model = $this->getValueModel();
+            $this->valueModel = $model->ofEntity($this->entity)->first() ?? $model;
         }
 
-        if ($this->value) {
-            return $this->value->getValue();
+        if ($this->valueModel) {
+            return $this->valueModel->getValue();
         }
 
         return null;

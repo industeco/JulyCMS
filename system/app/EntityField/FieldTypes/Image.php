@@ -5,6 +5,13 @@ namespace App\EntityField\FieldTypes;
 class Image extends File
 {
     /**
+     * 类型标志，由小写字符+数字+下划线组成
+     *
+     * @var string
+     */
+    protected $handle = 'image';
+
+    /**
      * 字段类型标签
      *
      * @var string
