@@ -78,6 +78,10 @@ Route::group([
 
     Route::post('action/build/google-sitemap', [Controllers\CommandController::class, 'buildGoogleSitemap'])
         ->name('action.build.google-sitemap');
+
+    //
+    Route::get('resources/entity_types', [Controllers\ResourceController::class, 'getEntityTypes'])
+        ->name('resources.entity_types');
 });
 
 // // 前台

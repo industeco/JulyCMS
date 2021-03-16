@@ -28,6 +28,13 @@ abstract class EntityBase extends ModelBase
     protected static $fieldKeysCache = [];
 
     /**
+     * 实体标题列
+     *
+     * @var string
+     */
+    protected $titleColumn = 'title';
+
+    /**
      * 获取实体类型类
      *
      * @return string
@@ -79,6 +86,16 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
+     * 获取实体标题列名称
+     *
+     * @return string
+     */
+    public function getTitleColumn()
+    {
+        return $this->titleColumn;
+    }
+
+    /**
      * 获取实体 id
      *
      * @return int|string
@@ -104,6 +121,16 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
+     * 获取实体标题
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->{$this->getTitleColumn()};
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function template(EntityMoldBase $mold = null)
@@ -118,6 +145,18 @@ abstract class EntityBase extends ModelBase
         }
 
         return $template;
+    }
+
+    /**
+     * 按实体类型
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string $mold
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOfMold($query, $mold)
+    {
+        return $query->where(static::getMoldKeyName(), $mold);
     }
 
     /**
@@ -223,14 +262,10 @@ abstract class EntityBase extends ModelBase
                 $pivot::getFieldKeyName(),
                 static::getMoldKeyName()
             )->withPivot([
-                'delta',
                 'label',
                 'description',
-                'helpertext',
-                'is_required',
-                'default_value',
-                'options',
-                'rules',
+                'field_meta',
+                'delta',
             ])->orderBy($pivotTable.'.delta');
     }
 

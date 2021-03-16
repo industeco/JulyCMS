@@ -4,28 +4,35 @@ namespace App\EntityField\FieldTypes;
 
 use Illuminate\Support\Facades\Log;
 
-class Input extends FieldTypeBase
+class MultiReference extends FieldTypeBase
 {
     /**
      * 类型标志，由小写字符+数字+下划线组成
      *
      * @var string
      */
-    protected $handle = 'input';
+    protected $handle = 'multi_reference';
 
     /**
      * 字段类型标签
      *
      * @var string
      */
-    protected $label = '单行文字';
+    protected $label = '多实体引用';
 
     /**
      * 字段类型描述
      *
      * @var string|null
      */
-    protected $description = '适用于简短的无格式内容';
+    protected $description = '用于保存对多个实体的引用';
+
+    /**
+     * 字段值模型类
+     *
+     * @var string
+     */
+    protected $valueModel = \App\EntityValue\EntityReference::class;
 
     /**
      * 指定创建或修改字段时可见的参数项
@@ -34,6 +41,6 @@ class Input extends FieldTypeBase
      */
     public function getMetaKeys()
     {
-        return ['default','maxlength','options','rules'];
+        return ['reference_scope'];
     }
 }

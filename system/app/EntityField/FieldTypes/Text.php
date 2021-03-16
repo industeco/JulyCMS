@@ -26,4 +26,14 @@ class Text extends FieldTypeBase
      * @var string|null
      */
     protected $description = '适用于多行无格式内容';
+
+    /**
+     * 指定创建或修改字段时可见的参数项
+     *
+     * @return array
+     */
+    public function getMetaKeys()
+    {
+        return ['maxlength','rules'];
+    }
 }

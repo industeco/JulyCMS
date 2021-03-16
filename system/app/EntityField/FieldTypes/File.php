@@ -24,4 +24,14 @@ class File extends FieldTypeBase
      * @var string|null
      */
     protected $description = '用于保存文件名（含路径），带文件浏览按钮';
+
+    /**
+     * 指定创建或修改字段时可见的参数项
+     *
+     * @return array
+     */
+    public function getMetaKeys()
+    {
+        return ['options'];
+    }
 }

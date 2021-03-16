@@ -84,9 +84,10 @@ abstract class FieldValueBase extends ModelBase
     public function bindField(FieldBase $field)
     {
         $this->field = $field;
-        $fieldType = $field->getFieldType();
 
         if ($this->isDynamic()) {
+            $fieldType = $field->getFieldType();
+
             // 设置模型表
             $this->setTable($field->getDynamicValueTable());
 
@@ -136,17 +137,19 @@ abstract class FieldValueBase extends ModelBase
     /**
      * 获取字段值
      *
-     * @param  \App\Entity\EntityBase $entity
+     * @param  \App\Entity\EntityBase|null $entity
      * @return mixed
      */
     public function getInstance(?EntityBase $entity = null)
     {
+        $entity = $this->field->getBoundEntity() ?? $entity;
+
         // 如果未指定实体，或实体未保存，返回默认值
         if (!$entity || !$entity->exists) {
             return null;
         }
 
-        return $this->newQuery()->ofEntity($entity)->first();
+        return $this->newQuery()->ofEntity($entity)->first()->bindField($this->field);
     }
 
     /**

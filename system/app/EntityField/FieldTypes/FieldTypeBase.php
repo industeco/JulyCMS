@@ -119,12 +119,8 @@ abstract class FieldTypeBase
             'type' => 'string',
             'default' => null,
         ],
-        'entity' => [
-            'type' => 'string',
-            'default' => null,
-        ],
-        'entity_type' => [
-            'type' => 'string',
+        'reference_scope' => [
+            'type' => 'array',
             'default' => null,
         ],
     ];
@@ -174,7 +170,12 @@ abstract class FieldTypeBase
      */
     public static function get(string $key, $default = null)
     {
-        return (new static)->$key ?? $default;
+        $method = 'get'.Str::studly($key);
+        $instance = new static;
+        if (method_exists($instance, $method)) {
+            return $instance->$method();
+        }
+        return $default;
     }
 
     /**
@@ -256,17 +257,17 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取字段值模型，用于管理字段值的增删改查等
+     * 指定创建或修改字段时可见的参数项
      *
      * @return array
      */
     public function getMetaKeys()
     {
-        return [];
+        return ['default','maxlength','options','rules'];
     }
 
     /**
-     * 获取字段值模型，用于管理字段值的增删改查等
+     * 获取字段参数
      *
      * @return array
      */
@@ -279,7 +280,7 @@ abstract class FieldTypeBase
     }
 
     /**
-     * 获取字段值模型，用于管理字段值的增删改查等
+     * 获取字段参数的结构数据（用于提取字段参数）
      *
      * @return array
      */
@@ -305,7 +306,7 @@ abstract class FieldTypeBase
         $meta = [];
         foreach ($this->getMetaSchema() as $key => $schema) {
             if (isset($formData[$key])) {
-                $meta[$key] = Types::cast($formData[$key], $schema['type']);
+                $meta[$key] = $formData[$key];
             } elseif ($schema['default'] ?? null) {
                 $meta[$key] = $schema['default'];
             }
@@ -338,9 +339,10 @@ abstract class FieldTypeBase
      *
      * @return string
      */
-    public function render()
+    public function render($value = null)
     {
         $meta = $this->getMeta();
+        $meta['value'] = $meta['value'] ?? $value;
         $meta['helptext'] = $meta['helptext'] ?? $meta['description'] ?? null;
         $meta['rules'] = $this->getRules($meta)->parseTo(new JsRule);
 

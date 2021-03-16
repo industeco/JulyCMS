@@ -276,7 +276,8 @@ return [
         \App\EntityField\FieldTypes\Image::class,
         \App\EntityField\FieldTypes\Url::class,
         \App\EntityField\FieldTypes\PathAlias::class,
-        // \App\EntityField\FieldTypes\View::class,
+        \App\EntityField\FieldTypes\Reference::class,
+        \App\EntityField\FieldTypes\MultiReference::class,
     ],
 
     // 是否允许通过实体路径访问

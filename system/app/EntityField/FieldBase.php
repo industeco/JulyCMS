@@ -326,7 +326,11 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         }
 
         if (is_string($field_meta)) {
-            $field_meta = unserialize($field_meta);
+            try {
+                $field_meta = unserialize($field_meta);
+            } catch (\Throwable $th) {
+                //
+            }
         }
 
         return is_array($field_meta) ? $field_meta : [];
@@ -348,28 +352,29 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * 获取字段构造元数据
      *
-     * @return array
+     * @return array|string|null
      */
-    public function getMeta()
+    public function getMeta(string $key = null)
     {
+        if ($this->cachedMeta ?? null) {
+            return $this->cachedMeta;
+        }
+
         // if ($this->isTranslated() && $translation = static::getTranslationClass()::ofField($this)->first()) {
         //     return $translation->field_meta;
         // }
 
-        // 'id',
-        // 'field_type',
-        // 'label',
-        // 'description',
-        // 'is_reserved',
-        // 'is_global',
-        // 'field_group',
-        // 'weight',
-        // 'field_meta',
-        // 'langcode',
-
         $meta = Arr::except($this->attributesToArray(), ['field_meta']);
+        $this->cachedMeta = array_merge(
+            $meta,
+            $this->field_meta ?? []
+        );
 
-        return array_merge($meta, $this->field_meta ?? []);
+        if ($key) {
+            return $this->cachedMeta[$key] ?? null;
+        }
+
+        return $this->cachedMeta;
     }
 
     /**
@@ -461,7 +466,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     {
         if (!$this->valueModel && $this->entity) {
             $model = $this->getValueModel();
-            $this->valueModel = $model->ofEntity($this->entity)->first() ?? $model;
+            $this->valueModel = $model->getInstance() ?? $model;
         }
 
         if ($this->valueModel) {

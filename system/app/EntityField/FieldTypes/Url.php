@@ -26,6 +26,16 @@ class Url extends FieldTypeBase
     protected $description = '标准格式网址';
 
     /**
+     * 指定创建或修改字段时可见的参数项
+     *
+     * @return array
+     */
+    public function getMetaKeys()
+    {
+        return ['default','options'];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getRules(?array $meta = null)

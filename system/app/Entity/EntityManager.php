@@ -93,4 +93,26 @@ final class EntityManager implements ManagerInterface
         $ref = new \ReflectionClass($class);
         return $ref->isInstantiable() && $ref->isSubclassOf(EntityBase::class);
     }
+
+    /**
+     * 根据指定范围获取实体
+     *
+     * @param  array $scope
+     * @return array
+     */
+    public static function getEntitiesFromScope(array $scope)
+    {
+        $entities = [];
+        if ($class = static::resolve($scope[0])) {
+            foreach ($class::ofMold($scope[1])->get() as $entity) {
+                $entities[] = [
+                    'id' => $entity->getKey(),
+                    'title' => $entity->getTitle(),
+                    'created_at' => $entity->getCreatedAt(),
+                    'updated_at' => $entity->getUpdatedAt(),
+                ];
+            }
+        }
+        return $entities;
+    }
 }

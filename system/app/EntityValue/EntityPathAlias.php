@@ -19,7 +19,7 @@ class EntityPathAlias extends FieldValueBase
      *
      * @var string
      */
-    protected $value_column = 'alias';
+    protected $valueColumn = 'alias';
 
     /**
      * 可批量赋值的属性。

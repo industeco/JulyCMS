@@ -147,9 +147,12 @@
         newField: {
           model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
-          fieldTypeHelper: '选择字段类型',
           template: @jjson($context['field_template'], JSON_PRETTY_PRINT),
         },
+
+        fieldTypes: @jjson(get_field_types()),
+
+        referenceScope: [],
       }
     },
 
@@ -165,6 +168,24 @@
         }
       });
       this.original_mold = _.cloneDeep(this.mold);
+    },
+
+    computed: {
+      fieldTypeHelper() {
+        const meta = this.fieldTypes[this.newField.model.field_type];
+        if (meta) {
+          return meta.description;
+        }
+        return '（请选择字段类型）';
+      },
+
+      fieldMetakeys() {
+        const meta = this.fieldTypes[this.newField.model.field_type];
+        if (meta) {
+          return meta.metakeys;
+        }
+        return [];
+      },
     },
 
     methods: {
@@ -276,6 +297,25 @@
         }).catch((error) => {
           console.error(error);
         });
+      },
+
+      initReferenceScope() {
+        if (this.referenceScope && this.referenceScope.length) {
+          return;
+        }
+
+        axios.get("{{ short_url('resources.entity_types') }}")
+          .then((response) => {
+            const referenceScope = response.data.slice();
+            referenceScope.forEach(entity => {
+              if (entity.children.length <= 0) {
+                entity.disabled = true;
+              }
+            });
+            this.$set(this.$data, 'referenceScope', referenceScope);
+          }).catch((error) => {
+            console.error(error);
+          });
       },
 
       submit() {

@@ -11,12 +11,10 @@
   @if ($mode === 'creation')
   <el-form-item label="字段类型" prop="field_type" size="small" class="has-helptext"
     :rules="[{required:true,message:'『字段类型』不能为空',trigger:'submit'}]">
-    <el-select v-model="{{ $model }}.field_type" placeholder="--选择字段类型--" @change="handleFieldTypeChange('{{ $scope }}', $event)">
-      @foreach (get_field_types($entity) as $type)
-      <el-option label="{{ $type['label'] }}" value="{{ $type['class'] }}"></el-option>
-      @endforeach
+    <el-select v-model="{{ $model }}.field_type" placeholder="--选择字段类型--">
+      <el-option v-for="type in fieldTypes" :label="type['label']" :value="type['class']"></el-option>
     </el-select>
-    <span class="jc-form-item-help"><i class="el-icon-info"></i> {{ '{'.'{ '.$scope.'.fieldTypeHelper }'.'}' }}</span>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> @{{ fieldTypeHelper }}</span>
   </el-form-item>
   @endif
 
@@ -54,16 +52,13 @@
   </el-form-item>
 
   {{-- 默认值 --}}
-  @if ($metaKeys->has('default'))
-  <el-form-item v-if="{{ $model }}.field_type" label="默认值" size="small" class="has-helptext" native-size="100">
+  <el-form-item v-if="fieldMetakeys.indexOf('default') >= 0" label="默认值" size="small" class="has-helptext" native-size="100">
     <el-input v-model="{{ $model }}.default" native-size="100"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 字段默认值</span>
   </el-form-item>
-  @endif
 
   {{-- 建议最大字数 --}}
-  @if ($metaKeys->has('maxlength'))
-  <el-form-item v-if="{{ $model }}.field_type" label="字数" prop="maxlength" size="small" class="has-helptext">
+  <el-form-item v-if="fieldMetakeys.indexOf('maxlength') >= 0" label="字数" size="small" class="has-helptext">
     <el-input-number
       v-model="{{ $model }}.maxlength"
       size="small"
@@ -71,43 +66,37 @@
       :min="0"></el-input-number>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 建议的字数限制，主要作为输入提示，不是强制约束。</span>
   </el-form-item>
-  @endif
 
   {{-- 预选值 --}}
-  @if ($metaKeys->has('options'))
-  <el-form-item v-if="{{ $model }}.field_type" label="预选值" size="small" class="has-helptext">
+  <el-form-item v-if="fieldMetakeys.indexOf('options') >= 0" label="预选值" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.options" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个值以 "|" 分隔</span>
   </el-form-item>
-  @endif
 
   {{-- 验证规则 --}}
-  @if ($metaKeys->has('rules'))
-  <el-form-item v-if="{{ $model }}.field_type" label="验证" size="small" class="has-helptext">
+  <el-form-item v-if="fieldMetakeys.indexOf('rules') >= 0" label="验证" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.rules" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个规则以 "|" 分隔</span>
   </el-form-item>
-  @endif
 
-  {{-- 验证规则 --}}
-  @if ($metaKeys->has('reference'))
-  <el-form-item v-if="{{ $model }}.entity" label="实体" prop="entity" size="small"
-    :rules="[{required:true,message:'『实体』不能为空',trigger:'submit'}]">
-    <el-select v-model="{{ $model }}.entity" placeholder="--选择要引用的实体--" @change="handleEntityChange('{{ $scope }}', $event)">
-      @foreach (get_entities() as $type)
-      <el-option label="{{ $type['label'] }}" value="{{ $type['class'] }}"></el-option>
-      @endforeach
-    </el-select>
+  {{-- 引用范围 --}}
+  <el-form-item v-if="fieldMetakeys.indexOf('reference_scope') >= 0" label="引用范围" size="small"
+    :rules="[{required:true,message:'『引用范围』不能为空',trigger:'submit'}]" class="has-helptext">
+    @if ($mode == 'creation')
+    <el-cascader size="small" placeholder="--选择引用范围--" clearable
+      v-model="{{ $model }}.reference_scope"
+      :options="referenceScope"
+      @hook:created="initReferenceScope"></el-cascader>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 选择实体类型做引用范围</span>
+    @else
+    <el-cascader v-model="{{ $model }}.reference_scope" size="small" disabled></el-cascader>
+    <span class="jc-form-item-help"><i class="el-icon-info"></i> 实体引用范围不可更改</span>
+    @endif
   </el-form-item>
-  @endif
 </el-form>
 
 @once
 @push('methods')
-  handleFieldTypeChange(scope, type_id) {
-    const fieldTypes = @jjson(get_field_types());
-    const type = fieldTypes[type_id];
-    this[scope].fieldTypeHelper = type ? type.description : '';
-  },
+
 @endpush
 @endonce

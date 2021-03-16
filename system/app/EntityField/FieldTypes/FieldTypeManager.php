@@ -70,10 +70,14 @@ final class FieldTypeManager implements ManagerInterface
         $types = [];
         foreach (static::$fieldTypes as $class) {
             if ($class::available($scope)) {
+                /** @var \App\EntityField\FieldTypes\FieldTypeBase */
+                $type = new $class;
+
                 $types[$class] = [
                     'class' => $class,
-                    'label' => $class::get('label'),
-                    'description' => $class::get('description'),
+                    'label' => $type->getLabel(),
+                    'description' => $type->getDescription(),
+                    'metakeys' => $type->getMetaKeys(),
                 ];
             }
         }

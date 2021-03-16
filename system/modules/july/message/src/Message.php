@@ -49,6 +49,13 @@ class Message extends EntityBase
     ];
 
     /**
+     * 实体标题列
+     *
+     * @var string
+     */
+    protected $titleColumn = 'subject';
+
+    /**
      * 获取实体类型类
      *
      * @return string

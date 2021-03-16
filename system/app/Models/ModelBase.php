@@ -199,6 +199,22 @@ abstract class ModelBase extends Model
     }
 
     /**
+     * 获取更新时间
+     */
+    public function getUpdatedAt()
+    {
+        return $this->{$this->getUpdatedAtColumn()};
+    }
+
+    /**
+     * 获取创建时间
+     */
+    public function getCreatedAt()
+    {
+        return $this->{$this->getCreatedAtColumn()};
+    }
+
+    /**
      * 获取模型列表数据
      *
      * @param  array $columns 选取的列

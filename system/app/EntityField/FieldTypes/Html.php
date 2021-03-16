@@ -26,6 +26,16 @@ class Html extends FieldTypeBase
     protected $description = '适用于 HTML 内容';
 
     /**
+     * 指定创建或修改字段时可见的参数项
+     *
+     * @return array
+     */
+    public function getMetaKeys()
+    {
+        return [];
+    }
+
+    /**
      * 转为适合索引的内容
      *
      * @param  string $value 字段内容

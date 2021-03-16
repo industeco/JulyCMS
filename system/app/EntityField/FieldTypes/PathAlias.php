@@ -33,16 +33,23 @@ class PathAlias extends FieldTypeBase
     protected $valueModel = \App\EntityValue\EntityPathAlias::class;
 
     /**
+     * 指定创建或修改字段时可见的参数项
+     *
+     * @return array
+     */
+    public function getMetaKeys()
+    {
+        return ['default','options'];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getRules(?array $meta = null)
     {
         $meta = $meta ?? $this->getMeta();
 
-        return parent::getRules($meta)->addRules('pathAlias');
-            // ->addRules('pathAlias|checkExists:path_alias.exists,'.($meta['value'] ?? null));
-
-        // $rules[] = "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/, message:'格式不正确', trigger:'blur'}";
-        // $rules[] = "{validator:exists('{$exists}', '{$value}'), trigger:'blur'}";
+        return parent::getRules($meta)->addRules('pathAlias')
+            ->addRules('pathAlias|exists:path_alias.exists,'.($meta['value'] ?? null));
     }
 }

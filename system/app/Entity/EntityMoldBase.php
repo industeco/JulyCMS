@@ -182,9 +182,11 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
     public function syncFields(array $fields = null)
     {
         $fields = $fields ?? $this->raw['fields'] ?? [];
-        $keys = static::getPivotClass()::getParameterFields();
+
+        $keys = static::getPivotClass()::getMetaAttributes();
         $relatedFields = [];
         foreach (array_values($fields) as $index => $field) {
+            $field['field_meta'] = serialize((new $field['field_type'])->extractMeta($field));
             $field['delta'] = $index;
             $relatedFields[$field['id']] = Arr::only($field, $keys);
         }
