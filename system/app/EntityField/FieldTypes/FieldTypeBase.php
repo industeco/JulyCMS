@@ -245,7 +245,7 @@ abstract class FieldTypeBase
     /**
      * 获取字段值模型，用于管理字段值的增删改查等
      *
-     * @return \App\EntityValue\FieldValueBase
+     * @return \App\EntityValue\ValueBase
      */
     public function getValueModel()
     {

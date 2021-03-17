@@ -132,28 +132,6 @@
     app.recieveMediaUrl(url)
   }
 
-  function recieveFieldValue(id) {
-    return document.getElementById('field__'+id).innerHTML;
-  }
-
-  // {{--
-  // const _node = {
-  //   @foreach ($node as $key => $value)
-  //   @if (is_null($value))
-  //   {{ $key }}: null,
-  //   @elseif (is_bool($value))
-  //   {{ $key }}: {{ $value ? 'true' : 'false' }},
-  //   @elseif (is_numeric($value))
-  //   {{ $key }}: {{ $value }},
-  //   @elseif (is_string($value) && strlen($value) > 255)
-  //   {{ $key }}: recieveFieldValue('{{ $key }}'),
-  //   @else
-  //   {{ $key }}: Base64.decode("{{ base64_encode($value) }}"),
-  //   @endif
-  //   @endforeach
-  // };
-  // --}}
-
   let app = new Vue({
     el: '#main_content',
     data() {

@@ -230,11 +230,11 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
-    // 管理类
-    'managers' => [
-        \App\Entity\EntityManager::class,
-        \App\EntityField\FieldTypes\FieldTypeManager::class,
-    ],
+    // // 管理类
+    // 'managers' => [
+    //     \App\Entity\EntityManager::class,
+    //     \App\EntityField\FieldTypes\FieldTypeManager::class,
+    // ],
 
     // 安装标记
     'is_installed' => env('APP_INSTALLED', false),
@@ -256,28 +256,8 @@ return [
         \App\Services\Settings\Redirections::class,
     ],
 
-    // 登记实体
-    'entities' => [
-        \July\Node\Node::class,
-        \July\Message\Message::class,
-    ],
-
     'twig_extensions' => [
         \July\Node\TwigExtensions\NodeQueryExtension::class,
-    ],
-
-    // 登记实体字段类型
-    'field_types' => [
-        // \App\EntityField\FieldTypes\Any::class,
-        \App\EntityField\FieldTypes\Input::class,
-        \App\EntityField\FieldTypes\Text::class,
-        \App\EntityField\FieldTypes\File::class,
-        \App\EntityField\FieldTypes\Html::class,
-        \App\EntityField\FieldTypes\Image::class,
-        \App\EntityField\FieldTypes\Url::class,
-        \App\EntityField\FieldTypes\PathAlias::class,
-        \App\EntityField\FieldTypes\Reference::class,
-        \App\EntityField\FieldTypes\MultiReference::class,
     ],
 
     // 是否允许通过实体路径访问

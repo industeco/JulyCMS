@@ -87,7 +87,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * 字段所属实体
      *
-     * @var \App\EntityValue\FieldValueBase|null
+     * @var \App\EntityValue\ValueBase|null
      */
     protected $valueModel = null;
 
@@ -410,7 +410,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
     /**
      * 获取字段值模型
      *
-     * @return \App\EntityValue\FieldValueBase
+     * @return \App\EntityValue\ValueBase
      */
     public function getValueModel()
     {

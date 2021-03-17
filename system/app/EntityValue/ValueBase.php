@@ -9,7 +9,7 @@ use App\Utils\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-abstract class FieldValueBase extends ModelBase
+abstract class ValueBase extends ModelBase
 {
     /**
      * 绑定的字段

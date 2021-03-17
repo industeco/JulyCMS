@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Entity\EntityManager;
+use App\EntityField\FieldTypes\FieldTypeManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +18,11 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     public function register()
     {
-        //
+        // 登记实体字段类型
+        EntityManager::register($this->discoverEntities());
+
+        // 登记实体
+        FieldTypeManager::register($this->discoverEntityFieldTypes());
     }
 
     /**
@@ -50,6 +56,26 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
         if (is_dir($path = $this->getModulePath('migrations'))) {
             $this->loadMigrationsFrom($path);
         }
+    }
+
+    /**
+     * 获取实体类
+     *
+     * @return array
+     */
+    protected function discoverEntities()
+    {
+        return [];
+    }
+
+    /**
+     * 获取实体字段类型
+     *
+     * @return array
+     */
+    protected function discoverEntityFieldTypes()
+    {
+        return [];
     }
 
     /**

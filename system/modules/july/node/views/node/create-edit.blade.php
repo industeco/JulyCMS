@@ -117,10 +117,6 @@
     app.recieveMediaUrl(url)
   }
 
-  // function recieveFieldValue(id) {
-  //   return document.getElementById('field__'+id).innerHTML;
-  // }
-
   let app = new Vue({
     el: '#main_content',
     data() {

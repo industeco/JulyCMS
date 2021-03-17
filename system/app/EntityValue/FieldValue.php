@@ -2,7 +2,7 @@
 
 namespace App\EntityValue;
 
-class FieldValue extends FieldValueBase
+class FieldValue extends ValueBase
 {
     /**
      * 判断是否动态模型

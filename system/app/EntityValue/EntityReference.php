@@ -11,7 +11,7 @@ use App\Utils\Arr;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class EntityReference extends FieldValueBase
+class EntityReference extends ValueBase
 {
     /**
      * 与模型关联的表名

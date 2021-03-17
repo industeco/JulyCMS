@@ -5,7 +5,7 @@ namespace App\EntityValue;
 use App\Entity\EntityBase;
 use App\Entity\EntityManager;
 
-class EntityPathAlias extends FieldValueBase
+class EntityPathAlias extends ValueBase
 {
     /**
      * 与模型关联的表名
