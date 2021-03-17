@@ -95,7 +95,7 @@ abstract class ValueBase extends ModelBase
             $this->valueColumn = $fieldType->getColumn()['name'];
 
             $this->attributes = [
-                $this->valueColumn => $field->getParameters()['default_value'] ?? $fieldType->getDefaultValue(),
+                $this->valueColumn => $field->getDefaultValue(),
             ];
 
             // 设置 fillable

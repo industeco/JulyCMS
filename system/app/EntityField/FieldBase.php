@@ -427,7 +427,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getDefaultValue()
     {
-        return $this->field_meta['default'] ?? null;
+        return $this->getMeta('default') ?? $this->getFieldType()->getDefaultValue();
     }
 
     /**
