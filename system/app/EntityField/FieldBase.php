@@ -356,19 +356,18 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function getMeta(string $key = null)
     {
-        if ($this->cachedMeta ?? null) {
-            return $this->cachedMeta;
+        if (! isset($this->cachedMeta)) {
+
+            // if ($this->isTranslated() && $translation = static::getTranslationClass()::ofField($this)->first()) {
+            //     return $translation->field_meta;
+            // }
+
+            $meta = $this->attributesToArray();
+            $meta = array_merge($meta, $meta['field_meta']);
+            unset($meta['field_meta']);
+
+            $this->cachedMeta = $meta;
         }
-
-        // if ($this->isTranslated() && $translation = static::getTranslationClass()::ofField($this)->first()) {
-        //     return $translation->field_meta;
-        // }
-
-        $meta = Arr::except($this->attributesToArray(), ['field_meta']);
-        $this->cachedMeta = array_merge(
-            $meta,
-            $this->field_meta ?? []
-        );
 
         if ($key) {
             return $this->cachedMeta[$key] ?? null;
