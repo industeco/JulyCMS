@@ -2,8 +2,8 @@
 
 use App\EntityField\FieldTypes\FieldTypeManager;
 use App\Models\ModelBase;
-use App\Utils\Lang;
-use App\Utils\Types;
+use App\Support\Lang;
+use App\Support\Types;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -71,7 +71,7 @@ if (! function_exists('lang')) {
      * 获取语言操作对象
      *
      * @param  string|null $alias
-     * @return \App\Utils\Lang
+     * @return \App\Support\Lang
      */
     function lang(?string $alias = null)
     {

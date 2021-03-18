@@ -250,10 +250,10 @@ return [
 
     // 登记配置管理类
     'settings' => [
-        \App\Services\Settings\Language::class,
-        \App\Services\Settings\SiteInformation::class,
-        // \App\Services\Settings\UserInterface::class,
-        \App\Services\Settings\Redirections::class,
+        \App\Support\Settings\Language::class,
+        \App\Support\Settings\SiteInformation::class,
+        // \App\Support\Settings\UserInterface::class,
+        \App\Support\Settings\Redirections::class,
     ],
 
     'twig_extensions' => [

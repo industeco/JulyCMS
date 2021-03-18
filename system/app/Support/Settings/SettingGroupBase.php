@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Settings;
+namespace App\Support\Settings;
 
 abstract class SettingGroupBase
 {

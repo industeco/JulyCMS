@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\CacheResultTrait;
-use App\Utils\Arr;
+use App\Support\Arr;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

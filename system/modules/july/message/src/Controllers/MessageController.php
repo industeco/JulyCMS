@@ -3,7 +3,7 @@
 namespace July\Message\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Utils\Lang;
+use App\Support\Lang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;

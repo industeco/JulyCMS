@@ -3,7 +3,7 @@
 namespace July\Message;
 
 use App\EntityField\FieldBase;
-use App\Services\Validation\RuleFormats\LaravelRule;
+use App\Support\Validation\RuleFormats\LaravelRule;
 use Illuminate\Support\Facades\Log;
 
 class MessageField extends FieldBase

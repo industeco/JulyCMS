@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\EntityValue\EntityPathAlias;
 use App\EntityField\FieldBase;
 use App\Models\ModelBase;
-use App\Utils\Arr;
+use App\Support\Arr;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;

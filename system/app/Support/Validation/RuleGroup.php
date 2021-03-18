@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Validation;
+namespace App\Support\Validation;
 
-use App\Services\Validation\RuleFormats\FormatBase;
-use App\Utils\Makable;
+use App\Support\Validation\RuleFormats\FormatBase;
+use App\Support\Makable;
 use ArrayIterator;
 use IteratorAggregate;
 
@@ -28,7 +28,7 @@ class RuleGroup implements IteratorAggregate
     /**
      * 生成的规则列表
      *
-     * @var \App\Services\Validation\Rule[]
+     * @var \App\Support\Validation\Rule[]
      */
     protected $rules;
 
@@ -117,7 +117,7 @@ class RuleGroup implements IteratorAggregate
     /**
      * 将规则整体转换为指定格式
      *
-     * @param  \App\Services\Validation\RuleFormats\FormatBase $format
+     * @param  \App\Support\Validation\RuleFormats\FormatBase $format
      * @return mixed
      */
     public function parseTo(FormatBase $format)

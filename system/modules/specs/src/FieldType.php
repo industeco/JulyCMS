@@ -2,7 +2,7 @@
 
 namespace Specs;
 
-use App\Utils\Pocket;
+use App\Support\Pocket;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
 use Specs\Exceptions\FieldTypeNotFoundException;

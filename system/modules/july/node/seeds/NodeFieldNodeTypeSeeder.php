@@ -2,7 +2,7 @@
 
 namespace July\Node\Seeds;
 
-use App\Utils\Arr;
+use App\Support\Arr;
 use Database\Seeds\SeederBase;
 
 class NodeFieldNodeTypeSeeder extends SeederBase

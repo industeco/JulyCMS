@@ -2,8 +2,8 @@
 
 namespace App\Entity;
 
-use App\Services\Translation\TranslatableInterface;
-use App\Services\Translation\TranslatableTrait;
+use App\Support\Translation\TranslatableInterface;
+use App\Support\Translation\TranslatableTrait;
 
 abstract class TranslatableEntityBase extends EntityBase implements TranslatableInterface
 {

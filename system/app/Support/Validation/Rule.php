@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Validation;
+namespace App\Support\Validation;
 
-use App\Services\Validation\RuleFormats\FormatBase;
-use App\Utils\Makable;
+use App\Support\Validation\RuleFormats\FormatBase;
+use App\Support\Makable;
 use Illuminate\Support\Str;
 
 class Rule
@@ -160,7 +160,7 @@ class Rule
     /**
      * 将规则转换为指定格式
      *
-     * @param  \App\Services\Validation\FormatBase\FormatBase $format
+     * @param  \App\Support\Validation\FormatBase\FormatBase $format
      * @return mixed
      */
     public function parseTo(FormatBase $format)

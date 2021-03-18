@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Utils;
+namespace App\Support;
 
 use Illuminate\Support\Arr as SupportArr;
 

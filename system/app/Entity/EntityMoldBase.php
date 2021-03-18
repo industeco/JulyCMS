@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\EntityField\FieldBase;
-use App\Services\Translation\TranslatableInterface;
-use App\Services\Translation\TranslatableTrait;
+use App\Support\Translation\TranslatableInterface;
+use App\Support\Translation\TranslatableTrait;
 use App\Models\ModelBase;
-use App\Utils\Arr;
+use App\Support\Arr;
 
 abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
 {

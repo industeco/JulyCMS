@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Services\Validation\RuleFormats;
+namespace App\Support\Validation\RuleFormats;
 
-use App\Services\Validation\Rule;
-use App\Services\Validation\RuleGroup;
+use App\Support\Validation\Rule;
+use App\Support\Validation\RuleGroup;
 
 class LaravelRule extends FormatBase
 {
     /**
      * 转换规则集
      *
-     * @param  \App\Services\Validation\RuleGroup $group
+     * @param  \App\Support\Validation\RuleGroup $group
      * @return array
      */
     public function parseGroup(RuleGroup $group)
@@ -30,7 +30,7 @@ class LaravelRule extends FormatBase
     /**
      * 默认转换规则
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return array
      */
     protected function parseDefault(Rule $rule)
@@ -44,7 +44,7 @@ class LaravelRule extends FormatBase
     /**
      * max
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return array
      */
     protected function max(Rule $rule)
@@ -57,7 +57,7 @@ class LaravelRule extends FormatBase
     /**
      * pattern
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return array
      */
     protected function pattern(Rule $rule)
@@ -70,7 +70,7 @@ class LaravelRule extends FormatBase
     /**
      * path-alias
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function pathAlias(Rule $rule)

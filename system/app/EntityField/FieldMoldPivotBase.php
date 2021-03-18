@@ -3,7 +3,7 @@
 namespace App\EntityField;
 
 use App\Models\PivotBase;
-use App\Utils\Arr;
+use App\Support\Arr;
 
 abstract class FieldMoldPivotBase extends PivotBase
 {

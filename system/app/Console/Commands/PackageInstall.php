@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Utils\Archive;
+use App\Support\Archive;
 use Illuminate\Console\Command;
 
 class PackageInstall extends Command

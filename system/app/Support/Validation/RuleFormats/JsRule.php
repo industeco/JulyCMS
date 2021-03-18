@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Services\Validation\RuleFormats;
+namespace App\Support\Validation\RuleFormats;
 
-use App\Services\Validation\Rule;
+use App\Support\Validation\Rule;
 
 class JsRule extends FormatBase
 {
     /**
      * 默认转换规则
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function parseDefault(Rule $rule)
@@ -20,7 +20,7 @@ class JsRule extends FormatBase
     /**
      * required
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function required(Rule $rule)
@@ -31,7 +31,7 @@ class JsRule extends FormatBase
     /**
      * max
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function max(Rule $rule)
@@ -45,7 +45,7 @@ class JsRule extends FormatBase
     /**
      * pattern
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function pattern(Rule $rule)
@@ -58,7 +58,7 @@ class JsRule extends FormatBase
     /**
      * path-alias
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function pathAlias(Rule $rule)
@@ -69,7 +69,7 @@ class JsRule extends FormatBase
     /**
      * pattern
      *
-     * @param  \App\Services\Validation\Rule $rule
+     * @param  \App\Support\Validation\Rule $rule
      * @return string
      */
     protected function exists(Rule $rule)

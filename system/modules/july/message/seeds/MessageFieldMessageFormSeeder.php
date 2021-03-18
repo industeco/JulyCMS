@@ -2,7 +2,7 @@
 
 namespace July\Message\Seeds;
 
-use App\Utils\Arr;
+use App\Support\Arr;
 use Database\Seeds\SeederBase;
 
 class MessageFieldMessageFormSeeder extends SeederBase

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Utils;
+namespace App\Support;
 
 class Value
 {
@@ -24,7 +24,7 @@ class Value
      * 快捷创建
      *
      * @param  mixed $value
-     * @return \App\Utils\Value|static
+     * @return \App\Support\Value|static
      */
     public static function make($value)
     {

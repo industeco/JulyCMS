@@ -2,8 +2,8 @@
 
 namespace App\Concerns;
 
-use App\Utils\Pocket;
-use App\Utils\Value;
+use App\Support\Pocket;
+use App\Support\Value;
 
 trait CacheResultTrait
 {
@@ -20,7 +20,7 @@ trait CacheResultTrait
     /**
      * Pocket 缓存
      *
-     * @var \App\Utils\Pocket|null
+     * @var \App\Support\Pocket|null
      */
     protected $pocket = null;
 
@@ -28,7 +28,7 @@ trait CacheResultTrait
      * @param  string $method
      * @param  string|null $key
      * @param  bool $pocket
-     * @return \App\Utils\Value|null
+     * @return \App\Support\Value|null
      */
     public function cachePipe(string $method, ?string $key = null, $usePocket = false)
     {
@@ -104,7 +104,7 @@ trait CacheResultTrait
      * 从 $resultCache 获取值
      *
      * @param  string $key
-     * @return \App\Utils\Value|null
+     * @return \App\Support\Value|null
      */
     public function cacheGet(string $key)
     {
@@ -125,7 +125,7 @@ trait CacheResultTrait
     /**
      * @param  string $method
      * @param  string|null $key
-     * @return \App\Utils\Value|null
+     * @return \App\Support\Value|null
      */
     public function pocketPipe(string $method, ?string $key = null)
     {
@@ -149,7 +149,7 @@ trait CacheResultTrait
      * 从缓存获取值（通过 Pocket）
      *
      * @param  string $key
-     * @return \App\Utils\Value|null
+     * @return \App\Support\Value|null
      */
     public function pocketGet($key)
     {
@@ -170,7 +170,7 @@ trait CacheResultTrait
     /**
      * 获取专属 pocket
      *
-     * @return \App\Utils\Pocket
+     * @return \App\Support\Pocket
      */
     public function getPocket()
     {

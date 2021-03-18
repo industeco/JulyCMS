@@ -3,9 +3,9 @@
 namespace App\EntityField\FieldTypes;
 
 use App\EntityField\FieldBase;
-use App\Services\Validation\RuleFormats\JsRule;
-use App\Services\Validation\RuleGroup;
-use App\Utils\Types;
+use App\Support\Validation\RuleFormats\JsRule;
+use App\Support\Validation\RuleGroup;
+use App\Support\Types;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -353,7 +353,7 @@ abstract class FieldTypeBase
      * 获取验证规则（用于前端 js 验证）
      *
      * @param  array|null $meta 字段元数据
-     * @return \App\Services\Validation\RuleGroup
+     * @return \App\Support\Validation\RuleGroup
      */
     public function getRules(?array $meta = null)
     {

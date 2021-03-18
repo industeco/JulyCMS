@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Translation;
+namespace App\Support\Translation;
 
 trait TranslatableTrait
 {

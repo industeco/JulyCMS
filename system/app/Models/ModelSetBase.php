@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Utils\Arr;
+use App\Support\Arr;
 use Illuminate\Support\Collection;
 
 abstract class ModelSetBase extends Collection

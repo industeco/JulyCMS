@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Utils;
+namespace App\Support;
 
 use App\Entity\EntityBase;
-use App\Services\Translation\TranslatableInterface;
+use App\Support\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +27,7 @@ class Pocket
     /**
      * 缓存键
      *
-     * @var \App\Utils\Value|null
+     * @var \App\Support\Value|null
      */
     protected $key = null;
 
@@ -54,7 +54,7 @@ class Pocket
      *
      * @param  string|object $subject 调用 Pocket 的主体：类或类实例
      * @param  mixed $key 默认的键名
-     * @return \App\Utils\Value|static
+     * @return \App\Support\Value|static
      */
     public static function make($subject, $key = null)
     {
@@ -118,7 +118,7 @@ class Pocket
      * 获取缓存键
      *
      * @param  mixed $key
-     * @return \App\Utils\Value
+     * @return \App\Support\Value
      */
     public function getKey($key = null)
     {
@@ -159,7 +159,7 @@ class Pocket
      * 从缓存中获取值
      *
      * @param  mixed $key
-     * @return \App\Utils\Value|null
+     * @return \App\Support\Value|null
      */
     public function get($key = null)
     {

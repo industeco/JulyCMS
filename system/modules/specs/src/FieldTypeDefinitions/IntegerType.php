@@ -2,7 +2,7 @@
 
 namespace Specs\FieldTypeDefinitions;
 
-use App\Utils\Types;
+use App\Support\Types;
 
 class IntegerType extends DefinitionBase
 {

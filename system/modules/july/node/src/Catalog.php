@@ -4,7 +4,7 @@ namespace July\Node;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\ModelBase;
-use App\Utils\Tree;
+use App\Support\Tree;
 
 class Catalog extends ModelBase implements GetNodesInterface
 {
@@ -77,7 +77,7 @@ class Catalog extends ModelBase implements GetNodesInterface
     /**
      * 树状结构的目录数据
      *
-     * @var \App\Utils\Tree
+     * @var \App\Support\Tree
      */
     protected $tree = null;
 
@@ -215,7 +215,7 @@ class Catalog extends ModelBase implements GetNodesInterface
     }
 
     /**
-     * @return \App\Utils\Tree
+     * @return \App\Support\Tree
      */
     public function tree()
     {

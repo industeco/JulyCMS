@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Utils\Html;
+use App\Support\Html;
 
 class GoogleSitemap
 {
