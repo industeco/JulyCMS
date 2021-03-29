@@ -7,6 +7,7 @@ use App\Support\Translation\TranslatableInterface;
 use App\Support\Translation\TranslatableTrait;
 use App\Models\ModelBase;
 use App\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
 {
@@ -186,7 +187,8 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         $keys = static::getPivotClass()::getMetaAttributes();
         $relatedFields = [];
         foreach (array_values($fields) as $index => $field) {
-            $field['field_meta'] = serialize((new $field['field_type'])->extractMeta($field));
+            $meta = (new $field['field_type'])->extractMeta($field);
+            $field['field_meta'] = serialize($meta);
             $field['delta'] = $index;
             $relatedFields[$field['id']] = Arr::only($field, $keys);
         }

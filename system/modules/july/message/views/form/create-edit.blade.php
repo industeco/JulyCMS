@@ -95,7 +95,7 @@
         </el-table>
       </el-tab-pane>
       <el-tab-pane label="新建字段" name="creation" class="md-scrollbar md-theme-default">
-        <x-message_field.create-edit scope="newField" model="newField.model" mode="creation" entity="$context['entity_name']" />
+        <x-field.create-edit scope="newField" model="newField.model" mode="creation" entity="$context['entity_name']" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -110,7 +110,7 @@
     :visible.sync="field.dialogVisible" class="jc-dialog-form">
     <div class="md-scrollbar md-theme-default js-scroll-wrapper"
       style="max-height:600px; overflow:hidden auto; padding:0 20px">
-      <x-message_field.create-edit scope="field" model="field.model" mode="editing" entity="$context['entity_name']" />
+      <x-field.create-edit scope="field" model="field.model" mode="editing" entity="$context['entity_name']" />
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click.stop="field.dialogVisible = false">取 消</el-button>
@@ -150,14 +150,32 @@
         newField: {
           model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
           rules: {},
-          fieldTypeHelper: '选择字段类型',
           template: @jjson($context['field_template'], JSON_PRETTY_PRINT),
         },
+        fieldTypes: @jjson(get_field_types()),
       }
     },
 
     created: function() {
       this.original_mold = _.cloneDeep(this.mold);
+    },
+
+    computed: {
+      fieldTypeHelper() {
+        const meta = this.fieldTypes[this.newField.model.field_type];
+        if (meta) {
+          return meta.description;
+        }
+        return '（请选择字段类型）';
+      },
+
+      fieldMetakeys() {
+        const meta = this.fieldTypes[this.newField.model.field_type];
+        if (meta) {
+          return meta.metakeys;
+        }
+        return [];
+      },
     },
 
     methods: {

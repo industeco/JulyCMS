@@ -42,7 +42,12 @@ class MessageFormController extends Controller
     {
         $data = $this->getCreationContext();
         $data['model'] = $form->gather();
-        $data['context']['fields'] = gather($form->fields)->sortBy('delta')->keyBy('id')->all();
+
+        $fields = $form->fields->map(function($field) {
+            return $field->getMeta();
+        });
+        $data['context']['fields'] = $fields->sortBy('delta')->keyBy('id')->all();
+
         $data['context']['mode'] = 'edit';
 
         return view('message::form.create-edit', $data);

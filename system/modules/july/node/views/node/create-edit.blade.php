@@ -194,37 +194,39 @@
           }
         }
 
-        this.$refs.main_form.validate().then(() => {
-          const changed = this.getChanged();
-          @if ($context['mode'] === 'edit')
-            if (!changed.length) {
-              window.location.href = "{{ short_url('nodes.index') }}";
-              return;
-            }
-          @endif
+        setTimeout(() => {
+          this.$refs.main_form.validate().then(() => {
+            const changed = this.getChanged();
+            @if ($context['mode'] === 'edit')
+              if (!changed.length) {
+                window.location.href = "{{ short_url('nodes.index') }}";
+                return;
+              }
+            @endif
 
-          const model = _.cloneDeep(this.model);
-          model._changed = changed;
+            const model = _.cloneDeep(this.model);
+            model._changed = changed;
 
-          @if ($context['mode'] !== 'create')
-          const action = "{{ short_url('nodes.update', $model['id']) }}";
-          @else
-          const action = "{{ short_url('nodes.store') }}";
-          @endif
+            @if ($context['mode'] !== 'create')
+            const action = "{{ short_url('nodes.update', $model['id']) }}";
+            @else
+            const action = "{{ short_url('nodes.store') }}";
+            @endif
 
-          axios.{{ $context['mode'] !== 'create' ? 'put' : 'post' }}(action, model)
-            .then((response) => {
-              // console.log(response);
-              window.location.href = "{{ short_url('nodes.index') }}";
-            })
-            .catch((error) => {
-              loading.close();
-              this.$message.error(error);
-            });
-        }).catch((error) => {
-          // console.error(error);
-          loading.close();
-        });
+            axios.{{ $context['mode'] !== 'create' ? 'put' : 'post' }}(action, model)
+              .then((response) => {
+                // console.log(response);
+                window.location.href = "{{ short_url('nodes.index') }}";
+              })
+              .catch((error) => {
+                loading.close();
+                this.$message.error(error);
+              });
+          }).catch((error) => {
+            // console.error(error);
+            loading.close();
+          });
+        }, 100);
       },
     }
   })

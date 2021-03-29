@@ -265,8 +265,10 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public static function bisect()
     {
-        return static::all()->groupBy(function(FieldBase $field) {
-            if ($field->is_global || $field->is_reserved) {
+        return static::all()->map(function(FieldBase $field){
+            return  $field->getMeta();
+        })->groupBy(function($field) {
+            if ($field['is_global'] || $field['is_reserved']) {
                 return 'preseted';
             } else {
                 return 'optional';

@@ -45,8 +45,12 @@ class NodeTypeController extends Controller
     {
         $data = $this->getCreationContext();
         $data['model'] = $nodeType->gather();
+
+        $fields = $nodeType->fields->map(function($field) {
+            return $field->getMeta();
+        });
         $data['context']['fields'] = collect($data['context']['fields'])
-            ->merge(gather($nodeType->fields)->keyBy('id'))
+            ->merge($fields->keyBy('id'))
             ->sortBy('delta')
             ->all();
         $data['context']['mode'] = 'edit';
@@ -66,8 +70,8 @@ class NodeTypeController extends Controller
             'model' => NodeType::template(),
             'context' => [
                 'entity_name' => Node::getEntityName(),
-                'fields' => gather($fields->get('preseted'))->keyBy('id')->all(),
-                'optional_fields' => gather($fields->get('optional'))->keyBy('id')->all(),
+                'fields' => $fields->get('preseted')->keyBy('id')->all(),
+                'optional_fields' => $fields->get('optional')->keyBy('id')->all(),
                 'field_template' => NodeField::template(),
                 'langcode' => langcode('content'),
                 'mode' => 'create',

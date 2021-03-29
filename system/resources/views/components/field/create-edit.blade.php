@@ -52,13 +52,13 @@
   </el-form-item>
 
   {{-- 默认值 --}}
-  <el-form-item v-if="fieldMetakeys.indexOf('default') >= 0" label="默认值" size="small" class="has-helptext" native-size="100">
+  <el-form-item label="默认值" size="small" class="has-helptext" native-size="100">
     <el-input v-model="{{ $model }}.default" native-size="100"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 字段默认值</span>
   </el-form-item>
 
   {{-- 建议最大字数 --}}
-  <el-form-item v-if="fieldMetakeys.indexOf('maxlength') >= 0" label="字数" size="small" class="has-helptext">
+  <el-form-item label="字数" size="small" class="has-helptext">
     <el-input-number
       v-model="{{ $model }}.maxlength"
       size="small"
@@ -68,13 +68,13 @@
   </el-form-item>
 
   {{-- 预选值 --}}
-  <el-form-item v-if="fieldMetakeys.indexOf('options') >= 0" label="预选值" size="small" class="has-helptext">
+  <el-form-item label="预选值" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.options" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个值以 "|" 分隔</span>
   </el-form-item>
 
   {{-- 验证规则 --}}
-  <el-form-item v-if="fieldMetakeys.indexOf('rules') >= 0" label="验证" size="small" class="has-helptext">
+  <el-form-item label="验证" size="small" class="has-helptext">
     <el-input v-model="{{ $model }}.rules" type="textarea" rows="3"></el-input>
     <span class="jc-form-item-help"><i class="el-icon-info"></i> 多个规则以 "|" 分隔</span>
   </el-form-item>
