@@ -2,6 +2,7 @@
 
 namespace July\Message\Controllers;
 
+use App\EntityField\FieldBase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -60,12 +61,16 @@ class MessageFormController extends Controller
      */
     protected function getCreationContext()
     {
+        $fields = MessageField::index()->map(function(FieldBase $field) {
+            return $field->getMeta();
+        });
+
         return [
             'model' => MessageForm::template(),
             'context' => [
                 'entity_name' => MessageForm::getEntityClass()::getEntityName(),
                 'fields' => [],
-                'all_fields' => MessageField::index()->all(),
+                'all_fields' => $fields->all(),
                 'field_template' => MessageField::template(),
                 'content_langcode' => langcode('content'),
                 'mode' => 'create',

@@ -107,8 +107,15 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             'is_global' => false,
             'field_group' => null,
             'weight' => 0,
-            'field_meta' => null,
             'langcode' => langcode('content'),
+            'required' => false,
+            'default' => null,
+            'placeholder' => null,
+            'helptext' => null,
+            'maxlength' => null,
+            'rules' => null,
+            'options' => null,
+            'reference_scope' => null,
         ];
     }
 
@@ -365,7 +372,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
             // }
 
             $meta = $this->attributesToArray();
-            $meta = array_merge($meta, $meta['field_meta']);
+            $meta = array_merge($meta, $meta['field_meta'] ?? []);
             unset($meta['field_meta']);
 
             $this->cachedMeta = $meta;

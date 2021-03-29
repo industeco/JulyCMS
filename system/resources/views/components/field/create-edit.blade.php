@@ -29,7 +29,7 @@
 
   {{-- 是否必填 --}}
   <el-form-item label="必填" size="small">
-    <el-switch v-model="{{ $model }}.is_required"></el-switch>
+    <el-switch v-model="{{ $model }}.required"></el-switch>
   </el-form-item>
 
   {{-- 帮助文本 --}}

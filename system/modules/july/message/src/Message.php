@@ -93,11 +93,8 @@ class Message extends EntityBase
      */
     public function setTrailsAttribute($trails)
     {
-        if (empty($trails)) {
-            $this->attributes['trails'] = null;
-        } else {
-            $this->attributes['trails'] = serialize($this->formatTrails($trails));
-        }
+        $trails = empty($trails) ? [] : $this->formatTrails($trails);
+        $this->attributes['trails'] = serialize($trails);
     }
 
     /**
@@ -136,9 +133,11 @@ class Message extends EntityBase
         $subject = $this->subject ?? 'New Message';
 
         try {
+
             Mail::raw($content, function(MailMessage $message) use($subject) {
                 $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
             });
+
             $success = true;
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
@@ -168,7 +167,7 @@ class Message extends EntityBase
         $data = [
             'message' => $this->attributesToArray(),
             'fields' => $this->fields->map(function (MessageField $field) {
-                    return $field->attributesToArray() + ['value' => $field->bindEntity($this)->getValue()];
+                    return array_merge($field->getMeta(), ['value' => $field->bindEntity($this)->getValue()]);
                 })->keyBy('id')->all(),
         ];
 

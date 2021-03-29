@@ -149,7 +149,11 @@ abstract class ValueBase extends ModelBase
             return null;
         }
 
-        return $this->newQuery()->ofEntity($entity)->first()->bindField($this->field);
+        if ($instance = $this->newQuery()->ofEntity($entity)->first()) {
+            return $instance->bindField($this->field);
+        }
+
+        return null;
     }
 
     /**
@@ -160,7 +164,7 @@ abstract class ValueBase extends ModelBase
      */
     public function getValue()
     {
-        return $this->{$this->getValueColumn()};
+        return $this->getOriginal($this->getValueColumn());
     }
 
     /**

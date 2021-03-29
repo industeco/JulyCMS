@@ -35,10 +35,12 @@ class LaravelRule extends FormatBase
      */
     protected function parseDefault(Rule $rule)
     {
-        return [
-            $rule->getName(),
-            [$rule->getMessageKey() => $rule->resolveMessage()],
-        ];
+        $msg = [];
+        if (!is_null($message = $rule->resolveMessage())) {
+            $msg = [$rule->getMessageKey() => $message];
+        }
+
+        return [$rule->getName(), $msg];
     }
 
     /**
@@ -50,8 +52,12 @@ class LaravelRule extends FormatBase
     protected function max(Rule $rule)
     {
         $max = (int) $rule->getParameters();
+        $msg = [];
+        if (!is_null($message = $rule->resolveMessage(compact('max')))) {
+            $msg = [$rule->getMessageKey() => $message];
+        }
 
-        return ['max:'.$max, [$rule->getMessageKey() => $rule->resolveMessage(compact('max'))]];
+        return ['max:'.$max, $msg];
     }
 
     /**
@@ -62,9 +68,13 @@ class LaravelRule extends FormatBase
      */
     protected function pattern(Rule $rule)
     {
-        $pattern = trim($this->parameters);
+        $pattern = trim($rule->getParameters());
+        $msg = [];
+        if (!is_null($message = $rule->resolveMessage())) {
+            $msg = [$rule->getMessageKey() => $message];
+        }
 
-        return ['regex:'.$pattern, [$rule->getMessageKey() => $rule->resolveMessage()]];
+        return ['regex:'.$pattern, $msg];
     }
 
     /**
@@ -75,6 +85,28 @@ class LaravelRule extends FormatBase
      */
     protected function pathAlias(Rule $rule)
     {
-        return ['regex:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/', [$rule->getMessageKey() => $rule->resolveMessage()]];
+        $msg = [];
+        if (!is_null($message = $rule->resolveMessage())) {
+            $msg = [$rule->getMessageKey() => $message];
+        }
+
+        return ['regex:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/', $msg];
+    }
+
+    /**
+     * path-alias
+     *
+     * @param  \App\Support\Validation\Rule $rule
+     * @return string
+     */
+    protected function in(Rule $rule)
+    {
+        $parameters = trim($rule->getParameters());
+        $msg = [];
+        if (!is_null($message = $rule->resolveMessage())) {
+            $msg = [$rule->getMessageKey() => $message];
+        }
+
+        return ['in:'.$parameters, $msg];
     }
 }

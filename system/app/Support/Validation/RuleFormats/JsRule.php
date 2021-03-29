@@ -7,6 +7,21 @@ use App\Support\Validation\Rule;
 class JsRule extends FormatBase
 {
     /**
+     * 默认的消息模板
+     *
+     * @var array
+     */
+    protected static $messageTemplates = [
+        'required' => '不能为空',
+        'max' => '最多 {max} 个字符',
+        'email' => '邮件格式不正确',
+        'url' => '网址格式不正确',
+        'pattern' => '格式不正确',
+        'pathAlias' => '网址格式不正确',
+        'exists' => '已存在',
+    ];
+
+    /**
      * 默认转换规则
      *
      * @param  \App\Support\Validation\Rule $rule
@@ -14,7 +29,9 @@ class JsRule extends FormatBase
      */
     protected function parseDefault(Rule $rule)
     {
-        return "{type:'{$rule->getName()}',message:'{$rule->resolveMessage()}',trigger:'blur'}";
+        $message = $rule->resolveMessage() ?? static::$messageTemplates[$rule->getName()] ?? '';
+
+        return "{type:'{$rule->getName()}',message:'{$message}',trigger:'blur'}";
     }
 
     /**
@@ -25,7 +42,9 @@ class JsRule extends FormatBase
      */
     protected function required(Rule $rule)
     {
-        return "{required:true,message:'{$rule->resolveMessage()}',trigger:'submit'}";
+        $message = $rule->resolveMessage() ?? '不能为空';
+
+        return "{required:true,message:'{$message}',trigger:'submit'}";
     }
 
     /**
@@ -37,7 +56,7 @@ class JsRule extends FormatBase
     protected function max(Rule $rule)
     {
         $max = (int) $rule->getParameters();
-        $message = $rule->resolveMessage(compact('max'));
+        $message = $rule->resolveMessage(compact('max')) ?? "最多 {$max} 个字符";
 
         return "{max:{$max},message:'{$message}',trigger:'change'}";
     }
@@ -51,8 +70,9 @@ class JsRule extends FormatBase
     protected function pattern(Rule $rule)
     {
         $pattern = trim($rule->getParameters());
+        $message = $rule->resolveMessage() ?? '格式不正确';
 
-        return "{pattern:{$pattern},message:'{$rule->resolveMessage()}',trigger:'blur'}";
+        return "{pattern:{$pattern},message:'{$message}',trigger:'blur'}";
     }
 
     /**
@@ -63,7 +83,9 @@ class JsRule extends FormatBase
      */
     protected function pathAlias(Rule $rule)
     {
-        return "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/,message:'{$rule->resolveMessage()}',trigger:'blur'}";
+        $message = $rule->resolveMessage() ?? '网址格式不正确';
+
+        return "{pattern:/^(\\/[a-z0-9\\-_]+)+(\\.html)?$/,message:'{$message}',trigger:'blur'}";
     }
 
     /**

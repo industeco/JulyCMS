@@ -177,15 +177,18 @@ class Rule
      */
     public function resolveMessage(array $context = null)
     {
-        $message = $this->message ?? static::$messageTemplates[$this->name] ?? '';
-        if (preg_match('/\{.*?\}/', $message)) {
-            $context = $context ?? [$this->name => $this->parameters];
-            $message = preg_replace_callback('/\{(.*?)\}/', function ($maches) use ($context) {
-                return $context[trim($maches[1])] ?? '{'.$maches[1].'}';
-            }, $message);
+        $message = $this->message;
+        if ($message) {
+            if (preg_match('/\{.*?\}/', $message)) {
+                $context = $context ?? [$this->name => $this->parameters];
+                $message = preg_replace_callback('/\{(.*?)\}/', function ($maches) use ($context) {
+                    return $context[trim($maches[1])] ?? '{'.$maches[1].'}';
+                }, $message);
+            }
+            $message = htmlspecialchars($message, ENT_QUOTES|ENT_HTML5);
         }
 
-        return htmlspecialchars($message, ENT_QUOTES|ENT_HTML5);
+        return $message;
     }
 
     public function __call($name, $arguments)
