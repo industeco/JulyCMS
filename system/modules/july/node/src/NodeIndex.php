@@ -81,7 +81,7 @@ class NodeIndex extends ModelBase
         $values = [];
         $fieldId = $field->getKey();
         $fieldType = $field->getFieldType();
-        $weight = $field->search_weight;
+        $weight = $field->weight;
         foreach ($field->getValueRecords() as $record) {
             $values[] = [
                 'entity_id' => $record['entity_id'],

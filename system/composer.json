@@ -41,7 +41,8 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [],
+            "providers": []
         }
     },
     "autoload": {
