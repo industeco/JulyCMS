@@ -47,6 +47,8 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
+
+        $this->mapActions();
     }
 
     /**
@@ -89,5 +91,15 @@ class RouteServiceProvider extends ServiceProvider
              ->middleware('api')
              ->namespace($this->namespace)
              ->group(base_path('routes/api.php'));
+    }
+
+    /**
+     * 定义 Action 路由
+     */
+    protected function mapActions()
+    {
+        foreach (config('app.actions') as $action) {
+            $action::defineRoutes();
+        }
     }
 }

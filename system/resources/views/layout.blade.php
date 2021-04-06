@@ -75,7 +75,17 @@
             <div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">menu</i></div>
           </div>
         </button>
+
+        @foreach (config('app.actions') as $action)
         <button type="button" class="md-button md-small md-primary md-theme-default"
+          @click.stop="doAction('{{ short_url($action::getRouteName()) }}', '{{ $action::getTitle() }}')">
+          <div class="md-ripple">
+            <div class="md-button-content">{{ $action::getTitle() }}</div>
+          </div>
+        </button>
+        @endforeach
+
+        {{-- <button type="button" class="md-button md-small md-primary md-theme-default"
           @click.stop="rebuildIndex">
           <div class="md-ripple">
             <div class="md-button-content">重建索引</div>
@@ -93,7 +103,7 @@
             <div class="md-button-content">生成谷歌站点地图</div>
           </div>
         </button>
-        {{-- <a href="{{ short_url('nodes.find_invalid_links') }}" target="_blank" class="md-button md-small md-primary md-theme-default">
+        <a href="{{ short_url('nodes.find_invalid_links') }}" target="_blank" class="md-button md-small md-primary md-theme-default">
           <div class="md-ripple">
             <div class="md-button-content">查找无效链接</div>
           </div>
@@ -310,44 +320,59 @@
             });
         },
 
-        rebuildIndex() {
+        doAction(action, title) {
           this.process({
-            text: '正在重建索引 ...',
+            text: `正在${title} ...`,
             method: 'post',
-            action: "{{ short_url('nodes.build_index') }}",
+            action: action,
           }).then(response => {
             status = response.status;
             if (status && status >= 200 && status <= 299) {
-              this.$message.success('重建索引完成');
+              this.$message.success(`已完成：${title}`);
             }
           });
         },
 
-        clearCache() {
-          this.process({
-            text: '正在清除缓存 ...',
-            method: 'post',
-            action: "{{ short_url('action.clear_cache') }}",
-          }).then(response => {
-            status = response.status;
-            if (status && status >= 200 && status <= 299) {
-              this.$message.success('缓存已清除');
-            }
-          });
-        },
+        // {{--
+        // rebuildIndex() {
+        //   this.process({
+        //     text: '正在重建索引 ...',
+        //     method: 'post',
+        //     action: "{{ short_url('nodes.build_index') }}",
+        //   }).then(response => {
+        //     status = response.status;
+        //     if (status && status >= 200 && status <= 299) {
+        //       this.$message.success('重建索引完成');
+        //     }
+        //   });
+        // },
 
-        buildGoogleSitemap() {
-          this.process({
-            text: '正在生成谷歌站点地图 ...',
-            method: 'post',
-            action: "{{ short_url('action.build.google-sitemap') }}",
-          }).then(response => {
-            status = response.status;
-            if (status && status >= 200 && status <= 299) {
-              this.$message.success('谷歌站点地图已生成');
-            }
-          });
-        },
+        // clearCache() {
+        //   this.process({
+        //     text: '正在清除缓存 ...',
+        //     method: 'post',
+        //     action: "{{ short_url('action.clear_cache') }}",
+        //   }).then(response => {
+        //     status = response.status;
+        //     if (status && status >= 200 && status <= 299) {
+        //       this.$message.success('缓存已清除');
+        //     }
+        //   });
+        // },
+
+        // buildGoogleSitemap() {
+        //   this.process({
+        //     text: '正在生成谷歌站点地图 ...',
+        //     method: 'post',
+        //     action: "{{ short_url('action.build.google-sitemap') }}",
+        //   }).then(response => {
+        //     status = response.status;
+        //     if (status && status >= 200 && status <= 299) {
+        //       this.$message.success('谷歌站点地图已生成');
+        //     }
+        //   });
+        // },
+        // --}}
 
         toggleAdminMenu() {
           this.adminMenuVisible = !this.adminMenuVisible;

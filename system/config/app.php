@@ -230,11 +230,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
     ],
 
-    // // 管理类
-    // 'managers' => [
-    //     \App\Entity\EntityManager::class,
-    //     \App\EntityField\FieldTypes\FieldTypeManager::class,
-    // ],
+    // 独立功能类
+    'actions' => [],
 
     // 安装标记
     'is_installed' => env('APP_INSTALLED', false),

@@ -13,8 +13,6 @@ use July\Node\NodeType;
 use July\Node\NodeField;
 use July\Node\NodeIndex;
 use July\Node\NodeSet;
-use July\Node\TwigExtensions\NodeQueryExtension;
-use July\Taxonomy\Tag;
 
 class NodeController extends Controller
 {
@@ -242,15 +240,15 @@ class NodeController extends Controller
         return response($success);
     }
 
-    /**
-     * 重建索引
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function buildIndex()
-    {
-        return NodeIndex::rebuild();
-    }
+    // /**
+    //  * 重建索引
+    //  *
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function buildIndex()
+    // {
+    //     return NodeIndex::rebuild();
+    // }
 
     /**
      * 检索关键词

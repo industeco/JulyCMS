@@ -18,6 +18,13 @@ class ModuleServiceProvider extends ModuleServiceProviderBase
         ];
     }
 
+    protected function discoverActions()
+    {
+        return [
+            \July\Node\Actions\RebuildIndex::class,
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */

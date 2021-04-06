@@ -60,8 +60,8 @@ Route::group([
         ->parameters(['nodes' => 'node'])
         ->names('nodes');
 
-    Route::post('nodes/build_index', [Controllers\NodeController::class, 'buildIndex'])
-    ->name('nodes.build_index');
+    // Route::post('nodes/build_index', [Controllers\NodeController::class, 'buildIndex'])
+    // ->name('nodes.build_index');
 
     Route::get('nodes/invalid-links', [Controllers\NodeController::class, 'findInvalidLinks'])
         ->name('nodes.find_invalid_links');

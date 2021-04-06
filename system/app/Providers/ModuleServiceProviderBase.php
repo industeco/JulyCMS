@@ -23,6 +23,11 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
 
         // 登记实体
         FieldTypeManager::register($this->discoverEntityFieldTypes());
+
+        // 登记 Actions
+        if ($actions = $this->discoverActions()) {
+            config()->set('app.actions', array_merge(config('app.actions', []), $actions));
+        }
     }
 
     /**
@@ -74,6 +79,14 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      * @return array
      */
     protected function discoverEntityFieldTypes()
+    {
+        return [];
+    }
+
+    /**
+     * 获取 Actions 列表
+     */
+    protected function discoverActions()
     {
         return [];
     }

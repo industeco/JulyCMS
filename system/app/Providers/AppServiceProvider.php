@@ -27,6 +27,11 @@ class AppServiceProvider extends ServiceProvider
 
         // 登记实体
         FieldTypeManager::register($this->discoverEntityFieldTypes());
+
+        // 登记 Actions
+        if ($actions = $this->discoverActions()) {
+            config()->set('app.actions', array_merge(config('app.actions', []), $actions));
+        }
     }
 
     /**
@@ -113,6 +118,17 @@ class AppServiceProvider extends ServiceProvider
             \App\EntityField\FieldTypes\PathAlias::class,
             \App\EntityField\FieldTypes\Reference::class,
             \App\EntityField\FieldTypes\MultiReference::class,
+        ];
+    }
+
+    /**
+     * 获取 Actions 列表
+     */
+    protected function discoverActions()
+    {
+        return [
+            \App\Http\Actions\ClearCache::class,
+            \App\Http\Actions\BuildGoogleSitemap::class,
         ];
     }
 }

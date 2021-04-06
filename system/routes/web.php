@@ -73,11 +73,11 @@ Route::group([
     Route::post('action/change_password', [Controllers\CommandController::class, 'changeAdminPassword'])
         ->name('action.change_password');
 
-    Route::post('action/clear_cache', [Controllers\CommandController::class, 'clearCache'])
-        ->name('action.clear_cache');
+    // Route::post('action/clear_cache', [Controllers\CommandController::class, 'clearCache'])
+    //     ->name('action.clear_cache');
 
-    Route::post('action/build/google-sitemap', [Controllers\CommandController::class, 'buildGoogleSitemap'])
-        ->name('action.build.google-sitemap');
+    // Route::post('action/build/google-sitemap', [Controllers\CommandController::class, 'buildGoogleSitemap'])
+    //     ->name('action.build.google-sitemap');
 
     //
     Route::get('resources/entity_types', [Controllers\ResourceController::class, 'getEntityTypes'])
