@@ -4,22 +4,17 @@ namespace App\Support\Translation;
 
 trait TranslatableTrait
 {
-    /**
-     * 实例当前语言版本
-     *
-     * @var string|null
-     */
-    protected $contentLangcode = null;
+    protected $langcodeColumn = 'langcode';
 
     /**
-     * 设置实例语言版本
+     * 设置实例当前语言
      *
-     * @param  string $langcode 语言代码
-     * @return $this
+     * @return string
      */
-    public function translateTo(string $langcode)
+    public function setLangcode(string $langcode)
     {
-        $this->contentLangcode = $langcode;
+        $this->attributes[$this->langcodeColumn] = $langcode;
+
         return $this;
     }
 
@@ -30,7 +25,7 @@ trait TranslatableTrait
      */
     public function getLangcode()
     {
-        return $this->contentLangcode ?? $this->getOriginalLangcode();
+        return $this->attributes[$this->langcodeColumn] ?? $this->getOriginalLangcode();
     }
 
     /**
@@ -40,7 +35,20 @@ trait TranslatableTrait
      */
     public function getOriginalLangcode()
     {
-        return $this->attributes['langcode'];
+        return $this->original[$this->langcodeColumn] ?? null;
+    }
+
+    /**
+     * 翻译实例内容
+     *
+     * @param  string $langcode 语言代码
+     * @return $this
+     */
+    public function translateTo(string $langcode)
+    {
+        $this->setLangcode($langcode);
+
+        return $this;
     }
 
     /**
