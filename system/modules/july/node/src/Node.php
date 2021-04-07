@@ -245,12 +245,12 @@ class Node extends TranslatableEntityBase
         $url = $data['url'] ?? '/'.$this->getEntityPath();
         $twig->addGlobal('_canonical', $this->getCanonical($url));
 
-        config()->set('rendering_langcode', $this->getLangcode());
+        config()->set('lang.rendering', $this->getLangcode());
 
         // 生成 html
         $html = $twig->render($view, $data);
 
-        config()->set('rendering_langcode', null);
+        config()->set('lang.rendering', null);
 
         $html = html_compress($html);
 

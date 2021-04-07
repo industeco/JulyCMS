@@ -415,12 +415,12 @@ abstract class EntityBase extends ModelBase
      */
     public function fetchHtml()
     {
-        if ($html = $this->pocketGet('html')) {
+        if ($html = $this->pocket()->get('html')) {
             return $html->value();
         }
 
         if ($html = $this->render()) {
-            return $this->pocketPut($html, 'html');
+            return $this->pocket()->setKey('html')->put($html);
         }
 
         return null;

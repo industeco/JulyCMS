@@ -21,6 +21,7 @@ class CheckForInstalled
         if (($installed && $toInstall) || (!$installed && !$toInstall)) {
             throw new NotFoundHttpException();
         }
+
         return $next($request);
     }
 }

@@ -5,6 +5,16 @@ namespace App\Support;
 class Lang
 {
     /**
+     * @var array
+     */
+    protected static $availableCache = [];
+
+    /**
+     * @var string|null
+     */
+    protected $alias = null;
+
+    /**
      * @var string|null
      */
     protected $langcode = null;
@@ -16,10 +26,7 @@ class Lang
 
     public function __construct(?string $alias = null)
     {
-        $alias = trim($alias);
-        if ($alias) {
-            $this->langcode = static::resolveAlias($alias) ?? $alias;
-        }
+        $this->wrap($alias);
     }
 
     /**
@@ -36,12 +43,15 @@ class Lang
     /**
      * 更换缺省语言代码
      *
-     * @param  string $alias
-     * @return \App\Support\Lang
+     * @param  string|null $alias
+     * @return $this
      */
-    public function wrap(string $alias)
+    public function wrap(?string $alias = null)
     {
-        return new static($alias);
+        $this->alias = $alias;
+        $this->langcode = static::resolve(trim($alias));
+
+        return $this;
     }
 
     /**
@@ -50,46 +60,50 @@ class Lang
      * @param string $alias
      * @return string|null
      */
-    public static function resolveAlias(string $alias)
+    public static function resolve(string $alias)
     {
+        $code = $alias;
         switch ($alias) {
-            // 内容语言
-            case 'content':
-                return config('lang.request_content') ?: config('lang.content');
+            // 请求携带的语言设定
+            case 'request':
+            case 'request.original':
+                $code = request('langcode');
+                break;
 
             // 默认的内容语言
+            case 'content':
             case 'content.default':
-                return config('lang.content');
-
-            // 前端语言
-            case 'frontend':
-                if (! config('states.is_management_route')) {
-                    return config('lang.request') ?: config('lang.frontend');
-                }
-                return config('lang.frontend');
+                $code = config('lang.content');
+                break;
 
             // 默认的前端语言
+            case 'frontend':
             case 'frontend.default':
-                return config('lang.frontend');
+                $code = config('lang.frontend');
+                break;
 
-            // 后端语言/默认的后端语言
+            // 默认的后端语言
             case 'backend':
             case 'backend.default':
-                return config('lang.backend');
+                $code = config('lang.backend');
+                break;
 
-            // 请求的语言
-            case 'request':
-                return config('lang.request') ??
-                    (config('states.is_management_route')
-                        ? config('lang.backend')
-                        : config('lang.frontend'));
-
-            // 原始的请求语言
-            case 'request.original':
-                return config('lang.request');
-
+            // 渲染时语言
             case 'rendering':
-                return config('rendering_langcode');
+                $code = config('lang.rendering');
+                break;
+        }
+
+        // 获取正确形式
+        if ($code) {
+            if (array_key_exists($code, config('lang.all'))) {
+                return $code;
+            }
+            foreach (array_keys(config('lang.all')) as $langcode) {
+                if (strcasecmp($code, $langcode) === 0) {
+                    return $langcode;
+                }
+            }
         }
 
         return null;
@@ -103,7 +117,7 @@ class Lang
      */
     public static function getLangnames(?string $langcode = null)
     {
-        $langcode = $langcode ?: config('lang.backend');
+        $langcode = static::make($langcode ?: config('lang.backend'))->getCode();
 
         if ($names = config('lang.names.'.$langcode)) {
             return $names;
@@ -142,6 +156,7 @@ class Lang
                 $langcodes[] = $code;
             }
         }
+
         return $langcodes;
     }
 
@@ -220,12 +235,19 @@ class Lang
      *
      * @return string|null
      */
+    public function getLangcode()
+    {
+        return $this->langcode;
+    }
+
+    /**
+     * 返回语言代码
+     *
+     * @return string|null
+     */
     public function getCode()
     {
-        if ($this->isAvailable()) {
-            return $this->langcode;
-        }
-        return null;
+        return $this->langcode;
     }
 
     /**
@@ -235,10 +257,11 @@ class Lang
      */
     public function getDir()
     {
-        if ($this->isAvailable()) {
-            return config('lang.all.'.$this->langcode.'.dir', 'ltr');
+        if (! $this->langcode) {
+            return null;
         }
-        return null;
+
+        return config('lang.all.'.$this->langcode.'.dir', 'ltr');
     }
 
     /**
@@ -249,82 +272,71 @@ class Lang
      */
     public function getName(?string $langcode = null)
     {
+        if (! $this->langcode) {
+            return null;
+        }
+
         if ($langcode === 'native') {
             return $this->getNativeName();
         }
 
-        if ($this->isAvailable()) {
-            $names = static::getLangnames($langcode);
-            return $names[$this->langcode] ?? $this->langcode;
-        }
-
-        return null;
+        $names = static::getLangnames($langcode);
+        return $names[$this->langcode] ?? $this->langcode;
     }
 
     /**
-     * 返回语言的自称
+     * 返回语言自称
      *
      * @return string|null
      */
     public function getNativeName()
     {
-        if ($this->isAvailable()) {
-            return config('lang.all.'.$this->langcode.'.name.native', 'ltr');
+        if (! $this->langcode) {
+            return null;
         }
-        return null;
+
+        return config('lang.all.'.$this->langcode.'.name.native') ?? $this->langcode;
     }
 
     /**
-     * 判断是否有效的语言代码
+     * 判断是否可用
      *
      * @return boolean
      */
     public function isAvailable()
     {
-        // 检查缓存的 available 判断
-        if (! is_null($this->available)) {
-            return $this->available;
-        }
-
-        // 检查 langcode 本身
         if (! $this->langcode) {
-            return $this->available = false;
+            return false;
         }
 
-        // 检查 lang.available 数组
-        if (config()->has('lang.available.'.$this->langcode)) {
-            return $this->available = true;
-        }
-
-        // 忽略大小写检查 lang.available 数组
-        foreach (array_keys(config('lang.available')) as $code) {
-            if (strcasecmp($this->langcode, $code) == 0) {
-                $this->langcode = $code;
-                return $this->available = true;
-            }
-        }
-
-        // 返回错误
-        return $this->available = false;
+        return array_key_exists($this->langcode, config('lang.available'));
     }
 
     /**
-     * 判断当前语言代码是否可访问
+     * 判断是否可访问
      *
      * @return boolean
      */
     public function isAccessible()
     {
-        return $this->isAvailable() && config('lang.available.'.$this->langcode.'.accessible', false);
+        if (! $this->langcode) {
+            return false;
+        }
+
+        return config('lang.available.'.$this->langcode.'.accessible', false);
     }
 
     /**
-     * 判断当前语言代码是否可翻译
+     * 判断是否可翻译
      *
      * @return boolean
      */
     public function isTranslatable()
     {
-        return $this->isAvailable() && config('lang.available.'.$this->langcode.'.translatable', false);
+        if (! $this->langcode) {
+            return false;
+        }
+
+        return config('lang.available.'.$this->langcode.'.translatable', false);
     }
 }

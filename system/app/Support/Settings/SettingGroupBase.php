@@ -71,22 +71,6 @@ abstract class SettingGroupBase
         }
 
         return view()->make('settings.'.$this->name, $data);
-
-        // /** @var \Illuminate\View\Factory */
-        // $view = view();
-
-        // if ($view->exists('settings.'.$this->name)) {
-        //     return $view->make('settings.'.$this->name, $data);
-        // }
-
-        // $views = ['', 'settings.item'];
-        // foreach ($data['items'] as $key => $item) {
-        //     // settings.{group_name}.{item_key}
-        //     $views[0] = join('.', ['settings', $this->name, str_replace('.','-',$item['key'])]);
-        //     $$data['items'][$key]['html'] = $view->first($views, $item)->render();
-        // }
-
-        // return $view->first(['settings.'.$this->name.'.group', 'settings.group'], $data);
     }
 
     /**

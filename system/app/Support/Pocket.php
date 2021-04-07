@@ -81,7 +81,7 @@ class Pocket
                 $prefix .= '/'.$this->subject->getLangcode();
             }
         }
-        $this->prefix = md5(serialize($prefix)).'/';
+        $this->prefix = md5(serialize($prefix));
     }
 
     /**
@@ -109,7 +109,7 @@ class Pocket
     {
         $this->rawKey = $key;
 
-        $this->key = $this->getKey($key);
+        $this->key = is_null($key) ? $key : $this->getKey($key);
 
         return $this;
     }
@@ -134,7 +134,7 @@ class Pocket
             asort($key);
         }
 
-        return new Value($this->prefix.md5(serialize($key)));
+        return new Value($this->prefix.'/'.md5(serialize($key)));
     }
 
     /**
@@ -142,17 +142,23 @@ class Pocket
      *
      * @param  mixed $value
      * @param  array $keys
-     * @return bool
+     * @return mixed
      */
     public function put($value, ...$keys)
     {
         if ($value instanceof Value) {
             $value = $value->value();
         }
-        foreach ($keys as $key) {
-            Cache::put($this->getKey($key)->value(), $value);
+
+        if (! $keys) {
+            Cache::put($this->getKey()->value(), $value);
+        } else {
+            foreach ($keys as $key) {
+                Cache::put($this->getKey($key)->value(), $value);
+            }
         }
-        return true;
+
+        return $value;
     }
 
     /**
@@ -167,6 +173,7 @@ class Pocket
         if ($value === $this) {
             return null;
         }
+
         return new Value($value);
     }
 
@@ -181,6 +188,7 @@ class Pocket
         foreach ($keys as $key) {
             Cache::forget($this->getKey($key)->value());
         }
+
         return true;
     }
 }

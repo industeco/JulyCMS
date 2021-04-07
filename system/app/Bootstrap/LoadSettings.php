@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Settings\Bootstrap;
+namespace App\Bootstrap;
 
 use App\Support\Settings\SettingsManager;
 use Illuminate\Contracts\Foundation\Application;

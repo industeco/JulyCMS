@@ -177,6 +177,22 @@ trait CacheResultTrait
         if (! $this->pocket) {
             $this->pocket = new Pocket($this);
         }
+
         return $this->pocket;
+    }
+
+    /**
+     * 获取专属 pocket
+     *
+     * @param  mixed $key
+     * @return \App\Support\Pocket
+     */
+    public function pocket($key = null)
+    {
+        if (! $this->pocket) {
+            $this->pocket = new Pocket($this);
+        }
+
+        return $this->pocket->setKey($key);
     }
 }

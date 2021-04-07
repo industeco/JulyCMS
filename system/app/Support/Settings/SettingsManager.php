@@ -31,7 +31,7 @@ class SettingsManager
 
             // 添加菜单项
             if ($group->title) {
-                $children = config('app.main_menu.settings.children');
+                $children = config('app.main_menu.settings.children', []);
                 $children[] = [
                     'title' => $group->title,
                     'icon' => null,
