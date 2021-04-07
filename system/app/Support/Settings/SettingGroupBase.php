@@ -25,6 +25,31 @@ abstract class SettingGroupBase
      */
     protected $items = [];
 
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    /**
+     * 获取配置文件路径
+     *
+     * @return string
+     */
+    protected function getPath()
+    {
+        return storage_path('settings/'.$this->name.'.php');
+    }
+
     /**
      * 加载配置
      *
@@ -34,6 +59,25 @@ abstract class SettingGroupBase
     {
         if (is_file($file = $this->getPath())) {
             $this->merge(require $file);
+        }
+
+        $this->addMenuItem();
+    }
+
+    /**
+     * 添加菜单项
+     */
+    public function addMenuItem()
+    {
+        if ($this->title) {
+            $children = config('app.main_menu.settings.children', []);
+            $children[] = [
+                'title' => $this->title,
+                'icon' => null,
+                'route' => ['settings.edit', $this->name],
+                'children' => [],
+            ];
+            config(['app.main_menu.settings.children' => $children]);
         }
     }
 
@@ -91,20 +135,5 @@ abstract class SettingGroupBase
         config($settings);
 
         return $settings;
-    }
-
-    /**
-     * 获取配置文件路径
-     *
-     * @return string
-     */
-    protected function getPath()
-    {
-        return storage_path('settings/'.$this->name.'.php');
-    }
-
-    public function __get($name)
-    {
-        return $this->$name ?? null;
     }
 }

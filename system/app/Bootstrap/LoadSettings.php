@@ -2,7 +2,6 @@
 
 namespace App\Bootstrap;
 
-use App\Support\Settings\SettingsManager;
 use Illuminate\Contracts\Foundation\Application;
 
 class LoadSettings
@@ -16,7 +15,11 @@ class LoadSettings
     public function bootstrap(Application $app)
     {
         foreach (config('app.settings') as $class) {
-            SettingsManager::load($class);
+            /** @var \App\Support\Settings\SettingGroupBase */
+            $settings = new $class;
+            $settings->load();
+
+            $app->instance('settings.'.$settings->getName(), $settings);
         }
     }
 }
