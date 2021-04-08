@@ -46,8 +46,8 @@ Route::group([
     Route::get('nodes/mold', [Controllers\NodeController::class, 'chooseMold'])
         ->name('nodes.choose_mold');
 
-    Route::get('nodes/{node}/translate', [Controllers\NodeController::class, 'translateTo'])
-        ->name('nodes.translate_to');
+    Route::get('nodes/{node}/translate', [Controllers\NodeController::class, 'chooseLanguage'])
+        ->name('nodes.choose_language');
 
     Route::get('nodes/{node}/translate/{langcode}', [Controllers\NodeController::class, 'edit'])
         ->name('nodes.translate');

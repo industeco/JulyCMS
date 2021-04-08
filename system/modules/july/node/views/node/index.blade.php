@@ -123,11 +123,11 @@
               <a :href="getUrl('edit', scope.row.id)" title="编辑" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
-              {{-- @if (config('lang.multiple'))
+              @if (config('lang.multiple'))
               <a :href="getUrl('translate', scope.row.id)" title="翻译" class="md-button md-fab md-dense md-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
-              @endif --}}
+              @endif
               <button type="button" title="删除" class="md-button md-fab md-dense md-accent md-theme-default"
                 @click.stop="deleteNode(scope.row)">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">remove</i></div></div>
@@ -184,7 +184,7 @@
 
         editUrl: "{{ short_url('nodes.edit', '_ID_') }}",
         deleteUrl: "{{ short_url('nodes.destroy', '_ID_') }}",
-        translateUrl: "{{ short_url('nodes.translate_to', '_ID_') }}",
+        translateUrl: "{{ short_url('nodes.choose_language', '_ID_') }}",
       };
     },
 

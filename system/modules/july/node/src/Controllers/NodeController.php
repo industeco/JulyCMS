@@ -29,8 +29,6 @@ class NodeController extends Controller
                 'molds' => NodeType::query()->pluck('label', 'id')->all(),
                 'catalogs' => Catalog::query()->pluck('label', 'id')->all(),
                 'languages' => Lang::getTranslatableLangnames(),
-                // 'catalogs' => ['main' => '默认目录'],
-                // 'tags' => Tag::allTags(),
             ],
         ];
 
@@ -88,9 +86,8 @@ class NodeController extends Controller
                 'local_fields' => $fields->get('local', []),
                 'views' => Node::query()->pluck('view')->filter()->unique()->all(),
                 'mode' => 'create',
-                // 'catalog_nodes' => Catalog::allPositions(),
-                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
             ],
+            'langcode' => langcode('content'),
         ];
 
         return view('node::node.create-edit', $data);
@@ -122,12 +119,9 @@ class NodeController extends Controller
                 'local_fields' => $fields->get('local'),
                 'views' => Node::query()->pluck('view')->filter()->unique()->all(),
                 'mode' => $node->isTranslated() ? 'translate' : 'edit',
-                // 'catalog_nodes' => Catalog::allPositions(),
-                // 'tags' => Tag::all()->groupBy('langcode')->get($langcode)->pluck('name')->all(),
             ],
+            'langcode' => $node->getLangcode(),
         ];
-
-        // dd($data);
 
         return view('node::node.create-edit', $data);
     }
@@ -156,8 +150,7 @@ class NodeController extends Controller
     public function update(Request $request, Node $node)
     {
         $changed = (array) $request->input('_changed');
-        if (!empty($changed)) {
-            // Log::info($changed);
+        if (! empty($changed)) {
             $node->update($request->only($changed));
         }
 
@@ -184,17 +177,18 @@ class NodeController extends Controller
      * @param  \July\Node\Node  $node
      * @return \Illuminate\Http\Response
      */
-    public function translateTo(Node $node)
+    public function chooseLanguage(Node $node)
     {
-        if (!config('lang.multiple')) {
+        if (! config('lang.multiple')) {
             abort(404);
         }
 
-        return view('node::languages', [
+        return view('languages', [
             'original_langcode' => $node->getOriginalLangcode(),
             'languages' => Lang::getTranslatableLangnames(),
-            'entity_id' => $node->getKey(),
-            'route_prefix' => 'nodes',
+            'content_id' => $node->getKey(),
+            'edit_route' => 'nodes.edit',
+            'translate_route' => 'nodes.translate',
         ]);
     }
 
@@ -220,7 +214,6 @@ class NodeController extends Controller
 
         /** @var \Twig\Environment */
         $twig = app('twig');
-        // $twig->addExtension(new NodeQueryExtension);
 
         $success = [];
         foreach ($nodes as $node) {
@@ -239,16 +232,6 @@ class NodeController extends Controller
 
         return response($success);
     }
-
-    // /**
-    //  * 重建索引
-    //  *
-    //  * @return \Illuminate\Http\Response
-    //  */
-    // public function buildIndex()
-    // {
-    //     return NodeIndex::rebuild();
-    // }
 
     /**
      * 检索关键词

@@ -6,9 +6,6 @@ use App\Entity\TranslatableEntityBase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use July\Node\CatalogSet;
-use July\Node\TwigExtensions\NodeQueryExtension;
-use July\Taxonomy\Term;
-use July\Taxonomy\TermSet;
 
 class Node extends TranslatableEntityBase
 {
@@ -434,60 +431,6 @@ class Node extends TranslatableEntityBase
     {
         return rtrim(config('app.url'), '/').$this->url;
     }
-
-
-    // /**
-    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    //  */
-    // public function catalogs()
-    // {
-    //     return $this->belongsToMany(Catalog::class, 'catalog_node', 'node_id', 'catalog_id')
-    //                 ->withPivot([
-    //                     'parent_id',
-    //                     'prev_id',
-    //                     'path',
-    //                 ]);
-    // }
-
-    // /**
-    //  * 关联标签
-    //  *
-    //  * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    //  */
-    // public function tags()
-    // {
-    //     return $this->belongsToMany(Tag::class, 'node_tag', 'node_id', 'tag')
-    //         ->wherePivot('langcode', $this->getLangcode());
-    // }
-
-    // /**
-    //  * {@inheritdoc}
-    //  */
-    // public function collectFields()
-    // {
-    //     $fields = NodeField::groupbyPresetType()->get('preseted');
-    //     if ($this->exists) {
-    //         $fields = $fields->merge($this->fields->keyBy('id'));
-    //     } elseif ($mold = $this->getMold()) {
-    //         $fields = $fields->merge($mold->fields->keyBy('id'));
-    //     }
-
-    //     return $fields->map(function(FieldBase $field) {
-    //             return $field->bindEntity($this);
-    //         })->sortBy('delta');
-    // }
-
-    // /**
-    //  * 获取内容标签
-    //  *
-    //  * @return \July\Taxonomy\TermSet
-    //  */
-    // public function get_tags()
-    // {
-    //     $langcode = config('render_langcode') ?? langcode('frontend');
-    //     $tags = $this->tags($langcode)->get()->keyBy('tag');
-    //     return TermSet::make($tags);
-    // }
 
     // /**
     //  * 查找坏掉的链接
