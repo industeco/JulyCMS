@@ -249,7 +249,6 @@ return [
     'settings' => [
         \App\Support\Settings\Language::class,
         \App\Support\Settings\SiteInformation::class,
-        // \App\Support\Settings\UserInterface::class,
         \App\Support\Settings\Redirections::class,
     ],
 
@@ -307,12 +306,6 @@ return [
                     'route' => 'message_forms.index',
                     'children' => [],
                 ],
-                // [
-                //     'title' => '标签',
-                //     'icon' => null,
-                //     'route' => 'tags.index',
-                //     'children' => [],
-                // ],
             ],
         ],
 

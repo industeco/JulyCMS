@@ -16,7 +16,7 @@ class UserInterface extends PreferenceGroupBase
      *
      * @var string
      */
-    protected $title = '界面偏好';
+    protected $title = '偏好设置';
 
     /**
      * 配置项
@@ -24,10 +24,6 @@ class UserInterface extends PreferenceGroupBase
      * @var array
      */
     protected $items = [
-        'app.field_groups' => [
-            'key' => 'app.field_groups',
-            'label' => '字段分组',
-            'description' => '配置全局字段分组面板（位于表单右侧，用于分组管理全局字段）',
-        ],
+        //
     ];
 }
