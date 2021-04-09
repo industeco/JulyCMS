@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('h1')
-  {{ __('backend.'.$context['mode']) }}内容 <span id="content_locale">[ {{ $context['mold']->label }}({{ $context['mold']->id }}), {{ lang($model['langcode'])->getName() }}({{ $model['langcode'] }}) ]</span>
+  {{ __('backend.'.$context['mode']) }}内容 <span id="content_locale">[ {{ $context['mold']->label }}({{ $context['mold']->id }}), {{ langname($langcode) }}({{ $langcode }}) ]</span>
 @endsection
 
 @section('main_content')
@@ -26,7 +26,7 @@
 
       {{-- 视图文件 --}}
       <el-form-item prop="view" size="small" class="has-helptext"
-        :rules="[{pattern:/^(?:[a-z0-9\-_]+\/)*[a-z0-9\-_]+\.twig$/, message:'格式不正确', trigger:'change'}]">
+        :rules="[{pattern:/^(?:[a-z0-9\-_]+\/)*[a-z0-9\-_]+\.(?:twig|html?)$/, message:'格式不正确', trigger:'change'}]">
         <el-tooltip slot="label" content="view" placement="right" effect="dark" popper-class="jc-twig-output">
           <span>模板</span>
         </el-tooltip>
@@ -76,18 +76,6 @@
 @endsection
 
 @section('script')
-
-{{-- 通过 script:template 保存 html 内容 --}}
-{{--
-@foreach ($model as $key => $value)
-@if (is_string($value) && strlen($value) > 255)
-<script type="text/template" id="field__{{ $key }}">
-  {!! $value !!}
-</script>
-@endif
-@endforeach
- --}}
-
 <script>
   window.showMediasWindow = function() {
     let mediaWindow = null;
@@ -120,27 +108,6 @@
   let app = new Vue({
     el: '#main_content',
     data() {
-
-      var isUniqueUrl = function(rule, value, callback) {
-        if (!value || !value.length) {
-          callback();
-        } else {
-          axios.post("{{ short_url('path_alias.exists') }}", {
-            langcode: "{{ $model['langcode'] }}",
-            url: value,
-            path: '{{ $model["url"] }}',
-          }).then(function(response) {
-            if (response.data.exists) {
-              callback(new Error('url 已存在'));
-            } else {
-              callback();
-            }
-          }).catch(function(error) {
-            console.error(error);
-          });
-        }
-      };
-
       return {
         model: @jjson($model),
         rules: {},
@@ -153,10 +120,6 @@
     },
 
     methods: {
-      // handleCollapseChange(activeNames) {
-      //   this.$set(this.$data, 'expanded', activeNames);
-      // },
-
       getChanged() {
         const changed = [];
         for (const key in this.model) {

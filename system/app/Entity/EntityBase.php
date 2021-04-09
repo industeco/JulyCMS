@@ -293,14 +293,15 @@ abstract class EntityBase extends ModelBase
      */
     public function gather(array $keys = ['*'])
     {
-        if ($attributes = $this->pocketPipe(__FUNCTION__)) {
+        if ($attributes = $this->pocket()->get('attributes')) {
             $attributes = $attributes->value();
         } else {
             $attributes = array_merge(
                 $this->attributesToArray(), $this->fieldsToArray()
             );
         }
-        if ($keys && $keys !== ['*']) {
+
+        if ($keys && !in_array('*', $keys)) {
             $attributes = Arr::only($attributes, $keys);
         }
         return $attributes;

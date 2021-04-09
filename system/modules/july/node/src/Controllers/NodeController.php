@@ -149,9 +149,22 @@ class NodeController extends Controller
      */
     public function update(Request $request, Node $node)
     {
-        $changed = (array) $request->input('_changed');
-        if (! empty($changed)) {
-            $node->update($request->only($changed));
+        $langcode = request('langcode') ?? langcode('content');
+
+        // 更新
+        if ($langcode === $node->getOriginalLangcode()) {
+            $changed = (array) $request->input('_changed');
+            if ($changed) {
+                $node->update($request->only($changed));
+            }
+        }
+
+        // 更新翻译版本
+        else {
+            $node->translations()->updateOrCreate([
+                'entity_id' => $node->getKey(),
+                'langcode' => $langcode,
+            ], $request->except(['id', 'entity_id', 'langcode']));
         }
 
         return response('');
@@ -165,8 +178,19 @@ class NodeController extends Controller
      */
     public function destroy(Node $node)
     {
-        // Log::info($node->id);
-        $node->delete();
+        $langcode = request('langcode') ?? langcode('content');
+
+        // 删除节点及其翻译
+        if ($langcode === $node->getOriginalLangcode()) {
+            $node->translations()->delete();
+            $node->delete();
+        }
+
+        // 删除节点翻译
+        else {
+            $node->translations()->where('langcode', $langcode)->delete();
+            $node->touch();
+        }
 
         return response('');
     }

@@ -88,7 +88,7 @@ if (! function_exists('langcode')) {
      */
     function langcode(string $alias)
     {
-        return lang($alias)->getCode();
+        return lang($alias)->getLangcode();
     }
 }
 
@@ -102,7 +102,7 @@ if (! function_exists('langname')) {
      */
     function langname(string $alias, ?string $langcode = null)
     {
-        return lang($alias)->getName($langcode);
+        return lang($alias)->getLangname($langcode);
     }
 }
 

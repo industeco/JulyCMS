@@ -270,7 +270,7 @@ class Lang
      * @param string|null $langcode 名称的语言版本
      * @return string|null
      */
-    public function getName(?string $langcode = null)
+    public function getLangname(?string $langcode = null)
     {
         if (! $this->langcode) {
             return null;
@@ -282,6 +282,17 @@ class Lang
 
         $names = static::getLangnames($langcode);
         return $names[$this->langcode] ?? $this->langcode;
+    }
+
+    /**
+     * 返回语言名称
+     *
+     * @param string|null $langcode 名称的语言版本
+     * @return string|null
+     */
+    public function getName(?string $langcode = null)
+    {
+        return $this->getLangname($langcode);
     }
 
     /**
