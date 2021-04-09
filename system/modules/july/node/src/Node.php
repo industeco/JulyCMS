@@ -140,8 +140,9 @@ class Node extends TranslatableEntityBase
         $fieldValues = static::getFieldValues($fields);
 
         // 获取所有消息数据，附带指定的字段值
-        return static::all()->map(function (Node $node) use ($fieldValues) {
+        return static::all()->map(function(Node $node) use($fieldValues) {
                 $attributes = $node->attributesToArray();
+
                 $id = $attributes['id'];
                 foreach ($fieldValues as $field => $values) {
                     $attributes[$field] = $values[$id] ?? null;

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Entity\EntityManager;
 use App\EntityField\FieldTypes\FieldTypeManager;
+use App\Support\JulyInTwig;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // 登记 JulyInTwig 单例
+        $this->app->singleton('jit', function() {
+            return new JulyInTwig();
+        });
+
         // 登记 twig 单例
         $this->registerTwig();
 
@@ -43,9 +49,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // 扩展 Blade
         $this->extendBlade();
-
-        // 添加视图命名空间
-        // View::addNamespace('backend', backend_path('template'));
     }
 
     /**
@@ -53,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerTwig()
     {
-        $this->app->singleton('twig', function () {
+        $this->app->singleton('twig', function() {
             $loader = new \Twig\Loader\FilesystemLoader('template', frontend_path());
             $twig = new \Twig\Environment($loader, ['debug' => config('app.debug')]);
 
@@ -65,6 +68,12 @@ class AppServiceProvider extends ServiceProvider
             foreach (config('app.twig_extensions') as $extension) {
                 $twig->addExtension(new $extension);
             }
+
+            return $twig;
+        });
+
+        $this->app->afterResolving('twig', function(\Twig\Environment $twig) {
+            $twig->addGlobal('_jit', app('jit'));
 
             return $twig;
         });

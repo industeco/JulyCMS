@@ -64,11 +64,22 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
      */
     public function getTranslation()
     {
-        if (! $this->translation) {
-            $this->translation = $this->translations()->where('langcode', $this->getLangcode())->first();
-        }
+        return $this->translations()->where('langcode', $this->getLangcode())->first();
+    }
 
-        return $this->translation;
+    /**
+     * 翻译实例内容
+     *
+     * @param  string $langcode 语言代码
+     * @return $this
+     */
+    public function translateTo(string $langcode)
+    {
+        $this->setLangcode($langcode);
+
+        $this->translation = $this->isTranslated() ? $this->getTranslation() : null;
+
+        return $this;
     }
 
     /**
@@ -78,15 +89,15 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
      */
     public function getAttributes()
     {
-        if ($this->isTranslated() && $translation = $this->getTranslation()) {
+        if ($this->translation && $this->isTranslated()) {
             $attributes = $this->attributes;
 
-            $this->attributes = $translation->toEntityAttributes();
+            $this->setRawAttributes($this->translation->toEntityAttributes());
 
             $this->mergeAttributesFromClassCasts();
 
             return tap($this->attributes, function() use($attributes) {
-                $this->attributes = $attributes;
+                $this->setRawAttributes($attributes);
             });
         }
 

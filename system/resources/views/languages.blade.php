@@ -25,11 +25,11 @@
           <td>
             <div class="jc-operaters">
               @if ($langcode === $original_langcode)
-              <a href="{{ short_url($edit_route) }}" title="编辑" class="md-button md-fab md-mini md-light-primary md-theme-default">
+              <a href="{{ short_url($edit_route, [$content_id]) }}" title="编辑" class="md-button md-fab md-mini md-light-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">edit</i></div></div>
               </a>
               @else
-              <a href="{{ short_url([$translate_route, [$content_id, $langcode]]) }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
+              <a href="{{ short_url($translate_route, [$content_id, $langcode]) }}" title="翻译" class="md-button md-fab md-mini md-light-primary md-theme-default">
                 <div class="md-ripple"><div class="md-button-content"><i class="md-icon md-icon-font md-theme-default">translate</i></div></div>
               </a>
               @endif

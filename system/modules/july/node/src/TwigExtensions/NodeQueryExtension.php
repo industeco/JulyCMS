@@ -67,23 +67,6 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
                 return $class ?: 'jc-' . Str::random(5);
             }),
 
-            // // 使用 tags 过滤节点集
-            // new TwigFilter('tags', function($nodes, array $options = []) {
-            //     if ($nodes instanceof NodeSet && !empty($options)) {
-            //         $match = array_pop($options);
-            //         if (!is_int($match)) {
-            //             $options[] = $match;
-            //             $match = 1;
-            //         }
-
-            //         $options = collect($options)->flatten()->all();
-            //         if (!empty($options)) {
-            //             return $nodes->match_tags($options, $match);
-            //         }
-            //     }
-            //     return $nodes;
-            // }, ['is_variadic' => true]),
-
             // 按内容类型过滤节点集
             new TwigFilter('molds', function($nodes, array $options = []) {
                 if ($nodes instanceof NodeSet) {
@@ -188,22 +171,4 @@ class NodeQueryExtension extends AbstractExtension implements GlobalsInterface
     {
         return short_url($name, $parameters);
     }
-
-    // /**
-    //  * 获取标签集
-    //  *
-    //  * @param array $args 用于获取标签的参数，可以是：
-    //  *  - 标签
-    //  *  - 标签名
-    //  *
-    //  * @return \July\Taxonomy\TermSet
-    //  */
-    // public function tags(...$args)
-    // {
-    //     $args = real_args($args);
-    //     if (empty($args)) {
-    //         return TermSet::fetchAll();
-    //     }
-    //     return TermSet::fetch($args);
-    // }
 }

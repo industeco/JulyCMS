@@ -18,7 +18,7 @@ class NodeTranslation extends EntityTranslationBase
      *
      * @return string
      */
-    public function getEntityClass()
+    public static function getEntityClass()
     {
         return Node::class;
     }

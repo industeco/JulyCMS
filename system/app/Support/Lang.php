@@ -117,17 +117,21 @@ class Lang
      */
     public static function getLangnames(?string $langcode = null)
     {
-        $langcode = static::make($langcode ?: config('lang.backend'))->getCode();
+        $langcode = static::make($langcode ?: config('lang.backend'))->getLangcode();
 
-        if ($names = config('lang.names.'.$langcode)) {
+        if ($names = config('cached_langnames.'.$langcode)) {
             return $names;
         }
 
         $file = base_path('language/'.$langcode.'.php');
         if (is_file($file)) {
             $names = require $file;
-            config()->set('lang.names.'.$langcode, $names);
-            return $names;
+            $langnames = [];
+            foreach (config('lang.all') as $code => $meta) {
+                $langnames[$code] = $names[$code] ?? $code;
+            }
+            config()->set('cached_langnames.'.$langcode, $langnames);
+            return $langnames;
         }
 
         return [];
