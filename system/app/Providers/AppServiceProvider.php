@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Entity\EntityManager;
 use App\EntityField\FieldTypes\FieldTypeManager;
-use App\Support\JulyInTwig;
+use App\Support\JustInTwig;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -20,9 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // 登记 JulyInTwig 单例
+        // 登记 JustInTwig 单例
         $this->app->singleton('jit', function() {
-            return new JulyInTwig();
+            return new JustInTwig();
         });
 
         // 登记 twig 单例

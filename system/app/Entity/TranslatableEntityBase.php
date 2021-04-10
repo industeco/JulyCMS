@@ -33,6 +33,11 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
         return static::class.'Translation';
     }
 
+    public static function isTranslatable()
+    {
+        return true;
+    }
+
     /**
      * 设置实例当前语言
      *

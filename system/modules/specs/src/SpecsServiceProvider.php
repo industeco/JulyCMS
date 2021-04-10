@@ -4,7 +4,7 @@ namespace Specs;
 
 use App\Providers\ModuleServiceProviderBase;
 
-class ModuleServiceProvider extends ModuleServiceProviderBase
+class SpecsServiceProvider extends ModuleServiceProviderBase
 {
     /**
      * {@inheritdoc}

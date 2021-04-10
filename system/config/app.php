@@ -174,10 +174,10 @@ return [
         // July\JulyServiceProvider::class,
 
         // Modules
-        Installer\ModuleServiceProvider::class,
-        July\Node\ModuleServiceProvider::class,
-        July\Message\ModuleServiceProvider::class,
-        Specs\ModuleServiceProvider::class,
+        Installer\InstallerServiceProvider::class,
+        July\Node\NodeServiceProvider::class,
+        July\Message\MessageServiceProvider::class,
+        Specs\SpecsServiceProvider::class,
     ],
 
     /*

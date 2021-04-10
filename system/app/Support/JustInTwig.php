@@ -5,7 +5,7 @@ namespace App\Support;
 use ArrayAccess;
 use Illuminate\Support\Traits\Macroable;
 
-class JulyInTwig implements ArrayAccess
+class JustInTwig implements ArrayAccess
 {
     use Macroable;
 

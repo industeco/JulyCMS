@@ -41,8 +41,12 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [],
-            "providers": []
+            "providers": [
+                "Installer\\InstallerServiceProvider",
+                "July\\Node\\NodeServiceProvider",
+                "July\\Message\\MessageServiceProvider",
+                "Specs\\SpecsServiceProvider"
+            ]
         }
     },
     "autoload": {

@@ -37,7 +37,7 @@ class Tree
 
         $this->positions = $positions;
 
-        $this->genereteNodes();
+        $this->init();
     }
 
     public function getPositions()
@@ -50,9 +50,9 @@ class Tree
         return $this->nodes;
     }
 
-    protected function getRootNode()
+    public function getNode(array $node = [])
     {
-        return [
+        return array_merge([
             'id' => 0,
             'parent_id' => null,
             'prev_id' => null,
@@ -60,67 +60,181 @@ class Tree
             'child_id' => null,
             'children' => [],
             'path' => [],
-        ];
+        ], $node);
     }
 
     /**
-     * 从位置数据生成树节点
+     * 初始化：从位置数据生成树节点
      *
-     * @return array
+     * @return $this
      */
-    protected function genereteNodes()
+    public function init()
     {
-        // 使用位置数据初始化节点
-        $this->initNodes();
-
-        if (count($this->nodes) === 1) {
-            return;
-        }
-
-        if (count($this->nodes) === 2) {
-            $root = $this->nodes[0];
-            $node = array_merge($root, [
-                'id' => key($this->nodes),
-                'parent_id' => 0,
-                'path' => [0],
-            ]);
-            $root['child_id'] = $node['id'];
-
-            $this->nodes = [
-                0 => $root,
-                $node['id'] => $node,
-            ];
-
-            return;
-        }
-
-        // 校正节点数据
-        $this->correctNodes();
-
-        // 排序节点
-        $this->sortNodes();
-    }
-
-    /**
-     * 使用位置数据初始化节点数据
-     *
-     * @return void
-     */
-    public function initNodes()
-    {
-        // 根节点，同时作为模板使用
-        $root = $this->getRootNode();
-
         $this->nodes = [];
         foreach ($this->positions as $position) {
             $id = key([trim($position[$this->keymap['id']]) => null]);
-            $this->nodes[$id] = array_merge($root, [
-                'id' => $id,
-                'parent_id' => $position[$this->keymap['parent_id']] ?? 0,
-                'prev_id' => $position[$this->keymap['prev_id']] ?? null,
-            ]);
+            if ($id !== 0) {
+                $this->nodes[$id] = $this->getNode([
+                    'id' => $id,
+                    'parent_id' => $position[$this->keymap['parent_id']] ?? 0,
+                    'prev_id' => $position[$this->keymap['prev_id']] ?? null,
+                ]);
+            }
         }
-        $this->nodes[0] = $root;
+        $this->nodes[0] = $this->getNode();
+
+        if (count($this->nodes) === 1) {
+            return $this;
+        }
+
+        if (count($this->nodes) === 2) {
+            $id = key($this->nodes);
+            $this->nodes = [
+                0 => $this->getNode(['child_id'=>$id, 'children'=>[$id]]),
+                $id => $this->getNode(['id'=>$id, 'parent_id'=>0, 'path'=>[0]]),
+            ];
+
+            return $this;
+        }
+
+        // 校正节点相对位置
+        $this->correctRelativePosition();
+
+        // 排序
+        $this->sort();
+
+        return $this;
+    }
+
+    /**
+     * 校正节点相对位置
+     *
+     * @return void
+     */
+    protected function correctRelativePosition()
+    {
+        $this->correctParents();
+        $this->correctSiblings();
+    }
+
+    /**
+     * 校正层级关系
+     *
+     * @return void
+     */
+    protected function correctParents()
+    {
+        $orders = [
+            0 => $this->nodes[0],
+        ];
+        $nodes = array_diff_key($this->nodes, $orders);
+
+        foreach ($nodes as $id => $node) {
+            if (!$node['parent_id'] || !isset($nodes[$node['parent_id']])) {
+                $nodes[$id]['parent_id'] = 0;
+            }
+        }
+
+        $parents = [0 => true];
+        while (true) {
+            $count = 0;
+            $children = [];
+            foreach ($nodes as $id => $node) {
+                $parent_id = $node['parent_id'];
+                if ($parents[$parent_id] ?? false) {
+                    $orders[$parent_id]['children'][] = $id;
+                    $node['parent_id'] = $parent_id;
+                    $node['path'] = array_merge($orders[$parent_id]['path'], [$parent_id]);
+                    $orders[$id] = $node;
+                    $children[$id] = true;
+                    $count++;
+                }
+            }
+            if ($count > 0) {
+                $nodes = array_diff_key($nodes, $orders);
+            } else {
+                $node = array_shift($nodes);
+                $node['parent_id'] = 0;
+                $node['path'] = [0];
+                $orders[$node['id']] = $node;
+                $orders[0]['children'][] = $node['id'];
+                $children[$node['id']] = true;
+            }
+            if (empty($nodes)) {
+                break;
+            }
+            $parents = $children;
+        }
+
+        $this->nodes = $orders;
+    }
+
+    /**
+     * 校正同级关系
+     *
+     * @return void
+     */
+    protected function correctSiblings()
+    {
+        foreach ($this->nodes as $id => $node) {
+            if (!$node['prev_id']) {
+                continue;
+            }
+            $prev_id = $node['prev_id'];
+            if (!isset($this->nodes[$prev_id]) || $this->nodes[$prev_id]['parent_id'] !== $node['parent_id']) {
+                $this->nodes[$id]['prev_id'] = null;
+            }
+        }
+
+        foreach ($this->nodes as $id => $node) {
+            $children = $this->sortSiblings($node['children']);
+            $prev = null;
+            foreach ($children as $child) {
+                $this->nodes[$child]['prev_id'] = $prev;
+                if ($prev) {
+                    $this->nodes[$prev]['next_id'] = $child;
+                }
+                $prev = $child;
+            }
+            $this->nodes[$id]['children'] = $children;
+            $this->nodes[$id]['child_id'] = $children[0] ?? null;
+        }
+    }
+
+    /**
+     * 校正同级节点顺序
+     *
+     * @param  array $siblings
+     * @return array
+     */
+    protected function sortSiblings(array $siblings)
+    {
+        if (count($siblings) <= 1) {
+            return $siblings;
+        }
+
+        $orders = [];
+        $prev = null;
+        while (true) {
+            $count = 0;
+            foreach ($siblings as $id) {
+                if ($this->nodes[$id]['prev_id'] === $prev) {
+                    $orders[] = $id;
+                    $prev = $id;
+                    $count++;
+                }
+            }
+            if ($count > 0) {
+                $siblings = array_diff($siblings, $orders);
+            } else {
+                $prev = array_shift($siblings);
+                $orders[] = $prev;
+            }
+            if (empty($siblings)) {
+                break;
+            }
+        }
+        return $orders;
     }
 
     /**
@@ -128,7 +242,7 @@ class Tree
      *
      * @return void
      */
-    protected function sortNodes()
+    protected function sort()
     {
         $sorted = [];
         $node = $this->nodes[0];
@@ -151,137 +265,6 @@ class Tree
         }
 
         $this->nodes = $sorted;
-    }
-
-    /**
-     * 节点信息纠错
-     *
-     * @return void
-     */
-    protected function correctNodes()
-    {
-        $this->correctParent();
-        $this->reorderNodes();
-    }
-
-    /**
-     * 纠正 parent_id 和 path（假设存在冲突或缺失）
-     *
-     * @return void
-     */
-    protected function correctParent()
-    {
-        $orders = [
-            0 => $this->nodes[0],
-        ];
-        $nodes = array_diff_key($this->nodes, $orders);
-
-        foreach ($nodes as $id => $node) {
-            if (!$node['parent_id'] || !isset($nodes[$node['parent_id']])) {
-                $nodes[$id]['parent_id'] = 0;
-            }
-        }
-
-        $parents = [0 => 1];
-        while (true) {
-            $count = 0;
-            $children = [];
-            foreach ($nodes as $id => $node) {
-                $parent_id = $node['parent_id'];
-                if (isset($parents[$parent_id])) {
-                    $orders[$parent_id]['children'][] = $id;
-                    $node['parent_id'] = $parent_id;
-                    $node['path'] = array_merge($orders[$parent_id]['path'], [$parent_id]);
-                    $orders[$id] = $node;
-                    $children[$id] = 1;
-                    $count++;
-                }
-            }
-            if ($count > 0) {
-                $nodes = array_diff_key($nodes, $orders);
-            } else {
-                $node = array_shift($nodes);
-                $node['parent_id'] = 0;
-                $node['path'] = [0];
-                $orders[$node['id']] = $node;
-                $orders[0]['children'][] = $node['id'];
-                $children[$node['id']] = 1;
-            }
-            if (empty($nodes)) {
-                break;
-            }
-            $parents = $children;
-        }
-
-        $this->nodes = $orders;
-    }
-
-    /**
-     * 纠正 prev_id（假设存在冲突或缺失）
-     *
-     * @return void
-     */
-    protected function reorderNodes()
-    {
-        foreach ($this->nodes as $id => $node) {
-            if (!$node['prev_id']) {
-                continue;
-            }
-            $prev_id = $node['prev_id'];
-            if (!isset($this->nodes[$prev_id]) || $this->nodes[$prev_id]['parent_id'] !== $node['parent_id']) {
-                $this->nodes[$id]['prev_id'] = null;
-            }
-        }
-
-        foreach ($this->nodes as $id => $node) {
-            $children = $this->reorderChildren($node['children']);
-            $prev = null;
-            foreach ($children as $child) {
-                $this->nodes[$child]['prev_id'] = $prev;
-                if ($prev) {
-                    $this->nodes[$prev]['next_id'] = $child;
-                }
-                $prev = $child;
-            }
-            $this->nodes[$id]['children'] = $children;
-            $this->nodes[$id]['child_id'] = $children[0] ?? null;
-        }
-    }
-
-    /**
-     * 校正子节点顺序
-     *
-     * @param  array $children
-     * @return array
-     */
-    protected function reorderChildren(array $children)
-    {
-        if (count($children) <= 1) {
-            return $children;
-        }
-
-        $orders = [];
-        $prev = null;
-        while (true) {
-            $count = 0;
-            foreach ($children as $id) {
-                if ($this->nodes[$id]['prev_id'] === $prev) {
-                    $orders[] = $id;
-                    $prev = $id;
-                    $count++;
-                }
-            }
-            if ($count > 0) {
-                $children = array_diff($children, $orders);
-            } else {
-                $prev = array_shift($children);
-                $orders[] = $prev;
-            }
-            if (empty($children)) {
-                break;
-            }
-        }
-        return $orders;
     }
 
     /**
@@ -339,6 +322,7 @@ class Tree
         if ($node = $this->nodes[$id] ?? null) {
             return $node['parent_id'];
         }
+
         return null;
     }
 
@@ -353,6 +337,7 @@ class Tree
         if ($node = $this->nodes[$id] ?? null) {
             return $node['path'];
         }
+
         return [];
     }
 
@@ -367,6 +352,7 @@ class Tree
         if ($node = $this->nodes[$id] ?? null) {
             return $node['children'];
         }
+
         return [];
     }
 
@@ -384,6 +370,7 @@ class Tree
                 $descendants[] = $id;
             }
         }
+
         return $descendants;
     }
 
@@ -398,6 +385,7 @@ class Tree
         if ($parent = $this->parent($id)) {
             return array_diff($this->nodes[$parent]['children'], [$id]);
         }
+
         return [];
     }
 
@@ -412,6 +400,7 @@ class Tree
         if ($node = $this->nodes[$id] ?? null) {
             return $node['prev_id'];
         }
+
         return null;
     }
 
@@ -426,6 +415,7 @@ class Tree
         if ($node = $this->nodes[$id]) {
             return $node['next_id'];
         }
+
         return null;
     }
 }

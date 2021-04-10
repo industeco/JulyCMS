@@ -3,10 +3,10 @@
 namespace July\Node;
 
 use App\Providers\ModuleServiceProviderBase;
-use App\Support\JulyInTwig;
+use App\Support\JustInTwig;
 use July\Node\TwigExtensions\NodeMixin;
 
-class ModuleServiceProvider extends ModuleServiceProviderBase
+class NodeServiceProvider extends ModuleServiceProviderBase
 {
     /**
      * Bootstrap any application services.
@@ -17,11 +17,7 @@ class ModuleServiceProvider extends ModuleServiceProviderBase
     {
         parent::boot();
 
-        $this->app->extend('jit', function($jit, $app) {
-            $jit->mixin(new NodeMixin);
-
-            return $jit;
-        });
+        JustInTwig::mixin(new NodeMixin);
     }
 
     /**

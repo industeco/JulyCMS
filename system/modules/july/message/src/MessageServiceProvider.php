@@ -4,7 +4,7 @@ namespace July\Message;
 
 use App\Providers\ModuleServiceProviderBase;
 
-class ModuleServiceProvider extends ModuleServiceProviderBase
+class MessageServiceProvider extends ModuleServiceProviderBase
 {
     /**
      * 获取实体类

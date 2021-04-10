@@ -407,6 +407,7 @@ class Catalog extends ModelBase implements GetNodesInterface
     public function get_nodes()
     {
         $ids = array_keys($this->tree()->getNodes());
+
         return NodeSet::fetch($ids);
     }
 

@@ -4,7 +4,7 @@ namespace Installer;
 
 use App\Providers\ModuleServiceProviderBase;
 
-class ModuleServiceProvider extends ModuleServiceProviderBase
+class InstallerServiceProvider extends ModuleServiceProviderBase
 {
     /**
      * {@inheritdoc}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CacheResultTrait;
 use App\Support\Arr;
+use App\Support\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -34,6 +35,11 @@ abstract class ModelBase extends Model
     public static function getModelSetClass()
     {
         return null;
+    }
+
+    public static function isTranslatable()
+    {
+        return false;
     }
 
     /**
