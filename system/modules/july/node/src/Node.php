@@ -5,6 +5,7 @@ namespace July\Node;
 use App\Entity\TranslatableEntityBase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use July\Node\CatalogSet;
 
 class Node extends TranslatableEntityBase
@@ -243,17 +244,41 @@ class Node extends TranslatableEntityBase
         $url = $data['url'] ?? '/'.$this->getEntityPath();
         $twig->addGlobal('_canonical', $this->getCanonical($url));
 
-        config()->set('lang.rendering', $this->getLangcode());
+        if (config('lang.multiple')) {
+            $langcode = $this->getLangcode();
 
-        // 生成 html
-        $html = $twig->render($view, $data);
+            config()->set('lang.rendering', $langcode);
 
-        config()->set('lang.rendering', null);
+            // 生成 html
+            $html = $twig->render($view, $data);
 
-        $html = html_compress($html);
+            config()->set('lang.rendering', null);
 
-        if (preg_match('/\.html?$/i', $url)) {
-            Storage::disk('public')->put($url, $html);
+            $html = html_compress($html);
+
+            if (preg_match('/\.html?$/i', $url)) {
+                $path = explode('/', ltrim($url, '/'));
+                if (strcasecmp($path[0], $langcode) !== 0) {
+                    array_unshift($path, strtolower($langcode));
+                }
+
+                // 在带语言的路径下生成 html 文件
+                Storage::disk('public')->put(implode('/', $path), $html);
+
+                // 在不带语言的路径下生成 html 文件
+                if (strcasecmp($langcode, langcode('frontend')) !== 0) {
+                    array_shift($path);
+                    Storage::disk('public')->put(implode('/', $path), $html);
+                }
+            }
+        } else {
+            $html = $twig->render($view, $data);
+
+            $html = html_compress($html);
+
+            if (preg_match('/\.html?$/i', $url)) {
+                Storage::disk('public')->put($url, $html);
+            }
         }
 
         return $html;
@@ -273,6 +298,7 @@ class Node extends TranslatableEntityBase
                 return $view;
             }
         }
+
         return null;
     }
 

@@ -110,6 +110,16 @@ class Lang
     }
 
     /**
+     * 获取所有语言代码列表
+     *
+     * @return array
+     */
+    public static function getLangcodes()
+    {
+        return array_keys(config('lang.all'));
+    }
+
+    /**
      * 获取语言名称列表
      *
      * @param string|null 列表的语言版本

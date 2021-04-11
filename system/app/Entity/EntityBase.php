@@ -466,8 +466,23 @@ abstract class EntityBase extends ModelBase
     public function removeHtmlFile()
     {
         $url = $this->url;
-        if (preg_match('/\.html?$/i', $url)) {
+        if ($url && preg_match('/\.html?$/i', $url)) {
             Storage::disk('public')->delete($url);
+
+            // 清除网址中可能存在的语言
+            $path = explode('/', ltrim($url, '/'));
+            if (lang($path[0])->isAvailable()) {
+                array_shift($path);
+            }
+            $path = implode('/', $path);
+            if ($path !== $url) {
+                Storage::disk('public')->delete($path);
+            }
+
+            // 删除各语言版本的 html
+            foreach (lang()->getLangcodes() as $langcode) {
+                Storage::disk('public')->delete(strtolower($langcode).'/'.$path);
+            }
         }
     }
 
@@ -482,7 +497,7 @@ abstract class EntityBase extends ModelBase
 
         static::deleting(function(EntityBase $entity) {
             $entity->removeHtmlFile();
-            $entity->pocketClear('html', 'gather');
+            $entity->pocket()->clear('html', 'gather');
             $entity->fields->each(function (FieldBase $field) use($entity) {
                 $field->bindEntity($entity)->deleteValue();
             });
@@ -490,7 +505,7 @@ abstract class EntityBase extends ModelBase
 
         static::saved(function(EntityBase $entity) {
             $entity->removeHtmlFile();
-            $entity->pocketClear('html', 'gather');
+            $entity->pocket()->clear('html', 'gather');
             $entity->updateFields();
         });
     }

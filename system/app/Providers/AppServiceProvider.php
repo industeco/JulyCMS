@@ -77,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
             return $twig;
         });
 
+        // 将 JustInTwig 对象作为全局变量添加到 $twig
         $this->app->afterResolving('twig', function(\Twig\Environment $twig) {
             $twig->addGlobal('_jit', app('jit'));
 
