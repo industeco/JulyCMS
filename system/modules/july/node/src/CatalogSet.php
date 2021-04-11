@@ -17,6 +17,11 @@ class CatalogSet extends ModelSetBase
         return Catalog::class;
     }
 
+    public static function isTranslatable()
+    {
+        return false;
+    }
+
     /**
      * Get the first item from the collection passing the given truth test.
      *

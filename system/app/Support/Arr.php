@@ -3,9 +3,60 @@
 namespace App\Support;
 
 use Illuminate\Support\Arr as SupportArr;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Enumerable;
+use InvalidArgumentException;
+use JsonSerializable;
+use Traversable;
 
 class Arr extends SupportArr
 {
+    /**
+     * Get one or a specified number of random values from an array.
+     *
+     * @param  array  $array
+     * @param  int|null  $number
+     * @param  bool  $withKeys
+     * @return mixed
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function random($array, $number = null, $withKeys = false)
+    {
+        $requested = is_null($number) ? 1 : $number;
+
+        $count = count($array);
+
+        if ($requested > $count) {
+            throw new InvalidArgumentException(
+                "You requested {$requested} items, but there are only {$count} items available."
+            );
+        }
+
+        if (is_null($number)) {
+            return $array[array_rand($array)];
+        }
+
+        if ((int) $number === 0) {
+            return [];
+        }
+
+        $keys = array_rand($array, $number);
+
+        $results = [];
+
+        foreach ((array) $keys as $key) {
+            $results[] = $array[$key];
+        }
+
+        if ($withKeys) {
+            $results = array_combine((array) $keys, $results);
+        }
+
+        return $results;
+    }
+
     /**
      * 按键名筛选数组，如果指定了别名，则重命名该键
      *
@@ -31,34 +82,30 @@ class Arr extends SupportArr
         return $results;
     }
 
-    // /**
-    //  * 将值转为数组
-    //  *
-    //  * @param mixed $item
-    //  * @return array
-    //  */
-    // public static function of($item)
-    // {
-    //     if (is_array($item)) {
-    //         return $item;
-    //     } elseif (is_json($item)) {
-    //         return json_decode($item, true);
-    //     } elseif ($item instanceof Model) {
-    //         return $item->attributesToArray();
-    //     } elseif ($item instanceof Enumerable) {
-    //         return $item->all();
-    //     } elseif ($item instanceof Arrayable) {
-    //         return $item->toArray();
-    //     } elseif ($item instanceof Jsonable) {
-    //         return json_decode($item->toJson(), true);
-    //     } elseif ($item instanceof JsonSerializable) {
-    //         return (array) $item->jsonSerialize();
-    //     } elseif ($item instanceof Traversable) {
-    //         return iterator_to_array($item);
-    //     }
+    /**
+     * 将值转为数组
+     *
+     * @param mixed $items
+     * @return array
+     */
+    public static function from($items)
+    {
+        if (is_array($items)) {
+            return $items;
+        } elseif ($items instanceof Enumerable) {
+            return $items->all();
+        } elseif ($items instanceof Arrayable) {
+            return $items->toArray();
+        } elseif ($items instanceof Jsonable) {
+            return json_decode($items->toJson(), true);
+        } elseif ($items instanceof JsonSerializable) {
+            return (array) $items->jsonSerialize();
+        } elseif ($items instanceof Traversable) {
+            return iterator_to_array($items);
+        }
 
-    //     return (array) $item;
-    // }
+        return (array) $items;
+    }
 
     // /**
     //  * 增强版 pluck，截取多列

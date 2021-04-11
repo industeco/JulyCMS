@@ -49,6 +49,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // 扩展 Blade
         $this->extendBlade();
+
+        // 获取路由短网址
+        JustInTwig::macro('short_url', function($name, ...$parameters) {
+            return short_url($name, $parameters);
+        });
     }
 
     /**

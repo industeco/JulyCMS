@@ -17,6 +17,11 @@ class NodeSet extends ModelSetBase
         return Node::class;
     }
 
+    public static function isTranslatable()
+    {
+        return true;
+    }
+
     /**
      * 在指定的树中，获取当前节点集的直接子节点
      *

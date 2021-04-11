@@ -2,11 +2,9 @@
 
 namespace July\Node\TwigExtensions;
 
-use July\Message\MessageForm;
 use July\Node\CatalogSet;
 use July\Node\NodeSet;
 use July\Node\NodeTypeSet;
-use Specs\Spec;
 
 class NodeMixin
 {
@@ -67,46 +65,6 @@ class NodeMixin
                 return CatalogSet::fetchAll();
             }
             return CatalogSet::fetch($args);
-        };
-    }
-
-    /**
-     * 获取联系表单对象
-     *
-     * @param  string $form 表单 id
-     * @return \July\Message\MessageForm
-     */
-    public function get_form()
-    {
-        return function($form) {
-            return MessageForm::find($form) ?? MessageForm::default();
-        };
-    }
-
-    /**
-     * 获取规格类型
-     *
-     * @param  string $id 规格类型 id
-     * @return \Specs\Spec
-     */
-    public function get_specs()
-    {
-        return function($id) {
-            return Spec::find($id);
-        };
-    }
-
-    /**
-     * 获取路由短网址
-     *
-     * @param  string $name 路由名
-     * @param  array $parameters 路由参数
-     * @return \Specs\Spec
-     */
-    public function short_url()
-    {
-        return function($name, ...$parameters) {
-            return short_url($name, $parameters);
         };
     }
 }
