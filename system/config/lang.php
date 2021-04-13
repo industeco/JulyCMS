@@ -28,70 +28,49 @@ return [
     // 可选语言（代码）列表
     'all' => [
         'ar' => [
-            'name' => [
-                'native' => 'العربية',
-            ],
+            'native' => 'العربية',
             'dir' => 'rtl',
         ],
         'de' => [
-            'name' => [
-                'native' => 'Deutsch',
-            ],
+            'native' => 'Deutsch',
             'dir' => 'ltr',
         ],
         'en' => [
-            'name' => [
-                'native' => 'English',
-            ],
+            'native' => 'English',
             'dir' => 'ltr',
         ],
         'es' => [
-            'name' => [
-                'native' => 'Español',
-            ],
+            'native' => 'Español',
             'dir' => 'ltr',
         ],
         'fr' => [
-            'name' => [
-                'native' => 'français',
-            ],
+            'native' => 'français',
             'dir' => 'ltr',
         ],
         'hi' => [
-            'name' => [
-                'native' => 'हिन्दी, हिंदी',
-            ],
+            'native' => 'हिन्दी, हिंदी',
             'dir' => 'ltr',
         ],
         'it' => [
-            'name' => [
-                'native' => 'Italiano',
-            ],
+            'native' => 'Italiano',
             'dir' => 'ltr',
         ],
         'ja' => [
-            'name' => [
-                'native' => '日本語',
-            ],
+            'native' => '日本語',
             'dir' => 'ltr',
         ],
         'pt' => [
-            'name' => [
-                'native' => 'Português',
-            ],
+            'native' => 'Português',
             'dir' => 'ltr',
         ],
         'ru' => [
-            'name' => [
-                'native' => 'русский',
-            ],
+            'native' => 'русский',
             'dir' => 'ltr',
         ],
         'zh-Hans' => [
-            'name' => [
-                'native' => '简体中文',
-            ],
+            'native' => '简体中文',
             'dir' => 'ltr',
+            'alias' => ['zh', 'zh-CN', 'cn'],
         ],
     ],
 ];

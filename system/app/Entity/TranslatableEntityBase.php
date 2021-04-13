@@ -3,9 +3,11 @@
 namespace App\Entity;
 
 use App\Support\Arr;
-use App\Support\Pocket;
+use App\Support\Lang;
 use App\Support\Translation\TranslatableInterface;
 use App\Support\Translation\TranslatableTrait;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 abstract class TranslatableEntityBase extends EntityBase implements TranslatableInterface
 {
@@ -109,5 +111,57 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
         $this->mergeAttributesFromClassCasts();
 
         return $this->attributes;
+    }
+
+    /**
+     * 缓存生成的 html
+     *
+     * @param  string $html
+     * @param  string $url
+     * @param  string|null $langcode
+     * @return $this
+     */
+    protected function cacheHtml(string $html, string $url, ?string $langcode = null)
+    {
+        if (preg_match('/\.html?$/i', $url)) {
+            $url = ltrim($url, '/');
+
+             // 在不带语言的路径下生成 html 文件
+            Storage::disk('public')->put($url, $html);
+
+            if ($langcode) {
+                // 在带语言的路径下生成 html 文件
+                Storage::disk('public')->put(strtolower($langcode).'/'.$url, $html);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * 生成用于在页面中实现语言切换功能的数组
+     *
+     * @param  string $url
+     * @return array
+     */
+    public function getLanguageOptions(string $url)
+    {
+        $url = '/'.ltrim($url, '/');
+        $langcode = $this->getLangcode();
+
+        $nativeNames = Lang::getNativeLangnames();
+        $languages = [];
+        foreach (Lang::getAccessibleLangnames() as $code => $langname) {
+            $languages[$code] = [
+                'is_active' => $code === $langcode,
+                'url' => '/'.strtolower($code).$url,
+                'name' => [
+                    'native' => $nativeNames[$code] ?? $code,
+                    $code => $langname,
+                ],
+            ];
+        }
+
+        return $languages;
     }
 }

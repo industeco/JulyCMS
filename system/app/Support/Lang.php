@@ -7,7 +7,7 @@ class Lang
     /**
      * @var array
      */
-    protected static $availableCache = [];
+    protected static $cache = [];
 
     /**
      * @var string|null
@@ -96,17 +96,33 @@ class Lang
 
         // 获取正确形式
         if ($code) {
-            if (array_key_exists($code, config('lang.all'))) {
-                return $code;
-            }
-            foreach (array_keys(config('lang.all')) as $langcode) {
-                if (strcasecmp($code, $langcode) === 0) {
-                    return $langcode;
+            return static::getLangcodeMap()[strtolower($code)] ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * 生成 别名（小写）=> 语言代码 映射表
+     *
+     * @return array
+     */
+    public static function getLangcodeMap()
+    {
+        if (isset(static::$cache['langcode_map'])) {
+            return static::$cache['langcode_map'];
+        }
+        $map = [];
+        foreach (config('lang.all') as $langcode => $info) {
+            $map[strtolower($langcode)] = $langcode;
+            if ($info['alias'] ?? null) {
+                foreach ($info['alias'] as $alias) {
+                    $map[strtolower($alias)] = $langcode;
                 }
             }
         }
 
-        return null;
+        return static::$cache['langcode_map'] = $map;
     }
 
     /**
@@ -120,6 +136,22 @@ class Lang
     }
 
     /**
+     * 获取所有语言的自称
+     *
+     * @param string|null 列表的语言版本
+     * @return array
+     */
+    public static function getNativeLangnames()
+    {
+        $langnames = [];
+        foreach (config('lang.all') as $code => $info) {
+            $langnames[$code] = $info['native'] ?? $code;
+        }
+
+        return $langnames;
+    }
+
+    /**
      * 获取语言名称列表
      *
      * @param string|null 列表的语言版本
@@ -127,20 +159,26 @@ class Lang
      */
     public static function getLangnames(?string $langcode = null)
     {
-        $langcode = static::make($langcode ?: config('lang.backend'))->getLangcode();
+        if ($langcode !== 'native') {
+            $langcode = static::make($langcode ?: config('lang.backend'))->getLangcode();
+        }
 
-        if ($names = config('cached_langnames.'.$langcode)) {
-            return $names;
+        if ($langnames = static::$cache['langnames'][$langcode] ?? null) {
+            return $langnames;
+        }
+
+        if ($langcode === 'native') {
+            return static::$cache['langnames']['native'] = static::getNativeLangnames();
         }
 
         $file = base_path('language/'.$langcode.'.php');
         if (is_file($file)) {
             $names = require $file;
             $langnames = [];
-            foreach (config('lang.all') as $code => $meta) {
+            foreach (array_keys(config('lang.all')) as $code) {
                 $langnames[$code] = $names[$code] ?? $code;
             }
-            config()->set('cached_langnames.'.$langcode, $langnames);
+            static::$cache['langnames'][$langcode] = $langnames;
             return $langnames;
         }
 
@@ -320,7 +358,17 @@ class Lang
             return null;
         }
 
-        return config('lang.all.'.$this->langcode.'.name.native') ?? $this->langcode;
+        return config('lang.all.'.$this->langcode.'.native') ?? $this->langcode;
+    }
+
+    /**
+     * 判断 langcode 是否有效
+     *
+     * @return bool
+     */
+    public function isValid()
+    {
+        return !! $this->langcode;
     }
 
     /**

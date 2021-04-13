@@ -2,100 +2,124 @@
 
 namespace App\Support;
 
-use ArrayAccess;
 use Illuminate\Support\Traits\Macroable;
 
-class JustInTwig implements ArrayAccess
+class JustInTwig
 {
     use Macroable;
 
-    protected $entries = [];
+    protected static $translations = [];
+
+    protected $globals = [];
 
     /**
-     * 添加一个项目（数据或对象）
+     * 添加一个全局变量
      *
-     * @param  string $name 新条目的键名
-     * @param  mixed $entry 条目内容
+     * @param  string $name
+     * @param  mixed $value
      * @return $this
      */
-    public function addEntry(string $name, $entry)
+    public function addGlobal(string $name, $value)
     {
-        $this->entries[$name] = $entry;
+        $this->globals[$name] = $value;
 
         return $this;
     }
 
-    /**
-     * 移除项目
-     *
-     * @param  string $name 目标键名
-     * @return $this
-     */
-    public function removeEntry(string $name)
+    public function mergeGlobals(array $context)
     {
-        unset($this->entries[$name]);
-
-        return $this;
-    }
-
-    /**
-     * 获取登记的项目
-     *
-     * @param  string $name 目标键名
-     * @return mixed
-     */
-    public function getEntry(string $name)
-    {
-        return $this->entries[$name] ?? null;
-    }
-
-    /**
-     * Determine if an item exists at an offset.
-     *
-     * @param  mixed  $key
-     * @return bool
-     */
-    public function offsetExists($key)
-    {
-        return array_key_exists($key, $this->entries);
-    }
-
-    /**
-     * Get an item at a given offset.
-     *
-     * @param  mixed  $key
-     * @return mixed
-     */
-    public function offsetGet($key)
-    {
-        return $this->entries[$key];
-    }
-
-    /**
-     * Set the item at a given offset.
-     *
-     * @param  mixed  $key
-     * @param  mixed  $value
-     * @return void
-     */
-    public function offsetSet($key, $value)
-    {
-        if (is_null($key)) {
-            $this->entries[] = $value;
-        } else {
-            $this->entries[$key] = $value;
+        foreach ($this->getGlobals() as $key => $value) {
+            if (!\array_key_exists($key, $context)) {
+                $context[$key] = $value;
+            }
         }
+
+        $this->globals = $context;
+
+        return $this;
     }
 
     /**
-     * Unset the item at a given offset.
+     * 获取一个全局变量
      *
-     * @param  string  $key
-     * @return void
+     * @return array
      */
-    public function offsetUnset($key)
+    public function getGlobal(string $name)
     {
-        unset($this->entries[$key]);
+        return $this->globals[$name] ?? null;
+    }
+
+    /**
+     * 获取所有全局变量
+     *
+     * @return array
+     */
+    public function getGlobals()
+    {
+        return $this->globals;
+    }
+
+    /**
+     * 移除一个变量
+     *
+     * @param  string $name
+     * @return $this
+     */
+    public function removeGlobal(string $name)
+    {
+        unset($this->globals[$name]);
+
+        return $this;
+    }
+
+    /**
+     * 翻译
+     *
+     * @param  string $content
+     * @param  string|null $langcode
+     * @return string
+     */
+    public function trans(string $content, ?string $langcode = null)
+    {
+        $langcode = lang(
+            $langcode ?? $this->globals['_langcode']
+        )->getLangcode() ?? langcode('rendering') ?? langcode('frontend');
+
+        return $this->getTranslations($langcode)[$content] ?? $content;
+    }
+
+    /**
+     * 翻译函数别名
+     *
+     * @param  string $content
+     * @param  string|null $langcode
+     * @return string
+     */
+    public function __(string $content, ?string $langcode = null)
+    {
+        return $this->trans($content, $langcode);
+    }
+
+    /**
+     * 获取翻译内容
+     *
+     * @param  string $langcode
+     * @return array
+     */
+    public function getTranslations(string $langcode)
+    {
+        if ($translations = static::$translations[$langcode] ?? null) {
+            return $translations;
+        }
+
+        $path = frontend_path('languages/'.$langcode.'.php');
+        if (is_file($path)) {
+            $translations = require $path;
+            static::$translations[$langcode] = $translations;
+            return $translations;
+        }
+
+        return [];
     }
 
     /**
@@ -106,22 +130,11 @@ class JustInTwig implements ArrayAccess
      */
     public function __isset($key)
     {
-        return $this->offsetExists($key);
-    }
-
-    /**
-     * Unset an attribute on the model.
-     *
-     * @param  string  $key
-     * @return void
-     */
-    public function __unset($key)
-    {
-        $this->offsetUnset($key);
+        return \array_key_exists($key, $this->globals);
     }
 
     public function __get($name)
     {
-        return $this->entries[$name] ?? null;
+        return $this->globals[$name] ?? null;
     }
 }

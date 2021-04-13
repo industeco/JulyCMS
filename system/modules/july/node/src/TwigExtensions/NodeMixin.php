@@ -67,4 +67,38 @@ class NodeMixin
             return CatalogSet::fetch($args);
         };
     }
+
+    /**
+     * 判断指定节点是否在当前路径中
+     *
+     * @param int|string|\July\Node\Node $node_id
+     * @return bool
+     */
+    public function in_path()
+    {
+        return function($node_id) {
+            if (is_object($node_id) && ($node_id instanceof \July\Node\Node)) {
+                $node_id = $node_id->getKey();
+            }
+            if (! is_numeric($node_id)) {
+                return false;
+            }
+            $node_id = intval($node_id);
+
+            /** @var \App\Support\JustInTwig */
+            $jit = $this;
+
+            $path = $jit->getGlobal('_path');
+            if (!is_array($path)) {
+                return false;
+            }
+
+            $current = $jit->getGlobal('_node');
+            if (!$current || !($current instanceof \July\Node\Node)) {
+                return false;
+            }
+
+            return $node_id === $current->getKey() || in_array($node_id, $path);
+        };
+    }
 }

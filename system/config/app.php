@@ -239,9 +239,6 @@ return [
     // demo 模式
     'is_demo' => env('APP_DEMO', false),
 
-    // 指定主题
-    'theme' => 'backend',
-
     // 管理前缀
     'management_prefix' => 'manage',
 

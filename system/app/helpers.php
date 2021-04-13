@@ -17,7 +17,7 @@ if (! function_exists('backend_path')) {
      */
     function backend_path($path = '')
     {
-        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('app.theme'), '\\/').
+        $path = 'themes'.DIRECTORY_SEPARATOR.'backend'.
             ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
         return public_path($path);
@@ -33,7 +33,7 @@ if (! function_exists('frontend_path')) {
      */
     function frontend_path($path = '')
     {
-        $path = 'themes'.DIRECTORY_SEPARATOR.trim(config('site.theme'), '\\/').
+        $path = 'themes'.DIRECTORY_SEPARATOR.'frontend'.
             ($path ? DIRECTORY_SEPARATOR.ltrim($path, '\\/') : $path);
 
         return public_path($path);

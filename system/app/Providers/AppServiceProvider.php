@@ -8,7 +8,6 @@ use App\Support\JustInTwig;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,11 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // 登记 JustInTwig 单例
-        $this->app->singleton('jit', function() {
-            return new JustInTwig();
-        });
-
         // 登记 twig 单例
         $this->registerTwig();
 
@@ -79,8 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
         // 将 JustInTwig 对象作为全局变量添加到 $twig
         $this->app->afterResolving('twig', function(\Twig\Environment $twig) {
-            $twig->addGlobal('_jit', app('jit'));
-
+            $twig->addGlobal('_jit', new JustInTwig);
             return $twig;
         });
     }

@@ -3,9 +3,8 @@
 namespace July\Node;
 
 use App\Entity\TranslatableEntityBase;
+use App\Support\JustInTwig;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use July\Node\CatalogSet;
 
 class Node extends TranslatableEntityBase
@@ -169,7 +168,6 @@ class Node extends TranslatableEntityBase
         }
 
         // 根据 id
-        $localized[] = 'node--'.$this->id.'.{lang}.twig';
         $templates[] = 'node--'.$this->id.'.twig';
 
         // 根据 url
@@ -178,18 +176,10 @@ class Node extends TranslatableEntityBase
         }
         if ($url) {
             $url = str_replace('/', '_', trim($url, '\\/'));
-            // $templates[] = 'url--'.$url.'.{lang}.twig';
             $localized[] = 'url--'.$url.'.twig';
         }
 
-        // // 根据目录位置
-        // if ($parent = Catalog::default()->tree()->parent($this->id)) {
-        //     $localized[] = 'under--' . $parent[0] . '.{lang}.twig';
-        //     $templates[] = 'under--' . $parent[0] . '.twig';
-        // }
-
         // 根据类型
-        $localized[] = 'mold--'.$this->mold_id.'.{lang}.twig';
         $templates[] = 'mold--'.$this->mold_id.'.twig';
 
         return array_merge($localized, $templates);
@@ -201,22 +191,6 @@ class Node extends TranslatableEntityBase
     public function positions()
     {
         return CatalogNode::where('node_id', $this->id)->get()->groupBy('catalog_id')->toArray();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function boot()
-    {
-        parent::boot();
-
-        // static::deleting(function(Node $node) {
-        //     $node->pocketClear('html');
-        // });
-
-        // static::updated(function(Node $node) {
-        //     $node->pocketClear('html');
-        // });
     }
 
     /**
@@ -235,51 +209,41 @@ class Node extends TranslatableEntityBase
         $data = $this->gather();
 
         if (! $twig) {
+            /** @var \Twig\Environment */
             $twig = app('twig');
         }
 
-        $twig->addGlobal('_node', $this);
-        $twig->addGlobal('_path', $this->get_path());
-
+        $langcode = $this->getLangcode();
         $url = $data['url'] ?? '/'.$this->getEntityPath();
-        $twig->addGlobal('_canonical', $this->getCanonical($url));
+
+        /** @var \App\Support\JustInTwig */
+        $jit = $twig->getGlobals()['_jit'] ?? new JustInTwig;
+
+        $globals = [
+            '_node' => $this,
+            '_langcode' => $langcode,
+            '_path' => $this->get_path(),
+            '_canonical' => $this->getCanonical($url),
+            '_languages' => $this->getLanguageOptions($url),
+        ];
+
+        $twig->mergeGlobals($globals);
+        $jit->mergeGlobals($globals);
+
+        $twig->addGlobal('_jit', $jit);
 
         if (config('lang.multiple')) {
-            $langcode = $this->getLangcode();
-
             config()->set('lang.rendering', $langcode);
-
-            // 生成 html
-            $html = $twig->render($view, $data);
-
-            config()->set('lang.rendering', null);
-
-            $html = html_compress($html);
-
-            if (preg_match('/\.html?$/i', $url)) {
-                $path = explode('/', ltrim($url, '/'));
-                if (strcasecmp($path[0], $langcode) !== 0) {
-                    array_unshift($path, strtolower($langcode));
-                }
-
-                // 在带语言的路径下生成 html 文件
-                Storage::disk('public')->put(implode('/', $path), $html);
-
-                // 在不带语言的路径下生成 html 文件
-                if (strcasecmp($langcode, langcode('frontend')) !== 0) {
-                    array_shift($path);
-                    Storage::disk('public')->put(implode('/', $path), $html);
-                }
-            }
-        } else {
-            $html = $twig->render($view, $data);
-
-            $html = html_compress($html);
-
-            if (preg_match('/\.html?$/i', $url)) {
-                Storage::disk('public')->put($url, $html);
-            }
         }
+
+        // 生成 html
+        $html = $twig->render($view, $data);
+
+        config()->set('lang.rendering', null);
+
+        $html = html_compress($html);
+
+        $this->cacheHtml($html, $url, config('lang.multiple') ? $langcode : null);
 
         return $html;
     }
