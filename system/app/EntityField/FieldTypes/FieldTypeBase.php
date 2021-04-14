@@ -414,6 +414,17 @@ abstract class FieldTypeBase
         return trim($value, ' ;');
     }
 
+    /**
+     * 格式化值用于数据库保存
+     *
+     * @param  mixed $value
+     * @return mixed
+     */
+    public function formatRecordValue($value)
+    {
+        return $value;
+    }
+
     public function __get($name)
     {
         return $this->$name ?? null;

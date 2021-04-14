@@ -30,7 +30,7 @@ class Rule
      *
      * @var string
      */
-    protected $field;
+    protected $key;
 
     /**
      * 规则字符串
@@ -64,12 +64,12 @@ class Rule
      * 构造函数
      *
      * @param  string $rule
-     * @param  string $field
+     * @param  string $key
      */
-    public function __construct(string $rule, ?string $field = null)
+    public function __construct(string $rule, ?string $key = null)
     {
         $this->rule = $rule;
-        $this->field = $field;
+        $this->key = $key;
 
         $this->init();
     }
@@ -105,16 +105,26 @@ class Rule
     }
 
     /**
-     * 设置规则所属字段
+     * 设置规则要验证的对象
      *
-     * @param  string $field
+     * @param  string $key
      * @return $this
      */
-    public function setField(string $field)
+    public function setKey(string $key)
     {
-        $this->field = $field;
+        $this->key = $key;
 
         return $this;
+    }
+
+    /**
+     * 获取规则要验证的对象
+     *
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->key;
     }
 
     /**
@@ -137,6 +147,14 @@ class Rule
         return $this->parameters;
     }
 
+    public function getRule()
+    {
+        if ($this->parameters) {
+            return $this->name.':'.$this->parameters;
+        }
+        return $this->name;
+    }
+
     /**
      * 获取消息模板
      *
@@ -154,7 +172,7 @@ class Rule
      */
     public function getMessageKey()
     {
-        return $this->field . '.' . $this->name;
+        return $this->key . '.' . $this->name;
     }
 
     /**

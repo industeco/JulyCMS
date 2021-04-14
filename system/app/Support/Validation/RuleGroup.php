@@ -23,7 +23,7 @@ class RuleGroup implements IteratorAggregate
      *
      * @var string|null
      */
-    protected $field;
+    protected $key;
 
     /**
      * 生成的规则列表
@@ -32,10 +32,10 @@ class RuleGroup implements IteratorAggregate
      */
     protected $rules;
 
-    public function __construct(string $raw, ?string $field = null)
+    public function __construct(string $raw, ?string $key = null)
     {
         $this->raw = [];
-        $this->field = $field;
+        $this->key = $key;
 
         $this->rules = [];
 
@@ -43,19 +43,29 @@ class RuleGroup implements IteratorAggregate
     }
 
     /**
-     * 设置规则所属字段
+     * 设置规则所要验证的对象
      *
-     * @param  string $field
+     * @param  string $key
      * @return $this
      */
-    public function setField(string $field)
+    public function setKey(string $key)
     {
-        $this->field = $field;
+        $this->key = $key;
         foreach ($this->rules as $rule) {
-            $rule->setField($field);
+            $rule->setKey($key);
         }
 
         return $this;
+    }
+
+    /**
+     * 获取规则所要验证的对象
+     *
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->key;
     }
 
     /**
@@ -69,7 +79,7 @@ class RuleGroup implements IteratorAggregate
         $this->raw[] = $raw;
 
         foreach ($this->explode($raw) as $rule) {
-            $rule = Rule::make($rule, $this->field);
+            $rule = Rule::make($rule, $this->key);
             if ($name = $rule->getName()) {
                 $this->rules[$name] = $rule;
             }

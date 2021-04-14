@@ -219,6 +219,21 @@ abstract class ModelBase extends Model
         return $this->{$this->getCreatedAtColumn()};
     }
 
+    public function getRaw()
+    {
+        return $this->raw;
+    }
+
+    public function setRaw(?array $raw = null)
+    {
+        return $this->raw = $raw;
+    }
+
+    public function clearRaw()
+    {
+        return $this->raw = null;
+    }
+
     /**
      * 获取模型列表数据
      *
@@ -249,13 +264,14 @@ abstract class ModelBase extends Model
     public function gather(array $keys = ['*'])
     {
         // 尝试从缓存获取数据
-        if ($attributes = $this->cachePipe(__FUNCTION__)) {
+        if ($attributes = $this->pocket()->get('gather')) {
             $attributes = $attributes->value();
         }
 
         // 生成属性数组
         else {
             $attributes = $this->attributesToArray();
+            $this->pocket('gather')->put($attributes);
         }
 
         if ($keys && $keys !== ['*']) {

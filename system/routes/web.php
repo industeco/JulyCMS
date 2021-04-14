@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -87,3 +88,7 @@ Route::group([
 // // 前台
 // Route::post('newmessage', [Controllers\CommandController::class, 'newMessage'])
 //     ->name('ajax.newmessage');
+
+Route::post('/test/upload', function(Request $request) {
+    dd($request->file('images')[0]->getPathname());
+});

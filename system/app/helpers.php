@@ -250,11 +250,12 @@ if (! function_exists('get_field_types')) {
     /**
      * 获取所有字段类型
      *
+     * @param  string $scope
      * @return array
      */
-    function get_field_types()
+    function get_field_types(string $scope = 'default')
     {
-        return FieldTypeManager::details();
+        return FieldTypeManager::details($scope);
     }
 }
 

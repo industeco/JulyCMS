@@ -28,6 +28,7 @@ class MessageController extends Controller
                 'languages' => Lang::getTranslatableLangnames(),
                 'langcode' => langcode('frontend'),
             ],
+            'langcode' => langcode('frontend'),
         ];
 
         return view('message::message.index', $data);
@@ -45,6 +46,8 @@ class MessageController extends Controller
         // 获取验证规则
         [$rules, $messages, $fields] = $form->resolveFieldRules();
 
+        // dd($rules, $messages, $fields);
+
         // 生成验证器
         $validator = Validator::make($attributes = $request->all(), $rules, $messages);
 
@@ -59,7 +62,7 @@ class MessageController extends Controller
         // 补全字段值
         $attributes = array_merge($attributes, [
             'mold_id' => $form->getKey(),
-            'langcode' => langcode('request'),
+            'langcode' => langcode('request') ?? langcode('frontend'),
             'ip' => $request->ip(),
             'user_agent' => $this->getUserAgent(),
             'trails' => $attributes['trails'] ?? $attributes['track_report'] ?? $attributes['trace_report'] ?? null,

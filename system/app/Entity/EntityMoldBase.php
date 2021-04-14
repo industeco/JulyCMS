@@ -256,14 +256,17 @@ abstract class EntityMoldBase extends ModelBase implements TranslatableInterface
         // 创建或更新后同步关联字段
         // 字段数据保存在 $raw 属性中
         static::saved(function(EntityMoldBase $mold) {
-            $mold->syncFields();
-            $mold->pocketClear('fieldsToControls');
+            if ($mold->getRaw()) {
+                $mold->syncFields();
+                $mold->clearRaw();
+            }
+            $mold->pocket()->clear('fieldsToControls');
         });
 
         // 删除时移除关联字段
         static::deleting(function(EntityMoldBase $mold) {
             $mold->fields()->detach();
-            $mold->pocketClear('fieldsToControls');
+            $mold->pocket()->clear('fieldsToControls');
         });
     }
 }

@@ -6,6 +6,7 @@ use App\EntityValue\EntityPathAlias;
 use App\EntityField\FieldBase;
 use App\Models\ModelBase;
 use App\Support\Arr;
+use App\Support\Lang;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -384,19 +385,23 @@ abstract class EntityBase extends ModelBase
     /**
      * 更新实体字段
      *
-     * @return void
+     * @return $this
      */
     public function updateFields()
     {
-        DB::beginTransaction();
+        if ($this->raw) {
+            DB::beginTransaction();
 
-        $this->fields->each(function(FieldBase $field) {
-            if (array_key_exists($id = $field->getKey(), $this->raw)) {
-                $field->bindEntity($this)->setValue($this->raw[$id]);
-            }
-        });
+            $this->fields->each(function(FieldBase $field) {
+                if (array_key_exists($id = $field->getKey(), $this->raw)) {
+                    $field->bindEntity($this)->setValue($this->raw[$id]);
+                }
+            });
 
-        DB::commit();
+            DB::commit();
+        }
+
+        return $this;
     }
 
     /**
@@ -421,7 +426,7 @@ abstract class EntityBase extends ModelBase
         }
 
         if ($html = $this->render()) {
-            return $this->pocket()->setKey('html')->put($html);
+            return $this->pocket('html')->put($html);
         }
 
         return null;
@@ -459,11 +464,11 @@ abstract class EntityBase extends ModelBase
     }
 
     /**
-     * 移除生成的 html 文件
+     * 移除渲染结果
      *
      * @return void
      */
-    public function removeHtmlFile()
+    public function clearRenderingResults()
     {
         $url = $this->url;
         if ($url && preg_match('/\.html?$/i', $url)) {
@@ -480,7 +485,7 @@ abstract class EntityBase extends ModelBase
             }
 
             // 删除各语言版本的 html
-            foreach (lang()->getLangcodes() as $langcode) {
+            foreach (Lang::getLangcodes() as $langcode) {
                 Storage::disk('public')->delete(strtolower($langcode).'/'.$path);
             }
         }
@@ -496,7 +501,7 @@ abstract class EntityBase extends ModelBase
         parent::boot();
 
         static::deleting(function(EntityBase $entity) {
-            $entity->removeHtmlFile();
+            $entity->clearRenderingResults();
             $entity->pocket()->clear('html', 'gather');
             $entity->fields->each(function (FieldBase $field) use($entity) {
                 $field->bindEntity($entity)->deleteValue();
@@ -504,9 +509,12 @@ abstract class EntityBase extends ModelBase
         });
 
         static::saved(function(EntityBase $entity) {
-            $entity->removeHtmlFile();
+            $entity->clearRenderingResults();
             $entity->pocket()->clear('html', 'gather');
-            $entity->updateFields();
+            if ($entity->getRaw()) {
+                $entity->updateFields();
+                $entity->clearRaw();
+            }
         });
     }
 

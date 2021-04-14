@@ -4,10 +4,12 @@ namespace July\Message;
 
 use App\Casts\Serialized;
 use App\Entity\EntityBase;
+use App\Support\Arr;
 use Illuminate\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use IP2Location\Database as Location;
+use July\Message\FieldTypes\Attachment;
 
 class Message extends EntityBase
 {
@@ -130,14 +132,19 @@ class Message extends EntityBase
     public function sendMail()
     {
         $content = $this->render();
+        $files = $this->getAttachments();
         $subject = $this->subject ?? 'New Message';
 
         try {
-
-            Mail::raw($content, function(MailMessage $message) use($subject) {
+            Mail::raw($content, function(MailMessage $message) use($subject, $files) {
                 $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
+                foreach ($files as $file) {
+                    $message->attach($file->getPathname(), [
+                        'mime' => $file->getMimeType(),
+                        'as' => $file->getClientOriginalName(),
+                    ]);
+                }
             });
-
             $success = true;
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
@@ -149,8 +156,7 @@ class Message extends EntityBase
         }
 
         if ($success && !$this->is_sent) {
-            $this->is_sent = true;
-            $this->save();
+            $this->update(['is_sent' => true]);
         }
 
         return $success;
@@ -175,12 +181,28 @@ class Message extends EntityBase
     }
 
     /**
+     * @return \Illuminate\Http\UploadedFile[]
+     */
+    public function getAttachments()
+    {
+        $attachments = [];
+        foreach ($this->fields as $field) {
+            if ($field->getFieldType() instanceof Attachment) {
+                $file = request()->file($field->getKey());
+                $attachments = array_merge($attachments, is_array($file) ? $file : [$file]);
+            }
+        }
+
+        return $attachments;
+    }
+
+    /**
      * 格式化浏览轨迹报告
      *
-     * @param  string $report
+     * @param  string|null $report
      * @return array
      */
-    protected function formatTrails(string $report)
+    protected function formatTrails(?string $report = null)
     {
         $report = json_decode(stripslashes($report), true);
 

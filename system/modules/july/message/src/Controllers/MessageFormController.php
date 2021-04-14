@@ -75,6 +75,7 @@ class MessageFormController extends Controller
                 'content_langcode' => langcode('content'),
                 'mode' => 'create',
             ],
+            'langcode' => langcode('content'),
         ];
     }
 

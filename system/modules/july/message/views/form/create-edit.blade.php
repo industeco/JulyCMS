@@ -126,13 +126,13 @@
     data() {
       return {
         mold: {
-          model: @jjson($model, JSON_PRETTY_PRINT),
-          fields: @jjson(array_values($context['fields']), JSON_PRETTY_PRINT),
+          model: @jjson($model),
+          fields: @jjson(array_values($context['fields'])),
           rules: {},
         },
 
         field: {
-          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template']),
           rules: {},
           dialogVisible: false,
         },
@@ -143,16 +143,16 @@
         },
 
         selectionData: {
-          fields: @jjson(array_values($context['all_fields']), JSON_PRETTY_PRINT),
+          fields: @jjson(array_values($context['all_fields'])),
           selection: [],
         },
 
         newField: {
-          model: @jjson($context['field_template'], JSON_PRETTY_PRINT),
+          model: @jjson($context['field_template']),
           rules: {},
-          template: @jjson($context['field_template'], JSON_PRETTY_PRINT),
+          template: @jjson($context['field_template']),
         },
-        fieldTypes: @jjson(get_field_types()),
+        fieldTypes: @jjson(get_field_types('message')),
       }
     },
 

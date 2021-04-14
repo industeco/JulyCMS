@@ -34,6 +34,14 @@ class MessageServiceProvider extends ModuleServiceProviderBase
         ];
     }
 
+    protected function discoverEntityFieldTypes()
+    {
+        return [
+            \July\Message\FieldTypes\Attachment::class,
+            \July\Message\FieldTypes\MultipleAttachment::class,
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */

@@ -24,7 +24,7 @@ class LaravelRule extends FormatBase
             }
         }
 
-        return compact('rules', 'messages');
+        return [[$group->getKey() => $rules], $messages];
     }
 
     /**
@@ -40,7 +40,7 @@ class LaravelRule extends FormatBase
             $msg = [$rule->getMessageKey() => $message];
         }
 
-        return [$rule->getName(), $msg];
+        return [$rule->getRule(), $msg];
     }
 
     /**

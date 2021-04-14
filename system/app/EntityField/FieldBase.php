@@ -492,6 +492,8 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
      */
     public function setValue($value)
     {
+        $value = $this->getFieldType()->formatRecordValue($value);
+
         return $this->getValueModel()->setValue($value, $this->entity);
     }
 

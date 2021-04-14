@@ -4,6 +4,7 @@ namespace July\Message;
 
 use App\Entity\EntityMoldBase;
 use Illuminate\Support\Facades\Log;
+use July\Message\FieldTypes\MultipleAttachment;
 
 class MessageForm extends EntityMoldBase
 {
@@ -93,7 +94,7 @@ class MessageForm extends EntityMoldBase
         foreach ($this->fields as $field) {
             $id = $field->getKey();
             [$fieldRules, $fieldMessages] = array_values($field->resolveRules());
-            $rules[$id] = $fieldRules;
+            $rules = array_merge($rules, $fieldRules);
             $messages = array_merge($messages, $fieldMessages);
             $fields[$id] = $field->label;
         }
