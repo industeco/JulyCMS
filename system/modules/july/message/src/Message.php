@@ -5,11 +5,13 @@ namespace July\Message;
 use App\Casts\Serialized;
 use App\Entity\EntityBase;
 use App\Support\Arr;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use IP2Location\Database as Location;
 use July\Message\FieldTypes\Attachment;
+use July\Message\FieldTypes\MultipleAttachment;
 
 class Message extends EntityBase
 {
@@ -132,17 +134,19 @@ class Message extends EntityBase
     public function sendMail()
     {
         $content = $this->render();
-        $files = $this->getAttachments();
+        $files = $this->getUploadedFiles();
         $subject = $this->subject ?? 'New Message';
 
         try {
             Mail::raw($content, function(MailMessage $message) use($subject, $files) {
                 $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
                 foreach ($files as $file) {
-                    $message->attach($file->getPathname(), [
-                        'mime' => $file->getMimeType(),
-                        'as' => $file->getClientOriginalName(),
-                    ]);
+                    if ($file->isValid()) {
+                        $message->attach($file->getPathname(), [
+                            'mime' => $file->getMimeType(),
+                            'as' => $file->getClientOriginalName(),
+                        ]);
+                    }
                 }
             });
             $success = true;
@@ -156,7 +160,7 @@ class Message extends EntityBase
         }
 
         if ($success && !$this->is_sent) {
-            $this->update(['is_sent' => true]);
+            $this->clearRaw()->update(['is_sent' => true]);
         }
 
         return $success;
@@ -183,17 +187,26 @@ class Message extends EntityBase
     /**
      * @return \Illuminate\Http\UploadedFile[]
      */
-    public function getAttachments()
+    public function getUploadedFiles()
     {
-        $attachments = [];
+        $files = [];
         foreach ($this->fields as $field) {
-            if ($field->getFieldType() instanceof Attachment) {
-                $file = request()->file($field->getKey());
-                $attachments = array_merge($attachments, is_array($file) ? $file : [$file]);
+            $fieldType = $field->getFieldType();
+            // 附件字段
+            if ($fieldType instanceof Attachment) {
+                if ($file = request()->file($field->getKey())) {
+                    $files[] = $file;
+                }
+            }
+
+            // 多附件字段
+            elseif ($fieldType instanceof MultipleAttachment) {
+                if ($files = request()->file($field->getKey())) {
+                    $files = array_merge($files, $files);
+                }
             }
         }
-
-        return $attachments;
+        return $files;
     }
 
     /**

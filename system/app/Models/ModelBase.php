@@ -226,12 +226,16 @@ abstract class ModelBase extends Model
 
     public function setRaw(?array $raw = null)
     {
-        return $this->raw = $raw;
+        $this->raw = $raw;
+
+        return $this;
     }
 
     public function clearRaw()
     {
-        return $this->raw = null;
+        $this->raw = null;
+
+        return $this;
     }
 
     /**
