@@ -8,7 +8,6 @@ use July\Message\FieldTypes\MultipleAttachment;
 
 class MessageForm extends EntityMoldBase
 {
-
     /**
      * 与模型关联的表名
      *

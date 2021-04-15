@@ -134,19 +134,14 @@ class Message extends EntityBase
     public function sendMail()
     {
         $content = $this->render();
-        $files = $this->getUploadedFiles();
+        $attachments = $this->getAttachments();
         $subject = $this->subject ?? 'New Message';
 
         try {
-            Mail::raw($content, function(MailMessage $message) use($subject, $files) {
+            Mail::raw($content, function(MailMessage $message) use($subject, $attachments) {
                 $message->subject($subject)->to(config('mail.to.address'), config('mail.to.name'));
-                foreach ($files as $file) {
-                    if ($file->isValid()) {
-                        $message->attach($file->getPathname(), [
-                            'mime' => $file->getMimeType(),
-                            'as' => $file->getClientOriginalName(),
-                        ]);
-                    }
+                foreach ($attachments as $attachment) {
+                    $message->attach($attachment['path'], $attachment['options']);
                 }
             });
             $success = true;
@@ -167,6 +162,43 @@ class Message extends EntityBase
     }
 
     /**
+     * @return array[]
+     */
+    public function getAttachments()
+    {
+        /** @var \Illuminate\Http\UploadedFile[] */
+        $files = [];
+
+        foreach ($this->fields as $field) {
+            $fieldType = $field->getFieldType();
+            // 附件字段
+            if ($fieldType instanceof Attachment) {
+                $files[] = request()->file($field->getKey());
+            }
+
+            // 多附件字段
+            elseif ($fieldType instanceof MultipleAttachment) {
+                $files = array_merge($files, request()->file($field->getKey()));
+            }
+        }
+
+        $attachments = [];
+        foreach ($files as $file) {
+            if ($file && $file->isValid()) {
+                $attachments[] = [
+                    'path' => $file->getPathname(),
+                    'options' => [
+                        'mime' => $file->getMimeType(),
+                        'as' => $file->getClientOriginalName(),
+                    ],
+                ];
+            }
+        }
+
+        return $attachments;
+    }
+
+    /**
      * Get the evaluated contents of the object.
      *
      * @return string
@@ -182,31 +214,6 @@ class Message extends EntityBase
         ];
 
         return app('twig')->render($view, $data);
-    }
-
-    /**
-     * @return \Illuminate\Http\UploadedFile[]
-     */
-    public function getUploadedFiles()
-    {
-        $files = [];
-        foreach ($this->fields as $field) {
-            $fieldType = $field->getFieldType();
-            // 附件字段
-            if ($fieldType instanceof Attachment) {
-                if ($file = request()->file($field->getKey())) {
-                    $files[] = $file;
-                }
-            }
-
-            // 多附件字段
-            elseif ($fieldType instanceof MultipleAttachment) {
-                if ($files = request()->file($field->getKey())) {
-                    $files = array_merge($files, $files);
-                }
-            }
-        }
-        return $files;
     }
 
     /**
