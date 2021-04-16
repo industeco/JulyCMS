@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\Arr;
+use App\Support\SetBase;
 use App\Support\Translation\TranslatableInterface;
 
 abstract class ModelSetBase extends SetBase
@@ -122,7 +122,7 @@ abstract class ModelSetBase extends SetBase
     /**
      * 创建 ModelSet
      *
-     * @return \App\Models\ModelSetBase|\App\Models\ModelBase[]
+     * @return static|\App\Models\ModelSetBase|\App\Models\ModelBase[]
      */
     public static function fetch()
     {
@@ -134,7 +134,7 @@ abstract class ModelSetBase extends SetBase
     /**
      * 创建 ModelSet，包含全部模型实例
      *
-     * @return \App\Models\ModelSetBase|\App\Models\ModelBase[]
+     * @return static|\App\Models\ModelSetBase|\App\Models\ModelBase[]
      */
     public static function fetchAll()
     {
