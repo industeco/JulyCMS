@@ -291,7 +291,7 @@ abstract class FieldBase extends ModelBase implements TranslatableInterface
         if ($this->entity) {
             return $this->entity->getLangcode();
         }
-        return $this->contentLangcode ?? $this->getOriginalLangcode();
+        return $this->translationLangcode ?? $this->getOriginalLangcode();
     }
 
     /**

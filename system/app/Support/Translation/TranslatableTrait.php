@@ -7,13 +7,18 @@ trait TranslatableTrait
     protected $langcodeColumn = 'langcode';
 
     /**
+     * @var string|null
+     */
+    protected $translationLangcode = null;
+
+    /**
      * 设置实例当前语言
      *
      * @return string
      */
     public function setLangcode(string $langcode)
     {
-        $this->attributes[$this->langcodeColumn] = $langcode;
+        $this->translationLangcode = $langcode;
 
         return $this;
     }
@@ -25,7 +30,7 @@ trait TranslatableTrait
      */
     public function getLangcode()
     {
-        return $this->attributes[$this->langcodeColumn] ?? $this->getOriginalLangcode();
+        return $this->translationLangcode ?? $this->getOriginalLangcode();
     }
 
     /**

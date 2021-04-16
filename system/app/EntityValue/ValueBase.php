@@ -251,23 +251,23 @@ abstract class ValueBase extends ModelBase
     /**
      * 获取所有字段值
      *
-     * @param  string|null $langcode 指定语言版本
      * @return array
      */
-    public function values(?string $langcode = null)
+    public function values()
     {
-        $conditions = [
-            'langcode' => $langcode ?? $this->field->getLangcode(),
-        ];
+        $conditions = [];
         if (in_array('entity_name', $this->fillable)) {
             $conditions['entity_name'] = $this->field->getBoundEntityName();
         }
 
         return $this->newQuery()
             ->where($conditions)
-            ->get(['entity_id', $this->valueColumn])
-            ->pluck($this->valueColumn, 'entity_id')
-            ->all();
+            ->get(['entity_id', 'langcode', $this->valueColumn])
+            ->reduce(function($values, $record) {
+                return array_merge($values, [
+                    $record['entity_id'].'/'.$record['langcode'] => $record[$this->valueColumn],
+                ]);
+            }, []);
     }
 
     /**

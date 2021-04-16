@@ -118,7 +118,7 @@ class AnyPage extends Controller
     {
         $langcode = langcode('request') ?? langcode('frontend');
 
-        if ($entity = $this->getEntity($url)) {
+        if ($entity = $this->getEntity($url, $langcode)) {
             if ($entity instanceof TranslatableEntityBase) {
                 $entity->translateTo($langcode);
             }
@@ -133,16 +133,17 @@ class AnyPage extends Controller
      * 获取网址对应的实体
      *
      * @param  string $url
+     * @param  string $langcode
      * @return \App\Entity\EntityBase|null
      */
-    protected function getEntity(string $url)
+    protected function getEntity(string $url, string $langcode)
     {
         if ($url === '/') {
             $url .= 'index.html';
         }
 
         // 查找 Entity
-        if ($entity = EntityPathAlias::findEntity($url)) {
+        if ($entity = EntityPathAlias::findEntity($url, $langcode)) {
             return $entity;
         }
 

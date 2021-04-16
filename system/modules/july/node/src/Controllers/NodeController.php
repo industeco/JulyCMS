@@ -148,22 +148,17 @@ class NodeController extends Controller
      */
     public function update(Request $request, Node $node)
     {
-        $langcode = request('langcode') ?? langcode('content');
+        $langcode = langcode('request') ?? $node->getOriginalLangcode();
 
-        // 更新
-        if ($langcode === $node->getOriginalLangcode()) {
+        $node->translateTo($langcode);
+
+        if ($node->isTranslated()) {
+            $node->update($request->all());
+        } else {
             $changed = (array) $request->input('_changed');
             if ($changed) {
                 $node->update($request->only($changed));
             }
-        }
-
-        // 更新翻译版本
-        else {
-            $node->translations()->updateOrCreate([
-                'entity_id' => $node->getKey(),
-                'langcode' => $langcode,
-            ], $request->except(['id', 'entity_id', 'langcode']));
         }
 
         return response('');

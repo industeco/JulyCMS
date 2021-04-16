@@ -96,11 +96,18 @@ class EntityPathAlias extends ValueBase
      * 根据网址或路径查找实体
      *
      * @param string $alias
+     * @param string|null $langcode
      * @return \App\Entity\EntityBase|null
      */
-    public static function findEntity(string $alias)
+    public static function findEntity(string $alias, ?string $langcode = null)
     {
-        if ($instance = static::ofAlias($alias)->first()) {
+        /** @var \Illuminate\Database\Eloquent\Builder */
+        $query = static::ofAlias($alias);
+        if ($langcode) {
+            $query->where('langcode', $langcode);
+        }
+
+        if ($instance = $query->first()) {
             return EntityManager::resolve($instance->entity_name, $instance->entity_id);
         }
         return null;

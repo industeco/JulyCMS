@@ -341,8 +341,9 @@ abstract class EntityBase extends ModelBase
     public function getFieldValue($key)
     {
         $values = $this->getFieldValues([$key])[$key] ?? [];
+        $valueKey = $this->getEntityId().'/'.$this->getLangcode();
 
-        return $this->transformAttributeValue($key, $values[$this->getKey()] ?? null);
+        return $this->transformAttributeValue($key, $values[$valueKey] ?? null);
     }
 
     /**
@@ -354,10 +355,10 @@ abstract class EntityBase extends ModelBase
     {
         $fieldValues = static::getFieldValues();
 
-        $id = $this->getEntityId();
+        $key = $this->getEntityId().'/'.$this->getLangcode();
         $attributes = [];
         foreach ($fieldValues as $field => $values) {
-            $attributes[$field] = $values[$id] ?? null;
+            $attributes[$field] = $values[$key] ?? null;
         }
 
         return $this->transformAttributesArray($attributes);

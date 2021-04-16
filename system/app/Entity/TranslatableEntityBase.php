@@ -6,6 +6,7 @@ use App\Support\Arr;
 use App\Support\Lang;
 use App\Support\Translation\TranslatableInterface;
 use App\Support\Translation\TranslatableTrait;
+use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -26,6 +27,11 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
     protected $translation = null;
 
     /**
+     * @var array
+     */
+    protected $translationAttributes = [];
+
+    /**
      * 获取绑定的翻译类
      *
      * @return string
@@ -41,13 +47,46 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
     }
 
     /**
+     * Update the model in the database.
+     *
+     * @param  array  $attributes
+     * @param  array  $options
+     * @return bool
+     */
+    public function update(array $attributes = [], array $options = [])
+    {
+        if (! $this->exists) {
+            return false;
+        }
+
+        if ($this->isTranslated()) {
+            $attributes = Arr::except($attributes, ['id', 'entity_id', 'langcode']);
+            $this->translations()->updateOrCreate([
+                'entity_id' => $this->getKey(),
+                'langcode' => $this->getLangcode(),
+            ], $attributes);
+
+            $raw = Arr::except($attributes, $this->getFillable());
+            $this->setRaw($raw)->updateFields()->clearRaw();
+
+            return $this->touch();
+        }
+
+        if ($this->immutable) {
+            $attributes = Arr::except($attributes, $this->immutable);
+        }
+
+        return $this->fill($attributes)->save($options);
+    }
+
+    /**
      * 设置实例当前语言
      *
      * @return string
      */
     public function setLangcode(string $langcode)
     {
-        $this->attributes[$this->langcodeColumn] = $langcode;
+        $this->translationLangcode = $langcode;
 
         $this->pocket = null;
 
@@ -84,7 +123,13 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
     {
         $this->setLangcode($langcode);
 
-        $this->translation = $this->isTranslated() ? $this->getTranslation() : null;
+        if ($this->isTranslated()) {
+            $this->translation = $this->getTranslation();
+        } else {
+            $this->translation = null;
+        }
+
+        $this->translationAttributes = $this->translation ? $this->translation->toEntityAttributes() : $this->attributes;
 
         return $this;
     }
@@ -96,21 +141,42 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
      */
     public function getAttributes()
     {
-        if ($this->translation && $this->isTranslated()) {
-            $attributes = $this->attributes;
-
-            $this->setRawAttributes($this->translation->toEntityAttributes());
-
-            $this->mergeAttributesFromClassCasts();
-
-            return tap($this->attributes, function() use($attributes) {
-                $this->setRawAttributes($attributes);
-            });
+        if ($this->translation) {
+            return $this->getTranslationAttributes();
         }
 
-        $this->mergeAttributesFromClassCasts();
+        return $this->getModelAttributes();
+    }
 
-        return $this->attributes;
+    /**
+     * Get all of the translated attributes on the model.
+     *
+     * @return array
+     */
+    public function getTranslationAttributes()
+    {
+        $this->mergeTranslationAttributesFromClassCasts();
+
+        return $this->translationAttributes;
+    }
+
+    /**
+     * Merge the cast class attributes back into the model.
+     *
+     * @return void
+     */
+    protected function mergeTranslationAttributesFromClassCasts()
+    {
+        foreach ($this->classCastCache as $key => $value) {
+            $caster = $this->resolveCasterClass($key);
+
+            $this->translationAttributes = array_merge(
+                $this->translationAttributes,
+                $caster instanceof CastsInboundAttributes
+                       ? [$key => $value]
+                       : $this->normalizeCastClassResponse($key, $caster->set($this, $key, $value, $this->translationAttributes))
+            );
+        }
     }
 
     /**
@@ -126,12 +192,14 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
         if (preg_match('/\.html?$/i', $url)) {
             $url = ltrim($url, '/');
 
-             // 在不带语言的路径下生成 html 文件
-            Storage::disk('public')->put($url, $html);
-
             if ($langcode) {
                 // 在带语言的路径下生成 html 文件
                 Storage::disk('public')->put(strtolower($langcode).'/'.$url, $html);
+            }
+
+            if (!$langcode || $langcode === langcode('frontend')) {
+                // 在不带语言的路径下生成 html 文件
+                Storage::disk('public')->put($url, $html);
             }
         }
 
