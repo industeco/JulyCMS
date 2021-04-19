@@ -40,7 +40,7 @@ trait TranslatableTrait
      */
     public function getOriginalLangcode()
     {
-        return $this->original[$this->langcodeColumn] ?? null;
+        return $this->original[$this->langcodeColumn] ?? $this->attributes[$this->langcodeColumn] ?? langcode('content');
     }
 
     /**
