@@ -178,7 +178,10 @@ class Message extends EntityBase
 
             // 多附件字段
             elseif ($fieldType instanceof MultipleAttachment) {
-                $files = array_merge($files, request()->file($field->getKey()));
+                $value = request()->file($field->getKey());
+                if (is_array($value)) {
+                    $files = array_merge($files, $value);
+                }
             }
         }
 
@@ -203,7 +206,7 @@ class Message extends EntityBase
      *
      * @return string
      */
-    public function render()
+    public function render($showin = 'mail')
     {
         $view = 'message/content/'.$this->mold_id.'.twig';
         $data = [
@@ -211,6 +214,7 @@ class Message extends EntityBase
             'fields' => $this->fields->map(function (MessageField $field) {
                     return array_merge($field->getMeta(), ['value' => $field->bindEntity($this)->getValue()]);
                 })->keyBy('id')->all(),
+            'show_in' => $showin,
         ];
 
         return app('twig')->render($view, $data);

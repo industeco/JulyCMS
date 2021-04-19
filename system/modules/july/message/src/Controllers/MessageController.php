@@ -92,7 +92,7 @@ class MessageController extends Controller
      */
     public function show(Message $message)
     {
-        return $message->render();
+        return $message->render('details');
     }
 
     /**

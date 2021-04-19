@@ -68,9 +68,6 @@
         </button>
       </div>
     </div>
-    {{-- <div id="main_form_right">
-      <h2 class="jc-form-info-item">通用非必填项</h2>
-    </div> --}}
   </el-form>
   <el-dialog
     id="field_selector"
@@ -95,7 +92,7 @@
         </el-table>
       </el-tab-pane>
       <el-tab-pane label="新建字段" name="creation" class="md-scrollbar md-theme-default">
-        <x-field.create-edit scope="newField" model="newField.model" mode="creation" entity="$context['entity_name']" />
+        <x-field.create-edit scope="newField" model="newField.model" mode="creation" entity="{{ $context['entity_name'] }}" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
