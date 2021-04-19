@@ -111,7 +111,7 @@ class NodeController extends Controller
         });
 
         $data = [
-            'model' => $node->gather(),
+            'model' => array_merge($node->gather(), ['langcode' => $node->getLangcode()]),
             'context' => [
                 'mold' => $node->mold,
                 'global_fields' => $fields->get('global'),

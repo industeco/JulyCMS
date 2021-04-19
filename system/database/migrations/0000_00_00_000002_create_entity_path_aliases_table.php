@@ -29,9 +29,11 @@ class CreateEntityPathAliasesTable extends Migration
             $table->string('langcode', 12);
 
             // 路径别名
-            $table->string('alias')->unique();
+            $table->string('alias');
 
             $table->timestamps();
+
+            $table->unique(['langcode','alias']);
         });
     }
 
