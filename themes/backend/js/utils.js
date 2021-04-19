@@ -118,14 +118,13 @@ function unique(action) {
 }
 
 // 检查是否已存在
-function exists(action, except) {
+function exists(action, current, except) {
+  except = except == null ? null : except;
   return function(rule, value, callback) {
-    console.log(except)
-    console.log(value)
-    if (!value || value == except) {
+    if (!value || value == current) {
       return callback();
     }
-    axios.post(action, {value:value}).then(function(response) {
+    axios.post(action, {value:value,except:except}).then(function(response) {
       if (response.data.exists) {
         callback(new Error('已存在'));
       } else {

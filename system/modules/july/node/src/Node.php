@@ -143,9 +143,9 @@ class Node extends TranslatableEntityBase
         return static::all()->map(function(Node $node) use($fieldValues) {
                 $attributes = $node->attributesToArray();
 
-                $id = $attributes['id'];
+                $key = $attributes['id'].'/'.$node->getLangcode();
                 foreach ($fieldValues as $field => $values) {
-                    $attributes[$field] = $values[$id] ?? null;
+                    $attributes[$field] = $values[$key] ?? null;
                 }
                 $attributes['suggested_templates'] = $node->getSuggestedTemplates($attributes['url'] ?? null);
                 return $attributes;

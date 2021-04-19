@@ -96,10 +96,11 @@ class JsRule extends FormatBase
      */
     protected function exists(Rule $rule)
     {
-        $params = explode(',', $rule->getParameters(), 2);
+        $params = explode(',', $rule->getParameters(), 3);
         $route = htmlspecialchars(short_url($params[0]), ENT_QUOTES|ENT_HTML5);
-        $except = htmlspecialchars($params[1] ?? '', ENT_QUOTES|ENT_HTML5);
+        $current = htmlspecialchars($params[1] ?? '', ENT_QUOTES|ENT_HTML5);
+        $except = $params[2] ?? '';
 
-        return "{validator:exists('{$route}','{$except}'),trigger:'blur'}";
+        return "{validator:exists('{$route}','{$current}',{$except}),trigger:'blur'}";
     }
 }

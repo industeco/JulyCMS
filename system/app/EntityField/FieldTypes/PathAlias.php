@@ -48,8 +48,14 @@ class PathAlias extends FieldTypeBase
     public function getRules(?array $meta = null)
     {
         $meta = $meta ?? $this->getMeta();
+        $current = $meta['value'] ?? null;
+        $except = null;
+        if ($this->field && $entity = $this->field->getBoundEntity()) {
+            $except = $entity->getKey();
+        }
 
-        return parent::getRules($meta)->addRules('pathAlias')
-            ->addRules('pathAlias|exists:path_alias.exists,'.($meta['value'] ?? null));
+        return parent::getRules($meta)
+            ->addRules('pathAlias')
+            ->addRules('exists:path_alias.exists,'.$current.','.$except);
     }
 }
