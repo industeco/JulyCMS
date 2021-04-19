@@ -168,6 +168,7 @@
             @endif
 
             const model = _.cloneDeep(this.model);
+            model.langcode = '{{ $langcode }}';
             model._changed = changed;
 
             @if ($context['mode'] !== 'create')
