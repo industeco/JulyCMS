@@ -201,6 +201,14 @@ class Node extends TranslatableEntityBase
      */
     public function render($twig = null)
     {
+        if (! $twig) {
+            /** @var \Twig\Environment */
+            $twig = app('twig');
+        }
+
+        /** @var \App\Support\JustInTwig */
+        $jit = $twig->getGlobals()['_jit'] ?? new JustInTwig;
+
         $view = $this->getPreferredTemplate();
         if (! $view) {
             return '';
@@ -208,16 +216,8 @@ class Node extends TranslatableEntityBase
 
         $data = $this->gather();
 
-        if (! $twig) {
-            /** @var \Twig\Environment */
-            $twig = app('twig');
-        }
-
         $langcode = $this->getLangcode();
         $url = $data['url'] ?? '/'.$this->getEntityPath();
-
-        /** @var \App\Support\JustInTwig */
-        $jit = $twig->getGlobals()['_jit'] ?? new JustInTwig;
 
         $globals = [
             '_node' => $this,
@@ -227,9 +227,11 @@ class Node extends TranslatableEntityBase
             '_languages' => $this->getLanguageOptions($url),
         ];
 
-        $twig->mergeGlobals($globals);
         $jit->mergeGlobals($globals);
 
+        foreach ($globals as $key => $value) {
+            $twig->addGlobal($key, $value);
+        }
         $twig->addGlobal('_jit', $jit);
 
         if (config('lang.multiple')) {
