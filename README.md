@@ -1,1 +1,1 @@
-# JulyCMS2
+# JulyCMS
