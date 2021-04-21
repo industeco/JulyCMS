@@ -1,9 +1,6 @@
 <?php
 
-namespace App\Concerns;
-
-use App\Support\Pocket;
-use App\Support\Value;
+namespace App\Support;
 
 trait CacheResultTrait
 {

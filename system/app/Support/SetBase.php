@@ -499,7 +499,7 @@ abstract class SetBase implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @param  string|array  $value
      * @param  string|null  $key
-     * @return static
+     * @return \Illuminate\Support\Collection
      */
     public function pluck($value, $key = null)
     {

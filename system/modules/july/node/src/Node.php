@@ -287,7 +287,7 @@ class Node extends TranslatableEntityBase
     }
 
     /**
-     * 在指定的目录中，获取当前节点集的直接子节点
+     * 在指定的目录中，获取当前节点的直接子节点
      *
      * @param mixed $catalog
      * @return \July\Node\NodeSet
@@ -417,6 +417,7 @@ class Node extends TranslatableEntityBase
     public function get_catalogs()
     {
         $catalogs = $this->catalogs()->get()->keyBy('id');
+
         return CatalogSet::make($catalogs);
     }
 

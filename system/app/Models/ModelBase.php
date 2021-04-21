@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Concerns\CacheResultTrait;
+use App\Support\CacheResultTrait;
 use App\Support\Arr;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
