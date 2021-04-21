@@ -7,6 +7,7 @@ use App\Support\Translation\TranslatableInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use stdClass;
 
 class Pocket
 {
@@ -169,8 +170,10 @@ class Pocket
      */
     public function get($key = null)
     {
-        $value = Cache::get($this->getKey($key)->value(), $this);
-        if ($value === $this) {
+        $placeholder = new stdClass;
+
+        $value = Cache::get($this->getKey($key)->value(), $placeholder);
+        if ($value === $placeholder) {
             return null;
         }
 
