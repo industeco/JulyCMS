@@ -4,8 +4,6 @@ namespace July\Message;
 
 use App\Casts\Serialized;
 use App\Entity\EntityBase;
-use App\Support\Arr;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
