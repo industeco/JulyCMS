@@ -280,9 +280,9 @@
             this.selectedRecords = [];
           }
 
-          axios.post("{{ short_url('manage.specs.records.destroy', $spec_id) }}", {
-            records: records.map(rec => rec.id),
-          }).then(response => {
+          axios.delete("{{ short_url('manage.specs.records.destroy', $spec_id) }}", {
+              data: {records: records.map(rec => rec.id)}
+            }).then(response => {
             records.forEach(rec => {
               this.presentRecords.splice(this.presentRecords.indexOf(rec), 1);
               this.allRecords.splice(this.allRecords.indexOf(rec), 1);
