@@ -77,6 +77,17 @@ class Html
         return array_values(array_unique($matches[$capture]));
     }
 
+    /**
+     * 压缩 html
+     *
+     * @param  string $html
+     * @return string
+     */
+    public static function compress(string $html)
+    {
+        return preg_replace('/>\n\s+/', ">\n", trim($html));
+    }
+
     public function __toString()
     {
         return $this->html;

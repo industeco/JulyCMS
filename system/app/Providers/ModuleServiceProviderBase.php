@@ -98,11 +98,14 @@ abstract class ModuleServiceProviderBase extends ServiceProvider
      */
     protected function loadModuleRoutes()
     {
-        // 加载 web 路由
-        Route::middleware('web')->group($this->getModulePath('routes/web.php'));
-
         // 加载 api 路由
-        Route::middleware('api')->group($this->getModulePath('routes/api.php'));
+        Route::prefix('api')
+            ->middleware('api')
+            ->group($this->getModulePath('routes/api.php'));
+
+        // 加载 web 路由
+        Route::middleware('web')
+            ->group($this->getModulePath('routes/web.php'));
     }
 
     /**

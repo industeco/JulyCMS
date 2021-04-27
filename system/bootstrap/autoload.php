@@ -5,7 +5,7 @@ define('LARAVEL_START', microtime(true));
 /**
  * @author   jchenk <jchenk@live.com>
  */
-define('JULYCMS_VERSION', '3.4.0');
+define('JULYCMS_VERSION', '3.5.0');
 
 /*
 |--------------------------------------------------------------------------

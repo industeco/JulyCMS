@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use July\Node\Node;
 use July\Node\NodeField;
-use Specs\Record;
+use Specs\Engine;
 use Specs\Spec;
 
 class RecordController extends Controller
@@ -99,15 +99,18 @@ class RecordController extends Controller
      */
     public function search(Request $request)
     {
-        $results = Record::search($request->input('limit', 0), urldecode($request->input('keywords')));
+        $keywords = urldecode($request->input('keywords'));
 
-        $results['keywords'] = $request->input('keywords');
-        $results['title'] = 'Search';
-        $results['meta_title'] = 'Search Result';
-        $results['meta_keywords'] = 'Search';
-        $results['meta_description'] = 'Search Result';
+        $data = [
+            'results' => Engine::search($keywords),
+            'keywords' => $keywords,
+            'title' => 'Search',
+            'meta_title' => 'Search Result',
+            'meta_keywords' => 'Search',
+            'meta_description' => 'Search Result',
+        ];
 
-        return html_compress(app('twig')->render('specs/search.twig', $results));
+        return html_compress(app('twig')->render('specs/search.twig', $data));
     }
 
     /**
@@ -118,16 +121,7 @@ class RecordController extends Controller
      */
     public function fetch(Request $request)
     {
-        $limit = $request->input('limit', 0);
-
-        $spec_id = $request->input('spec_id') ?: $request->input('category');
-        if ($spec_id && $spec = Spec::find($spec_id)) {
-            $results = $spec->search($limit);
-        } else {
-            $results = Record::search($limit);
-        }
-
-        return response($results);
+        return response(Engine::search());
     }
 
     /**
