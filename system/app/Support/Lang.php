@@ -92,6 +92,11 @@ class Lang
             case 'rendering':
                 $code = config('lang.rendering');
                 break;
+
+            // 输出语言
+            case 'output':
+                $code = config('lang.output');
+                break;
         }
 
         // 获取正确形式

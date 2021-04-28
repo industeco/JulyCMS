@@ -133,9 +133,10 @@ abstract class EntityBase extends ModelBase
 
     public function getUrlAttribute($url)
     {
-        if ($langcode = langcode('rendering')) {
+        if ($langcode = langcode('output')) {
             return '/'.strtolower($langcode).$url;
         }
+
         return $url;
     }
 

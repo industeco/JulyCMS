@@ -239,6 +239,7 @@ class Node extends TranslatableEntityBase
         if ($multiple) {
             if ($renderingLangcode) {
                 $data['url'] = '/'.strtolower($renderingLangcode).$url;
+                config()->set('lang.output', $renderingLangcode);
             }
             config()->set('lang.rendering', $renderingLangcode ?? $this->getLangcode());
         }
@@ -247,6 +248,7 @@ class Node extends TranslatableEntityBase
         $html = $twig->render($view, $data);
 
         config()->set('lang.rendering', null);
+        config()->set('lang.output', null);
 
         $html = html_compress($html);
 
