@@ -236,10 +236,11 @@ class Node extends TranslatableEntityBase
         }
         $twig->addGlobal('_jit', $jit);
 
-        if ($multiple && $renderingLangcode) {
-            $data['url'] = '/'.strtolower($renderingLangcode).$url;
-
-            config()->set('lang.rendering', $renderingLangcode);
+        if ($multiple) {
+            if ($renderingLangcode) {
+                $data['url'] = '/'.strtolower($renderingLangcode).$url;
+            }
+            config()->set('lang.rendering', $renderingLangcode ?? $this->getLangcode());
         }
 
         // 生成 html
