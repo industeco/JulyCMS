@@ -2,6 +2,7 @@
 
 namespace July\Node\TwigExtensions;
 
+use July\Node\Catalog;
 use July\Node\CatalogSet;
 use July\Node\NodeSet;
 use July\Node\NodeTypeSet;
@@ -99,6 +100,13 @@ class NodeMixin
             }
 
             return $node_id === $current->getKey() || in_array($node_id, $path);
+        };
+    }
+
+    public function get_columns()
+    {
+        return function($catalog = null) {
+            return CatalogSet::fetch($catalog)->get_under(0);
         };
     }
 }

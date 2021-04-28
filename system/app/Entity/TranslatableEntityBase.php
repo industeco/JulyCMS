@@ -184,23 +184,12 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
      *
      * @param  string $html
      * @param  string $url
-     * @param  string|null $langcode
      * @return $this
      */
-    protected function cacheHtml(string $html, string $url, ?string $langcode = null)
+    protected function cacheHtml(string $html, string $url)
     {
         if (preg_match('/\.html?$/i', $url)) {
-            $url = ltrim($url, '/');
-
-            if ($langcode) {
-                // 在带语言的路径下生成 html 文件
-                Storage::disk('public')->put(strtolower($langcode).'/'.$url, $html);
-            }
-
-            if (!$langcode || $langcode === langcode('frontend')) {
-                // 在不带语言的路径下生成 html 文件
-                Storage::disk('public')->put($url, $html);
-            }
+            Storage::disk('public')->put(ltrim($url, '/'), $html);
         }
 
         return $this;

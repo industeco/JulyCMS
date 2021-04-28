@@ -197,9 +197,10 @@ class Node extends TranslatableEntityBase
      * Get content as a string of HTML.
      *
      * @param  \Twig\Environment|null $twig
+     * @param  string|null $renderingLangcode 渲染语言
      * @return string
      */
-    public function render($twig = null)
+    public function render($twig = null, $renderingLangcode = null)
     {
         if (! $twig) {
             /** @var \Twig\Environment */
@@ -214,14 +215,15 @@ class Node extends TranslatableEntityBase
             return '';
         }
 
+        $multiple = config('lang.multiple');
+
         $data = $this->gather();
 
-        $langcode = $this->getLangcode();
         $url = $data['url'] ?? '/'.$this->getEntityPath();
 
         $globals = [
             '_node' => $this,
-            '_langcode' => $langcode,
+            '_langcode' => $renderingLangcode,
             '_path' => $this->get_path(),
             '_canonical' => $this->getCanonical($url),
             '_languages' => $this->getLanguageOptions($url),
@@ -234,8 +236,10 @@ class Node extends TranslatableEntityBase
         }
         $twig->addGlobal('_jit', $jit);
 
-        if (config('lang.multiple')) {
-            config()->set('lang.rendering', $langcode);
+        if ($multiple && $renderingLangcode) {
+            $data['url'] = '/'.strtolower($renderingLangcode).$url;
+
+            config()->set('lang.rendering', $renderingLangcode);
         }
 
         // 生成 html
@@ -245,7 +249,7 @@ class Node extends TranslatableEntityBase
 
         $html = html_compress($html);
 
-        $this->cacheHtml($html, $url, config('lang.multiple') ? $langcode : null);
+        $this->cacheHtml($html, $data['url']);
 
         return $html;
     }

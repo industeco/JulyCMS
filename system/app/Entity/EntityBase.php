@@ -131,6 +131,14 @@ abstract class EntityBase extends ModelBase
         return $this->{$this->getTitleColumn()};
     }
 
+    public function getUrlAttribute($url)
+    {
+        if ($langcode = langcode('rendering')) {
+            return '/'.strtolower($langcode).$url;
+        }
+        return $url;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -544,20 +552,18 @@ abstract class EntityBase extends ModelBase
             })->keyBy($keyName)->sortBy('delta');
     }
 
-    // /**
-    //  * 实体保存
-    //  *
-    //  * @param  array  $options
-    //  * @return bool
-    //  */
-    // public function save(array $options = [])
-    // {
-    //     $saved = parent::save($options);
+    public function getUrl($forceLangcode = false)
+    {
+        $url = '/'.ltrim($this->url, '/');
 
-    //     DB::transaction(function () {
-    //         $this->updateFields();
-    //     });
+        if ($forceLangcode) {
+            return '/'.strtolower(langcode('rendering') ?? $this->getLangcode()).$url;
+        }
 
-    //     return $saved;
-    // }
+        if ($langcode = langcode('rendering')) {
+            return '/'.strtolower($langcode).$url;
+        }
+
+        return $url;
+    }
 }

@@ -223,11 +223,13 @@ class NodeController extends Controller
             $nodes = NodeSet::fetch($ids);
         }
 
+        $frontendLangcode = langcode('frontend');
+
         // 多语言生成
-        if (config('lang.multiple')) {
+        if ($multiple = config('lang.multiple')) {
             $langs = Lang::getAccessibleLangcodes();
         } else {
-            $langs = [langcode('frontend')];
+            $langs = [$frontendLangcode];
         }
 
         /** @var \Twig\Environment */
@@ -236,15 +238,28 @@ class NodeController extends Controller
         $success = [];
         foreach ($nodes as $node) {
             $result = [];
-            foreach ($langs as $langcode) {
-                try {
-                    $node->translateTo($langcode)->render($twig);
-                    $result[$langcode] = true;
-                } catch (\Throwable $th) {
-                    $result[$langcode] = false;
-                    Log::error($th->getMessage());
+
+            try {
+                $node->translateTo($frontendLangcode)->render($twig);
+            } catch (\Throwable $th) {
+                $result['_default'] = false;
+
+                Log::error($th->getMessage());
+            }
+
+            if ($multiple) {
+                foreach ($langs as $langcode) {
+                    try {
+                        $node->translateTo($langcode)->render($twig, $langcode);
+                        $result[$langcode] = true;
+                    } catch (\Throwable $th) {
+                        $result[$langcode] = false;
+
+                        Log::error($th->getMessage());
+                    }
                 }
             }
+
             $success[$node->id] = $result;
         }
 
