@@ -51,7 +51,7 @@ class PathAlias extends FieldTypeBase
         $current = $meta['value'] ?? null;
         $except = null;
         if ($this->field && $entity = $this->field->getBoundEntity()) {
-            $except = $entity->getKey();
+            $except = '\''.$entity->getEntityPath().'\'';
         }
 
         return parent::getRules($meta)

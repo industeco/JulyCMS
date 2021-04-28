@@ -218,19 +218,16 @@ class NodeController extends Controller
      */
     public function render(Request $request)
     {
-        $nodes = NodeSet::fetchAll();
         if ($ids = $request->input('nodes')) {
             $nodes = NodeSet::fetch($ids);
+        } else {
+            $nodes = NodeSet::fetchAll();
         }
 
         $frontendLangcode = langcode('frontend');
 
         // 多语言生成
-        if ($multiple = config('lang.multiple')) {
-            $langs = Lang::getAccessibleLangcodes();
-        } else {
-            $langs = [$frontendLangcode];
-        }
+        $langs = config('lang.multiple') ? Lang::getAccessibleLangcodes() : [];
 
         /** @var \Twig\Environment */
         $twig = app('twig');
@@ -247,7 +244,7 @@ class NodeController extends Controller
                 Log::error($th->getMessage());
             }
 
-            if ($multiple) {
+            if ($langs) {
                 foreach ($langs as $langcode) {
                     try {
                         $node->translateTo($langcode)->render($twig, $langcode);
@@ -260,7 +257,7 @@ class NodeController extends Controller
                 }
             }
 
-            $success[$node->id] = $result;
+            $success[$node->url] = $result;
         }
 
         return response($success);

@@ -261,9 +261,7 @@ class Node extends TranslatableEntityBase
      */
     public function getPreferredTemplate()
     {
-        $langcode = $this->getLangcode();
         foreach ($this->getSuggestedTemplates() as $view) {
-            $view = str_replace('{lang}', $langcode, $view);
             if (is_file(frontend_path('template/'.$view))) {
                 return $view;
             }

@@ -53,7 +53,6 @@ class EntityPathAlias extends ValueBase
      */
     public function scopeOfAlias($query, $alias)
     {
-        $alias = '/'.trim(trim(str_replace('\\', '/', $alias)), '/');
         $condition = [
             ['alias', '=', $alias, 'or'],
             ['entity_path', '=', trim($alias, '/'), 'or'],

@@ -135,6 +135,42 @@ abstract class TranslatableEntityBase extends EntityBase implements Translatable
     }
 
     /**
+     * 获取实体字段值
+     *
+     * @param  string|int $key 字段 id
+     * @return mixed
+     */
+    public function getFieldValue($key)
+    {
+        $values = $this->getFieldValues([$key])[$key] ?? [];
+
+        $valueKey = $this->getEntityId().'/'.$this->getLangcode();
+        $originalKey = $this->getEntityId().'/'.$this->getOriginalLangcode();
+
+        return $this->transformAttributeValue($key, $values[$valueKey] ?? $values[$originalKey] ?? null);
+    }
+
+    /**
+     * 获取所有实体字段值
+     *
+     * @return array
+     */
+    public function fieldsToArray()
+    {
+        $fieldValues = static::getFieldValues();
+
+        $key = $this->getEntityId().'/'.$this->getLangcode();
+        $originalKey = $this->getEntityId().'/'.$this->getOriginalLangcode();
+
+        $attributes = [];
+        foreach ($fieldValues as $field => $values) {
+            $attributes[$field] = $values[$key] ?? $values[$originalKey] ?? null;
+        }
+
+        return $this->transformAttributesArray($attributes);
+    }
+
+    /**
      * Get all of the current attributes on the model.
      *
      * @return array

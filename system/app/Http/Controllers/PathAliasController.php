@@ -83,8 +83,13 @@ class PathAliasController extends Controller
     public function exists(Request $request)
     {
         $value = $request->input('value');
-        if ($except = $request->get('except')) {
-            $first = EntityPathAlias::ofAlias($value)->where('entity_id', '!=', $except)->first();
+        if ($except = $request->input('except')) {
+            [$entityName, $entityId] = explode('/', $except);
+
+            $first = EntityPathAlias::ofAlias($value)->where([
+                ['entity_name', '!=', $entityName, 'and'],
+                ['entity_id', '!=', $entityId, 'and'],
+            ])->first();
         } else {
             $first = EntityPathAlias::ofAlias($value)->first();
         }
