@@ -108,13 +108,14 @@ class JustInTwig
      */
     public function getTranslations(string $langcode)
     {
+        $langcode = strtolower($langcode);
         if ($translations = static::$translations[$langcode] ?? null) {
             return $translations;
         }
 
-        $path = frontend_path('languages/'.$langcode.'.php');
+        $path = frontend_path('lang/'.$langcode.'.json');
         if (is_file($path)) {
-            $translations = require $path;
+            $translations = \json_decode(file_get_contents($path));
             static::$translations[$langcode] = $translations;
             return $translations;
         }
