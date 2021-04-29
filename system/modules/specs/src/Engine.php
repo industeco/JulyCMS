@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Engine
 {
@@ -110,7 +111,7 @@ class Engine
 
     public function compress($compress = null)
     {
-        $compress = $compress ?? true;
+        $compress = $compress ?? false;
 
         $this->compress = $compress && !in_array($compress, ['false','off'], true);
 
@@ -135,6 +136,8 @@ class Engine
      */
     public function get()
     {
+        // Log::info($this->toArray());
+
         if ($this->records) {
             return $this->getRecords();
         }
@@ -305,7 +308,7 @@ class Engine
 
             if (($label && $field['label'] === $label) || (!$label && $field['is_searchable'])) {
                 $fields[$spec_id]['searchable'][] = $field_id;
-                $availableSpecs[$spec_id] = true;
+                $availableSpecs[] = $spec_id;
             }
 
             if ($field['is_groupable']) {
@@ -314,10 +317,10 @@ class Engine
         }
 
         if (! empty($this->specs)) {
-            $fields = array_intersect_key($fields, $this->specs);
+            $fields = Arr::only($fields, array_values($this->specs));
         }
 
-        return array_intersect_key($fields, $availableSpecs);
+        return Arr::only($fields, $availableSpecs);
     }
 
     /**
@@ -389,6 +392,17 @@ class Engine
         return [
             'data' => $data,
             'meta' => compact('columns','values','groups','timestamps','timebase'),
+        ];
+    }
+
+    public function toArray()
+    {
+        return [
+            'keywords' => $this->keywords,
+            'specs' => $this->specs,
+            'records' => $this->records,
+            'limit' => $this->limit,
+            'compress' => $this->compress,
         ];
     }
 }
