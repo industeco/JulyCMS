@@ -115,7 +115,7 @@ class JustInTwig
 
         $path = frontend_path('lang/'.$langcode.'.json');
         if (is_file($path)) {
-            $translations = \json_decode(file_get_contents($path));
+            $translations = \json_decode(file_get_contents($path), true);
             static::$translations[$langcode] = $translations;
             return $translations;
         }
