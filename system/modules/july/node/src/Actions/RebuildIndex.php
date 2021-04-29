@@ -13,6 +13,8 @@ use July\Node\NodeIndex;
  */
 class RebuildIndex extends ActionBase
 {
+    protected static $routeName = 'rebuild-index';
+
     protected static $title = '重建索引';
 
     public function __invoke(Request $request)

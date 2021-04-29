@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class ClearCache extends ActionBase
 {
+    protected static $routeName = 'clear-cache';
+
     protected static $title = '清除缓存';
 
     public function __invoke(Request $request)

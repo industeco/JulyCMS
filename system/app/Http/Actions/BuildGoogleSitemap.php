@@ -12,6 +12,8 @@ use Specs\Spec;
 
 class BuildGoogleSitemap extends ActionBase
 {
+    protected static $routeName = 'build-google-sitemap';
+
     protected static $title = '重建谷歌站点地图';
 
     public function __invoke(Request $request)
