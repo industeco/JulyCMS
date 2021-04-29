@@ -382,7 +382,7 @@ class Tree
      */
     public function siblings($id)
     {
-        if ($parent = $this->parent($id)) {
+        if (! is_null($parent = $this->parent($id))) {
             return array_diff($this->nodes[$parent]['children'], [$id]);
         }
 
