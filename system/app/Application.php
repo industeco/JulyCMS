@@ -7,6 +7,14 @@ use Illuminate\Foundation\Application as LaravelApplication;
 class Application extends LaravelApplication
 {
     /**
+     * The CMS version.
+     *
+     * @author   jchenk <jchenk@live.com>
+     * @var string
+     */
+    const JULYCMS_VERSION = '3.5.1';
+
+    /**
      * Get the path to the public / web directory.
      *
      * @return string
