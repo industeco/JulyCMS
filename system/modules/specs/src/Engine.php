@@ -2,6 +2,7 @@
 
 namespace Specs;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -13,28 +14,36 @@ class Engine
      *
      * @var string
      */
-    protected $keywords;
+    protected $keywords = '';
 
     /**
-     * 待搜索的关键词
+     * 规格范围
      *
      * @var array
      */
-    protected $specs;
+    protected $specs = [];
+
+    /**
+     * 指定的记录
+     * 格式：[spec_id => [record_id, ...], ...]
+     *
+     * @var array
+     */
+    protected $records = [];
 
     /**
      * 数据量
      *
      * @var int
      */
-    protected $limit;
+    protected $limit = -1;
 
     /**
      * 是否压缩
      *
      * @var bool
      */
-    protected $compress;
+    protected $compress = false;
 
     /**
      * 时间戳类型列
@@ -43,38 +52,127 @@ class Engine
      */
     protected $timestamps = ['created_at', 'updated_at'];
 
-    public function __construct($keywords = null, $specs = null, $limit = null, $compress = null)
+    public function __construct(?Request $request = null)
     {
-        $this->keywords = strval($keywords ?? urldecode(request('keywords')));
-
-        $this->specs = $this->normalizeSpecs($specs ?? request('specs'));
-
-        $this->limit = intval($limit ?? request('limit') ?? -1);
-
-        $compress = $compress ?? request('compress');
-        $this->compress = $compress && !in_array($compress, ['false','off'], true);
+        if ($request) {
+            $this->initWithRequest($request);
+        }
     }
 
     /**
      * @return static
      */
-    public static function make($keywords = null, $specs = null, $limit = null, $compress = null)
+    public static function make(?Request $request = null)
     {
-        return new static($keywords, $specs, $limit, $compress);
+        return new static($request);
+    }
+
+    protected function initWithRequest(Request $request)
+    {
+        $this->keywords(urldecode($request->input('keywords')));
+
+        $this->specs($request->input('specs'));
+
+        $this->records($request->input('records'));
+
+        $this->limit($request->input('limit') ?? -1);
+
+        $this->compress($request->input('compress'));
+    }
+
+    public function keywords($keywords = null)
+    {
+        $this->keywords = strval($keywords ?? '');
+
+        return $this;
+    }
+
+    public function specs($specs = null)
+    {
+        $this->specs = $this->normalizeList($specs);
+
+        return $this;
+    }
+
+    public function records($records = null)
+    {
+        $this->records = $this->normalizeRecords($records);
+
+        return $this;
+    }
+
+    public function limit($limit = null)
+    {
+        $this->limit = intval($limit ?? -1);
+
+        return $this;
+    }
+
+    public function compress($compress = null)
+    {
+        $compress = $compress ?? true;
+
+        $this->compress = $compress && !in_array($compress, ['false','off'], true);
+
+        return $this;
+    }
+
+    /**
+     * @param  string|null $keywords
+     * @return array
+     */
+    public function search(?string $keywords = null)
+    {
+        if ($keywords) {
+            $this->keywords($keywords);
+        }
+
+        return $this->get();
     }
 
     /**
      * @return array
      */
-    public static function search($keywords = null, $specs = null, $limit = null, $compress = null)
+    public function get()
     {
-        return (new static($keywords, $specs, $limit, $compress))->getRecords();
+        if ($this->records) {
+            return $this->getRecords();
+        }
+
+        return $this->searchRecords();
     }
 
     /**
      * @return array
      */
-    public function getRecords()
+    protected function getRecords()
+    {
+        // 获取可搜索的规格和字段
+        $fields = $this->resolveSpecFields();
+
+        $results = [];
+        foreach (Spec::find(array_keys($this->records)) as $spec) {
+            $attributes = $this->normalizeTimestamps($spec->attributesToArray());
+
+            $records = DB::table($spec->getRecordsTable())->whereIn('id', $this->records[$attributes['id']])->get()
+                ->map(function($record) {
+                    return $this->normalizeTimestamps((array) $record);
+                })->all();
+
+            if ($this->compress) {
+                $records = $this->compressRecords($records, $fields[$attributes['id']]['groupable'] ?? []);
+            }
+
+            $results[$attributes['id']] = compact('attributes', 'records');
+        }
+
+        return $results;
+    }
+
+    /**
+     * @return array
+     */
+    protected function searchRecords()
     {
         // 识别形如『Label:keywords』的关键词
         // Label 代表某字段的标题，keywords 代表在该字段下待搜索的关键词
@@ -87,7 +185,23 @@ class Engine
         foreach (Spec::find(array_keys($fields)) as $spec) {
             $attributes = $this->normalizeTimestamps($spec->attributesToArray());
 
-            $records = $this->getSpecRecords($spec, $fields[$attributes['id']] ?? []);
+            $conditions = [];
+            if ($this->keywords) {
+                foreach ($fields['searchable'] ?? [] as $field_id) {
+                    $conditions[] = [
+                        $field_id, 'like', '%'.$this->keywords.'%', 'or'
+                    ];
+                }
+            }
+
+            $records = DB::table($spec->getRecordsTable())->where($conditions)->limit($this->limit)->get()
+                ->map(function($record) {
+                    return $this->normalizeTimestamps((array) $record);
+                })->all();
+
+            if ($this->compress) {
+                $records = $this->compressRecords($records, $fields[$attributes['id']]['groupable'] ?? []);
+            }
 
             $results[$attributes['id']] = compact('attributes', 'records');
         }
@@ -96,29 +210,63 @@ class Engine
     }
 
     /**
-     * 转规格 id 列表为数组
+     * 获取指定记录列表
+     *
+     * @param  string|array|null $raw
+     * @return array
+     */
+    protected function normalizeRecords($raw)
+    {
+        if (is_string($raw)) {
+            $raw = $this->normalizeList($raw);
+        }
+
+        if (!is_array($raw) || empty($raw)) {
+            return [];
+        }
+
+        $records = [];
+
+        foreach ($raw as $value) {
+            if (strpos($value, '/') > 0) {
+                [$spec_id, $record_id] = explode('/', $value);
+                $records[$spec_id][] = $record_id;
+            } else {
+                foreach ($this->specs as $spec_id) {
+                    $records[$spec_id][] = $value;
+                }
+            }
+        }
+
+        return $records;
+    }
+
+    /**
+     * 获取项目列表
+     *  - 如果是字符串则以 , 分割为数组；
+     *  - 如果是数组则检查每一项是否为空；
      *
      * @param  string|array|null $specs
      * @return array
      */
-    public function normalizeSpecs($specs = null)
+    protected function normalizeList($items)
     {
-        if (is_string($specs)) {
-            $specs = explode(',', $specs);
+        if (is_string($items)) {
+            $items = explode(',', $items);
         }
 
-        if (is_array($specs)) {
-            $list = [];
-            foreach ($specs as $spec) {
-                $spec = trim($spec);
-                if (strlen($spec)) {
-                    $list[] = $spec;
+        $list = [];
+
+        if (is_array($items)) {
+            foreach ($items as $item) {
+                $item = trim($item);
+                if (strlen($item) > 0) {
+                    $list[] = $item;
                 }
             }
-            return $list;
         }
 
-        return [];
+        return $list;
     }
 
     /**
@@ -157,7 +305,7 @@ class Engine
 
             if (($label && $field['label'] === $label) || (!$label && $field['is_searchable'])) {
                 $fields[$spec_id]['searchable'][] = $field_id;
-                $availableSpecs[] = $spec_id;
+                $availableSpecs[$spec_id] = true;
             }
 
             if ($field['is_groupable']) {
@@ -166,40 +314,10 @@ class Engine
         }
 
         if (! empty($this->specs)) {
-            $fields = Arr::only($fields, $this->specs);
+            $fields = array_intersect_key($fields, $this->specs);
         }
 
-        return Arr::only($fields, $availableSpecs);
-    }
-
-    /**
-     * 获取规格记录
-     *
-     * @param  \Specs\Spec $spec
-     * @param  array $fields
-     * @return array
-     */
-    public function getSpecRecords(Spec $spec, array $fields)
-    {
-        $conditions = [];
-        if ($this->keywords) {
-            foreach ($fields['searchable'] ?? [] as $field_id) {
-                $conditions[] = [
-                    $field_id, 'like', '%'.$this->keywords.'%', 'or'
-                ];
-            }
-        }
-
-        $records = DB::table($spec->getRecordsTable())->where($conditions)->limit($this->limit)->get()
-            ->map(function($record) {
-                return $this->normalizeTimestamps((array) $record);
-            })->all();
-
-        if ($this->compress) {
-            $records = $this->compressRecords($records, $fields['groupable'] ?? []);
-        }
-
-        return $records;
+        return array_intersect_key($fields, $availableSpecs);
     }
 
     /**

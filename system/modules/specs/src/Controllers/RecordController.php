@@ -102,7 +102,7 @@ class RecordController extends Controller
         $keywords = urldecode($request->input('keywords'));
 
         $data = [
-            'results' => Engine::search($keywords),
+            'results' => Engine::make($request)->search($keywords),
             'keywords' => $keywords,
             'title' => 'Search',
             'meta_title' => 'Search Result',
@@ -121,7 +121,7 @@ class RecordController extends Controller
      */
     public function fetch(Request $request)
     {
-        return response(Engine::search());
+        return response(Engine::make($request)->search());
     }
 
     /**
