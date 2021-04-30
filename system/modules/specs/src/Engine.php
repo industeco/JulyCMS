@@ -187,10 +187,11 @@ class Engine
         $results = [];
         foreach (Spec::find(array_keys($fields)) as $spec) {
             $attributes = $this->normalizeTimestamps($spec->attributesToArray());
+            $spec_id = $attributes['id'];
 
             $conditions = [];
             if ($this->keywords) {
-                foreach ($fields['searchable'] ?? [] as $field_id) {
+                foreach ($fields[$spec_id]['searchable'] ?? [] as $field_id) {
                     $conditions[] = [
                         $field_id, 'like', '%'.$this->keywords.'%', 'or'
                     ];
@@ -203,10 +204,10 @@ class Engine
                 })->all();
 
             if ($this->compress) {
-                $records = $this->compressRecords($records, $fields[$attributes['id']]['groupable'] ?? []);
+                $records = $this->compressRecords($records, $fields[$spec_id]['groupable'] ?? []);
             }
 
-            $results[$attributes['id']] = compact('attributes', 'records');
+            $results[$spec_id] = compact('attributes', 'records');
         }
 
         return $results;
